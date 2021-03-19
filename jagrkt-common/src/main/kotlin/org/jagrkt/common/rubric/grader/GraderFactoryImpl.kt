@@ -19,9 +19,13 @@
 
 package org.jagrkt.common.rubric.grader
 
+import org.jagrkt.api.context.CodeContext
+import org.jagrkt.api.context.ContextResolver
 import org.jagrkt.api.rubric.Grader
 
 class GraderFactoryImpl : Grader.Factory {
   override fun testAwareBuilder() = TestAwareGraderBuilderImpl()
+  override fun <C : CodeContext> contextAwareBuilder(resolver: ContextResolver<C>): Grader.ContextAwareBuilder<C> = ContextAwareGraderBuilderImpl(resolver)
   override fun descendingPriority(vararg graders: Grader) = DescendingPriorityGrader(*graders)
+  override fun minIfAllUnchanged(vararg contexts: ContextResolver<*>): Grader = MinIfAllUnchangedGrader(*contexts)
 }

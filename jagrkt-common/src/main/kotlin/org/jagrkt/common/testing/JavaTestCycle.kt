@@ -25,11 +25,14 @@ data class JavaTestCycle(
   private val rubricProviderClassNames: List<String>,
   private val submission: JavaSubmission,
   private val classLoader: ClassLoader,
-  private val junitResult: TestCycle.JUnitResult?,
 ) : TestCycle {
 
+  private var jUnitResult: TestCycle.JUnitResult? = null
   override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
   override fun getClassLoader(): ClassLoader = classLoader
   override fun getSubmission(): JavaSubmission = submission
-  override fun getJUnitResult(): TestCycle.JUnitResult? = junitResult
+  override fun getJUnitResult(): TestCycle.JUnitResult? = jUnitResult
+  fun setJUnitResult(jUnitResult: TestCycle.JUnitResult) {
+    this.jUnitResult = jUnitResult
+  }
 }

@@ -38,12 +38,13 @@ class JavaRuntimeTester @Inject constructor(
     val info = submission.info
     val rubricProviders = testJar.rubricProviders[info.assignmentId] ?: return null
     val classLoader = RuntimeClassLoader(testJar.classes + submission.compiledClasses)
-    val junitResult = testJar.testProviders[info.assignmentId]
-      ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }?.runJUnit(submission)
-    return JavaTestCycle(rubricProviders, submission, classLoader, junitResult)
+    val testCycle = JavaTestCycle(rubricProviders, submission, classLoader)
+    testJar.testProviders[info.assignmentId]
+      ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }?.runJUnit(testCycle)
+    return testCycle
   }
 
-  private fun List<DiscoverySelector>.runJUnit(submission: JavaSubmission): JUnitResultImpl? {
+  private fun List<DiscoverySelector>.runJUnit(testCycle: JavaTestCycle): JUnitResultImpl? {
     return try {
       val launcher = LauncherFactory.create()
       val testPlan = launcher.discover(LauncherDiscoveryRequestBuilder.request().selectors(this).build())
@@ -52,7 +53,7 @@ class JavaRuntimeTester @Inject constructor(
       launcher.execute(testPlan, summaryListener, statusListener)
       JUnitResultImpl(testPlan, summaryListener, statusListener)
     } catch (e: Throwable) {
-      logger.error("Failed to run JUnit tests for ${submission.info}", e)
+      logger.error("Failed to run JUnit tests for ${testCycle.submission.info}", e)
       null
     }
   }

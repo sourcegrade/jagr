@@ -41,6 +41,11 @@ public interface TestCycle {
 
   Submission getSubmission();
 
+  /**
+   * This will always be {@code null} during execution of JUnit tests as it is not initialized until after they are completed.
+   *
+   * @return The {@link JUnitResult} if present, otherwise null
+   */
   @Nullable JUnitResult getJUnitResult();
 
   @ApiStatus.NonExtendable
