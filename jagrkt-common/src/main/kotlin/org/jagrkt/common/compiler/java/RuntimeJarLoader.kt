@@ -1,0 +1,140 @@
+package org.jagrkt.common.compiler.java
+
+import com.google.inject.Inject
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import org.jagrkt.common.testing.SubmissionInfoImpl
+import org.slf4j.Logger
+import java.io.File
+import java.nio.charset.StandardCharsets
+import java.util.Locale
+import java.util.jar.JarFile
+import javax.tools.Diagnostic
+import javax.tools.DiagnosticCollector
+import javax.tools.JavaFileObject
+import javax.tools.ToolProvider
+
+class RuntimeJarLoader @Inject constructor(
+  private val logger: Logger,
+) {
+
+  fun loadCompiledJar(file: File): Map<String, CompiledClass> {
+    val jarFile = JarFile(file)
+    val classStorage: MutableMap<String, CompiledClass> = mutableMapOf()
+    for (entry in jarFile.entries()) {
+      when {
+        entry.isDirectory -> continue
+        entry.name.endsWith(".class") -> {
+          val className = entry.name.replace('/', '.').substring(0, entry.name.length - 6)
+          classStorage[className] = CompiledClass.Existing(className, jarFile.getInputStream(entry).readAllBytes())
+        }
+        entry.name.endsWith("MANIFEST.MF") -> { // ignore
+        }
+        else -> logger.warn("$file jar entry $entry is not a java class file!")
+      }
+    }
+    return classStorage
+  }
+
+  fun loadSourcesJar(file: File, runtimeClassPath: Map<String, CompiledClass> = mapOf()): CompileJarResult {
+    val jarFile = JarFile(file)
+    val sourceFiles: MutableMap<String, JavaSourceFile> = mutableMapOf()
+    val classNameToSourceFile: MutableMap<String, JavaSourceFile> = mutableMapOf()
+    var submissionInfo: SubmissionInfoImpl? = null
+    for (entry in jarFile.entries()) {
+      when {
+        entry.isDirectory -> continue
+        entry.name == "submission-info.json" -> {
+          submissionInfo = try {
+            Json.decodeFromString<SubmissionInfoImpl>(jarFile.getInputStream(entry).bufferedReader().readText())
+          } catch (e: Throwable) {
+            logger.error("$file has invalid submission-info.json", e)
+            return CompileJarResult(file)
+          }
+        }
+        entry.name.endsWith(".java") -> {
+          val className = entry.name.replace('/', '.').substring(0, entry.name.length - 5)
+          val sourceFile = JavaSourceFile(className, entry.name, jarFile.getInputStream(entry))
+          sourceFiles[entry.name] = sourceFile
+          classNameToSourceFile[className] = sourceFile
+        }
+        entry.name.endsWith("MANIFEST.MF") -> { // ignore
+        }
+        else -> logger.warn("$file jar entry $entry is not a java source file!")
+      }
+    }
+    if (sourceFiles.isEmpty()) {
+      // no source files, skip compilation task
+      return CompileJarResult(file, submissionInfo)
+    }
+    val compiledClasses: MutableMap<String, CompiledClass.Runtime> = mutableMapOf()
+    val collector = DiagnosticCollector<JavaFileObject>()
+    val compiler = ToolProvider.getSystemJavaCompiler()
+    val fileManager = ExtendedStandardJavaFileManager(
+      compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8),
+      runtimeClassPath,
+      compiledClasses,
+    )
+    val result = compiler.getTask(null, fileManager, collector, null, null, sourceFiles.values).call()
+    compiledClasses.linkSource(classNameToSourceFile)
+    if (!result || collector.diagnostics.isNotEmpty()) {
+      val messages = mutableListOf<String>()
+      var warnings = 0
+      var errors = 0
+      var other = 0
+      for (diag in collector.diagnostics) {
+        when (diag.kind) {
+          Diagnostic.Kind.NOTE,
+          Diagnostic.Kind.MANDATORY_WARNING,
+          Diagnostic.Kind.WARNING,
+          -> ++warnings
+          Diagnostic.Kind.ERROR,
+          -> ++errors
+          else -> ++other
+        }
+        messages += "${diag.source.name}:${diag.lineNumber} ${diag.kind} :: ${diag.getMessage(Locale.getDefault())}"
+      }
+      return CompileJarResult(file, submissionInfo, compiledClasses, sourceFiles, messages, warnings, errors, other)
+    }
+    return CompileJarResult(file, submissionInfo, compiledClasses, sourceFiles)
+  }
+
+  private fun Map<String, CompiledClass>.linkSource(classNameToSourceFile: Map<String, JavaSourceFile>) {
+    for ((className, compiledClass) in this) {
+      val firstTrySource = classNameToSourceFile[className]
+      if (firstTrySource != null) {
+        compiledClass.source = firstTrySource
+        continue
+      }
+      for ((sourceClassName, sourceFile) in classNameToSourceFile) {
+        if (className.startsWith(sourceClassName)) {
+          compiledClass.source = sourceFile
+          break
+        }
+      }
+    }
+  }
+
+  data class CompileJarResult(
+    val file: File,
+    val submissionInfo: SubmissionInfoImpl? = null,
+    val compiledClasses: Map<String, CompiledClass.Runtime> = mapOf(),
+    val sourceFiles: Map<String, JavaSourceFile> = mapOf(),
+    val messages: List<String> = listOf(),
+    val warnings: Int = 0,
+    val errors: Int = 0,
+    val other: Int = 0,
+  ) {
+    fun printMessages(logger: Logger, lazyError: () -> String, lazyWarning: () -> String) {
+      when {
+        errors > 0 -> {
+          logger.error(lazyError())
+          for (message in messages) {
+            logger.error(message)
+          }
+        }
+        warnings > 0 -> logger.warn(lazyWarning())
+      }
+    }
+  }
+}

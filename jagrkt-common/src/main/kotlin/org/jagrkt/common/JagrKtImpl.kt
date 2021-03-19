@@ -1,0 +1,113 @@
+package org.jagrkt.common
+
+import com.google.inject.Inject
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import org.jagrkt.api.testing.Submission
+import org.jagrkt.common.compiler.java.CompiledClass
+import org.jagrkt.common.compiler.java.RuntimeJarLoader
+import org.jagrkt.common.export.rubric.GradedRubricExportManager
+import org.jagrkt.common.export.submission.SubmissionExportManager
+import org.jagrkt.common.testing.RuntimeGrader
+import org.jagrkt.common.testing.TestJar
+import org.jagrkt.common.testing.JavaSubmission
+import org.slf4j.Logger
+import java.io.File
+
+class JagrKtImpl @Inject constructor(
+  private val logger: Logger,
+  private val runtimeJarLoader: RuntimeJarLoader,
+  private val runtimeGrader: RuntimeGrader,
+  private val gradedRubricExportManager: GradedRubricExportManager,
+  private val submissionExportManager: SubmissionExportManager,
+) {
+
+  private fun loadTestJars(testJarsLocation: File): List<TestJar> {
+    if (testJarsLocation.createIfNotExists(logger)) {
+      return listOf()
+    }
+    return testJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.map {
+      val classStorage = runtimeJarLoader.loadCompiledJar(it)
+      logger.info("Loaded test jar ${it.name}")
+      TestJar(logger, it, classStorage)
+    }
+  }
+
+  private fun loadLibs(libsLocation: File): Map<String, CompiledClass> {
+    if (libsLocation.createIfNotExists(logger)) {
+      return mapOf()
+    }
+    return libsLocation.listFiles { _, t -> t.endsWith(".jar") }!!
+      .asSequence()
+      .map {
+        val classStorage = runtimeJarLoader.loadCompiledJar(it)
+        logger.info("Loaded lib jar ${it.name}")
+        classStorage
+      }
+      .ifEmpty { listOf(mapOf<String, CompiledClass>()).asSequence() }
+      .reduce { a, b -> a + b }
+  }
+
+  private fun loadSubmissionJars(submissionJarsLocation: File, libsLocation: File): List<JavaSubmission> {
+    val libsClasspath = loadLibs(libsLocation)
+    if (submissionJarsLocation.createIfNotExists(logger)) {
+      return listOf()
+    }
+    return submissionJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!
+      .asSequence()
+      .map { runtimeJarLoader.loadSourcesJar(it, libsClasspath) }
+      .filter {
+        if (it.submissionInfo == null) {
+          logger.error("$it does not have a submission-info.json! Skipping...")
+          false
+        } else true
+      }
+      .map {
+        it.printMessages(
+          logger,
+          { "Submission ${it.submissionInfo}(${it.file.name}) has ${it.warnings} warnings and ${it.errors} errors!" },
+          { "Submission ${it.file} has ${it.warnings} warnings!" },
+        )
+        JavaSubmission(it.file, it.submissionInfo!!, it.compiledClasses, it.sourceFiles)
+          .apply { logger.info("Loaded submission jar $this") }
+      }
+      .toList()
+  }
+
+  fun run() {
+    val tests = loadTestJars(File("tests"))
+    val submissions = loadSubmissionJars(File("submissions"), File("libs"))
+    val rubricExportLocation = File("rubrics").takeIf { !it.createIfNotExists(logger) }
+    val submissionExportLocation = File("submissions-export").takeIf { !it.createIfNotExists(logger) }
+    if (tests.isEmpty() || submissions.isEmpty()) {
+      logger.info("Nothing to do! Exiting...")
+      return
+    }
+    val iter = submissions.iterator()
+    val deferred: Array<Deferred<Unit>> = Array(submissions.size) {
+      GlobalScope.async {
+        handleSubmission(iter.next(), tests, rubricExportLocation, submissionExportLocation)
+      }
+    }
+    runBlocking {
+      deferred.forEach { it.await() }
+    }
+  }
+
+  private fun handleSubmission(
+    submission: Submission, testJars: List<TestJar>,
+    rubricExportLocation: File?, submissionExportLocation: File?,
+  ) {
+    submissionExportManager.export(submission, submissionExportLocation)
+    val gradedRubrics = runtimeGrader.grade(testJars, submission)
+    if (gradedRubrics.isEmpty()) {
+      logger.warn("$submission :: No matching rubrics!")
+      return
+    }
+    for ((gradedRubric, exportFileName) in gradedRubrics) {
+      gradedRubricExportManager.export(gradedRubric, rubricExportLocation, exportFileName)
+    }
+  }
+}
