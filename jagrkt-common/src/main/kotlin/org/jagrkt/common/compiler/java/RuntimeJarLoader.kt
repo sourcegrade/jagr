@@ -23,6 +23,9 @@ import com.google.inject.Inject
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.jagrkt.common.testing.SubmissionInfoImpl
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.Opcodes
 import org.slf4j.Logger
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -58,7 +61,6 @@ class RuntimeJarLoader @Inject constructor(
   fun loadSourcesJar(file: File, runtimeClassPath: Map<String, CompiledClass> = mapOf()): CompileJarResult {
     val jarFile = JarFile(file)
     val sourceFiles: MutableMap<String, JavaSourceFile> = mutableMapOf()
-    val classNameToSourceFile: MutableMap<String, JavaSourceFile> = mutableMapOf()
     var submissionInfo: SubmissionInfoImpl? = null
     for (entry in jarFile.entries()) {
       when {
@@ -75,7 +77,6 @@ class RuntimeJarLoader @Inject constructor(
           val className = entry.name.replace('/', '.').substring(0, entry.name.length - 5)
           val sourceFile = JavaSourceFile(className, entry.name, jarFile.getInputStream(entry))
           sourceFiles[entry.name] = sourceFile
-          classNameToSourceFile[className] = sourceFile
         }
         entry.name.endsWith("MANIFEST.MF") -> { // ignore
         }
@@ -95,7 +96,7 @@ class RuntimeJarLoader @Inject constructor(
       compiledClasses,
     )
     val result = compiler.getTask(null, fileManager, collector, null, null, sourceFiles.values).call()
-    compiledClasses.linkSource(classNameToSourceFile)
+    compiledClasses.linkSource(sourceFiles)
     if (!result || collector.diagnostics.isNotEmpty()) {
       val messages = mutableListOf<String>()
       var warnings = 0
@@ -118,18 +119,16 @@ class RuntimeJarLoader @Inject constructor(
     return CompileJarResult(file, submissionInfo, compiledClasses, sourceFiles)
   }
 
-  private fun Map<String, CompiledClass>.linkSource(classNameToSourceFile: Map<String, JavaSourceFile>) {
-    for ((className, compiledClass) in this) {
-      val firstTrySource = classNameToSourceFile[className]
-      if (firstTrySource != null) {
-        compiledClass.source = firstTrySource
-        continue
-      }
-      for ((sourceClassName, sourceFile) in classNameToSourceFile) {
-        if (className.startsWith(sourceClassName)) {
-          compiledClass.source = sourceFile
-          break
-        }
+  private fun Map<String, CompiledClass>.linkSource(sourceFiles: Map<String, JavaSourceFile>) {
+    for ((_, compiledClass) in this) {
+      with(compiledClass.reader) {
+        val packageName = className.substring(0, className.lastIndexOf('/'))
+        accept(object : ClassVisitor(Opcodes.ASM9) {
+          override fun visitSource(source: String?, debug: String?) {
+            if (source == null) return
+            compiledClass.source = sourceFiles["$packageName/$source"]
+          }
+        }, ClassReader.SKIP_CODE)
       }
     }
   }

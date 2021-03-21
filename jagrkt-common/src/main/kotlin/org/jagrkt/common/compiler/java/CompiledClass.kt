@@ -19,6 +19,7 @@
 
 package org.jagrkt.common.compiler.java
 
+import org.objectweb.asm.ClassReader
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -30,6 +31,7 @@ import javax.tools.SimpleJavaFileObject
 sealed class CompiledClass(val className: String) : SimpleJavaFileObject(URI(className), JavaFileObject.Kind.CLASS) {
 
   abstract val byteArray: ByteArray
+  val reader: ClassReader by lazy { ClassReader(byteArray) }
   var source: JavaSourceFile? = null
 
   class Runtime(className: String) : CompiledClass(className) {
