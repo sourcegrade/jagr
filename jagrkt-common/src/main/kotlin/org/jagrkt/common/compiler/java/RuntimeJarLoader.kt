@@ -67,7 +67,7 @@ class RuntimeJarLoader @Inject constructor(
         entry.isDirectory -> continue
         entry.name == "submission-info.json" -> {
           submissionInfo = try {
-            Json.decodeFromString<SubmissionInfoImpl>(jarFile.getInputStream(entry).bufferedReader().readText())
+            Json.decodeFromString<SubmissionInfoImpl>(jarFile.getInputStream(entry).bufferedReader().use { it.readText() })
           } catch (e: Throwable) {
             logger.error("$file has invalid submission-info.json", e)
             return CompileJarResult(file)

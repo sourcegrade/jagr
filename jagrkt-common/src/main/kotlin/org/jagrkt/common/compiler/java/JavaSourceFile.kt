@@ -30,7 +30,7 @@ class JavaSourceFile(
   private val fileName: String,
   inputStream: InputStream,
 ) : SimpleJavaFileObject(URI.create("string:///$fileName"), Kind.SOURCE), SourceFile {
-  private val content: String = inputStream.bufferedReader().readText()
+  private val content: String = inputStream.bufferedReader().use { it.readText() }
   override fun getFileName(): String = fileName
   override fun getContent(): String = content
   override fun getClassName(): String = className
