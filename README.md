@@ -4,27 +4,35 @@
 
 ## Setup
 
-This project is not on any maven repositories yet. Until it is, you must clone and publish to mavenLocal to use.
+This project's compiled, source and javadoc jars are hosted on [sonatype](https://s01.oss.sonatype.org).
+Releases are available from `mavenCentral()` and snapshots from the maven repository in the following code block.
 
-```bash
-cd /some/path
-git clone https://github.com/JagrKt/JagrKt
-cd JagrKt
-./gradlew publishToMavenLocal
-```
+To depend on JagrKt in your project, use the following lines in your gradle build script:
 
-Then import the JagrKt API into your project:
-
+**build.gradle (Groovy):**
 ```groovy
 repositories {
   mavenCentral()
-  mavenLocal()
+  maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" } // only needed for snapshot versions
 }
-
 dependencies {
-  include(dependency("org.jagrkt:jagrkt-api:0.1.0-SNAPSHOT"))
+  implementation("org.jagrkt:jagrkt-api:$version")
 }
 ```
+
+**build.gradle.kts (Kotlin DSL):**
+```kotlin
+repositories {
+  mavenCentral()
+  maven("https://s01.oss.sonatype.org/content/repositories/snapshots") // only needed for snapshot versions
+}
+dependencies {
+  implementation("org.jagrkt:jagrkt-api:$version")
+}
+```
+
+Where `$version` is in the [semver](https://semver.org/) format, optionally suffixed with `-SNAPSHOT` for snapshots versions.
+E.g: `0.1.0` or `0.1.0-SNAPSHOT`
 
 ## Usage
 
