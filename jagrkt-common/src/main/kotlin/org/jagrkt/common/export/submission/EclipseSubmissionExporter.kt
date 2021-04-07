@@ -48,7 +48,7 @@ class EclipseSubmissionExporter @Inject constructor(
   }
 
   private fun writeProjectFile(submission: JavaSubmission, file: File) {
-    val writer = PrintWriter(file, Charsets.UTF_8)
+    val writer = PrintWriter(file, "UTF-8")
     writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
     writer.println("<projectDescription>")
     writer.println("\t<name>${submission.info}</name>")
@@ -65,7 +65,7 @@ class EclipseSubmissionExporter @Inject constructor(
   }
 
   private fun writeClasspathFile(submission: JavaSubmission, file: File) {
-    val writer = PrintWriter(file, Charsets.UTF_8)
+    val writer = PrintWriter(file, "UTF-8")
     writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
     writer.println("<classpath>")
     writer.println("\t<classpathentry kind=\"src\" path=\"src\"/>")
@@ -82,7 +82,7 @@ class EclipseSubmissionExporter @Inject constructor(
 
   private fun writeFile(content: String, file: File) {
     file.parentFile.createIfNotExists(logger, false)
-    val writer = PrintWriter(file, Charsets.UTF_8)
+    val writer = PrintWriter(file, "UTF-8")
     writer.write(content)
     writer.flush()
   }

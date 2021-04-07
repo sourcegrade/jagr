@@ -48,7 +48,7 @@ class RuntimeJarLoader @Inject constructor(
         entry.isDirectory -> continue
         entry.name.endsWith(".class") -> {
           val className = entry.name.replace('/', '.').substring(0, entry.name.length - 6)
-          classStorage[className] = CompiledClass.Existing(className, jarFile.getInputStream(entry).readAllBytes())
+          classStorage[className] = CompiledClass.Existing(className, jarFile.getInputStream(entry).use { it.readBytes() })
         }
         entry.name.endsWith("MANIFEST.MF") -> { // ignore
         }

@@ -28,7 +28,7 @@ class GermanCSVExporter : GradedRubricExporter {
   override fun export(gradedRubric: GradedRubric, directory: File, fileName: String) {
     val rubric = gradedRubric.rubric
     val grade = gradedRubric.grade
-    val writer = PrintWriter(directory.resolve("$fileName.csv"), Charsets.UTF_8)
+    val writer = PrintWriter(directory.resolve("$fileName.csv"), "UTF-8")
     writer.println("${rubric.title},,,,")
     writer.println("Kriterium,Möglich,Erzielt,Kommentar,Extra")
     writer.appendEmptyLine()
