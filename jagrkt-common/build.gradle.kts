@@ -23,6 +23,9 @@ dependencies {
 application {
   mainClassName = "org.jagrkt.common.MainKt"
 }
+tasks.jar {
+  enabled = false
+}
 tasks.shadowJar {
   archiveFileName.set("JagrKt-${project.version}.jar")
 }

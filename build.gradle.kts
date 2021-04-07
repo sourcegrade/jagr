@@ -13,6 +13,10 @@ allprojects {
   group = "org.jagrkt"
   version = "0.1.0-SNAPSHOT"
 
+  project.findProperty("buildNumber")
+    ?.takeIf { version.toString().contains("SNAPSHOT") }
+    ?.also { version = version.toString().replace("SNAPSHOT", "RC$it") }
+
   repositories {
     mavenCentral()
   }
