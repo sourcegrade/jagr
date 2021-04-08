@@ -21,13 +21,14 @@ package org.jagrkt.common.export.rubric
 
 import com.google.inject.Inject
 import org.jagrkt.api.rubric.GradedRubric
+import org.jagrkt.common.export.ExportManager
 import org.slf4j.Logger
 import java.io.File
 
 class GradedRubricExportManager @Inject constructor(
-  private val logger: Logger,
-  private val exporters: Set<GradedRubricExporter>,
-) {
+  override val logger: Logger,
+  override val exporters: Set<GradedRubricExporter>,
+) : ExportManager<GradedRubricExporter>() {
   fun export(gradedRubric: GradedRubric, directory: File?, fileName: String) {
     val rubric = gradedRubric.rubric
     val grade = gradedRubric.grade
@@ -42,7 +43,7 @@ class GradedRubricExportManager @Inject constructor(
     )
     if (directory != null) {
       for (exporter in exporters) {
-        exporter.export(gradedRubric, directory, fileName)
+        exporter.export(gradedRubric, directory.resolve(exporter.name), fileName)
       }
     }
   }

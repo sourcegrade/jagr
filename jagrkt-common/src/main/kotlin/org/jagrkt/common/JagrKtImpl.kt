@@ -99,7 +99,9 @@ class JagrKtImpl @Inject constructor(
     val tests = loadTestJars(File("tests"))
     val submissions = loadSubmissionJars(File("submissions"), File("libs"))
     val rubricExportLocation = File("rubrics").takeIf { !it.createIfNotExists(logger) }
+    gradedRubricExportManager.ensureDirs(rubricExportLocation)
     val submissionExportLocation = File("submissions-export").takeIf { !it.createIfNotExists(logger) }
+    submissionExportManager.ensureDirs(submissionExportLocation)
     if (tests.isEmpty() || submissions.isEmpty()) {
       logger.info("Nothing to do! Exiting...")
       return

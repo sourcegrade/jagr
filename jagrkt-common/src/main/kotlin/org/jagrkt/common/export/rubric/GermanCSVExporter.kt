@@ -25,6 +25,7 @@ import java.io.File
 import java.io.PrintWriter
 
 class GermanCSVExporter : GradedRubricExporter {
+  override val name: String = "csv"
   override fun export(gradedRubric: GradedRubric, directory: File, fileName: String) {
     val rubric = gradedRubric.rubric
     val grade = gradedRubric.grade

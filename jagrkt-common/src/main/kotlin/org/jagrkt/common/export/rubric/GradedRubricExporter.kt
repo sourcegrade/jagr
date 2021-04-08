@@ -20,9 +20,10 @@
 package org.jagrkt.common.export.rubric
 
 import org.jagrkt.api.rubric.GradedRubric
+import org.jagrkt.common.export.Exporter
 import java.io.File
 
-interface GradedRubricExporter {
+interface GradedRubricExporter : Exporter {
   /**
    * Assumes that [directory] exists.
    */

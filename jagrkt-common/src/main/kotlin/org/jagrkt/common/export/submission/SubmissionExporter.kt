@@ -20,8 +20,9 @@
 package org.jagrkt.common.export.submission
 
 import org.jagrkt.api.testing.Submission
+import org.jagrkt.common.export.Exporter
 import java.io.File
 
-interface SubmissionExporter {
+interface SubmissionExporter : Exporter {
   fun export(submission: Submission, directory: File)
 }

@@ -30,6 +30,7 @@ import java.io.PrintWriter
 class EclipseSubmissionExporter @Inject constructor(
   private val logger: Logger,
 ) : SubmissionExporter {
+  override val name: String = "eclipse"
   override fun export(submission: Submission, directory: File) {
     if (submission !is JavaSubmission) return
     val file = directory.resolve(submission.info.toString())

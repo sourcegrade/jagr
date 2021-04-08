@@ -17,23 +17,8 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.export.submission
+package org.jagrkt.common.export
 
-import com.google.inject.Inject
-import org.jagrkt.api.testing.Submission
-import org.jagrkt.common.export.ExportManager
-import org.slf4j.Logger
-import java.io.File
-
-class SubmissionExportManager @Inject constructor(
-  override val logger: Logger,
-  override val exporters: Set<SubmissionExporter>,
-) : ExportManager<SubmissionExporter>() {
-  fun export(submission: Submission, directory: File?) {
-    if (directory != null) {
-      for (exporter in exporters) {
-        exporter.export(submission, directory.resolve(exporter.name))
-      }
-    }
-  }
+interface Exporter {
+  val name: String
 }
