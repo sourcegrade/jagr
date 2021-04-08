@@ -41,7 +41,7 @@ public interface Grader {
     return FactoryProvider.factory.descendingPriority(graders);
   }
 
-  @Nullable GradeResult grade(TestCycle testCycle, Criterion criterion);
+  GradeResult grade(TestCycle testCycle, Criterion criterion);
 
   @ApiStatus.NonExtendable
   interface Builder<B extends Builder<B>> {
@@ -71,6 +71,15 @@ public interface Grader {
       GradeResult calculate(TestCycle testCycle, Criterion criterion);
     }
 
+    /**
+     * Sets (or unsets) the general "if failed" comment on this grader. This is added after comments set by other methods on
+     * this builder and can only be removed by invoking this method with {@code null}.
+     *
+     * @param comment The comment to write in the exported rubric if this grader fails. Passing {@code null} unsets the value.
+     * @return {@code this}
+     */
+    B commentIfFailed(@Nullable String comment);
+
     Grader build();
   }
 
@@ -80,9 +89,17 @@ public interface Grader {
   @ApiStatus.NonExtendable
   interface TestAwareBuilder extends Builder<TestAwareBuilder> {
 
-    TestAwareBuilder requirePass(JUnitTestRef... test);
+    default TestAwareBuilder requirePass(JUnitTestRef testRef) {
+      return requirePass(testRef, null);
+    }
 
-    TestAwareBuilder requireFail(JUnitTestRef... test);
+    TestAwareBuilder requirePass(JUnitTestRef testRef, @Nullable String comment);
+
+    default TestAwareBuilder requireFail(JUnitTestRef testRef) {
+      return requireFail(testRef, null);
+    }
+
+    TestAwareBuilder requireFail(JUnitTestRef testRef, @Nullable String comment);
   }
 
   @ApiStatus.Internal

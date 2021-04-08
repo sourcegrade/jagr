@@ -27,10 +27,11 @@ import org.junit.platform.engine.TestSource
 
 class TestAwareGraderImpl(
   private val predicate: ((TestCycle, Criterion) -> Boolean)?,
-  private val pointCalculatorPassed: ((TestCycle, Criterion) -> GradeResult)?,
-  private val pointCalculatorFailed: ((TestCycle, Criterion) -> GradeResult)?,
-  private val requirePass: List<TestSource>,
-  private val requireFail: List<TestSource>,
+  private val pointCalculatorPassed: ((TestCycle, Criterion) -> GradeResult),
+  private val pointCalculatorFailed: ((TestCycle, Criterion) -> GradeResult),
+  private val requirePass: Map<TestSource, String?>,
+  private val requireFail: Map<TestSource, String?>,
+  private val commentIfFailed: String?
 ) : Grader {
 
   override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult? {
@@ -38,16 +39,25 @@ class TestAwareGraderImpl(
       return null
     }
     val statusListener = (testCycle.jUnitResult ?: return null).statusListener
-    for (test in requirePass) {
-      if (!statusListener.succeeded(test)) {
-        return pointCalculatorFailed?.invoke(testCycle, criterion)
+    fun Map<TestSource, String?>.must(predicate: (TestSource) -> Boolean): GradeResult? {
+      val comments: MutableList<String> = mutableListOf()
+      var failed = false
+      for ((testSource, comment) in this) {
+        if (!predicate(testSource)) {
+          failed = true
+          comment?.also { comments += it }
+        }
+      }
+      // general comment goes after more specific test comments
+      commentIfFailed?.also { comments += it }
+      return if (failed) {
+        GradeResult.withComments(pointCalculatorFailed(testCycle, criterion), comments)
+      } else {
+        GradeResult.withComments(GradeResult.ofNone(), comments)
       }
     }
-    for (test in requireFail) {
-      if (!statusListener.failed(test)) {
-        return pointCalculatorFailed?.invoke(testCycle, criterion)
-      }
-    }
-    return pointCalculatorPassed?.invoke(testCycle, criterion)
+    requirePass.must(statusListener::succeeded)?.also { return it }
+    requireFail.must(statusListener::failed)?.also { return it }
+    return pointCalculatorPassed(testCycle, criterion)
   }
 }

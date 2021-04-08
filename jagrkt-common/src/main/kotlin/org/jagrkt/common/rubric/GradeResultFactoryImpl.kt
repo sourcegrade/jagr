@@ -28,6 +28,10 @@ class GradeResultFactoryImpl : GradeResult.Factory {
   override fun ofIncorrect(points: Int): GradeResult = GradeResultImpl(0, points)
   override fun ofNone(): GradeResult = none
   override fun of(correctPoints: Int, incorrectPoints: Int): GradeResult = GradeResultImpl(correctPoints, incorrectPoints)
+  override fun of(correctPoints: Int, incorrectPoints: Int, comment: String): GradeResult {
+    return GradeResultImpl(correctPoints, incorrectPoints, listOf(comment))
+  }
+
   override fun of(grade: GradeResult, vararg otherGrades: GradeResult): GradeResult = of(grade, otherGrades.asIterable())
 
   override fun of(grade: GradeResult, otherGrades: Iterable<GradeResult>): GradeResult {
@@ -42,4 +46,8 @@ class GradeResultFactoryImpl : GradeResult.Factory {
 
   override fun ofMax(criterion: Criterion): GradeResult = ofCorrect(criterion.maxPoints)
   override fun ofMin(criterion: Criterion): GradeResult = ofIncorrect(-criterion.minPoints)
+
+  override fun withComments(grade: GradeResult, comments: Iterable<String>): GradeResult {
+    return GradeResultImpl(grade.correctPoints, grade.incorrectPoints, grade.comments + comments)
+  }
 }

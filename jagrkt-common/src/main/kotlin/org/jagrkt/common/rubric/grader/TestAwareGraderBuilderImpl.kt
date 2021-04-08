@@ -19,6 +19,7 @@
 
 package org.jagrkt.common.rubric.grader
 
+import org.jagrkt.api.rubric.GradeResult
 import org.jagrkt.api.rubric.Grader
 import org.jagrkt.api.rubric.JUnitTestRef
 
@@ -26,26 +27,27 @@ class TestAwareGraderBuilderImpl : AbstractGraderBuilder<Grader.TestAwareBuilder
 
   override fun getThis(): Grader.TestAwareBuilder = this
 
-  private val requirePass: MutableList<JUnitTestRef> = mutableListOf()
-  private val requireFail: MutableList<JUnitTestRef> = mutableListOf()
+  private val requirePass: MutableMap<JUnitTestRef, String?> = mutableMapOf()
+  private val requireFail: MutableMap<JUnitTestRef, String?> = mutableMapOf()
 
-  override fun requirePass(vararg testRefs: JUnitTestRef): Grader.TestAwareBuilder {
-    requirePass.addAll(testRefs)
+  override fun requirePass(testRef: JUnitTestRef, comment: String?): Grader.TestAwareBuilder {
+    requirePass[testRef] = comment
     return this
   }
 
-  override fun requireFail(vararg testRef: JUnitTestRef): Grader.TestAwareBuilder {
-    requireFail.addAll(testRef)
+  override fun requireFail(testRef: JUnitTestRef, comment: String?): Grader.TestAwareBuilder {
+    requireFail[testRef] = comment
     return this
   }
 
   override fun build(): Grader {
     return TestAwareGraderImpl(
       predicate,
-      pointCalculatorPassed,
-      pointCalculatorFailed,
-      requirePass.map { it.testSource },
-      requireFail.map { it.testSource },
+      pointCalculatorPassed ?: { _, _ -> GradeResult.ofNone() },
+      pointCalculatorFailed ?: { _, _ -> GradeResult.ofNone() },
+      requirePass.mapKeys { it.key.testSource },
+      requireFail.mapKeys { it.key.testSource },
+      commentIfFailed,
     )
   }
 }

@@ -47,13 +47,14 @@ class GermanCSVExporter : GradedRubricExporter {
   private fun PrintWriter.appendCriterion(gradedCriterion: GradedCriterion): PrintWriter {
     val criterion = gradedCriterion.criterion
     val grade = gradedCriterion.grade
+    val comments = grade.comments.joinToString("; ")
     val receivedPoints = if (grade.correctPoints == 0) {
       if (grade.incorrectPoints == 0) "" else (criterion.maxPoints - grade.incorrectPoints).toString()
     } else grade.correctPoints.toString()
     if (gradedCriterion.childCriteria.isEmpty()) {
-      println("${criterion.shortDescription},${criterion.maxPoints},$receivedPoints,,${criterion.hiddenNotes ?: ""}")
+      println("${criterion.shortDescription},${criterion.maxPoints},$receivedPoints,$comments,${criterion.hiddenNotes ?: ""}")
     } else {
-      println("${criterion.shortDescription},,,,${criterion.hiddenNotes ?: ""}")
+      println("${criterion.shortDescription},,,$comments,${criterion.hiddenNotes ?: ""}")
       for (childGradedCriterion in gradedCriterion.childCriteria) {
         appendCriterion(childGradedCriterion)
       }

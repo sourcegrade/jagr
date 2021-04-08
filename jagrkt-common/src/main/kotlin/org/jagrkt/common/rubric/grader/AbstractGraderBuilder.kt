@@ -29,6 +29,7 @@ abstract class AbstractGraderBuilder<B : Grader.Builder<B>> : Grader.Builder<B> 
   var predicate: ((TestCycle, Criterion) -> Boolean)? = null
   var pointCalculatorPassed: ((TestCycle, Criterion) -> GradeResult)? = null
   var pointCalculatorFailed: ((TestCycle, Criterion) -> GradeResult)? = null
+  var commentIfFailed: String? = null
 
   abstract fun getThis(): B
 
@@ -43,6 +44,11 @@ abstract class AbstractGraderBuilder<B : Grader.Builder<B>> : Grader.Builder<B> 
 
   override fun pointsFailed(pointCalculator: Grader.Builder.PointCalculator?): B {
     pointCalculatorFailed = pointCalculator.expand()
+    return getThis()
+  }
+
+  override fun commentIfFailed(comment: String?): B {
+    commentIfFailed = comment
     return getThis()
   }
 }

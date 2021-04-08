@@ -19,9 +19,13 @@
 
 package org.jagrkt.common.rubric.grader
 
+import com.google.inject.Inject
 import org.jagrkt.api.rubric.Grader
+import org.slf4j.Logger
 
-class GraderFactoryImpl : Grader.Factory {
+class GraderFactoryImpl @Inject constructor(
+  private val logger: Logger,
+) : Grader.Factory {
   override fun testAwareBuilder() = TestAwareGraderBuilderImpl()
-  override fun descendingPriority(vararg graders: Grader) = DescendingPriorityGrader(*graders)
+  override fun descendingPriority(vararg graders: Grader) = DescendingPriorityGrader(logger, *graders)
 }

@@ -22,6 +22,8 @@ package org.jagrkt.api.rubric;
 import com.google.inject.Inject;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.List;
+
 /**
  * Instances of this interface are immutable
  */
@@ -50,6 +52,10 @@ public interface GradeResult {
     return FactoryProvider.factory.of(correctPoints, incorrectPoints);
   }
 
+  static GradeResult of(int correctPoints, int incorrectPoints, String comment) {
+    return FactoryProvider.factory.of(correctPoints, incorrectPoints, comment);
+  }
+
   static GradeResult of(GradeResult grade, GradeResult... otherGrades) {
     return FactoryProvider.factory.of(grade, otherGrades);
   }
@@ -66,6 +72,10 @@ public interface GradeResult {
     return FactoryProvider.factory.ofMin(criterion);
   }
 
+  static GradeResult withComments(GradeResult grade, Iterable<String> comments) {
+    return FactoryProvider.factory.withComments(grade, comments);
+  }
+
   /**
    * @return The number of points that are definitely correct, as determined by the automatic grader.
    */
@@ -75,6 +85,8 @@ public interface GradeResult {
    * @return The number of points that are definitely incorrect, as determined by the automatic grader.
    */
   int getIncorrectPoints();
+
+  List<String> getComments();
 
   /**
    * For documentation see static methods above
@@ -89,6 +101,8 @@ public interface GradeResult {
 
     GradeResult of(int correctPoints, int incorrectPoints);
 
+    GradeResult of(int correctPoints, int incorrectPoints, String comment);
+
     GradeResult of(GradeResult grade, GradeResult... otherGrades);
 
     GradeResult of(GradeResult grade, Iterable<? extends GradeResult> otherGrades);
@@ -96,5 +110,7 @@ public interface GradeResult {
     GradeResult ofMax(Criterion criterion);
 
     GradeResult ofMin(Criterion criterion);
+
+    GradeResult withComments(GradeResult grade, Iterable<String> comments);
   }
 }

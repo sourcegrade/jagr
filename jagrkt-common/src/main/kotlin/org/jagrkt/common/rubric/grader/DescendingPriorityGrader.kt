@@ -23,12 +23,42 @@ import org.jagrkt.api.rubric.Criterion
 import org.jagrkt.api.rubric.GradeResult
 import org.jagrkt.api.rubric.Grader
 import org.jagrkt.api.testing.TestCycle
+import org.jagrkt.common.rubric.GradeResultImpl
+import org.slf4j.Logger
 
 class DescendingPriorityGrader(
+  private val logger: Logger,
   private vararg val graders: Grader,
 ) : Grader {
 
-  override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult? {
-    return graders.asSequence().map { it.grade(testCycle, criterion) }.firstOrNull { it != null }
+  override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult {
+    // quick exit if only 0 or 1 grader
+    if (graders.isEmpty()) {
+      return GradeResult.ofNone()
+    }
+    if (graders.size == 1) {
+      return graders[0].grade(testCycle, criterion)
+    }
+    val maxPoints = criterion.maxPoints
+    // negation is on purpose
+    // criterion.minPoints is always negative but it needs to be positive for comparison later
+    val minPoints = -criterion.minPoints
+    var correctPoints = 0
+    var incorrectPoints = 0
+    val comments: MutableList<String> = mutableListOf()
+    for (grader in graders) {
+      val result = grader.grade(testCycle, criterion)
+      correctPoints = result.correctPoints
+      incorrectPoints = result.incorrectPoints
+      comments += result.comments
+    }
+    if (correctPoints > maxPoints || incorrectPoints > minPoints) {
+      logger.error(
+        "Descending priority grader for submission ${testCycle.submission.info} has surpassed point limits"
+          + " correctPoints: $correctPoints (max $maxPoints) and incorrectPoints: $incorrectPoints (max $minPoints)"
+          + " for criterion ${criterion.shortDescription}! This is caused by a misconfigured rubric provider!"
+      )
+    }
+    return GradeResultImpl(correctPoints, incorrectPoints, comments)
   }
 }

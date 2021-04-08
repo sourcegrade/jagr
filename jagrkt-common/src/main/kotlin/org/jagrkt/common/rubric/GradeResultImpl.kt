@@ -24,7 +24,9 @@ import org.jagrkt.api.rubric.GradeResult
 data class GradeResultImpl(
   private val correctPoints: Int,
   private val incorrectPoints: Int,
+  private val comments: List<String> = listOf(),
 ) : GradeResult {
   override fun getCorrectPoints(): Int = correctPoints
   override fun getIncorrectPoints(): Int = incorrectPoints
+  override fun getComments(): List<String> = comments
 }
