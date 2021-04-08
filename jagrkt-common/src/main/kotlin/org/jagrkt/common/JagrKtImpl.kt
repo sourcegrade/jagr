@@ -108,8 +108,9 @@ class JagrKtImpl @Inject constructor(
     }
     val iter = submissions.iterator()
     val deferred: Array<Deferred<Unit>> = Array(submissions.size) {
+      val next = iter.next()
       GlobalScope.async {
-        handleSubmission(iter.next(), tests, rubricExportLocation, submissionExportLocation)
+        handleSubmission(next, tests, rubricExportLocation, submissionExportLocation)
       }
     }
     runBlocking {
