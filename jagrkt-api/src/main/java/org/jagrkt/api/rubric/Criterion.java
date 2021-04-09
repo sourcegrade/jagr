@@ -81,7 +81,13 @@ public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Cr
      */
     Builder shortDescription(String shortDescription);
 
-    Builder hiddenNotes(String hiddenNotes);
+    /**
+     * Sets (or unsets) the notes that should not be visible to the student but may help with manual grading.
+     *
+     * @param hiddenNotes The hidden notes or {@code null} to unset
+     * @return {@code this}
+     */
+    Builder hiddenNotes(@Nullable String hiddenNotes);
 
     /**
      * Sets the {@link Grader} for this criterion.

@@ -36,7 +36,7 @@ class CriterionBuilderImpl : Criterion.Builder {
     return this
   }
 
-  override fun hiddenNotes(hiddenNotes: String): CriterionBuilderImpl {
+  override fun hiddenNotes(hiddenNotes: String?): CriterionBuilderImpl {
     this.hiddenNotes = hiddenNotes
     return this
   }
