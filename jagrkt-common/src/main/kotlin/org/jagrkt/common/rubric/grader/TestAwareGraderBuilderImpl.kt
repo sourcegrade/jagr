@@ -43,8 +43,8 @@ class TestAwareGraderBuilderImpl : AbstractGraderBuilder<Grader.TestAwareBuilder
   override fun build(): Grader {
     return TestAwareGraderImpl(
       predicate,
-      pointCalculatorPassed ?: { _, _ -> GradeResult.ofNone() },
-      pointCalculatorFailed ?: { _, _ -> GradeResult.ofNone() },
+      graderPassed ?: Grader { _, _ -> GradeResult.ofNone() },
+      graderFailed ?: Grader { _, _ -> GradeResult.ofNone() },
       requirePass.mapKeys { it.key.testSource },
       requireFail.mapKeys { it.key.testSource },
       commentIfFailed,

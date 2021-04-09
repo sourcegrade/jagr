@@ -27,8 +27,8 @@ import org.junit.platform.engine.TestSource
 
 class TestAwareGraderImpl(
   private val predicate: ((TestCycle, Criterion) -> Boolean)?,
-  private val pointCalculatorPassed: ((TestCycle, Criterion) -> GradeResult),
-  private val pointCalculatorFailed: ((TestCycle, Criterion) -> GradeResult),
+  private val graderPassed: Grader,
+  private val graderFailed: Grader,
   private val requirePass: Map<TestSource, String?>,
   private val requireFail: Map<TestSource, String?>,
   private val commentIfFailed: String?
@@ -48,14 +48,14 @@ class TestAwareGraderImpl(
           comment?.also { comments += it }
         }
       }
-      // general comment goes after more specific test comments
-      commentIfFailed?.also { comments += it }
       return if (failed) {
-        GradeResult.withComments(pointCalculatorFailed(testCycle, criterion), comments)
+        // general comment goes after more specific test comments
+        commentIfFailed?.also { comments += it }
+        GradeResult.withComments(graderFailed.grade(testCycle, criterion), comments)
       } else null
     }
     requirePass.must(statusListener::succeeded)?.also { return it }
     requireFail.must(statusListener::failed)?.also { return it }
-    return pointCalculatorPassed(testCycle, criterion)
+    return graderPassed.grade(testCycle, criterion)
   }
 }

@@ -54,7 +54,7 @@ public interface Grader {
       return pointsPassed((ignored, criterion) -> GradeResult.ofMin(criterion));
     }
 
-    B pointsPassed(@Nullable PointCalculator pointCalculator);
+    B pointsPassed(@Nullable Grader grader);
 
     default B pointsFailedMax() {
       return pointsFailed((ignored, criterion) -> GradeResult.ofMax(criterion));
@@ -64,12 +64,7 @@ public interface Grader {
       return pointsFailed((ignored, criterion) -> GradeResult.ofMin(criterion));
     }
 
-    B pointsFailed(@Nullable PointCalculator pointCalculator);
-
-    @FunctionalInterface
-    interface PointCalculator {
-      GradeResult calculate(TestCycle testCycle, Criterion criterion);
-    }
+    B pointsFailed(@Nullable Grader grader);
 
     /**
      * Sets (or unsets) the general "if failed" comment on this grader. This is added after comments set by other methods on
