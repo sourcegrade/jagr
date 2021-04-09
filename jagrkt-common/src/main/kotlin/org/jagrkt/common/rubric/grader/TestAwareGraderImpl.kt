@@ -52,9 +52,7 @@ class TestAwareGraderImpl(
       commentIfFailed?.also { comments += it }
       return if (failed) {
         GradeResult.withComments(pointCalculatorFailed(testCycle, criterion), comments)
-      } else {
-        GradeResult.withComments(GradeResult.ofNone(), comments)
-      }
+      } else null
     }
     requirePass.must(statusListener::succeeded)?.also { return it }
     requireFail.must(statusListener::failed)?.also { return it }
