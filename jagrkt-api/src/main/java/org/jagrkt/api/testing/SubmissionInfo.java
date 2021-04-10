@@ -29,6 +29,8 @@ public interface SubmissionInfo {
 
   String getAssignmentId();
 
+  String getStudentId();
+
   String getFirstName();
 
   String getLastName();
