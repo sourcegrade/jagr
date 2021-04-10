@@ -38,10 +38,12 @@ import org.jagrkt.common.rubric.GradeResultFactoryImpl
 import org.jagrkt.common.rubric.JUnitTestRefFactoryImpl
 import org.jagrkt.common.rubric.RubricFactoryImpl
 import org.jagrkt.common.rubric.grader.GraderFactoryImpl
-import org.jagrkt.common.testing.RuntimeTester
 import org.jagrkt.common.testing.JavaRuntimeTester
+import org.jagrkt.common.testing.RuntimeTester
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.spongepowered.configurate.hocon.HoconConfigurationLoader
+import java.nio.file.Paths
 
 class JagrKtModule : AbstractModule() {
   override fun configure() {
@@ -73,5 +75,16 @@ class JagrKtModule : AbstractModule() {
     with(Multibinder.newSetBinder(binder(), RuntimeTester::class.java)) {
       addBinding().to(JavaRuntimeTester::class.java)
     }
+
+    val loader = HoconConfigurationLoader.builder().path(Paths.get("./jagrkt.conf")).build()
+    val rootNode = loader.load()
+    val config: Config
+    if (rootNode.empty()) {
+      rootNode.set(Config().apply { config = this })
+      loader.save(rootNode)
+    } else {
+      config = rootNode[Config::class.java]!!
+    }
+    bind(Config::class.java).toInstance(config)
   }
 }

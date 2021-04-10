@@ -19,10 +19,31 @@
 
 package org.jagrkt.common
 
-import com.google.inject.Guice
+import org.spongepowered.configurate.objectmapping.ConfigSerializable
+import org.spongepowered.configurate.objectmapping.meta.Comment
 
-fun main(vararg args: String) {
-  println("Loading JagrKt...")
-  val injector = Guice.createInjector(JagrKtModule())
-  injector.getInstance(JagrKtImpl::class.java).run()
+@ConfigSerializable
+class Config {
+
+  @Comment("The locations of the following directories may be configured here")
+  val dir: Dir = Dir()
+}
+
+@ConfigSerializable
+class Dir {
+
+  @Comment("Runtime dependencies for submissions")
+  var libs: String = "libs"
+
+  @Comment("Rubrics export directory")
+  var rubrics: String = "rubrics"
+
+  @Comment("Submissions ingest directory")
+  var submissions: String = "submissions"
+
+  @Comment("Submission export directory")
+  var submissionsExport: String = "submissions-export"
+
+  @Comment("Test jar ingest directory")
+  var tests: String = "tests"
 }

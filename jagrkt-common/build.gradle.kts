@@ -18,6 +18,9 @@ dependencies {
   implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.0")
   implementation("org.fusesource.jansi:jansi:2.3.1")
   implementation("org.ow2.asm:asm:9.1")
+  val configurateVersion = "4.0.0"
+  implementation("org.spongepowered:configurate-hocon:$configurateVersion")
+  implementation("org.spongepowered:configurate-extra-kotlin:$configurateVersion")
   implementation(kotlin("reflect"))
 }
 application {

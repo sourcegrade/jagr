@@ -36,6 +36,7 @@ import org.slf4j.Logger
 import java.io.File
 
 class JagrKtImpl @Inject constructor(
+  private val config: Config,
   private val logger: Logger,
   private val runtimeJarLoader: RuntimeJarLoader,
   private val runtimeGrader: RuntimeGrader,
@@ -87,11 +88,12 @@ class JagrKtImpl @Inject constructor(
   }
 
   fun run() {
-    val tests = loadTestJars(File("tests"))
-    val submissions = loadSubmissionJars(File("submissions"), File("libs"))
-    val rubricExportLocation = File("rubrics").takeIf { !it.createIfNotExists(logger) }
+    ensureDirs()
+    val tests = loadTestJars(File(config.dir.tests))
+    val submissions = loadSubmissionJars(File(config.dir.submissions), File(config.dir.libs))
+    val rubricExportLocation = File(config.dir.rubrics).takeIf { !it.ensure(logger) }
     gradedRubricExportManager.ensureDirs(rubricExportLocation)
-    val submissionExportLocation = File("submissions-export").takeIf { !it.createIfNotExists(logger) }
+    val submissionExportLocation = File(config.dir.submissionsExport).takeIf { !it.ensure(logger) }
     submissionExportManager.ensureDirs(submissionExportLocation)
     if (tests.isEmpty() || submissions.isEmpty()) {
       logger.info("Nothing to do! Exiting...")
@@ -121,6 +123,16 @@ class JagrKtImpl @Inject constructor(
     }
     for ((gradedRubric, exportFileName) in gradedRubrics) {
       gradedRubricExportManager.export(gradedRubric, rubricExportLocation, exportFileName)
+    }
+  }
+
+  private fun ensureDirs() {
+    with(config.dir) {
+      File("logs").ensure(logger)
+      File(libs).ensure(logger)
+      File(rubrics).ensure(logger)
+      File(submissions).ensure(logger)
+      File(tests).ensure(logger)
     }
   }
 }
