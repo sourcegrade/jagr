@@ -44,9 +44,6 @@ class JagrKtImpl @Inject constructor(
 ) {
 
   private fun loadTestJars(testJarsLocation: File): List<TestJar> {
-    if (testJarsLocation.createIfNotExists(logger)) {
-      return listOf()
-    }
     return testJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.map {
       val classStorage = runtimeJarLoader.loadCompiledJar(it)
       logger.info("Loaded test jar ${it.name}")
@@ -55,9 +52,6 @@ class JagrKtImpl @Inject constructor(
   }
 
   private fun loadLibs(libsLocation: File): Map<String, CompiledClass> {
-    if (libsLocation.createIfNotExists(logger)) {
-      return mapOf()
-    }
     return libsLocation.listFiles { _, t -> t.endsWith(".jar") }!!
       .asSequence()
       .map {
@@ -71,9 +65,6 @@ class JagrKtImpl @Inject constructor(
 
   private fun loadSubmissionJars(submissionJarsLocation: File, libsLocation: File): List<JavaSubmission> {
     val libsClasspath = loadLibs(libsLocation)
-    if (submissionJarsLocation.createIfNotExists(logger)) {
-      return listOf()
-    }
     return submissionJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!
       .asSequence()
       .map { runtimeJarLoader.loadSourcesJar(it, libsClasspath) }

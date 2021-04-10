@@ -22,7 +22,7 @@ package org.jagrkt.common
 import org.slf4j.Logger
 import java.io.File
 
-fun File.createIfNotExists(logger: Logger, logInfo: Boolean = true): Boolean {
+fun File.ensure(logger: Logger, logInfo: Boolean = true): Boolean {
   if (!exists()) {
     if (logInfo) {
       logger.info("No $this dir! Creating...")

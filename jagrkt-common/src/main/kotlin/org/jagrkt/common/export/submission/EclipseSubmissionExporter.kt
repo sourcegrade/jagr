@@ -21,7 +21,7 @@ package org.jagrkt.common.export.submission
 
 import com.google.inject.Inject
 import org.jagrkt.api.testing.Submission
-import org.jagrkt.common.createIfNotExists
+import org.jagrkt.common.ensure
 import org.jagrkt.common.testing.JavaSubmission
 import org.slf4j.Logger
 import java.io.File
@@ -34,11 +34,11 @@ class EclipseSubmissionExporter @Inject constructor(
   override fun export(submission: Submission, directory: File) {
     if (submission !is JavaSubmission) return
     val file = directory.resolve(submission.info.toString())
-    if (file.createIfNotExists(logger, false)) {
+    if (file.ensure(logger, false)) {
       return
     }
     val src = file.resolve("src")
-    if (src.createIfNotExists(logger, false)) {
+    if (src.ensure(logger, false)) {
       return
     }
     writeProjectFile(submission, file.resolve(".project"))
@@ -82,7 +82,7 @@ class EclipseSubmissionExporter @Inject constructor(
   }
 
   private fun writeFile(content: String, file: File) {
-    file.parentFile.createIfNotExists(logger, false)
+    file.parentFile.ensure(logger, false)
     val writer = PrintWriter(file, "UTF-8")
     writer.write(content)
     writer.flush()

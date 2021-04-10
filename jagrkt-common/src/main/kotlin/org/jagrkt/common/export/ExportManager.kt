@@ -19,7 +19,7 @@
 
 package org.jagrkt.common.export
 
-import org.jagrkt.common.createIfNotExists
+import org.jagrkt.common.ensure
 import org.slf4j.Logger
 import java.io.File
 
@@ -31,7 +31,7 @@ abstract class ExportManager<E : Exporter> {
   fun ensureDirs(directory: File?) {
     if (directory != null) {
       for (exporter in exporters) {
-        directory.resolve(exporter.name).createIfNotExists(logger)
+        directory.resolve(exporter.name).ensure(logger)
       }
     }
   }
