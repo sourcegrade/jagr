@@ -29,6 +29,7 @@ import org.jagrkt.api.rubric.JUnitTestRef
 import org.jagrkt.api.rubric.Rubric
 import org.jagrkt.common.export.rubric.GermanCSVExporter
 import org.jagrkt.common.export.rubric.GradedRubricExporter
+import org.jagrkt.common.export.rubric.MoodleJSONExporter
 import org.jagrkt.common.export.submission.EclipseSubmissionExporter
 import org.jagrkt.common.export.submission.SubmissionExporter
 import org.jagrkt.common.rubric.CriterionFactoryImpl
@@ -64,6 +65,7 @@ class JagrKtModule : AbstractModule() {
 
     with(Multibinder.newSetBinder(binder(), GradedRubricExporter::class.java)) {
       addBinding().to(GermanCSVExporter::class.java)
+      addBinding().to(MoodleJSONExporter::class.java)
     }
     with(Multibinder.newSetBinder(binder(), SubmissionExporter::class.java)) {
       addBinding().to(EclipseSubmissionExporter::class.java)
