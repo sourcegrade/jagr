@@ -96,6 +96,6 @@ class MoodleJSONExporter : GradedRubricExporter {
   data class MoodleJSON(
     val submissionInfo: SubmissionInfoImpl,
     val totalPoints: Int,
-    val feedbackComment: String
+    val feedbackComment: String,
   )
 }
