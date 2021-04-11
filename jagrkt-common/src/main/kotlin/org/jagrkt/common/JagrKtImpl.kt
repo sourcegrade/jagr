@@ -29,6 +29,7 @@ import org.jagrkt.common.compiler.java.CompiledClass
 import org.jagrkt.common.compiler.java.RuntimeJarLoader
 import org.jagrkt.common.export.rubric.GradedRubricExportManager
 import org.jagrkt.common.export.submission.SubmissionExportManager
+import org.jagrkt.common.extra.ExtrasManager
 import org.jagrkt.common.testing.RuntimeGrader
 import org.jagrkt.common.testing.TestJar
 import org.jagrkt.common.testing.JavaSubmission
@@ -40,6 +41,7 @@ class JagrKtImpl @Inject constructor(
   private val logger: Logger,
   private val runtimeJarLoader: RuntimeJarLoader,
   private val runtimeGrader: RuntimeGrader,
+  private val extrasManager: ExtrasManager,
   private val gradedRubricExportManager: GradedRubricExportManager,
   private val submissionExportManager: SubmissionExportManager,
 ) {
@@ -89,6 +91,7 @@ class JagrKtImpl @Inject constructor(
 
   fun run() {
     ensureDirs()
+    extrasManager.runExtras()
     val tests = loadTestJars(File(config.dir.tests))
     val submissions = loadSubmissionJars(File(config.dir.submissions), File(config.dir.libs))
     val rubricExportLocation = File(config.dir.rubrics).takeIf { !it.ensure(logger) }

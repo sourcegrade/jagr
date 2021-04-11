@@ -27,6 +27,8 @@ class Config {
 
   @Comment("The locations of the following directories may be configured here")
   val dir: Dir = Dir()
+
+  val extras: Extras = Extras()
 }
 
 @ConfigSerializable
@@ -46,4 +48,19 @@ class Dir {
 
   @Comment("Test jar ingest directory")
   var tests: String = "tests"
+}
+
+@ConfigSerializable
+class Extras {
+
+  abstract class Extra {
+    val enabled: Boolean = true
+  }
+
+  @ConfigSerializable
+  class MoodleUnpack : Extra() {
+    val studentIdRegex: String = "[a-z]{2}[0-9]{2}[a-z]{4}"
+  }
+
+  val moodleUnpack: MoodleUnpack = MoodleUnpack()
 }
