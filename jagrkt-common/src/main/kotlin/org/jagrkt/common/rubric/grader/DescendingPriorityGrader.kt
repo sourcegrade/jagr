@@ -51,6 +51,7 @@ class DescendingPriorityGrader(
       correctPoints = result.correctPoints
       incorrectPoints = result.incorrectPoints
       comments += result.comments
+      if (correctPoints + incorrectPoints >= maxPoints + minPoints) break
     }
     if (correctPoints > maxPoints || incorrectPoints > minPoints) {
       logger.error(
