@@ -37,7 +37,7 @@ class GradedRubricExportManager @Inject constructor(
     val total = listener?.summary?.testsStartedCount
     logger.info(
       "${gradedRubric.testCycle.submission} ::"
-        + if (listener == null) "" else " ($succeeded / $total tests)"
+        + if (listener == null) " (no tests found)" else " ($succeeded / $total tests)"
         + " points=${grade.correctPoints} -points=${grade.incorrectPoints} maxPoints=${rubric.maxPoints}"
         + " from '${gradedRubric.rubric.title}'"
     )
