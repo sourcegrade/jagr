@@ -20,9 +20,14 @@
 package org.jagrkt.common
 
 import com.google.inject.Guice
+import org.slf4j.Logger
 
 fun main(vararg args: String) {
-  println("Loading JagrKt...")
+  val startTime = System.currentTimeMillis()
   val injector = Guice.createInjector(JagrKtModule())
+  val logger = injector.getInstance(Logger::class.java)
+  logger.info("Starting JagrKt")
   injector.getInstance(JagrKtImpl::class.java).run()
+  val timeTaken = System.currentTimeMillis() - startTime
+  logger.info("Finished! Time taken: ${timeTaken}ms")
 }
