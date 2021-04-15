@@ -19,29 +19,35 @@
 
 package org.jagrkt.common.export.rubric
 
+import com.google.inject.Inject
 import org.jagrkt.api.rubric.GradedCriterion
 import org.jagrkt.api.rubric.GradedRubric
+import org.jagrkt.common.export.usePrintWriterSafe
+import org.slf4j.Logger
 import java.io.File
 import java.io.PrintWriter
 
-class GermanCSVExporter : GradedRubricExporter {
+class GermanCSVExporter @Inject constructor(
+  private val logger: Logger,
+) : GradedRubricExporter {
   override val name: String = "csv"
   override fun export(gradedRubric: GradedRubric, directory: File, fileName: String) {
     val rubric = gradedRubric.rubric
     val grade = gradedRubric.grade
-    val writer = PrintWriter(directory.resolve("$fileName.csv"), "UTF-8")
-    writer.println("${rubric.title},,,,")
-    writer.println("Kriterium,Möglich,Erzielt,Kommentar,Extra")
-    writer.appendEmptyLine()
-    for (gradedCriterion in gradedRubric.childCriteria) {
-      writer.appendCriterion(gradedCriterion)
-      writer.appendEmptyLine()
+    directory.resolve("$fileName.csv").usePrintWriterSafe(logger) {
+      println("${rubric.title},,,,")
+      println("Kriterium,Möglich,Erzielt,Kommentar,Extra")
+      appendEmptyLine()
+      for (gradedCriterion in gradedRubric.childCriteria) {
+        appendCriterion(gradedCriterion)
+        appendEmptyLine()
+      }
+      println("Zusätzlich möglicher Punktabzug,,,,")
+      println("Pro fehlendem Java Doc 1 Punkt abzug (nur bei Methoden bei denen mind. 1 Punkt erreicht wurde),-3,,,")
+      appendEmptyLine()
+      println("Gesamt,${rubric.maxPoints},${grade.correctPoints},,")
+      flush()
     }
-    writer.println("Zusätzlich möglicher Punktabzug,,,,")
-    writer.println("Pro fehlendem Java Doc 1 Punkt abzug (nur bei Methoden bei denen mind. 1 Punkt erreicht wurde),-3,,,")
-    writer.appendEmptyLine()
-    writer.println("Gesamt,${rubric.maxPoints},${grade.correctPoints},,")
-    writer.flush()
   }
 
   private fun PrintWriter.appendCriterion(gradedCriterion: GradedCriterion): PrintWriter {

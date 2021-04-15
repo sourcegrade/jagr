@@ -1,15 +1,19 @@
 package org.jagrkt.common.export.rubric
 
+import com.google.inject.Inject
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jagrkt.api.rubric.GradedCriterion
 import org.jagrkt.api.rubric.GradedRubric
+import org.jagrkt.common.export.usePrintWriterSafe
 import org.jagrkt.common.testing.SubmissionInfoImpl
+import org.slf4j.Logger
 import java.io.File
-import java.io.PrintWriter
 
-class MoodleJSONExporter : GradedRubricExporter {
+class MoodleJSONExporter @Inject constructor(
+  private val logger: Logger,
+) : GradedRubricExporter {
   override val name: String = "moodle-json"
   override fun export(gradedRubric: GradedRubric, directory: File, fileName: String) {
     val json = MoodleJSON(
@@ -18,9 +22,9 @@ class MoodleJSONExporter : GradedRubricExporter {
       StringBuilder().writeTable(gradedRubric).toString(),
     )
     val jsonString = Json.encodeToString(json)
-    PrintWriter(directory.resolve("$fileName.json"), "UTF-8").use {
-      it.println(jsonString)
-      it.flush()
+    directory.resolve("$fileName.json").usePrintWriterSafe(logger) {
+      println(jsonString)
+      flush()
     }
   }
 
