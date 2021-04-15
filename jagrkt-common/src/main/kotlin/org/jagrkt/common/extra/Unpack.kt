@@ -44,7 +44,12 @@ abstract class Unpack : Extra {
     if (assignmentId == null && studentId == null && firstName == null && lastName == null) return
     FileSystems.newFileSystem(file.toPath(), null).use { fs ->
       val submissionInfoPath = fs.getPath("submission-info.json")
-      val replacedSubmissionInfo = submissionInfoPath.bufferedReader().use { reader ->
+      val replacedSubmissionInfo = try {
+        submissionInfoPath.bufferedReader()
+      } catch (e: Throwable) {
+        logger.error("Unable to read submission-info for $file", e)
+        return
+      }.use { reader ->
         val submissionInfo = Json.decodeFromString<SubmissionInfoImpl>(reader.readText())
         val replaceAssignmentId = assignmentId != null && assignmentId != submissionInfo.assignmentId
         val replaceStudentId = studentId != null && studentId != submissionInfo.studentId
