@@ -122,11 +122,19 @@ class RuntimeJarLoader @Inject constructor(
   private fun Map<String, CompiledClass>.linkSource(sourceFiles: Map<String, JavaSourceFile>) {
     for ((_, compiledClass) in this) {
       with(compiledClass.reader) {
-        val packageName = className.substring(0, className.lastIndexOf('/'))
+        val packageName = with(className) {
+          lastIndexOf('/').let {
+            if (it == -1) null else substring(0, it)
+          }
+        }
         accept(object : ClassVisitor(Opcodes.ASM9) {
           override fun visitSource(source: String?, debug: String?) {
             if (source == null) return
-            compiledClass.source = sourceFiles["$packageName/$source"]
+            compiledClass.source = if (packageName == null) {
+              sourceFiles["$source"]
+            } else {
+              sourceFiles["$packageName/$source"]
+            }
           }
         }, ClassReader.SKIP_CODE)
       }
