@@ -159,7 +159,12 @@ class RuntimeJarLoader @Inject constructor(
             logger.error(message)
           }
         }
-        warnings > 0 -> logger.warn(lazyWarning())
+        warnings > 0 -> {
+          logger.warn(lazyWarning())
+          for (message in messages) {
+            logger.warn(message)
+          }
+        }
       }
     }
   }
