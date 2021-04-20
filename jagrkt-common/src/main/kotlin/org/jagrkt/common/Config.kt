@@ -40,6 +40,9 @@ class Dir {
   @Comment("Rubrics export directory")
   var rubrics: String = "rubrics"
 
+  @Comment("Solutions directory for compilation of test jars")
+  var solutions: String = "solutions"
+
   @Comment("Submissions ingest directory")
   var submissions: String = "submissions"
 

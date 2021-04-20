@@ -42,11 +42,18 @@ class JagrKtImpl @Inject constructor(
   private val submissionExportManager: SubmissionExportManager,
 ) {
 
-  private fun loadTestJars(testJarsLocation: File): List<TestJar> {
-    return testJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMap {
-      val classStorage = runtimeJarLoader.loadCompiledJar(it)
-      logger.info("Loaded test jar ${it.name}")
-      TestJar(logger, it, classStorage)
+  private fun loadTestJars(testJarsLocation: File, solutionsLocation: File): List<TestJar> {
+    val solutionClasses = loadLibs(solutionsLocation)
+    return testJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
+      with(runtimeJarLoader.loadSourcesJar(it, solutionClasses)) {
+        printMessages(
+          logger,
+          { "Test jar ${file.name} has $warnings warnings and $errors errors!" },
+          { "Test jar ${file.name} has $warnings warnings!" },
+        )
+        logger.info("Loaded test jar ${it.name}")
+        TestJar(logger, it, compiledClasses, solutionClasses).takeIf { errors == 0 }
+      }
     }
   }
 
@@ -84,7 +91,7 @@ class JagrKtImpl @Inject constructor(
   fun run() {
     ensureDirs()
     extrasManager.runExtras()
-    val tests = loadTestJars(File(config.dir.tests))
+    val tests = loadTestJars(File(config.dir.tests), File(config.dir.solutions))
     val submissions = loadSubmissionJars(File(config.dir.submissions), File(config.dir.libs))
     val rubricExportLocation = File(config.dir.rubrics).takeIf { !it.ensure(logger) }
     gradedRubricExportManager.ensureDirs(rubricExportLocation)
@@ -119,6 +126,7 @@ class JagrKtImpl @Inject constructor(
       File("logs").ensure(logger)
       File(libs).ensure(logger)
       File(rubrics).ensure(logger)
+      File(solutions).ensure(logger)
       File(submissions).ensure(logger)
       File(tests).ensure(logger)
     }

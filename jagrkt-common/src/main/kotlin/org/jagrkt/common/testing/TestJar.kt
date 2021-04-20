@@ -32,6 +32,7 @@ class TestJar(
   private val logger: Logger,
   private val file: File,
   val classes: Map<String, CompiledClass>,
+  solutionClasses: Map<String, CompiledClass>,
 ) {
 
   /**
@@ -49,7 +50,7 @@ class TestJar(
   init {
     val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
     val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
-    val baseClassLoader = RuntimeClassLoader(classes)
+    val baseClassLoader = RuntimeClassLoader(classes + solutionClasses)
     for (className in classes.keys) {
       val clazz = baseClassLoader.loadClass(className)
       rubricProviders.putIfRubric(clazz)
