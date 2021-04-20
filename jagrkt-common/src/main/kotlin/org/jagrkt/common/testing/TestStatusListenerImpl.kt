@@ -19,6 +19,7 @@
 
 package org.jagrkt.common.testing
 
+import org.jagrkt.api.testing.SubmissionInfo
 import org.jagrkt.api.testing.TestStatusListener
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.TestSource
@@ -34,11 +35,23 @@ class TestStatusListenerImpl(
 
   private val testsSucceeded: MutableList<TestIdentifier> = mutableListOf()
   private val testsFailed: MutableList<TestIdentifier> = mutableListOf()
+  private val linkageErrors: MutableSet<Pair<String?, String>> = LinkedHashSet()
 
   override fun executionFinished(testIdentifier: TestIdentifier, testExecutionResult: TestExecutionResult) {
     when (testExecutionResult.status) {
       TestExecutionResult.Status.SUCCESSFUL -> testsSucceeded.add(testIdentifier)
       else -> testsFailed.add(testIdentifier)
+    }
+    testExecutionResult.throwable.orElse(null)?.also { throwable ->
+      if (throwable is LinkageError) {
+        linkageErrors.add(throwable::class.simpleName to throwable.message + " @ " + throwable.stackTrace.firstOrNull())
+      }
+    }
+  }
+
+  fun logLinkageErrors(info: SubmissionInfo) {
+    for (errorMessage in linkageErrors) {
+      logger.error("Linkage error @ $info :: $errorMessage")
     }
   }
 

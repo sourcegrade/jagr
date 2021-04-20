@@ -50,6 +50,7 @@ class JavaRuntimeTester @Inject constructor(
       val summaryListener = SummaryGeneratingListener()
       val statusListener = TestStatusListenerImpl(logger)
       launcher.execute(testPlan, summaryListener, statusListener)
+      statusListener.logLinkageErrors(submission.info)
       JUnitResultImpl(testPlan, summaryListener, statusListener)
     } catch (e: Throwable) {
       logger.error("Failed to run JUnit tests for ${submission.info}", e)
