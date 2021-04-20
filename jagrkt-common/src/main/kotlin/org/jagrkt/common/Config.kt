@@ -29,6 +29,8 @@ class Config {
   val dir: Dir = Dir()
 
   val extras: Extras = Extras()
+
+  val grading: Grading = Grading()
 }
 
 @ConfigSerializable
@@ -66,4 +68,14 @@ class Extras {
   }
 
   val moodleUnpack: MoodleUnpack = MoodleUnpack()
+}
+
+@ConfigSerializable
+class Grading {
+
+  @Comment("The maximum allowed \"user time\" for the thread executing the grading for a given submission")
+  val individualTimeout: Long = 3000L
+
+  @Comment("The maximum amount of concurrent threads to use for grading")
+  val concurrentThreads: Int = 4
 }

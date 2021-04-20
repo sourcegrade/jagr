@@ -20,9 +20,11 @@
 package org.jagrkt.common
 
 import com.google.inject.Inject
+import kotlinx.coroutines.runBlocking
 import org.jagrkt.api.testing.Submission
 import org.jagrkt.common.compiler.java.CompiledClass
 import org.jagrkt.common.compiler.java.RuntimeJarLoader
+import org.jagrkt.common.executor.WaterfallExecutor
 import org.jagrkt.common.export.rubric.GradedRubricExportManager
 import org.jagrkt.common.export.submission.SubmissionExportManager
 import org.jagrkt.common.extra.ExtrasManager
@@ -101,8 +103,16 @@ class JagrKtImpl @Inject constructor(
       logger.info("Nothing to do! Exiting...")
       return
     }
-    submissions.parallelForEach {
-      handleSubmission(it, tests, rubricExportLocation, submissionExportLocation)
+    val executor = with(config.grading) {
+      WaterfallExecutor(concurrentThreads, individualTimeout, logger)
+    }
+    submissions.forEach { submission ->
+      executor.schedule(submission.info.toString()) {
+        handleSubmission(submission, tests, rubricExportLocation, submissionExportLocation)
+      }
+    }
+    runBlocking {
+      executor.execute()
     }
   }
 
