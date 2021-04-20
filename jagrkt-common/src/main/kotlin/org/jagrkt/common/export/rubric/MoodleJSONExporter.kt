@@ -30,21 +30,25 @@ class MoodleJSONExporter @Inject constructor(
 
   private fun StringBuilder.writeTable(gradedRubric: GradedRubric): StringBuilder {
     // Open table
-    append("<table border=\"1\" cellpadding=\"5\" cellspacing=\"0\">")
+    append("<table border='1' cellpadding='5' cellspacing='0'>")
     append("<tbody>")
 
     // Title
+    append("<tr>")
     append("<td><strong>${gradedRubric.rubric.title}</strong></td>")
     append("<td></td>")
     append("<td></td>")
     append("<td></td>")
+    append("</tr>")
     appendEmptyHTMLTableRow()
 
     // Headings
+    append("<tr>")
     append("<td><strong>Kriterium</strong></td>")
     append("<td><strong>Möglich</strong></td>")
     append("<td><strong>Erzielt</strong></td>")
     append("<td><strong>Kommentar</strong></td>")
+    append("</tr>")
     appendEmptyHTMLTableRow()
 
     // Child criteria
