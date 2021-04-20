@@ -93,9 +93,9 @@ class JagrKtImpl @Inject constructor(
     extrasManager.runExtras()
     val tests = loadTestJars(File(config.dir.tests), File(config.dir.solutions))
     val submissions = loadSubmissionJars(File(config.dir.submissions), File(config.dir.libs))
-    val rubricExportLocation = File(config.dir.rubrics).takeIf { !it.ensure(logger) }
+    val rubricExportLocation = File(config.dir.rubrics)
     gradedRubricExportManager.ensureDirs(rubricExportLocation)
-    val submissionExportLocation = File(config.dir.submissionsExport).takeIf { !it.ensure(logger) }
+    val submissionExportLocation = File(config.dir.submissionsExport)
     submissionExportManager.ensureDirs(submissionExportLocation)
     if (tests.isEmpty() || submissions.isEmpty()) {
       logger.info("Nothing to do! Exiting...")
@@ -128,6 +128,7 @@ class JagrKtImpl @Inject constructor(
       File(rubrics).ensure(logger)
       File(solutions).ensure(logger)
       File(submissions).ensure(logger)
+      File(submissionsExport).ensure(logger)
       File(tests).ensure(logger)
     }
   }
