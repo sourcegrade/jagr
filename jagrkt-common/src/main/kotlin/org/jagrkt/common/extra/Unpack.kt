@@ -42,7 +42,7 @@ abstract class Unpack : Extra {
   @OptIn(ExperimentalPathApi::class)
   private fun SubmissionInfoVerification.verify() {
     if (assignmentId == null && studentId == null && firstName == null && lastName == null) return
-    FileSystems.newFileSystem(file.toPath(), null).use { fs ->
+    FileSystems.newFileSystem(file.toPath(), null as ClassLoader?).use { fs ->
       val submissionInfoPath = fs.getPath("submission-info.json")
       val replacedSubmissionInfo = try {
         submissionInfoPath.bufferedReader()
