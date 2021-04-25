@@ -54,7 +54,7 @@ class JagrKtImpl @Inject constructor(
           { "Test jar ${file.name} has $warnings warnings!" },
         )
         logger.info("Loaded test jar ${it.name}")
-        TestJar(logger, it, compiledClasses, solutionClasses).takeIf { errors == 0 }
+        TestJar(logger, it, compiledClasses, sourceFiles, solutionClasses).takeIf { errors == 0 }
       }
     }
   }

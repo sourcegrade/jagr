@@ -37,7 +37,7 @@ class JavaRuntimeTester @Inject constructor(
     if (submission !is JavaSubmission) return null
     val info = submission.info
     val rubricProviders = testJar.rubricProviders[info.assignmentId] ?: return null
-    val classLoader = RuntimeClassLoader(testJar.classes + submission.compiledClasses)
+    val classLoader = RuntimeClassLoader(testJar.compiledClasses + submission.compiledClasses)
     val junitResult = testJar.testProviders[info.assignmentId]
       ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }?.runJUnit(submission)
     return JavaTestCycle(rubricProviders, submission, classLoader, junitResult)

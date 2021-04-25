@@ -24,14 +24,16 @@ import org.jagrkt.api.rubric.RubricForSubmission
 import org.jagrkt.api.rubric.RubricProvider
 import org.jagrkt.api.rubric.TestForSubmission
 import org.jagrkt.common.compiler.java.CompiledClass
+import org.jagrkt.common.compiler.java.JavaSourceFile
 import org.jagrkt.common.compiler.java.RuntimeClassLoader
 import org.slf4j.Logger
 import java.io.File
 
 class TestJar(
   private val logger: Logger,
-  private val file: File,
-  val classes: Map<String, CompiledClass>,
+  val file: File,
+  val compiledClasses: Map<String, CompiledClass>,
+  val sourceFiles: Map<String, JavaSourceFile>,
   solutionClasses: Map<String, CompiledClass>,
 ) {
 
@@ -50,8 +52,8 @@ class TestJar(
   init {
     val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
     val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
-    val baseClassLoader = RuntimeClassLoader(classes + solutionClasses)
-    for (className in classes.keys) {
+    val baseClassLoader = RuntimeClassLoader(compiledClasses + solutionClasses)
+    for (className in compiledClasses.keys) {
       val clazz = baseClassLoader.loadClass(className)
       rubricProviders.putIfRubric(clazz)
       testProviders.putIfTest(clazz)
