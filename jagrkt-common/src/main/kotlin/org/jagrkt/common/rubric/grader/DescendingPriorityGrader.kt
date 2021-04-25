@@ -53,7 +53,7 @@ class DescendingPriorityGrader(
       comments += result.comments
       if (correctPoints + incorrectPoints >= maxPoints + minPoints) break
     }
-    if (correctPoints > maxPoints || incorrectPoints > minPoints) {
+    if (correctPoints + incorrectPoints > maxPoints + minPoints) {
       logger.error(
         "Descending priority grader for submission ${testCycle.submission.info} has surpassed point limits"
           + " correctPoints: $correctPoints (max $maxPoints) and incorrectPoints: $incorrectPoints (max $minPoints)"
