@@ -21,6 +21,7 @@ package org.jagrkt.common.extra
 
 import com.google.inject.Inject
 import org.jagrkt.common.Config
+import org.jagrkt.common.writeStream
 import org.slf4j.Logger
 import java.io.File
 import java.util.zip.ZipEntry
@@ -63,13 +64,7 @@ class MoodleUnpack @Inject constructor(
     } else {
       logger.info("extra(moodle-unpack) :: Unpacking studentId $studentId in file $fileName")
     }
-    val file = directory.resolve(fileName).apply {
-      outputStream().use { jarStream ->
-        getInputStream(entry).use { zipStream ->
-          zipStream.copyTo(jarStream)
-        }
-      }
-    }
+    val file = directory.resolve(fileName).writeStream { getInputStream(entry) }
     return SubmissionInfoVerification(
       file,
       studentId = studentId

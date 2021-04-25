@@ -21,21 +21,47 @@ package org.jagrkt.common
 
 import org.slf4j.Logger
 import java.io.File
+import java.io.InputStream
+import java.io.PrintWriter
 
-fun File.ensure(logger: Logger, logInfo: Boolean = true): Boolean {
+fun File.ensure(logger: Logger? = null, logInfo: Boolean = true): File? {
   if (!exists()) {
     if (logInfo) {
-      logger.info("No $this dir! Creating...")
+      logger?.info("No $this dir! Creating...")
     }
     try {
       if (!mkdirs()) {
-        logger.error("Unable to create $absolutePath dir")
-        return true
+        logger?.error("Unable to create $absolutePath dir")
+        return null
       }
     } catch (e: SecurityException) {
-      logger.error("Unable to create $absolutePath dir", e)
-      return true
+      logger?.error("Unable to create $absolutePath dir", e)
+      return null
     }
   }
-  return false
+  return this
+}
+
+inline fun File.writeStream(stream: () -> InputStream): File {
+  outputStream().use { fileStream ->
+    stream().use { inputStream ->
+      inputStream.copyTo(fileStream)
+    }
+  }
+  return this
+}
+
+inline fun File.usePrintWriterSafe(logger: Logger? = null, block: PrintWriter.() -> Unit) {
+  parentFile.ensure(logger, logInfo = false) ?: return
+  try {
+    PrintWriter(this, "UTF-8").use(block)
+  } catch (e: Throwable) {
+    logger?.error("Unable to export to $this", e)
+    return
+  }
+}
+
+fun File.writeTextSafe(content: String, logger: Logger? = null) {
+  parentFile.ensure(logger, logInfo = false) ?: return
+  writeText(content)
 }

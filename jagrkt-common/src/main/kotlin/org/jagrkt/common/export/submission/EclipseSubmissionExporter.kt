@@ -23,6 +23,7 @@ import com.google.inject.Inject
 import org.jagrkt.api.testing.Submission
 import org.jagrkt.common.ensure
 import org.jagrkt.common.testing.JavaSubmission
+import org.jagrkt.common.writeTextSafe
 import org.slf4j.Logger
 import java.io.File
 import java.io.PrintWriter
@@ -33,18 +34,13 @@ class EclipseSubmissionExporter @Inject constructor(
   override val name: String = "eclipse"
   override fun export(submission: Submission, directory: File) {
     if (submission !is JavaSubmission) return
-    val file = directory.resolve(submission.info.toString())
-    if (file.ensure(logger, false)) {
-      return
-    }
-    val src = file.resolve("src")
-    if (src.ensure(logger, false)) {
-      return
-    }
+    val file = directory.resolve(submission.info.toString()).ensure(logger, false) ?: return
+    val src = file.resolve("src").ensure(logger, false) ?: return
     writeProjectFile(submission, file.resolve(".project"))
     writeClasspathFile(submission, file.resolve(".classpath"))
+    // sourceFile.name starts with a / and needs to be converted to a relative path
     for ((_, sourceFile) in submission.sourceFiles) {
-      writeFile(sourceFile.content, src.resolve(".${sourceFile.name}"))
+      src.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
     }
   }
 
@@ -78,13 +74,6 @@ class EclipseSubmissionExporter @Inject constructor(
     writer.println("\t<classpathentry kind=\"con\" path=\"org.eclipse.jdt.junit.JUNIT_CONTAINER/5\"/>")
     writer.println("\t<classpathentry kind=\"output\" path=\"bin\"/>")
     writer.println("</classpath>")
-    writer.flush()
-  }
-
-  private fun writeFile(content: String, file: File) {
-    file.parentFile.ensure(logger, false)
-    val writer = PrintWriter(file, "UTF-8")
-    writer.write(content)
     writer.flush()
   }
 }

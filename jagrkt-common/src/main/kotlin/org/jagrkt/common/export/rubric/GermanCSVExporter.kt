@@ -22,7 +22,7 @@ package org.jagrkt.common.export.rubric
 import com.google.inject.Inject
 import org.jagrkt.api.rubric.GradedCriterion
 import org.jagrkt.api.rubric.GradedRubric
-import org.jagrkt.common.export.usePrintWriterSafe
+import org.jagrkt.common.usePrintWriterSafe
 import org.slf4j.Logger
 import java.io.File
 import java.io.PrintWriter
