@@ -61,6 +61,7 @@ class WaterfallExecutor(
             completed.add(CompletedTask(task.name))
             running[i] = null
           } else if (userTime / 1_000_000L > maxTime) {
+            task.thread.priority = Thread.MIN_PRIORITY
             // Thread#stop() is deprecated because it is "unsafe".
             // However, it is exactly what we need in this case as
             // it is impossible (or at least impractical) to check
@@ -78,9 +79,14 @@ class WaterfallExecutor(
         // schedule new task if possible
         if (running[i] == null) {
           running[i] = scheduled.poll()?.let { task ->
-            RunningTask(task.name, task.progressElement, thread(isDaemon = true) {
+            val thread = thread(
+              isDaemon = true,
+              name = "Thread-" + task.name,
+              priority = 3,
+            ) {
               task.block()
-            })
+            }
+            RunningTask(task.name, task.progressElement, thread)
           }
         }
 
