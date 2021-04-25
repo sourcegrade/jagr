@@ -22,6 +22,7 @@ package org.jagrkt.common.testing
 import org.jagrkt.api.testing.SubmissionInfo
 import org.jagrkt.api.testing.TestStatusListener
 import org.junit.platform.engine.TestExecutionResult
+import org.junit.platform.engine.TestExecutionResult.Status.*
 import org.junit.platform.engine.TestSource
 import org.junit.platform.engine.support.descriptor.ClassSource
 import org.junit.platform.engine.support.descriptor.MethodSource
@@ -33,15 +34,11 @@ class TestStatusListenerImpl(
   private val logger: Logger,
 ) : TestExecutionListener, TestStatusListener {
 
-  private val testsSucceeded: MutableList<TestIdentifier> = mutableListOf()
-  private val testsFailed: MutableList<TestIdentifier> = mutableListOf()
+  private val testResults: MutableMap<TestIdentifier, TestExecutionResult> = mutableMapOf()
   private val linkageErrors: MutableSet<Pair<String?, String>> = LinkedHashSet()
 
   override fun executionFinished(testIdentifier: TestIdentifier, testExecutionResult: TestExecutionResult) {
-    when (testExecutionResult.status) {
-      TestExecutionResult.Status.SUCCESSFUL -> testsSucceeded.add(testIdentifier)
-      else -> testsFailed.add(testIdentifier)
-    }
+    testResults[testIdentifier] = testExecutionResult
     testExecutionResult.throwable.orElse(null)?.also { throwable ->
       if (throwable is LinkageError) {
         linkageErrors.add(throwable::class.simpleName to throwable.message + " @ " + throwable.stackTrace.firstOrNull())
@@ -55,20 +52,25 @@ class TestStatusListenerImpl(
     }
   }
 
-  override fun succeeded(testSource: TestSource): Boolean = testsSucceeded.hasMatch(testSource)
+  override fun succeeded(source: TestSource): Boolean = get(source).let { it?.status == SUCCESSFUL }
 
-  override fun failed(testSource: TestSource): Boolean = testsFailed.hasMatch(testSource)
+  override fun failed(source: TestSource): Boolean = get(source).let { it?.status == FAILED }
 
-  private fun MutableList<TestIdentifier>.hasMatch(testSource: TestSource): Boolean {
-    for (test in this) {
-      if (when (val source = test.source.orElse(null) ?: continue) {
-          is ClassSource -> source.matches(testSource)
-          is MethodSource -> source == testSource
-          else -> false
-        }
-      ) return true
+  override fun get(source: TestSource): TestExecutionResult? {
+    for ((testIdentifier, testExecutionResult) in testResults) {
+      if (testIdentifier.matches(source)) {
+        return testExecutionResult
+      }
     }
-    return false
+    return null
+  }
+
+  private fun TestIdentifier.matches(testSource: TestSource): Boolean {
+    return when (val source = source.orElse(null)) {
+      is ClassSource -> source.matches(testSource)
+      is MethodSource -> source == testSource
+      else -> false
+    }
   }
 
   private fun ClassSource.matches(other: TestSource): Boolean {
