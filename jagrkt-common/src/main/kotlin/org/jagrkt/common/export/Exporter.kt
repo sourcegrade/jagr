@@ -19,6 +19,11 @@
 
 package org.jagrkt.common.export
 
+import org.jagrkt.common.testing.TestJar
+import java.io.File
+
 interface Exporter {
   val name: String
+  fun initialize(directory: File, testJar: TestJar? = null) = Unit
+  fun finalize(directory: File, testJar: TestJar? = null) = Unit
 }

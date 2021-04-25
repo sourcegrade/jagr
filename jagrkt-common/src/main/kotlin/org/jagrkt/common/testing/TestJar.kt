@@ -37,6 +37,8 @@ class TestJar(
   solutionClasses: Map<String, CompiledClass>,
 ) {
 
+  val name: String = with(file.name) { substring(0, indexOf(".jar")) }
+
   /**
    * A map of assignments ids to classes of rubric providers (in the base classloader).
    *

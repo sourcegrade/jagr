@@ -24,6 +24,7 @@ import org.jagrkt.common.export.rubric.GermanCSVExporter
 import org.jagrkt.common.export.rubric.GradedRubricExporter
 import org.jagrkt.common.export.rubric.MoodleJSONExporter
 import org.jagrkt.common.export.submission.EclipseSubmissionExporter
+import org.jagrkt.common.export.submission.GradleSubmissionExporter
 import org.jagrkt.common.export.submission.SubmissionExporter
 import org.jagrkt.common.testing.JavaRuntimeTester
 import org.jagrkt.common.testing.RuntimeTester
@@ -43,6 +44,7 @@ class JagrKtModule : CommonModule() {
     }
     with(Multibinder.newSetBinder(binder(), SubmissionExporter::class.java)) {
       addBinding().to(EclipseSubmissionExporter::class.java)
+      addBinding().to(GradleSubmissionExporter::class.java)
     }
     with(Multibinder.newSetBinder(binder(), RuntimeTester::class.java)) {
       addBinding().to(JavaRuntimeTester::class.java)

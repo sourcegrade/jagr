@@ -22,6 +22,7 @@ dependencies {
   implementation("org.spongepowered:configurate-hocon:$configurateVersion")
   implementation("org.spongepowered:configurate-extra-kotlin:$configurateVersion")
   implementation(kotlin("reflect"))
+  implementation(files("../gradle/wrapper/gradle-wrapper.jar"))
 }
 application {
   mainClassName = "org.jagrkt.common.MainKt"
@@ -31,6 +32,15 @@ tasks {
     enabled = false
   }
   shadowJar {
+    from("../gradlew") {
+      into("org/gradle")
+    }
+    from("../gradlew.bat") {
+      into("org/gradle")
+    }
+    from("../gradle/wrapper/gradle-wrapper.properties") {
+      into("org/gradle")
+    }
     archiveFileName.set("JagrKt-${project.version}.jar")
   }
   test {

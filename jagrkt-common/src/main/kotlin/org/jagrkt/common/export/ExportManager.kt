@@ -20,6 +20,7 @@
 package org.jagrkt.common.export
 
 import org.jagrkt.common.ensure
+import org.jagrkt.common.testing.TestJar
 import org.slf4j.Logger
 import java.io.File
 
@@ -28,10 +29,24 @@ abstract class ExportManager<E : Exporter> {
   protected abstract val logger: Logger
   protected abstract val exporters: Set<E>
 
-  fun ensureDirs(directory: File?) {
-    if (directory != null) {
-      for (exporter in exporters) {
-        directory.resolve(exporter.name).ensure(logger)
+  fun initialize(directory: File, testJars: List<TestJar>) {
+    for (exporter in exporters) {
+      val exportDir = directory.resolve(exporter.name).ensure(logger) ?: continue
+      exportDir.resolve("default").ensure(logger) ?: continue
+      exporter.initialize(exportDir.resolve("default"))
+      for (testJar in testJars) {
+        exportDir.ensure(logger) ?: continue
+        exporter.initialize(exportDir.resolve(testJar.name), testJar)
+      }
+    }
+  }
+
+  fun finalize(directory: File, testJars: List<TestJar>) {
+    for (exporter in exporters) {
+      val exportDir = directory.resolve(exporter.name)
+      exporter.finalize(exportDir.resolve("default"))
+      for (testJar in testJars) {
+        exporter.finalize(exportDir.resolve(testJar.name), testJar)
       }
     }
   }

@@ -23,6 +23,7 @@ import com.google.inject.Inject
 import org.jagrkt.api.testing.Submission
 import org.jagrkt.common.ensure
 import org.jagrkt.common.testing.JavaSubmission
+import org.jagrkt.common.testing.TestJar
 import org.jagrkt.common.writeTextSafe
 import org.slf4j.Logger
 import java.io.File
@@ -32,7 +33,7 @@ class EclipseSubmissionExporter @Inject constructor(
   private val logger: Logger,
 ) : SubmissionExporter {
   override val name: String = "eclipse"
-  override fun export(submission: Submission, directory: File) {
+  override fun export(submission: Submission, directory: File, testJar: TestJar?) {
     if (submission !is JavaSubmission) return
     val file = directory.resolve(submission.info.toString()).ensure(logger, false) ?: return
     val src = file.resolve("src").ensure(logger, false) ?: return

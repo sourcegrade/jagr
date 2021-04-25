@@ -93,22 +93,26 @@ class JagrKtImpl @Inject constructor(
   fun run() {
     ensureDirs()
     extrasManager.runExtras()
-    val tests = loadTestJars(File(config.dir.tests), File(config.dir.solutions))
+    val testJars = loadTestJars(File(config.dir.tests), File(config.dir.solutions))
     val submissions = loadSubmissionJars(File(config.dir.submissions), File(config.dir.libs))
     val rubricExportLocation = File(config.dir.rubrics)
-    gradedRubricExportManager.ensureDirs(rubricExportLocation)
+    gradedRubricExportManager.initialize(rubricExportLocation, testJars)
     val submissionExportLocation = File(config.dir.submissionsExport)
-    submissionExportManager.ensureDirs(submissionExportLocation)
-    if (tests.isEmpty() || submissions.isEmpty()) {
+    submissionExportManager.initialize(submissionExportLocation, testJars)
+    if (testJars.isEmpty() || submissions.isEmpty()) {
       logger.info("Nothing to do! Exiting...")
       return
     }
+    submissions.forEach { submission ->
+      submissionExportManager.export(submission, submissionExportLocation, testJars)
+    }
+    submissionExportManager.finalize(submissionExportLocation, testJars)
     val executor = with(config.grading) {
       WaterfallExecutor(concurrentThreads, individualTimeout, logger)
     }
     submissions.forEach { submission ->
       executor.schedule(submission.info.toString()) {
-        handleSubmission(submission, tests, rubricExportLocation, submissionExportLocation)
+        handleSubmission(submission, testJars, rubricExportLocation)
       }
     }
     runBlocking {
@@ -116,11 +120,7 @@ class JagrKtImpl @Inject constructor(
     }
   }
 
-  private fun handleSubmission(
-    submission: Submission, testJars: List<TestJar>,
-    rubricExportLocation: File?, submissionExportLocation: File?,
-  ) {
-    submissionExportManager.export(submission, submissionExportLocation)
+  private fun handleSubmission(submission: Submission, testJars: List<TestJar>, rubricExportLocation: File) {
     val gradedRubrics = runtimeGrader.grade(testJars, submission)
     if (gradedRubrics.isEmpty()) {
       logger.warn("$submission :: No matching rubrics!")
