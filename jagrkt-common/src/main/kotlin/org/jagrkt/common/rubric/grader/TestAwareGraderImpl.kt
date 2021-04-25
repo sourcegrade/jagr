@@ -23,6 +23,8 @@ import org.jagrkt.api.rubric.Criterion
 import org.jagrkt.api.rubric.GradeResult
 import org.jagrkt.api.rubric.Grader
 import org.jagrkt.api.testing.TestCycle
+import org.junit.platform.engine.TestExecutionResult
+import org.junit.platform.engine.TestExecutionResult.Status.*
 import org.junit.platform.engine.TestSource
 
 class TestAwareGraderImpl(
@@ -39,13 +41,15 @@ class TestAwareGraderImpl(
       return null
     }
     val statusListener = (testCycle.jUnitResult ?: return null).statusListener
-    fun Map<TestSource, String?>.must(predicate: (TestSource) -> Boolean): GradeResult? {
+    fun Map<TestSource, String?>.must(predicate: (TestExecutionResult) -> Boolean): GradeResult? {
       val comments: MutableList<String> = mutableListOf()
       var failed = false
       for ((testSource, comment) in this) {
-        if (!predicate(testSource)) {
+        val testExecutionResult = statusListener[testSource]
+        if (testExecutionResult == null || !predicate(testExecutionResult)) {
           failed = true
-          comment?.also { comments += it }
+          // a comment supplied to requirePass or requireFail overrides the default comment from the result's throwable
+          (comment ?: testExecutionResult?.throwable?.orElse(null)?.message)?.also { comments += it }
         }
       }
       return if (failed) {
@@ -54,8 +58,8 @@ class TestAwareGraderImpl(
         GradeResult.withComments(graderFailed.grade(testCycle, criterion), comments)
       } else null
     }
-    requirePass.must(statusListener::succeeded)?.also { return it }
-    requireFail.must(statusListener::failed)?.also { return it }
+    requirePass.must { it.status == SUCCESSFUL }?.also { return it }
+    requireFail.must { it.status == FAILED }?.also { return it }
     return graderPassed.grade(testCycle, criterion)
   }
 }
