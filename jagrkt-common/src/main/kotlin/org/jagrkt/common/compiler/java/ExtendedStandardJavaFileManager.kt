@@ -27,7 +27,7 @@ import javax.tools.JavaFileObject
 class ExtendedStandardJavaFileManager(
   javaFileManager: JavaFileManager,
   private val classPath: Map<String, CompiledClass>,
-  private val classStorage: MutableMap<String, CompiledClass.Runtime>,
+  private val classStorage: MutableMap<String, CompiledClass>,
 ) : ForwardingJavaFileManager<JavaFileManager>(javaFileManager) {
 
   override fun getJavaFileForOutput(

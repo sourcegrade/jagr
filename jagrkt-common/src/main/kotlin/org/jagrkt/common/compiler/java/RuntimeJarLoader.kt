@@ -87,7 +87,7 @@ class RuntimeJarLoader @Inject constructor(
       // no source files, skip compilation task
       return CompileJarResult(file, submissionInfo)
     }
-    val compiledClasses: MutableMap<String, CompiledClass.Runtime> = mutableMapOf()
+    val compiledClasses: MutableMap<String, CompiledClass> = mutableMapOf()
     val collector = DiagnosticCollector<JavaFileObject>()
     val compiler = ToolProvider.getSystemJavaCompiler()
     val fileManager = ExtendedStandardJavaFileManager(
@@ -144,7 +144,7 @@ class RuntimeJarLoader @Inject constructor(
   data class CompileJarResult(
     val file: File,
     val submissionInfo: SubmissionInfoImpl? = null,
-    val compiledClasses: Map<String, CompiledClass.Runtime> = mapOf(),
+    val compiledClasses: Map<String, CompiledClass> = mapOf(),
     val sourceFiles: Map<String, JavaSourceFile> = mapOf(),
     val messages: List<String> = listOf(),
     val warnings: Int = 0,
