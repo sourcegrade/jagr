@@ -60,7 +60,7 @@ class WaterfallExecutor(
             task.progressElement.complete()
             completed.add(CompletedTask(task.name))
             running[i] = null
-          } else if (userTime / 1_000_000L > maxTime) {
+          } else if (maxTime > 0 && userTime / 1_000_000L > maxTime) {
             task.thread.priority = Thread.MIN_PRIORITY
             // Thread#stop() is deprecated because it is "unsafe".
             // However, it is exactly what we need in this case as

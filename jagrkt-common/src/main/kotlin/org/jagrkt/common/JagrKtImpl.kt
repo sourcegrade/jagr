@@ -110,7 +110,7 @@ class JagrKtImpl @Inject constructor(
     }
     submissionExportManager.finalize(submissionExportLocation, testJars)
     val executor = with(config.grading) {
-      WaterfallExecutor(concurrentThreads, individualTimeout, logger)
+      WaterfallExecutor(concurrentThreads, -1L, logger)
     }
     submissions.forEach { submission ->
       executor.schedule(submission.info.toString()) {
