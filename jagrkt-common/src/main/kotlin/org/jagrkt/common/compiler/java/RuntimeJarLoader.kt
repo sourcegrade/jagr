@@ -167,5 +167,25 @@ class RuntimeJarLoader @Inject constructor(
         }
       }
     }
+
+    fun copyWith(
+      file: File? = null,
+      submissionInfo: SubmissionInfoImpl? = null,
+      compiledClasses: Map<String, CompiledClass>? = null,
+      sourceFiles: Map<String, JavaSourceFile>? = null,
+      messages: List<String>? = null,
+      warnings: Int? = null,
+      errors: Int? = null,
+      other: Int? = null,
+    ) = CompileJarResult(
+      file ?: this.file,
+      submissionInfo ?: this.submissionInfo,
+      compiledClasses ?: this.compiledClasses,
+      sourceFiles ?: this.sourceFiles,
+      messages ?: this.messages,
+      warnings ?: this.warnings,
+      errors ?: this.errors,
+      other ?: this.other,
+    )
   }
 }
