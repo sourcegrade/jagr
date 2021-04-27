@@ -31,6 +31,7 @@ import org.jagrkt.common.extra.ExtrasManager
 import org.jagrkt.common.testing.JavaSubmission
 import org.jagrkt.common.testing.RuntimeGrader
 import org.jagrkt.common.testing.TestJar
+import org.jagrkt.common.transformer.TransformerManager
 import org.slf4j.Logger
 import java.io.File
 
@@ -40,6 +41,7 @@ class JagrKtImpl @Inject constructor(
   private val runtimeJarLoader: RuntimeJarLoader,
   private val runtimeGrader: RuntimeGrader,
   private val extrasManager: ExtrasManager,
+  private val transformerManager: TransformerManager,
   private val gradedRubricExportManager: GradedRubricExportManager,
   private val submissionExportManager: SubmissionExportManager,
 ) {
@@ -47,7 +49,7 @@ class JagrKtImpl @Inject constructor(
   private fun loadTestJars(testJarsLocation: File, solutionsLocation: File): List<TestJar> {
     val solutionClasses = loadLibs(solutionsLocation)
     return testJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
-      with(runtimeJarLoader.loadSourcesJar(it, solutionClasses)) {
+      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, solutionClasses))) {
         printMessages(
           logger,
           { "Test jar ${file.name} has $warnings warnings and $errors errors!" },
@@ -74,7 +76,7 @@ class JagrKtImpl @Inject constructor(
   private fun loadSubmissionJars(submissionJarsLocation: File, libsLocation: File): List<JavaSubmission> {
     val libsClasspath = loadLibs(libsLocation)
     return submissionJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
-      with(runtimeJarLoader.loadSourcesJar(it, libsClasspath)) {
+      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libsClasspath))) {
         if (submissionInfo == null) {
           logger.error("$it does not have a submission-info.json! Skipping...")
           return@parallelMapNotNull null

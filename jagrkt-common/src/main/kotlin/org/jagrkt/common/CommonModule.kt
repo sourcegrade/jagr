@@ -21,6 +21,7 @@ package org.jagrkt.common
 
 import com.google.inject.AbstractModule
 import org.jagrkt.api.rubric.*
+import org.jagrkt.common.executor.*
 import org.jagrkt.common.rubric.*
 import org.jagrkt.common.rubric.grader.*
 
@@ -43,6 +44,7 @@ abstract class CommonModule : AbstractModule() {
       GradeResult.FactoryProvider::class.java,
       JUnitTestRef.FactoryProvider::class.java,
       Rubric.FactoryProvider::class.java,
+      TimeoutHandler::class.java,
     )
   }
 }
