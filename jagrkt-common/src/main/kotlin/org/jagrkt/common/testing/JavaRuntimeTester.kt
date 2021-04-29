@@ -24,7 +24,7 @@ import org.jagrkt.api.testing.Submission
 import org.jagrkt.api.testing.TestCycle
 import org.jagrkt.common.compiler.java.RuntimeClassLoader
 import org.jagrkt.common.executor.TimeoutHandler
-import org.junit.platform.engine.DiscoverySelector
+import org.junit.platform.engine.discovery.ClassSelector
 import org.junit.platform.engine.discovery.DiscoverySelectors
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
 import org.junit.platform.launcher.core.LauncherFactory
@@ -39,12 +39,16 @@ class JavaRuntimeTester @Inject constructor(
     val info = submission.info
     val rubricProviders = testJar.rubricProviders[info.assignmentId] ?: return null
     val classLoader = RuntimeClassLoader(testJar.compiledClasses + submission.compiledClasses)
-    val junitResult = testJar.testProviders[info.assignmentId]
-      ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }?.runJUnit(submission)
-    return JavaTestCycle(rubricProviders, submission, classLoader, junitResult)
+    val testCycle = JavaTestCycle(rubricProviders, submission, classLoader)
+    testJar.testProviders[info.assignmentId]
+      ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
+      ?.runJUnit(testCycle)
+      ?.also(testCycle::setJUnitResult)
+    return testCycle
   }
 
-  private fun List<DiscoverySelector>.runJUnit(submission: JavaSubmission): JUnitResultImpl? {
+  private fun List<ClassSelector>.runJUnit(testCycle: TestCycle): JUnitResultImpl? {
+    val info = testCycle.submission.info
     return try {
       val launcher = LauncherFactory.create()
       val testPlan = launcher.discover(LauncherDiscoveryRequestBuilder.request().selectors(this).build())
@@ -53,10 +57,10 @@ class JavaRuntimeTester @Inject constructor(
       launcher.execute(testPlan, summaryListener, statusListener)
       // if total timeout has been reached, reset so that the rubric provider doesn't throw an error
       TimeoutHandler.resetTimeout()
-      statusListener.logLinkageErrors(submission.info)
+      statusListener.logLinkageErrors(info)
       JUnitResultImpl(testPlan, summaryListener, statusListener)
     } catch (e: Throwable) {
-      logger.error("Failed to run JUnit tests for ${submission.info}", e)
+      logger.error("Failed to run JUnit tests for $info", e)
       null
     }
   }
