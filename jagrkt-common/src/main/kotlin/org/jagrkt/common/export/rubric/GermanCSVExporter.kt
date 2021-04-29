@@ -30,23 +30,44 @@ import java.io.PrintWriter
 class GermanCSVExporter @Inject constructor(
   private val logger: Logger,
 ) : GradedRubricExporter {
+
+  companion object {
+    // delimiter
+    const val DEL = '\t'
+  }
+
   override val name: String = "csv"
   override fun export(gradedRubric: GradedRubric, directory: File, fileName: String) {
     val rubric = gradedRubric.rubric
     val grade = gradedRubric.grade
     directory.resolve("$fileName.csv").usePrintWriterSafe(logger) {
-      println("${rubric.title},,,,")
-      println("Kriterium,Möglich,Erzielt,Kommentar,Extra")
-      appendEmptyLine()
+      appendLine("sep=$DEL")
+      appendLine(rubric.title)
+      append("Kriterium")
+      append(DEL)
+      append("Möglich")
+      append(DEL)
+      append("Erzielt")
+      append(DEL)
+      append("Kommentar")
+      append(DEL)
+      append("Extra")
+      appendLine()
       for (gradedCriterion in gradedRubric.childCriteria) {
         appendCriterion(gradedCriterion)
-        appendEmptyLine()
+        appendLine()
       }
-      println("Zusätzlich möglicher Punktabzug,,,,")
-      println("Pro fehlendem Java Doc 1 Punkt abzug (nur bei Methoden bei denen mind. 1 Punkt erreicht wurde),-3,,,")
-      appendEmptyLine()
-      println("Gesamt,${rubric.maxPoints},${grade.correctPoints},,")
-      flush()
+      append("Gesamt")
+      append(DEL)
+      append(rubric.maxPoints.toString())
+      append(DEL)
+      append(grade.correctPoints.toString())
+      append(DEL)
+      append(grade.comments.firstOrNull() ?: "")
+      appendLine()
+      for (i in 1 until grade.comments.size) {
+        appendLine("$DEL$DEL$DEL${grade.comments[i]}")
+      }
     }
   }
 
@@ -58,16 +79,29 @@ class GermanCSVExporter @Inject constructor(
       if (grade.incorrectPoints == 0) "" else (criterion.maxPoints - grade.incorrectPoints).toString()
     } else grade.correctPoints.toString()
     if (gradedCriterion.childCriteria.isEmpty()) {
-      println("${criterion.shortDescription},${criterion.maxPoints},$receivedPoints,$comments,${criterion.hiddenNotes ?: ""}")
+      append(criterion.shortDescription)
+      append(DEL)
+      append(criterion.maxPoints.toString())
+      append(DEL)
+      append(receivedPoints)
+      append(DEL)
+      append(comments)
+      append(DEL)
+      append(criterion.hiddenNotes ?: "")
+      appendLine()
     } else {
-      println("${criterion.shortDescription},,,$comments,${criterion.hiddenNotes ?: ""}")
+      append(criterion.shortDescription)
+      append(DEL)
+      append(DEL)
+      append(DEL)
+      append(comments)
+      append(criterion.hiddenNotes ?: "")
+      appendLine()
       for (childGradedCriterion in gradedCriterion.childCriteria) {
         appendCriterion(childGradedCriterion)
       }
-      appendEmptyLine()
+      appendLine()
     }
     return this
   }
-
-  private fun PrintWriter.appendEmptyLine(): PrintWriter = append(",,,,\n")
 }
