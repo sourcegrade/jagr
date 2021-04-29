@@ -24,6 +24,7 @@ import org.jagrkt.api.testing.Submission
 import org.jagrkt.api.testing.TestCycle
 import org.jagrkt.common.compiler.java.RuntimeClassLoader
 import org.jagrkt.common.executor.TimeoutHandler
+import org.junit.platform.commons.JUnitException
 import org.junit.platform.engine.discovery.ClassSelector
 import org.junit.platform.engine.discovery.DiscoverySelectors
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
@@ -49,9 +50,27 @@ class JavaRuntimeTester @Inject constructor(
 
   private fun List<ClassSelector>.runJUnit(testCycle: TestCycle): JUnitResultImpl? {
     val info = testCycle.submission.info
+    logger.info("Running JUnit @ $info :: [${joinToString { it.className }}]")
+    val launcher = LauncherFactory.create()
+    val testPlan = try {
+      launcher.discover(LauncherDiscoveryRequestBuilder.request().selectors(this).build())
+    } catch (e: JUnitException) {
+      /*
+       * If a LinkageError occurred in a JUnit test class, try again with the other test classes.
+       * This may occur if a student did not implement a class or method a test class depends on.
+       */
+      if (e.cause is JUnitException && e.cause?.cause is LinkageError) {
+        return partition { e.cause!!.message?.contains(it.className) == false }.let { (included, excluded) ->
+          val excludedClasses = excluded.joinToString { it.className }
+          val msg = e.cause!!.cause!!.message
+          logger.error("Linkage error @ $info :: $msg, retrying without test classes [$excludedClasses]")
+          included.runJUnit(testCycle)
+        }
+      }
+      logger.error("Failed to discover JUnit tests for $info", e)
+      return null
+    }
     return try {
-      val launcher = LauncherFactory.create()
-      val testPlan = launcher.discover(LauncherDiscoveryRequestBuilder.request().selectors(this).build())
       val summaryListener = SummaryGeneratingListener()
       val statusListener = TestStatusListenerImpl(logger)
       launcher.execute(testPlan, summaryListener, statusListener)
