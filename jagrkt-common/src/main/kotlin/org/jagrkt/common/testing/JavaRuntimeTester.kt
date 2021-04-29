@@ -23,6 +23,7 @@ import com.google.inject.Inject
 import org.jagrkt.api.testing.Submission
 import org.jagrkt.api.testing.TestCycle
 import org.jagrkt.common.compiler.java.RuntimeClassLoader
+import org.jagrkt.common.executor.TimeoutHandler
 import org.junit.platform.engine.DiscoverySelector
 import org.junit.platform.engine.discovery.DiscoverySelectors
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
@@ -50,6 +51,8 @@ class JavaRuntimeTester @Inject constructor(
       val summaryListener = SummaryGeneratingListener()
       val statusListener = TestStatusListenerImpl(logger)
       launcher.execute(testPlan, summaryListener, statusListener)
+      // if total timeout has been reached, reset so that the rubric provider doesn't throw an error
+      TimeoutHandler.resetTimeout()
       statusListener.logLinkageErrors(submission.info)
       JUnitResultImpl(testPlan, summaryListener, statusListener)
     } catch (e: Throwable) {

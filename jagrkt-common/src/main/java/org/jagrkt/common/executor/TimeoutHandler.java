@@ -54,6 +54,10 @@ public class TimeoutHandler {
     private static final long TOTAL_TIMEOUT = config.getTransformers().getTimeout().getTotalTimeout();
   }
 
+  public static void resetTimeout() {
+    LAST_TIMEOUT.get().set(0);
+  }
+
   /**
    * Checks whether the current {@link Thread} has reached a timeout, throwing an {@link AssertionFailedError} if so.
    *
