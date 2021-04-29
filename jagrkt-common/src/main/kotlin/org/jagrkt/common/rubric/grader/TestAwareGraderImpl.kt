@@ -49,7 +49,7 @@ class TestAwareGraderImpl(
         if (testExecutionResult == null || !predicate(testExecutionResult)) {
           failed = true
           // a comment supplied to requirePass or requireFail overrides the default comment from the result's throwable
-          (comment ?: testExecutionResult?.throwable?.orElse(null)?.message)?.also { comments += it }
+          (comment ?: testExecutionResult?.message)?.also { comments += it }
         }
       }
       return if (failed) {
@@ -62,4 +62,6 @@ class TestAwareGraderImpl(
     requireFail.must { it.status == FAILED }?.also { return it }
     return graderPassed.grade(testCycle, criterion)
   }
+
+  private val TestExecutionResult.message get() = throwable.orElse(null)?.run { "${this::class.simpleName}: $message" }
 }
