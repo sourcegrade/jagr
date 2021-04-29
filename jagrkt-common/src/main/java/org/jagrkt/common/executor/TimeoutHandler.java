@@ -23,6 +23,7 @@ import com.google.inject.Inject;
 import org.jagrkt.common.Config;
 import org.jagrkt.common.transformer.TimeoutTransformer;
 import org.opentest4j.AssertionFailedError;
+import org.slf4j.Logger;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -41,6 +42,9 @@ public class TimeoutHandler {
 
   @Inject
   private static Config config;
+
+  @Inject
+  private static Logger logger;
 
   /**
    * Nested class for lazy initialization.
@@ -62,9 +66,11 @@ public class TimeoutHandler {
       LAST_TIMEOUT.get().set(userTime);
     } else if (userTime - lastTimeout > Lazy.INDIVIDUAL_TIMEOUT) {
       if (userTime > Lazy.TOTAL_TIMEOUT) {
+        logger.error("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms @ " + Thread.currentThread().getName());
         // do not reset LAST_TIMEOUT
-        throw new AssertionFailedError("Total timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms");
+        throw new AssertionFailedError("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms");
       } else {
+        logger.error("Individual timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms @ " + Thread.currentThread().getName());
         // reset LAST_TIMEOUT so that the next JUnit test doesn't immediately fail
         LAST_TIMEOUT.get().set(userTime);
         throw new AssertionFailedError("Individual timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms");
