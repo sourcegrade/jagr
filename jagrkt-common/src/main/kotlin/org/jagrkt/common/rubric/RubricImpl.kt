@@ -48,8 +48,17 @@ class RubricImpl(
 
   override fun grade(testCycle: TestCycle): GradedRubric {
     val childGraded = childCriteria.map { it.grade(testCycle) }
-    val gradeResult = GradeResult.of(GradeResult.ofNone(), childGraded.map(
-      Graded::getGrade))
+    val gradeResult = with(testCycle.submission.compileResult) {
+      val comments = mutableListOf<String>()
+      when {
+        errorCount > 0 -> "Your submission did not compile. There were $errorCount errors and $warningCount warnings."
+        warningCount > 0 -> "Your submission compiled, but there were $warningCount warnings."
+        otherCount > 0 || messages.isNotEmpty() -> "Your submission compiled, but there were some messages from the compiler."
+        else -> null
+      }?.also(comments::add)
+      comments += messages
+      GradeResult.withComments(GradeResult.of(GradeResult.ofNone(), childGraded.map(Graded::getGrade)), comments)
+    }
     return GradedRubricImpl(testCycle, gradeResult, this, childGraded)
   }
 
