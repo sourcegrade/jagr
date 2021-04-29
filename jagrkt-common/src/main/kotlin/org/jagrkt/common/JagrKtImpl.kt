@@ -101,10 +101,6 @@ class JagrKtImpl @Inject constructor(
     gradedRubricExportManager.initialize(rubricExportLocation, testJars)
     val submissionExportLocation = File(config.dir.submissionsExport)
     submissionExportManager.initialize(submissionExportLocation, testJars)
-    if (testJars.isEmpty() || submissions.isEmpty()) {
-      logger.info("Nothing to do! Exiting...")
-      return
-    }
     submissions.forEach { submission ->
       submissionExportManager.export(submission, submissionExportLocation, testJars)
     }
