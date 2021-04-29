@@ -22,6 +22,7 @@ package org.jagrkt.common.compiler.java
 import com.google.inject.Inject
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.jagrkt.api.testing.CompileResult
 import org.jagrkt.common.testing.SubmissionInfoImpl
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
@@ -146,11 +147,16 @@ class RuntimeJarLoader @Inject constructor(
     val submissionInfo: SubmissionInfoImpl? = null,
     val compiledClasses: Map<String, CompiledClass> = mapOf(),
     val sourceFiles: Map<String, JavaSourceFile> = mapOf(),
-    val messages: List<String> = listOf(),
+    private val messages: List<String> = listOf(),
     val warnings: Int = 0,
     val errors: Int = 0,
     val other: Int = 0,
-  ) {
+  ) : CompileResult {
+    override fun getMessages(): List<String> = messages
+    override fun getWarningCount(): Int = warnings
+    override fun getErrorCount(): Int = errors
+    override fun getOtherCount(): Int = other
+
     fun printMessages(logger: Logger, lazyError: () -> String, lazyWarning: () -> String) {
       when {
         errors > 0 -> {

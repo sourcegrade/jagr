@@ -19,15 +19,15 @@
 
 package org.jagrkt.api.testing;
 
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import java.util.List;
 
-@ApiStatus.NonExtendable
-public interface Submission {
+public interface CompileResult {
 
-  SubmissionInfo getInfo();
+  List<String> getMessages();
 
-  CompileResult getCompileResult();
+  int getWarningCount();
 
-  @Nullable SourceFile getSourceFile(String fileName);
+  int getErrorCount();
+
+  int getOtherCount();
 }
