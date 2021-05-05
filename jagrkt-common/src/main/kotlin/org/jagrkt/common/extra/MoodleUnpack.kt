@@ -40,7 +40,7 @@ class MoodleUnpack @Inject constructor(
       logger.info("extra($name) :: Discovered candidate zip $candidate")
       val zipFile = ZipFile(candidate)
       for (entry in zipFile.entries()) {
-        if (!entry.name.endsWith("-submission.jar")) continue
+        if (!entry.name.endsWith(".jar")) continue
         try {
           unpackedFiles += zipFile.unpackEntry(entry.name.split("/"), entry, submissions, studentIdRegex)
         } catch (e: Throwable) {
