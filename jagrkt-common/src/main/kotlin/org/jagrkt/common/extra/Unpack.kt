@@ -47,9 +47,9 @@ abstract class Unpack : Extra {
       val replacedSubmissionInfo = try {
         submissionInfoPath.bufferedReader()
       } catch (e: Throwable) {
-        logger.error("Unable to read submission-info for $file", e)
-        return
-      }.use { reader ->
+        logger.error("Unable to read submission-info for $this")
+        null
+      }?.use { reader ->
         val submissionInfo = Json.decodeFromString<SubmissionInfoImpl>(reader.readText())
         val replaceAssignmentId = assignmentId != null && assignmentId != submissionInfo.assignmentId
         val replaceStudentId = studentId != null && studentId != submissionInfo.studentId
@@ -69,8 +69,13 @@ abstract class Unpack : Extra {
             if (replaceFirstName) firstName!! else submissionInfo.firstName,
             if (replaceLastName) lastName!! else submissionInfo.lastName,
           )
-        } else null
-      } ?: return
+        } else return
+      } ?: SubmissionInfoImpl(
+        assignmentId = assignmentId ?: "none",
+        studentId = studentId ?: "none",
+        firstName = firstName ?: "none",
+        lastName = lastName ?: "none",
+      )
       submissionInfoPath.bufferedWriter().use { writer ->
         writer.write(Json.encodeToString(replacedSubmissionInfo))
       }
