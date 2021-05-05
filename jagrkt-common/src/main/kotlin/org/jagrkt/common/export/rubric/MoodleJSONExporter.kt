@@ -57,9 +57,6 @@ class MoodleJSONExporter @Inject constructor(
       appendEmptyHTMLTableRow()
     }
 
-    appendEmptyHTMLTableRow()
-    appendEmptyHTMLTableRow()
-
     val grade = gradedRubric.grade
     val comments = grade.comments
 
