@@ -42,6 +42,8 @@ class WaterfallExecutor(
   }
 
   suspend fun execute() {
+    val originalSystemOut = System.out
+    System.setOut(ThreadAwarePrintStream(originalSystemOut))
     val progressBar = ProgressBar()
     for (task in scheduled) {
       task.progressElement = progressBar.createElement(task.name)
@@ -81,7 +83,7 @@ class WaterfallExecutor(
           running[i] = scheduled.poll()?.let { task ->
             val thread = thread(
               isDaemon = true,
-              name = "Thread-" + task.name,
+              name = GRADING_THREAD_PREFIX + task.name,
               priority = 3,
             ) {
               task.block()
@@ -102,6 +104,7 @@ class WaterfallExecutor(
       progressBar.print()
       delay(timeMillis = 5)
     }
+    System.setOut(originalSystemOut)
     progressBar.clear()
   }
 
