@@ -37,5 +37,5 @@ data class SubmissionInfoImpl(
   override fun getStudentId(): String = studentId
   override fun getFirstName(): String = firstName
   override fun getLastName(): String = lastName
-  override fun toString(): String = assignmentId + "_" + lastName + "_" + firstName
+  override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
 }
