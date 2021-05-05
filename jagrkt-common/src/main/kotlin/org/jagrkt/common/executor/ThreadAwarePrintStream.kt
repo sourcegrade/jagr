@@ -2,7 +2,7 @@ package org.jagrkt.common.executor
 
 import java.io.OutputStream
 import java.io.PrintStream
-import java.util.*
+import java.util.Locale
 
 const val GRADING_THREAD_PREFIX = "G_Thread-"
 
