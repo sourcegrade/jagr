@@ -57,6 +57,28 @@ class MoodleJSONExporter @Inject constructor(
       appendEmptyHTMLTableRow()
     }
 
+    appendEmptyHTMLTableRow()
+    appendEmptyHTMLTableRow()
+
+    val grade = gradedRubric.grade
+    val comments = grade.comments
+
+    append("<tr>")
+    append("<td><strong>Gesamt:</strong></td>")
+    append("<td>${gradedRubric.rubric.maxPoints}</td>")
+    append("<td>${grade.correctPoints}</td>")
+    append("<td>${comments.firstOrNull() ?: ""}</td>")
+    append("</tr>")
+
+    for (i in 1 until comments.size) {
+      append("<tr>")
+      append("<td></td>")
+      append("<td></td>")
+      append("<td></td>")
+      append("<td>${comments[i]}</td>")
+      append("</tr>")
+    }
+
     // Close table
     append("</tbody>")
     append("</table>")
