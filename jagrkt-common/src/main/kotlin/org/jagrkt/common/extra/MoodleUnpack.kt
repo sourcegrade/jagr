@@ -31,6 +31,7 @@ class MoodleUnpack @Inject constructor(
   override val config: Config,
   override val logger: Logger,
 ) : Unpack() {
+  private val assignmentIdRegex = Regex(".*Abgabe zu Hausübung (?<assignmentId>[0-9]+) .*")
   override val name: String = "moodle-unpack"
   override fun run() {
     val submissions = File(config.dir.submissions)
@@ -39,10 +40,16 @@ class MoodleUnpack @Inject constructor(
     for (candidate in submissions.listFiles { _, t -> t.endsWith(".zip") }!!) {
       logger.info("extra($name) :: Discovered candidate zip $candidate")
       val zipFile = ZipFile(candidate)
+      // TODO: Fix this hack
+      val assignmentId = assignmentIdRegex.matchEntire(candidate.name)
+        ?.run { groups["assignmentId"]?.value }
+        ?.padStart(length = 2, padChar = '0')
+        ?.let { "H$it" }
+        ?: "none"
       for (entry in zipFile.entries()) {
         if (!entry.name.endsWith(".jar")) continue
         try {
-          unpackedFiles += zipFile.unpackEntry(entry.name.split("/"), entry, submissions, studentIdRegex)
+          unpackedFiles += zipFile.unpackEntry(entry.name.split("/"), entry, submissions, studentIdRegex, assignmentId)
         } catch (e: Throwable) {
           logger.info("extra($name) :: Unable to unpack entry ${entry.name} in candidate $candidate", e)
         }
@@ -56,6 +63,7 @@ class MoodleUnpack @Inject constructor(
     entry: ZipEntry,
     directory: File,
     studentIdRegex: Regex,
+    assignmentId: String,
   ): SubmissionInfoVerification {
     val studentId = path[0].split(" - ").run { this[size - 1] }.takeIf { studentIdRegex.matches(it) }
     val fileName = path[path.size - 1]
@@ -67,6 +75,7 @@ class MoodleUnpack @Inject constructor(
     val file = directory.resolve(fileName).writeStream { getInputStream(entry) }
     return SubmissionInfoVerification(
       file,
+      assignmentId = assignmentId,
       studentId = studentId
     )
   }
