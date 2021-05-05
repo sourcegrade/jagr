@@ -23,6 +23,7 @@ import com.google.inject.Inject
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.jagrkt.api.testing.CompileResult
+import org.jagrkt.common.compiler.readEncoded
 import org.jagrkt.common.testing.SubmissionInfoImpl
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
@@ -76,7 +77,8 @@ class RuntimeJarLoader @Inject constructor(
         }
         entry.name.endsWith(".java") -> {
           val className = entry.name.replace('/', '.').substring(0, entry.name.length - 5)
-          val sourceFile = JavaSourceFile(className, entry.name, jarFile.getInputStream(entry))
+          val content = jarFile.getInputStream(entry).use { it.readEncoded() }
+          val sourceFile = JavaSourceFile(className, entry.name, content)
           sourceFiles[entry.name] = sourceFile
         }
         entry.name.endsWith("MANIFEST.MF") -> { // ignore
