@@ -26,6 +26,7 @@ import org.jagrkt.api.testing.TestCycle
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.TestExecutionResult.Status.*
 import org.junit.platform.engine.TestSource
+import org.opentest4j.AssertionFailedError
 
 class TestAwareGraderImpl(
   private val predicate: ((TestCycle, Criterion) -> Boolean)?,
@@ -63,5 +64,10 @@ class TestAwareGraderImpl(
     return graderPassed.grade(testCycle, criterion)
   }
 
-  private val TestExecutionResult.message get() = throwable.orElse(null)?.run { "${this::class.simpleName}: $message" }
+  private val TestExecutionResult.message
+    get() = throwable.orElse(null)?.run {
+      if (this !is AssertionFailedError) {
+        "${this::class.simpleName}: $message"
+      } else message
+    }
 }
