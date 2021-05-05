@@ -57,11 +57,13 @@ abstract class Unpack : Extra {
         val replaceLastName = lastName != null && lastName != submissionInfo.lastName
         if (replaceAssignmentId || replaceStudentId || replaceFirstName || replaceLastName) {
           logger.warn(
-            "$submissionInfo has incorrect submission-info! Replacing:"
-              + if (replaceAssignmentId) " assignmentId(${submissionInfo.assignmentId} -> $assignmentId)" else ""
-              + if (replaceStudentId) " studentId(${submissionInfo.studentId} -> $studentId)" else ""
-              + if (replaceFirstName) " firstName(${submissionInfo.firstName} -> $firstName)" else ""
-              + if (replaceLastName) " lastName(${submissionInfo.lastName} -> $lastName)" else ""
+            StringBuilder().apply {
+              append("$submissionInfo has incorrect submission-info! Replacing:")
+              if (replaceAssignmentId) append(" assignmentId(${submissionInfo.assignmentId} -> $assignmentId)")
+              if (replaceStudentId) append(" studentId(${submissionInfo.studentId} -> $studentId)")
+              if (replaceFirstName) append(" firstName(${submissionInfo.firstName} -> $firstName)")
+              if (replaceLastName) append(" lastName(${submissionInfo.lastName} -> $lastName)")
+            }.toString()
           )
           SubmissionInfoImpl(
             if (replaceAssignmentId) assignmentId!! else submissionInfo.assignmentId,
