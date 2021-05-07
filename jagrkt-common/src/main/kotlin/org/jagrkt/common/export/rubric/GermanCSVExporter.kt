@@ -77,7 +77,7 @@ class GermanCSVExporter @Inject constructor(
     val comments = grade.comments.joinToString("; ")
     val receivedPoints = if (grade.correctPoints == 0) {
       if (grade.incorrectPoints == 0) "" else (criterion.maxPoints - grade.incorrectPoints).toString()
-    } else grade.correctPoints.toString()
+    } else (criterion.minPoints + grade.correctPoints).toString()
     if (gradedCriterion.childCriteria.isEmpty()) {
       append(criterion.shortDescription)
       append(DEL)

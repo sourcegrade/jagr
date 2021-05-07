@@ -88,7 +88,7 @@ class MoodleJSONExporter @Inject constructor(
     val comments = grade.comments.joinToString("<br />")
     val receivedPoints = if (grade.correctPoints == 0) {
       if (grade.incorrectPoints == 0) "" else (criterion.maxPoints - grade.incorrectPoints).toString()
-    } else grade.correctPoints.toString()
+    } else (criterion.minPoints + grade.correctPoints).toString()
     if (gradedCriterion.childCriteria.isEmpty()) {
       append("<tr>")
       append("<td>${criterion.shortDescription}</td>")

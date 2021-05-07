@@ -44,7 +44,7 @@ class GradeResultFactoryImpl : GradeResult.Factory {
     return GradeResultImpl(correctPoints, incorrectPoints)
   }
 
-  override fun ofMax(criterion: Criterion): GradeResult = ofCorrect(criterion.maxPoints)
+  override fun ofMax(criterion: Criterion): GradeResult = ofCorrect(criterion.maxPoints - criterion.minPoints)
   override fun ofMin(criterion: Criterion): GradeResult = ofIncorrect(criterion.maxPoints - criterion.minPoints)
 
   override fun withComments(grade: GradeResult, comments: Iterable<String>): GradeResult {
