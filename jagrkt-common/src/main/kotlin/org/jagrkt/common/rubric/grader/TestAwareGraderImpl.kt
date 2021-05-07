@@ -66,8 +66,14 @@ class TestAwareGraderImpl(
 
   private val TestExecutionResult.message
     get() = throwable.orElse(null)?.run {
-      if (this !is AssertionFailedError) {
-        "${this::class.simpleName}: $message"
-      } else message
+      when (this) {
+        is AssertionFailedError,
+        -> message.toString()
+          .replace('>', ']')
+          .replace('<', '[')
+        is NullPointerException,
+        -> "${this::class.simpleName}: $message @ ${stackTrace.firstOrNull()}"
+        else -> "${this::class.simpleName}: $message"
+      }
     }
 }
