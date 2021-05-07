@@ -10,6 +10,7 @@ import org.jagrkt.common.testing.SubmissionInfoImpl
 import org.jagrkt.common.usePrintWriterSafe
 import org.slf4j.Logger
 import java.io.File
+import java.util.*
 
 class MoodleJSONExporter @Inject constructor(
   private val logger: Logger,
@@ -22,7 +23,7 @@ class MoodleJSONExporter @Inject constructor(
       StringBuilder().writeTable(gradedRubric).toString(),
     )
     val jsonString = Json.encodeToString(json)
-    directory.resolve("$fileName.json").usePrintWriterSafe(logger) {
+    directory.resolve("${UUID.randomUUID()}.json").usePrintWriterSafe(logger) {
       println(jsonString)
       flush()
     }
