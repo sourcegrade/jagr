@@ -10,7 +10,7 @@ import org.jagrkt.common.testing.SubmissionInfoImpl
 import org.jagrkt.common.usePrintWriterSafe
 import org.slf4j.Logger
 import java.io.File
-import java.util.*
+import java.util.UUID
 
 class MoodleJSONExporter @Inject constructor(
   private val logger: Logger,
