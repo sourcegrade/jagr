@@ -54,6 +54,10 @@ public class TimeoutHandler {
     private static final long TOTAL_TIMEOUT = config.getTransformers().getTimeout().getTotalTimeout();
   }
 
+  public static void disableTimeout() {
+    LAST_TIMEOUT.get().set(-1);
+  }
+
   public static void resetTimeout() {
     LAST_TIMEOUT.get().set(0);
   }
@@ -64,8 +68,12 @@ public class TimeoutHandler {
    * @throws AssertionFailedError If the timeout has been reached.
    */
   public static void checkTimeout() {
-    final long userTime = mxBean.getThreadUserTime(Thread.currentThread().getId()) / 1_000_000;
     final long lastTimeout = LAST_TIMEOUT.get().get();
+    if (lastTimeout == -1) {
+      // do nothing
+      return;
+    }
+    final long userTime = mxBean.getThreadUserTime(Thread.currentThread().getId()) / 1_000_000;
     if (lastTimeout == 0) {
       LAST_TIMEOUT.get().set(userTime);
     } else if (userTime - lastTimeout > Lazy.INDIVIDUAL_TIMEOUT) {

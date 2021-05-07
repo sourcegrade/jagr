@@ -75,7 +75,7 @@ class JavaRuntimeTester @Inject constructor(
       val statusListener = TestStatusListenerImpl(logger)
       launcher.execute(testPlan, summaryListener, statusListener)
       // if total timeout has been reached, reset so that the rubric provider doesn't throw an error
-      TimeoutHandler.resetTimeout()
+      TimeoutHandler.disableTimeout()
       statusListener.logLinkageErrors(info)
       JUnitResultImpl(testPlan, summaryListener, statusListener)
     } catch (e: Throwable) {
