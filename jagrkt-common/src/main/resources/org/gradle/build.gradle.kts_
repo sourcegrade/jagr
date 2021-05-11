@@ -17,6 +17,11 @@ allprojects {
     targetCompatibility = JavaVersion.VERSION_11
   }
   tasks {
+    create<Jar>("prepareSubmission") {
+      group = "submit"
+      from(sourceSets.main.get().allSource)
+      archiveFileName.set("${project.name}-submission.jar")
+    }
     test {
       useJUnitPlatform()
     }

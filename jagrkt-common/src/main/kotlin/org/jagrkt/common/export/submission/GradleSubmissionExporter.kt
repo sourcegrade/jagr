@@ -23,9 +23,12 @@ import com.google.common.collect.FluentIterable
 import com.google.common.reflect.ClassPath
 import com.google.inject.Inject
 import com.google.inject.Singleton
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jagrkt.api.testing.Submission
 import org.jagrkt.common.ensure
 import org.jagrkt.common.testing.JavaSubmission
+import org.jagrkt.common.testing.SubmissionInfoImpl
 import org.jagrkt.common.testing.TestJar
 import org.jagrkt.common.usePrintWriterSafe
 import org.jagrkt.common.writeStream
@@ -108,8 +111,12 @@ class GradleSubmissionExporter @Inject constructor(
     if (submission !is JavaSubmission) return
     val submissionName = submission.info.toString()
     val file = directory.resolve(submissionName).ensure(logger, false) ?: return
+    val mainResources = file.resolve("src/main/resources").ensure(logger, false) ?: return
     val mainSource = file.resolve("src/main/java").ensure(logger, false) ?: return
     val testSource = file.resolve("src/test/java").ensure(logger, false) ?: return
+    (submission.info as? SubmissionInfoImpl)?.also {
+      mainResources.resolve("submission-info.json").writeText(Json.encodeToString(it))
+    }
     // sourceFile.name starts with a / and needs to be converted to a relative path
     submission.sourceFiles.forEach { (_, sourceFile) ->
       mainSource.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
