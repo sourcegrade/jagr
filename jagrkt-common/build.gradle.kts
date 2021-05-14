@@ -26,7 +26,7 @@ dependencies {
   implementation(files("../gradle/wrapper/gradle-wrapper.jar"))
 }
 application {
-  mainClassName = "org.jagrkt.common.MainKt"
+  mainClass.set("org.jagrkt.common.MainKt")
 }
 tasks {
   jar {
