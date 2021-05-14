@@ -11,7 +11,7 @@ repositories {
 dependencies {
   api(project(":jagrkt-api"))
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
-  val kotlinxSerializationVersion = "1.1.0"
+  val kotlinxSerializationVersion = "1.2.1"
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
