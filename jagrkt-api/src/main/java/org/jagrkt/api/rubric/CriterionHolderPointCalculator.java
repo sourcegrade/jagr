@@ -28,12 +28,6 @@ import org.jetbrains.annotations.ApiStatus;
 @FunctionalInterface
 public interface CriterionHolderPointCalculator {
 
-  @ApiStatus.Internal
-  class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
-
   /**
    * @param points The points that the created calculator should return
    * @return A calculator that always returns the provided {@code points}
@@ -57,6 +51,12 @@ public interface CriterionHolderPointCalculator {
   }
 
   int getPoints(CriterionHolder<Criterion> criterionHolder);
+
+  @ApiStatus.Internal
+  final class FactoryProvider {
+    @Inject
+    private static Factory factory;
+  }
 
   @ApiStatus.Internal
   interface Factory {

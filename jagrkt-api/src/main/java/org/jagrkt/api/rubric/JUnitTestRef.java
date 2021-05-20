@@ -29,11 +29,6 @@ import java.util.concurrent.Callable;
 @FunctionalInterface
 public interface JUnitTestRef {
 
-  class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
-
   static JUnitTestRef ofClass(Class<?> clazz) {
     return FactoryProvider.factory.ofClass(clazz);
   }
@@ -50,6 +45,12 @@ public interface JUnitTestRef {
   }
 
   TestSource getTestSource();
+
+  @ApiStatus.Internal
+  final class FactoryProvider {
+    @Inject
+    private static Factory factory;
+  }
 
   @ApiStatus.Internal
   interface Factory {

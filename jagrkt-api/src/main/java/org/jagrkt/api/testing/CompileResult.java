@@ -19,8 +19,11 @@
 
 package org.jagrkt.api.testing;
 
+import org.jetbrains.annotations.ApiStatus;
+
 import java.util.List;
 
+@ApiStatus.NonExtendable
 public interface CompileResult {
 
   List<String> getMessages();

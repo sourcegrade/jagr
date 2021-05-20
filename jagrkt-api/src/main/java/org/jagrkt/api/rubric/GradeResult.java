@@ -30,12 +30,6 @@ import java.util.List;
 @ApiStatus.NonExtendable
 public interface GradeResult {
 
-  @ApiStatus.Internal
-  class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
-
   static GradeResult ofCorrect(int points) {
     return FactoryProvider.factory.ofCorrect(points);
   }
@@ -87,6 +81,12 @@ public interface GradeResult {
   int getIncorrectPoints();
 
   List<String> getComments();
+
+  @ApiStatus.Internal
+  final class FactoryProvider {
+    @Inject
+    private static Factory factory;
+  }
 
   /**
    * For documentation see static methods above

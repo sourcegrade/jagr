@@ -27,12 +27,6 @@ import org.jetbrains.annotations.Nullable;
 @FunctionalInterface
 public interface Grader {
 
-  @ApiStatus.Internal
-  class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
-
   static TestAwareBuilder testAwareBuilder() {
     return FactoryProvider.factory.testAwareBuilder();
   }
@@ -95,6 +89,12 @@ public interface Grader {
     }
 
     TestAwareBuilder requireFail(JUnitTestRef testRef, @Nullable String comment);
+  }
+
+  @ApiStatus.Internal
+  final class FactoryProvider {
+    @Inject
+    private static Factory factory;
   }
 
   @ApiStatus.Internal

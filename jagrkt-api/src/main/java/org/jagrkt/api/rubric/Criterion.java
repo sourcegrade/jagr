@@ -29,12 +29,6 @@ import java.util.List;
 @ApiStatus.NonExtendable
 public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Criterion> {
 
-  @ApiStatus.Internal
-  class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
-
   static Builder builder() {
     return FactoryProvider.factory.builder();
   }
@@ -158,6 +152,12 @@ public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Cr
     Builder addChildCriteria(Criterion... criteria);
 
     Criterion build();
+  }
+
+  @ApiStatus.Internal
+  final class FactoryProvider {
+    @Inject
+    private static Factory factory;
   }
 
   @ApiStatus.Internal

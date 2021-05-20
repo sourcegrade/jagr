@@ -28,12 +28,6 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.NonExtendable
 public interface Rubric extends Gradable<GradedRubric>, CriterionHolder<Criterion> {
 
-  @ApiStatus.Internal
-  class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
-
   static Builder builder() {
     return FactoryProvider.factory.builder();
   }
@@ -69,6 +63,12 @@ public interface Rubric extends Gradable<GradedRubric>, CriterionHolder<Criterio
     Builder addChildCriteria(Iterable<? extends Criterion> criterion);
 
     Rubric build();
+  }
+
+  @ApiStatus.Internal
+  class FactoryProvider {
+    @Inject
+    private static Factory factory;
   }
 
   @ApiStatus.Internal
