@@ -21,9 +21,11 @@ package org.jagrkt.common
 
 import com.google.inject.AbstractModule
 import org.jagrkt.api.rubric.*
+import org.jagrkt.api.testing.extension.*
 import org.jagrkt.common.executor.*
 import org.jagrkt.common.rubric.*
 import org.jagrkt.common.rubric.grader.*
+import org.jagrkt.common.testing.*
 
 /**
  * Shared bindings between main and testing guice modules
@@ -35,6 +37,7 @@ abstract class CommonModule : AbstractModule() {
     bind(Grader.Factory::class.java).to(GraderFactoryImpl::class.java)
     bind(GradeResult.Factory::class.java).to(GradeResultFactoryImpl::class.java)
     bind(JUnitTestRef.Factory::class.java).to(JUnitTestRefFactoryImpl::class.java)
+    bind(TestCycleResolver.Internal::class.java).to(TestCycleParameterResolver::class.java)
     bind(Rubric.Factory::class.java).to(RubricFactoryImpl::class.java)
 
     requestStaticInjection(
@@ -43,6 +46,7 @@ abstract class CommonModule : AbstractModule() {
       Grader.FactoryProvider::class.java,
       GradeResult.FactoryProvider::class.java,
       JUnitTestRef.FactoryProvider::class.java,
+      TestCycleResolver.Provider::class.java,
       Rubric.FactoryProvider::class.java,
       TimeoutHandler::class.java,
     )

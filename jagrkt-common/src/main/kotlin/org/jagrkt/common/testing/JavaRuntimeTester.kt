@@ -34,6 +34,7 @@ import org.slf4j.Logger
 
 class JavaRuntimeTester @Inject constructor(
   private val logger: Logger,
+  private val testCycleParameterResolver: TestCycleParameterResolver,
 ) : RuntimeTester {
   override fun createTestCycle(testJar: TestJar, submission: Submission): TestCycle? {
     if (submission !is JavaSubmission) return null
@@ -49,6 +50,7 @@ class JavaRuntimeTester @Inject constructor(
   }
 
   private fun List<ClassSelector>.runJUnit(testCycle: TestCycle): JUnitResultImpl? {
+    testCycleParameterResolver.value = testCycle
     val info = testCycle.submission.info
     logger.info("Running JUnit @ $info :: [${joinToString { it.className }}]")
     val launcher = LauncherFactory.create()
