@@ -30,9 +30,6 @@ public final class TestCycleResolver implements ParameterResolver {
 
   @Override
   public final boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-    if (Provider.parameterResolver == null) {
-      return false;
-    }
     return Provider.parameterResolver.supportsParameter(parameterContext, extensionContext);
   }
 
