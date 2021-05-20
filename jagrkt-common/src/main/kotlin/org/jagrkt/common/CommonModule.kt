@@ -37,8 +37,8 @@ abstract class CommonModule : AbstractModule() {
     bind(Grader.Factory::class.java).to(GraderFactoryImpl::class.java)
     bind(GradeResult.Factory::class.java).to(GradeResultFactoryImpl::class.java)
     bind(JUnitTestRef.Factory::class.java).to(JUnitTestRefFactoryImpl::class.java)
-    bind(TestCycleResolver.Internal::class.java).to(TestCycleParameterResolver::class.java)
     bind(Rubric.Factory::class.java).to(RubricFactoryImpl::class.java)
+    bind(TestCycleResolver.Internal::class.java).to(TestCycleParameterResolver::class.java)
 
     requestStaticInjection(
       Criterion.FactoryProvider::class.java,
@@ -46,8 +46,8 @@ abstract class CommonModule : AbstractModule() {
       Grader.FactoryProvider::class.java,
       GradeResult.FactoryProvider::class.java,
       JUnitTestRef.FactoryProvider::class.java,
-      TestCycleResolver.Provider::class.java,
       Rubric.FactoryProvider::class.java,
+      TestCycleResolver.Provider::class.java,
       TimeoutHandler::class.java,
     )
   }
