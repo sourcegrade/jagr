@@ -29,9 +29,6 @@ application {
   mainClass.set("org.jagrkt.common.MainKt")
 }
 tasks {
-  jar {
-    enabled = false
-  }
   shadowJar {
     from("../gradlew") {
       into("org/gradle")
