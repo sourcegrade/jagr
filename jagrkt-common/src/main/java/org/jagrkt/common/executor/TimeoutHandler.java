@@ -43,7 +43,6 @@ public class TimeoutHandler {
   private static final ThreadLocal<List<String>> TEST_CLASS_NAMES = ThreadLocal.withInitial(Collections::emptyList);
   private static final ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
 
-
   @Inject
   private static Config config;
 
@@ -101,16 +100,15 @@ public class TimeoutHandler {
   }
 
   /**
-   * @param currentThread
    * @return The String representing the StackElement of the Test, that produced the timeout
    */
   private static String getTimeoutLocation(Thread currentThread) {
-    var trace = currentThread.getStackTrace();
-    for (var element : trace){
+    StackTraceElement[] trace = currentThread.getStackTrace();
+    for (var element : trace) {
       if (TEST_CLASS_NAMES.get().contains(element.getClassName())) {
         return element.toString();
       }
     }
-    return "I don't know how you got here. But now that you're here.... Let's play?";
+    return "I don't know how you got here. But now that you're here... Let's play?";
   }
 }
