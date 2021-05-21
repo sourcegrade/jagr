@@ -81,7 +81,7 @@ public class TimeoutHandler {
       // do nothing
       return;
     }
-    var currentThread = Thread.currentThread();
+    Thread currentThread = Thread.currentThread();
     final long userTime = mxBean.getThreadUserTime(currentThread.getId()) / 1_000_000;
     if (lastTimeout == 0) {
       LAST_TIMEOUT.get().set(userTime);
