@@ -37,9 +37,10 @@ public interface JUnitTestRef {
     return FactoryProvider.factory.ofMethod(method);
   }
 
-  /**
-   * @throws IllegalArgumentException if the method could not be found
-   */
+  static JUnitTestRef ofClass(Callable<Class<?>> clazzSupplier) {
+    return FactoryProvider.factory.ofClass(clazzSupplier);
+  }
+
   static JUnitTestRef ofMethod(Callable<Method> methodSupplier) {
     return FactoryProvider.factory.ofMethod(methodSupplier);
   }
@@ -57,6 +58,8 @@ public interface JUnitTestRef {
     JUnitTestRef ofClass(Class<?> clazz);
 
     JUnitTestRef ofMethod(Method method);
+
+    JUnitTestRef ofClass(Callable<Class<?>> clazzSupplier);
 
     JUnitTestRef ofMethod(Callable<Method> methodSupplier);
   }

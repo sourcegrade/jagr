@@ -19,30 +19,48 @@
 
 package org.jagrkt.common.rubric
 
+import com.google.inject.Inject
 import org.jagrkt.api.rubric.JUnitTestRef
 import org.junit.platform.engine.TestSource
 import org.junit.platform.engine.support.descriptor.ClassSource
 import org.junit.platform.engine.support.descriptor.MethodSource
+import org.slf4j.Logger
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
 
-class JUnitTestRefFactoryImpl : JUnitTestRef.Factory {
+class JUnitTestRefFactoryImpl @Inject constructor(
+  private val logger: Logger,
+) : JUnitTestRef.Factory {
 
-  override fun ofClass(clazz: Class<*>): JUnitClassTestRef = JUnitClassTestRef(clazz)
-  override fun ofMethod(method: Method): JUnitMethodTestRef = JUnitMethodTestRef(method)
+  override fun ofClass(clazz: Class<*>): JUnitTestRef = JUnitClassTestRef(clazz)
+  override fun ofMethod(method: Method): JUnitTestRef = JUnitMethodTestRef(method)
 
-  @Throws(IllegalArgumentException::class)
-  override fun ofMethod(methodSupplier: Callable<Method>): JUnitMethodTestRef {
-    return ofMethod(try {
-      methodSupplier.call()
+  override fun ofClass(clazzSupplier: Callable<Class<*>>): JUnitTestRef {
+    return try {
+      ofClass(clazzSupplier.call())
     } catch (e: Throwable) {
-      throw IllegalArgumentException("Could not create JUnitTest", e)
-    })
+      logger.error("Could not create JUnitClassTestRef :: ${e::class.simpleName}: ${e.message}")
+      JUnitNoOpTestRef
+    }
+  }
+
+  override fun ofMethod(methodSupplier: Callable<Method>): JUnitTestRef {
+    return try {
+      ofMethod(methodSupplier.call())
+    } catch (e: Throwable) {
+      logger.error("Could not create JUnitMethodTestRef :: ${e::class.simpleName}: ${e.message}")
+      JUnitNoOpTestRef
+    }
+  }
+
+  object JUnitNoOpTestRef : JUnitTestRef {
+    object NoOpTestSource : TestSource
+    override fun getTestSource(): NoOpTestSource = NoOpTestSource
   }
 
   class JUnitClassTestRef(clazz: Class<*>) : JUnitTestRef {
     private val testSource = ClassSource.from(clazz)
-    override fun getTestSource(): TestSource = testSource
+    override fun getTestSource(): ClassSource = testSource
   }
 
   class JUnitMethodTestRef(method: Method) : JUnitTestRef {
