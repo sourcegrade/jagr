@@ -112,7 +112,7 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     class OrFailedError(message: String) : AssertionFailedError(message)
 
     override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
-      testRefs.execute(testResults, ::OrFailedError) { it.size == testRefs.size}
+      testRefs.execute(testResults, ::OrFailedError) { it.size == testRefs.size }
   }
 
   class Not(private val testRef: JUnitTestRef) : JUnitTestRef {
