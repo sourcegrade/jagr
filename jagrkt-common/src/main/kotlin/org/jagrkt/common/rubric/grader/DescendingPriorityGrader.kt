@@ -48,8 +48,8 @@ class DescendingPriorityGrader(
     val comments: MutableList<String> = mutableListOf()
     for (grader in graders) {
       val result = grader.grade(testCycle, criterion)
-      correctPoints = result.correctPoints
-      incorrectPoints = result.incorrectPoints
+      correctPoints += result.correctPoints
+      incorrectPoints += result.incorrectPoints
       comments += result.comments
       if (correctPoints + incorrectPoints >= maxPoints + minPoints) break
     }
