@@ -49,7 +49,7 @@ class JUnitTestRefFactoryImpl @Inject constructor(
         notSuccessful.asSequence()
           .map { it.throwable.orElse(null) }
           .filter { it != null }
-          .joinToString { "${it::class} :: ${it.message} " }
+          .joinToString { "${it::class.simpleName} :: ${it.message} " }
           .let(exceptionSupplier)
           .let(TestExecutionResult::failed)
       } else TestExecutionResult.successful()
@@ -63,7 +63,7 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     return try {
       ofClass(clazzSupplier.call())
     } catch (e: Throwable) {
-      logger.error("Could not create JUnitClassTestRef :: ${e::class.simpleName}: ${e.message}")
+      logger.error("Could not create JUnitClassTestRef :: ${e::class.qualifiedName}: ${e.message}")
       JUnitNoOpTestRef
     }
   }
@@ -72,7 +72,7 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     return try {
       ofMethod(methodSupplier.call())
     } catch (e: Throwable) {
-      logger.error("Could not create JUnitMethodTestRef :: ${e::class.simpleName}: ${e.message}")
+      logger.error("Could not create JUnitMethodTestRef :: ${e::class.qualifiedName}: ${e.message}")
       JUnitNoOpTestRef
     }
   }
