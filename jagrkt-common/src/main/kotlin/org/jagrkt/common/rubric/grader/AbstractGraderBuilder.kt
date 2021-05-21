@@ -19,13 +19,10 @@
 
 package org.jagrkt.common.rubric.grader
 
-import org.jagrkt.api.rubric.Criterion
 import org.jagrkt.api.rubric.Grader
-import org.jagrkt.api.testing.TestCycle
 
 abstract class AbstractGraderBuilder<B : Grader.Builder<B>> : Grader.Builder<B> {
 
-  var predicate: ((TestCycle, Criterion) -> Boolean)? = null
   var graderPassed: Grader? = null
   var graderFailed: Grader? = null
   var commentIfFailed: String? = null

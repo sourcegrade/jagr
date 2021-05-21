@@ -29,7 +29,6 @@ import org.junit.platform.engine.TestSource
 import org.opentest4j.AssertionFailedError
 
 class TestAwareGraderImpl(
-  private val predicate: ((TestCycle, Criterion) -> Boolean)?,
   private val graderPassed: Grader,
   private val graderFailed: Grader,
   private val requirePass: Map<TestSource, String?>,
@@ -37,11 +36,8 @@ class TestAwareGraderImpl(
   private val commentIfFailed: String?
 ) : Grader {
 
-  override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult? {
-    if (predicate?.invoke(testCycle, criterion) == false) {
-      return null
-    }
-    val statusListener = (testCycle.jUnitResult ?: return null).statusListener
+  override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult {
+    val statusListener = (testCycle.jUnitResult ?: return GradeResult.ofNone()).statusListener
     fun Map<TestSource, String?>.must(predicate: (TestExecutionResult) -> Boolean): GradeResult? {
       val comments: MutableList<String> = mutableListOf()
       var failed = false

@@ -42,7 +42,6 @@ class TestAwareGraderBuilderImpl : AbstractGraderBuilder<Grader.TestAwareBuilder
 
   override fun build(): Grader {
     return TestAwareGraderImpl(
-      predicate,
       graderPassed ?: Grader { _, _ -> GradeResult.ofNone() },
       graderFailed ?: Grader { _, _ -> GradeResult.ofNone() },
       requirePass.mapKeys { it.key.testSource },
