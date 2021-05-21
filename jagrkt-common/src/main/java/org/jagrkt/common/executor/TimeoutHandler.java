@@ -101,7 +101,6 @@ public class TimeoutHandler {
   }
 
   /**
-   *
    * @param currentThread
    * @return The String representing the StackElement of the Test, that produced the timeout
    */
