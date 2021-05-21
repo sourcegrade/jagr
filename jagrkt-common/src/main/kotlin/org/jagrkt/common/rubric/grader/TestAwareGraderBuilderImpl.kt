@@ -44,8 +44,8 @@ class TestAwareGraderBuilderImpl : AbstractGraderBuilder<Grader.TestAwareBuilder
     return TestAwareGraderImpl(
       graderPassed ?: Grader { _, _ -> GradeResult.ofNone() },
       graderFailed ?: Grader { _, _ -> GradeResult.ofNone() },
-      requirePass.mapKeys { it.key.testSource },
-      requireFail.mapKeys { it.key.testSource },
+      requirePass,
+      requireFail,
       commentIfFailed,
     )
   }

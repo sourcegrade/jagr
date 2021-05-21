@@ -21,9 +21,12 @@ package org.jagrkt.common.rubric
 
 import com.google.inject.Inject
 import org.jagrkt.api.rubric.JUnitTestRef
+import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.TestSource
 import org.junit.platform.engine.support.descriptor.ClassSource
 import org.junit.platform.engine.support.descriptor.MethodSource
+import org.junit.platform.launcher.TestIdentifier
+import org.opentest4j.AssertionFailedError
 import org.slf4j.Logger
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
@@ -32,8 +35,8 @@ class JUnitTestRefFactoryImpl @Inject constructor(
   private val logger: Logger,
 ) : JUnitTestRef.Factory {
 
-  override fun ofClass(clazz: Class<*>): JUnitTestRef = JUnitClassTestRef(clazz)
-  override fun ofMethod(method: Method): JUnitTestRef = JUnitMethodTestRef(method)
+  override fun ofClass(clazz: Class<*>): JUnitTestRef = Default(ClassSource.from(clazz))
+  override fun ofMethod(method: Method): JUnitTestRef = Default(MethodSource.from(method))
 
   override fun ofClass(clazzSupplier: Callable<Class<*>>): JUnitTestRef {
     return try {
@@ -53,18 +56,67 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     }
   }
 
+  override fun and(vararg testRefs: JUnitTestRef): JUnitTestRef = And(*testRefs)
+  override fun or(vararg testRefs: JUnitTestRef): JUnitTestRef = Or(*testRefs)
+  override fun not(testRef: JUnitTestRef): JUnitTestRef = Not(testRef)
+
   object JUnitNoOpTestRef : JUnitTestRef {
-    object NoOpTestSource : TestSource
-    override fun getTestSource(): NoOpTestSource = NoOpTestSource
+    class NoOpFailedError : AssertionFailedError("Failed to evaluate test")
+
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
+      return TestExecutionResult.failed(NoOpFailedError())
+    }
   }
 
-  class JUnitClassTestRef(clazz: Class<*>) : JUnitTestRef {
-    private val testSource = ClassSource.from(clazz)
-    override fun getTestSource(): ClassSource = testSource
+  class Default(private val testSource: TestSource) : JUnitTestRef {
+    inner class TestNotFoundError : AssertionFailedError("Test $testSource did not run")
+
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
+      for ((identifier, result) in testResults) {
+        if (testSource == identifier.source.orElse(null)) {
+          return result
+        }
+      }
+      return TestExecutionResult.failed(TestNotFoundError())
+    }
   }
 
-  class JUnitMethodTestRef(method: Method) : JUnitTestRef {
-    private val testSource = MethodSource.from(method)
-    override fun getTestSource(): MethodSource = testSource
+  class And(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
+    class AndFailedError(cause: Throwable?) : AssertionFailedError("And expression false", cause)
+
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
+      for (testRef in testRefs) {
+        val result = testRef[testResults]
+        if (result.status != TestExecutionResult.Status.SUCCESSFUL) {
+          return TestExecutionResult.failed(AndFailedError(result.throwable.orElse(null)))
+        }
+      }
+      return TestExecutionResult.successful()
+    }
+  }
+
+  class Or(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
+    class OrFailedError : AssertionFailedError("Or expression false")
+
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>?): TestExecutionResult {
+      for (testRef in testRefs) {
+        if (testRef[testResults].status == TestExecutionResult.Status.SUCCESSFUL) {
+          return testRef[testResults]
+        }
+      }
+      return TestExecutionResult.failed(OrFailedError())
+    }
+  }
+
+  class Not(private val testRef: JUnitTestRef) : JUnitTestRef {
+    class NotFailedError : AssertionFailedError("Not expression false")
+
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
+      return if (testRef[testResults].status == TestExecutionResult.Status.SUCCESSFUL) {
+        TestExecutionResult.failed(NotFailedError())
+      } else {
+        TestExecutionResult.successful()
+      }
+    }
   }
 }

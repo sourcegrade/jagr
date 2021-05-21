@@ -22,13 +22,10 @@ package org.jagrkt.common.testing
 import org.jagrkt.api.testing.SubmissionInfo
 import org.jagrkt.api.testing.TestStatusListener
 import org.junit.platform.engine.TestExecutionResult
-import org.junit.platform.engine.TestExecutionResult.Status.*
-import org.junit.platform.engine.TestSource
-import org.junit.platform.engine.support.descriptor.ClassSource
-import org.junit.platform.engine.support.descriptor.MethodSource
 import org.junit.platform.launcher.TestExecutionListener
 import org.junit.platform.launcher.TestIdentifier
 import org.slf4j.Logger
+import java.util.Collections
 
 class TestStatusListenerImpl(
   private val logger: Logger,
@@ -52,32 +49,5 @@ class TestStatusListenerImpl(
     }
   }
 
-  override fun succeeded(source: TestSource): Boolean = get(source).let { it?.status == SUCCESSFUL }
-
-  override fun failed(source: TestSource): Boolean = get(source).let { it?.status == FAILED }
-
-  override fun get(source: TestSource): TestExecutionResult? {
-    for ((testIdentifier, testExecutionResult) in testResults) {
-      if (testIdentifier.matches(source)) {
-        return testExecutionResult
-      }
-    }
-    return null
-  }
-
-  private fun TestIdentifier.matches(testSource: TestSource): Boolean {
-    return when (val source = source.orElse(null)) {
-      is ClassSource -> source.matches(testSource)
-      is MethodSource -> source == testSource
-      else -> false
-    }
-  }
-
-  private fun ClassSource.matches(other: TestSource): Boolean {
-    return when {
-      other !is ClassSource -> false
-      !other.position.isPresent -> className == other.className
-      else -> this == other
-    }
-  }
+  override fun getTestResults(): Map<TestIdentifier, TestExecutionResult> = Collections.unmodifiableMap(testResults)
 }
