@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -38,7 +40,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TimeoutHandler {
 
   private static final ThreadLocal<AtomicLong> LAST_TIMEOUT = ThreadLocal.withInitial(AtomicLong::new);
+  private static final ThreadLocal<List<String>> TEST_CLASS_NAMES = ThreadLocal.withInitial(Collections::emptyList);
   private static final ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
+
 
   @Inject
   private static Config config;
@@ -62,6 +66,10 @@ public class TimeoutHandler {
     LAST_TIMEOUT.get().set(0);
   }
 
+  public static void setClassNames(List<String> classNames){
+    TEST_CLASS_NAMES.set(classNames);
+  }
+
   /**
    * Checks whether the current {@link Thread} has reached a timeout, throwing an {@link AssertionFailedError} if so.
    *
@@ -73,20 +81,37 @@ public class TimeoutHandler {
       // do nothing
       return;
     }
-    final long userTime = mxBean.getThreadUserTime(Thread.currentThread().getId()) / 1_000_000;
+    var currentThread = Thread.currentThread();
+    final long userTime = mxBean.getThreadUserTime(currentThread.getId()) / 1_000_000;
     if (lastTimeout == 0) {
       LAST_TIMEOUT.get().set(userTime);
     } else if (userTime - lastTimeout > Lazy.INDIVIDUAL_TIMEOUT) {
       if (userTime > Lazy.TOTAL_TIMEOUT) {
-        logger.error("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms @ " + Thread.currentThread().getName());
+        logger.error("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms @ " + currentThread.getName());
         // do not reset LAST_TIMEOUT
         throw new AssertionFailedError("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms");
       } else {
-        logger.error("Individual timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms @ " + Thread.currentThread().getName());
+        logger.error("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms @ " + currentThread.getName() +
+          " in " + getTimeoutLocation(currentThread));
         // reset LAST_TIMEOUT so that the next JUnit test doesn't immediately fail
         LAST_TIMEOUT.get().set(userTime);
-        throw new AssertionFailedError("Individual timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms");
+        throw new AssertionFailedError("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms");
       }
     }
+  }
+
+  /**
+   *
+   * @param currentThread
+   * @return The String representing the StackElement of the Test, that produced the timeout
+   */
+  private static String getTimeoutLocation(Thread currentThread) {
+    var trace = currentThread.getStackTrace();
+    for (var element : trace){
+      if (TEST_CLASS_NAMES.get().contains(element.getClassName())) {
+        return element.toString();
+      }
+    }
+    return "I don't know how you got here. But now that you're here.... Let's play?";
   }
 }
