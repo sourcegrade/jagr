@@ -75,6 +75,7 @@ class JavaRuntimeTester @Inject constructor(
     return try {
       val summaryListener = SummaryGeneratingListener()
       val statusListener = TestStatusListenerImpl(logger)
+      TimeoutHandler.setClassNames(map { it.className })
       launcher.execute(testPlan, summaryListener, statusListener)
       // if total timeout has been reached, reset so that the rubric provider doesn't throw an error
       TimeoutHandler.disableTimeout()
