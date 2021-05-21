@@ -35,6 +35,27 @@ class JUnitTestRefFactoryImpl @Inject constructor(
   private val logger: Logger,
 ) : JUnitTestRef.Factory {
 
+  companion object {
+    fun Array<out JUnitTestRef>.execute(
+      testResults: Map<TestIdentifier, TestExecutionResult>,
+      exceptionSupplier: (String) -> Throwable,
+      predicate: (List<TestExecutionResult>) -> Boolean,
+    ): TestExecutionResult {
+      val notSuccessful = asSequence()
+        .map { it[testResults] }
+        .filter { it.status != TestExecutionResult.Status.SUCCESSFUL }
+        .toList()
+      return if (predicate(notSuccessful)) {
+        notSuccessful.asSequence()
+          .map { it.throwable.orElse(null) }
+          .filter { it != null }
+          .joinToString { "${it::class} :: ${it.message} " }
+          .let(exceptionSupplier)
+          .let(TestExecutionResult::failed)
+      } else TestExecutionResult.successful()
+    }
+  }
+
   override fun ofClass(clazz: Class<*>): JUnitTestRef = Default(ClassSource.from(clazz))
   override fun ofMethod(method: Method): JUnitTestRef = Default(MethodSource.from(method))
 
@@ -63,9 +84,8 @@ class JUnitTestRefFactoryImpl @Inject constructor(
   object JUnitNoOpTestRef : JUnitTestRef {
     class NoOpFailedError : AssertionFailedError("Failed to evaluate test")
 
-    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
-      return TestExecutionResult.failed(NoOpFailedError())
-    }
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
+      TestExecutionResult.aborted(NoOpFailedError())
   }
 
   class Default(private val testSource: TestSource) : JUnitTestRef {
@@ -82,30 +102,17 @@ class JUnitTestRefFactoryImpl @Inject constructor(
   }
 
   class And(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
-    class AndFailedError(cause: Throwable?) : AssertionFailedError("And expression false", cause)
+    class AndFailedError(message: String) : AssertionFailedError(message)
 
-    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
-      for (testRef in testRefs) {
-        val result = testRef[testResults]
-        if (result.status != TestExecutionResult.Status.SUCCESSFUL) {
-          return TestExecutionResult.failed(AndFailedError(result.throwable.orElse(null)))
-        }
-      }
-      return TestExecutionResult.successful()
-    }
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
+      testRefs.execute(testResults, ::AndFailedError, Collection<*>::isNotEmpty)
   }
 
   class Or(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
-    class OrFailedError : AssertionFailedError("Or expression false")
+    class OrFailedError(message: String) : AssertionFailedError(message)
 
-    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>?): TestExecutionResult {
-      for (testRef in testRefs) {
-        if (testRef[testResults].status == TestExecutionResult.Status.SUCCESSFUL) {
-          return testRef[testResults]
-        }
-      }
-      return TestExecutionResult.failed(OrFailedError())
-    }
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
+      testRefs.execute(testResults, ::OrFailedError) { it.size == testRefs.size}
   }
 
   class Not(private val testRef: JUnitTestRef) : JUnitTestRef {
