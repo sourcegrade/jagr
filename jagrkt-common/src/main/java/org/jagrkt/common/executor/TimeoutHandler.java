@@ -66,7 +66,7 @@ public class TimeoutHandler {
     LAST_TIMEOUT.get().set(0);
   }
 
-  public static void setClassNames(List<String> classNames){
+  public static void setClassNames(List<String> classNames) {
     TEST_CLASS_NAMES.set(classNames);
   }
 
