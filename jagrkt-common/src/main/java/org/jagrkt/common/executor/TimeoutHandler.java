@@ -65,7 +65,7 @@ public class TimeoutHandler {
     LAST_TIMEOUT.get().set(0);
   }
 
-  public static void setClassNames(List<String> classNames) {
+  public static void setClassNames(final List<String> classNames) {
     TEST_CLASS_NAMES.set(classNames);
   }
 
@@ -80,7 +80,7 @@ public class TimeoutHandler {
       // do nothing
       return;
     }
-    Thread currentThread = Thread.currentThread();
+    final Thread currentThread = Thread.currentThread();
     final long userTime = mxBean.getThreadUserTime(currentThread.getId()) / 1_000_000;
     if (lastTimeout == 0) {
       LAST_TIMEOUT.get().set(userTime);
@@ -102,8 +102,8 @@ public class TimeoutHandler {
   /**
    * @return The String representing the StackElement of the Test, that produced the timeout
    */
-  private static String getTimeoutLocation(Thread currentThread) {
-    StackTraceElement[] trace = currentThread.getStackTrace();
+  private static String getTimeoutLocation(final Thread currentThread) {
+    final StackTraceElement[] trace = currentThread.getStackTrace();
     for (var element : trace) {
       if (TEST_CLASS_NAMES.get().contains(element.getClassName())) {
         return element.toString();
