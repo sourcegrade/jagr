@@ -22,27 +22,27 @@ package org.jagrkt.common.rubric.grader
 import org.jagrkt.api.rubric.Criterion
 import org.jagrkt.api.rubric.GradeResult
 import org.jagrkt.api.rubric.Grader
+import org.jagrkt.api.rubric.JUnitTestRef
 import org.jagrkt.api.testing.TestCycle
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.TestExecutionResult.Status.*
-import org.junit.platform.engine.TestSource
 import org.opentest4j.AssertionFailedError
 
 class TestAwareGraderImpl(
   private val graderPassed: Grader,
   private val graderFailed: Grader,
-  private val requirePass: Map<TestSource, String?>,
-  private val requireFail: Map<TestSource, String?>,
+  private val requirePass: Map<JUnitTestRef, String?>,
+  private val requireFail: Map<JUnitTestRef, String?>,
   private val commentIfFailed: String?
 ) : Grader {
 
   override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult {
-    val statusListener = (testCycle.jUnitResult ?: return GradeResult.ofNone()).statusListener
-    fun Map<TestSource, String?>.must(predicate: (TestExecutionResult) -> Boolean): GradeResult? {
+    val testResults = (testCycle.jUnitResult ?: return GradeResult.ofNone()).statusListener.testResults
+    fun Map<JUnitTestRef, String?>.must(predicate: (TestExecutionResult) -> Boolean): GradeResult? {
       val comments: MutableList<String> = mutableListOf()
       var failed = false
-      for ((testSource, comment) in this) {
-        val testExecutionResult = statusListener[testSource]
+      for ((testRef, comment) in this) {
+        val testExecutionResult = testRef[testResults]
         if (testExecutionResult == null || !predicate(testExecutionResult)) {
           failed = true
           // a comment supplied to requirePass or requireFail overrides the default comment from the result's throwable

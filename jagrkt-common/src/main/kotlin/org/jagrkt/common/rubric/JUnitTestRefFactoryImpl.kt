@@ -21,9 +21,12 @@ package org.jagrkt.common.rubric
 
 import com.google.inject.Inject
 import org.jagrkt.api.rubric.JUnitTestRef
+import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.TestSource
 import org.junit.platform.engine.support.descriptor.ClassSource
 import org.junit.platform.engine.support.descriptor.MethodSource
+import org.junit.platform.launcher.TestIdentifier
+import org.opentest4j.AssertionFailedError
 import org.slf4j.Logger
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
@@ -32,14 +35,35 @@ class JUnitTestRefFactoryImpl @Inject constructor(
   private val logger: Logger,
 ) : JUnitTestRef.Factory {
 
-  override fun ofClass(clazz: Class<*>): JUnitTestRef = JUnitClassTestRef(clazz)
-  override fun ofMethod(method: Method): JUnitTestRef = JUnitMethodTestRef(method)
+  companion object {
+    fun Array<out JUnitTestRef>.execute(
+      testResults: Map<TestIdentifier, TestExecutionResult>,
+      exceptionSupplier: (String) -> Throwable,
+      predicate: (List<TestExecutionResult>) -> Boolean,
+    ): TestExecutionResult {
+      val notSuccessful = asSequence()
+        .map { it[testResults] }
+        .filter { it.status != TestExecutionResult.Status.SUCCESSFUL }
+        .toList()
+      return if (predicate(notSuccessful)) {
+        notSuccessful.asSequence()
+          .map { it.throwable.orElse(null) }
+          .filter { it != null }
+          .joinToString { "${it::class.simpleName} :: ${it.message} " }
+          .let(exceptionSupplier)
+          .let(TestExecutionResult::failed)
+      } else TestExecutionResult.successful()
+    }
+  }
+
+  override fun ofClass(clazz: Class<*>): JUnitTestRef = Default(ClassSource.from(clazz))
+  override fun ofMethod(method: Method): JUnitTestRef = Default(MethodSource.from(method))
 
   override fun ofClass(clazzSupplier: Callable<Class<*>>): JUnitTestRef {
     return try {
       ofClass(clazzSupplier.call())
     } catch (e: Throwable) {
-      logger.error("Could not create JUnitClassTestRef :: ${e::class.simpleName}: ${e.message}")
+      logger.error("Could not create JUnitClassTestRef :: ${e::class.qualifiedName}: ${e.message}")
       JUnitNoOpTestRef
     }
   }
@@ -48,23 +72,58 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     return try {
       ofMethod(methodSupplier.call())
     } catch (e: Throwable) {
-      logger.error("Could not create JUnitMethodTestRef :: ${e::class.simpleName}: ${e.message}")
+      logger.error("Could not create JUnitMethodTestRef :: ${e::class.qualifiedName}: ${e.message}")
       JUnitNoOpTestRef
     }
   }
 
+  override fun and(vararg testRefs: JUnitTestRef): JUnitTestRef = And(*testRefs)
+  override fun or(vararg testRefs: JUnitTestRef): JUnitTestRef = Or(*testRefs)
+  override fun not(testRef: JUnitTestRef): JUnitTestRef = Not(testRef)
+
   object JUnitNoOpTestRef : JUnitTestRef {
-    object NoOpTestSource : TestSource
-    override fun getTestSource(): NoOpTestSource = NoOpTestSource
+    class NoOpFailedError : AssertionFailedError("Failed to evaluate test")
+
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
+      TestExecutionResult.aborted(NoOpFailedError())
   }
 
-  class JUnitClassTestRef(clazz: Class<*>) : JUnitTestRef {
-    private val testSource = ClassSource.from(clazz)
-    override fun getTestSource(): ClassSource = testSource
+  class Default(private val testSource: TestSource) : JUnitTestRef {
+    inner class TestNotFoundError : AssertionFailedError("Test $testSource did not run")
+
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
+      for ((identifier, result) in testResults) {
+        if (testSource == identifier.source.orElse(null)) {
+          return result
+        }
+      }
+      return TestExecutionResult.failed(TestNotFoundError())
+    }
   }
 
-  class JUnitMethodTestRef(method: Method) : JUnitTestRef {
-    private val testSource = MethodSource.from(method)
-    override fun getTestSource(): MethodSource = testSource
+  class And(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
+    class AndFailedError(message: String) : AssertionFailedError(message)
+
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
+      testRefs.execute(testResults, ::AndFailedError, Collection<*>::isNotEmpty)
+  }
+
+  class Or(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
+    class OrFailedError(message: String) : AssertionFailedError(message)
+
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
+      testRefs.execute(testResults, ::OrFailedError) { it.size == testRefs.size }
+  }
+
+  class Not(private val testRef: JUnitTestRef) : JUnitTestRef {
+    class NotFailedError : AssertionFailedError("Not expression false")
+
+    override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
+      return if (testRef[testResults].status == TestExecutionResult.Status.SUCCESSFUL) {
+        TestExecutionResult.failed(NotFailedError())
+      } else {
+        TestExecutionResult.successful()
+      }
+    }
   }
 }

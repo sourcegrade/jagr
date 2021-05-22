@@ -21,9 +21,11 @@ package org.jagrkt.api.rubric;
 
 import com.google.inject.Inject;
 import org.jetbrains.annotations.ApiStatus;
-import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.launcher.TestIdentifier;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 @FunctionalInterface
@@ -45,7 +47,19 @@ public interface JUnitTestRef {
     return FactoryProvider.factory.ofMethod(methodSupplier);
   }
 
-  TestSource getTestSource();
+  static JUnitTestRef and(JUnitTestRef... testRefs) {
+    return FactoryProvider.factory.and(testRefs);
+  }
+
+  static JUnitTestRef or(JUnitTestRef... testRefs) {
+    return FactoryProvider.factory.or(testRefs);
+  }
+
+  static JUnitTestRef not(JUnitTestRef testRef) {
+    return FactoryProvider.factory.not(testRef);
+  }
+
+  TestExecutionResult get(Map<TestIdentifier, TestExecutionResult> testResults);
 
   @ApiStatus.Internal
   final class FactoryProvider {
@@ -62,5 +76,11 @@ public interface JUnitTestRef {
     JUnitTestRef ofClass(Callable<Class<?>> clazzSupplier);
 
     JUnitTestRef ofMethod(Callable<Method> methodSupplier);
+
+    JUnitTestRef and(JUnitTestRef... testRefs);
+
+    JUnitTestRef or(JUnitTestRef... testRefs);
+
+    JUnitTestRef not(JUnitTestRef testRef);
   }
 }
