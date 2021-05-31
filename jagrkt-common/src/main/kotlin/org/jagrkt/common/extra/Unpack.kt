@@ -22,6 +22,7 @@ package org.jagrkt.common.extra
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -49,8 +50,12 @@ abstract class Unpack : Extra {
       } catch (e: Throwable) {
         logger.error("Unable to read submission-info for $this")
         null
-      }?.use { reader ->
-        val submissionInfo = Json.decodeFromString<SubmissionInfoImpl>(reader.readText())
+      }?.use useReader@{ reader ->
+        val submissionInfo = try {
+          Json.decodeFromString<SubmissionInfoImpl>(reader.readText())
+        } catch (e: SerializationException) {
+          return@useReader null
+        }
         val replaceAssignmentId = assignmentId != null && assignmentId != submissionInfo.assignmentId
         val replaceStudentId = studentId != null && studentId != submissionInfo.studentId
         val replaceFirstName = firstName != null && firstName != submissionInfo.firstName
