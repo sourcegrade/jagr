@@ -20,33 +20,16 @@
 package org.jagrkt.common.transformer
 
 import com.google.inject.Inject
-import org.jagrkt.common.Config
 import org.jagrkt.common.compiler.java.CompiledClass
 import org.jagrkt.common.compiler.java.RuntimeJarLoader
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassWriter
 
 class TransformerManager @Inject constructor(
-  private val config: Config,
-  private val timeoutTransformer: TimeoutTransformer,
+  private val commonTransformer: CommonTransformer,
 ) {
-
-  private fun TransformData.tryRunTransformer(condition: Boolean, transformer: Transformer) {
-    if (condition) {
-      transformer.transform(reader, writer)
-    }
-  }
-
-  private fun TransformData.transform() {
-    tryRunTransformer(config.transformers.timeout.enabled, timeoutTransformer)
-  }
 
   private fun MutableMap<String, CompiledClass>.transform(): MutableMap<String, CompiledClass> {
     for ((className, compiledClass) in this) {
-      val reader = compiledClass.reader
-      val writer = ClassWriter(reader, 0)
-      TransformData(reader, writer).transform()
-      this[className] = CompiledClass.Existing(className, writer.toByteArray())
+      this[className] = CompiledClass.Existing(className, commonTransformer.transform(compiledClass.byteArray))
     }
     return this
   }
@@ -54,9 +37,4 @@ class TransformerManager @Inject constructor(
   fun transform(result: RuntimeJarLoader.CompileJarResult): RuntimeJarLoader.CompileJarResult {
     return result.copyWith(compiledClasses = result.compiledClasses.toMutableMap().transform())
   }
-
-  data class TransformData(
-    val reader: ClassReader,
-    val writer: ClassWriter,
-  )
 }

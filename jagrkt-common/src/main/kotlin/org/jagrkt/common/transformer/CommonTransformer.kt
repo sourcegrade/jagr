@@ -19,6 +19,8 @@
 
 package org.jagrkt.common.transformer
 
+import com.google.inject.Inject
+import org.jagrkt.common.Config
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -26,15 +28,20 @@ import org.objectweb.asm.Label
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
-class TimeoutTransformer : Transformer {
-  override val name: String = "timeout-transformer"
+class CommonTransformer @Inject constructor(
+  private val config: Config,
+) : Transformer {
+  override val name: String = "common-transformer"
 
   override fun transform(reader: ClassReader, writer: ClassWriter) {
-    reader.accept(TimeoutClassVisitor(writer), 0)
+    reader.accept(CommonClassVisitor(config, writer), 0)
   }
 }
 
-class TimeoutClassVisitor(writer: ClassWriter) : ClassVisitor(Opcodes.ASM9, writer) {
+private class CommonClassVisitor(
+  private val config: Config,
+  writer: ClassWriter,
+) : ClassVisitor(Opcodes.ASM9, writer) {
   override fun visitMethod(
     access: Int,
     name: String?,
@@ -42,11 +49,14 @@ class TimeoutClassVisitor(writer: ClassWriter) : ClassVisitor(Opcodes.ASM9, writ
     signature: String?,
     exceptions: Array<out String>?
   ): MethodVisitor {
-    return TimeoutMethodVisitor(super.visitMethod(access, name, descriptor, signature, exceptions))
+    return CommonMethodVisitor(config, super.visitMethod(access, name, descriptor, signature, exceptions))
   }
 }
 
-class TimeoutMethodVisitor(methodVisitor: MethodVisitor) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
+private class CommonMethodVisitor(
+  private val config: Config,
+  methodVisitor: MethodVisitor,
+) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
   override fun visitCode() {
     visitTimeoutIsns()
     super.visitCode()
@@ -58,6 +68,7 @@ class TimeoutMethodVisitor(methodVisitor: MethodVisitor) : MethodVisitor(Opcodes
   }
 
   private fun visitTimeoutIsns() {
+    if (!config.transformers.timeout.enabled) return
     visitMethodInsn(Opcodes.INVOKESTATIC, "org/jagrkt/common/executor/TimeoutHandler", "checkTimeout", "()V", false)
   }
 }

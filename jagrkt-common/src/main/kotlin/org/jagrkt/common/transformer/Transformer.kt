@@ -26,3 +26,10 @@ interface Transformer {
   val name: String
   fun transform(reader: ClassReader, writer: ClassWriter)
 }
+
+fun Transformer.transform(byteArray: ByteArray): ByteArray {
+  val reader = ClassReader(byteArray)
+  val writer = ClassWriter(reader, 0)
+  transform(reader, writer)
+  return writer.toByteArray()
+}
