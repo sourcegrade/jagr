@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @see #checkTimeout() for more information.
  */
 @SuppressWarnings("unused")
-public class TimeoutHandler {
+public final class TimeoutHandler {
 
   private static final ThreadLocal<AtomicLong> LAST_TIMEOUT = ThreadLocal.withInitial(AtomicLong::new);
   private static final ThreadLocal<List<String>> TEST_CLASS_NAMES = ThreadLocal.withInitial(Collections::emptyList);
