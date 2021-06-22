@@ -20,6 +20,7 @@
 package org.jagrkt.common
 
 import com.google.inject.AbstractModule
+import org.jagrkt.api.executor.*
 import org.jagrkt.api.rubric.*
 import org.jagrkt.api.testing.extension.*
 import org.jagrkt.common.executor.*
@@ -32,6 +33,8 @@ import org.jagrkt.common.testing.*
  */
 abstract class CommonModule : AbstractModule() {
   override fun configure() {
+    bind(ExecutionContext.Factory::class.java).to(ExecutionContextFactoryImpl::class.java)
+    bind(ExecutionContextVerifier.Factory::class.java).to(ExecutionContextVerifierFactoryImpl::class.java)
     bind(Criterion.Factory::class.java).to(CriterionFactoryImpl::class.java)
     bind(CriterionHolderPointCalculator.Factory::class.java).to(CriterionHolderPointCalculatorFactoryImpl::class.java)
     bind(Grader.Factory::class.java).to(GraderFactoryImpl::class.java)
@@ -41,6 +44,9 @@ abstract class CommonModule : AbstractModule() {
     bind(TestCycleResolver.Internal::class.java).to(TestCycleParameterResolver::class.java)
 
     requestStaticInjection(
+      ExecutionContextHandler::class.java,
+      ExecutionContext.FactoryProvider::class.java,
+      ExecutionContextVerifier.FactoryProvider::class.java,
       Criterion.FactoryProvider::class.java,
       CriterionHolderPointCalculator.FactoryProvider::class.java,
       Grader.FactoryProvider::class.java,

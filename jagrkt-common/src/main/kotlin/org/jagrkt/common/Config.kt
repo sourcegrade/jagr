@@ -80,6 +80,10 @@ class Transformers {
   }
 
   @ConfigSerializable
+  class CallStackTransformer : Transformer() {
+  }
+
+  @ConfigSerializable
   class TimeoutTransformer : Transformer() {
     @Comment(
       """
@@ -102,6 +106,8 @@ invocations of checkTimeout() will result in an AssertionFailedError
     )
     val totalTimeout = 150_000L
   }
+
+  val callStack = CallStackTransformer()
 
   val timeout = TimeoutTransformer()
 }

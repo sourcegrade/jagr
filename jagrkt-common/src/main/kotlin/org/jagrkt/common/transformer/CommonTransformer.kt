@@ -58,6 +58,7 @@ private class CommonMethodVisitor(
   methodVisitor: MethodVisitor,
 ) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
   override fun visitCode() {
+    visitCallStackIsns()
     visitTimeoutIsns()
     super.visitCode()
   }
@@ -65,6 +66,11 @@ private class CommonMethodVisitor(
   override fun visitJumpInsn(opcode: Int, label: Label?) {
     visitTimeoutIsns()
     super.visitJumpInsn(opcode, label)
+  }
+
+  private fun visitCallStackIsns() {
+    if (!config.transformers.callStack.enabled) return
+    visitMethodInsn(Opcodes.INVOKESTATIC, "org/jagrkt/common/executor/ExecutionContextHandler", "checkExecutionContext", "()V", false)
   }
 
   private fun visitTimeoutIsns() {
