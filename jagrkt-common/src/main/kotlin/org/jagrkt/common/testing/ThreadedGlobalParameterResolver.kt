@@ -24,9 +24,10 @@ import org.jagrkt.api.testing.TestCycle
 import org.jagrkt.api.testing.extension.TestCycleResolver
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.ParameterContext
+import org.junit.jupiter.api.extension.ParameterResolver
 import kotlin.reflect.KClass
 
-sealed class ThreadedGlobalParameterResolver<T : Any>(private val type: KClass<T>) : TestCycleResolver.Internal {
+sealed class ThreadedGlobalParameterResolver<T : Any>(private val type: KClass<T>) : ParameterResolver {
 
   private val valueStorage: InheritableThreadLocal<T> = InheritableThreadLocal()
   var value: T
@@ -40,4 +41,4 @@ sealed class ThreadedGlobalParameterResolver<T : Any>(private val type: KClass<T
 }
 
 @Singleton
-class TestCycleParameterResolver : ThreadedGlobalParameterResolver<TestCycle>(TestCycle::class)
+class TestCycleParameterResolver : ThreadedGlobalParameterResolver<TestCycle>(TestCycle::class), TestCycleResolver.Internal
