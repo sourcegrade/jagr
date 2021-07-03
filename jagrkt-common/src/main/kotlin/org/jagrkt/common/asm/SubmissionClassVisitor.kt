@@ -46,45 +46,43 @@ class SubmissionClassVisitor : ClassVisitor(Opcodes.ASM9) {
   ): MethodVisitor {
     return SubmissionMethodVisitor(className, name, descriptor)
   }
-}
 
-private class SubmissionMethodVisitor(
-  private val callerClass: String,
-  private val callerMethod: String,
-  private val callerDescriptor: String
-) : MethodVisitor(Opcodes.ASM9) {
-  override fun visitInvokeDynamicInsn(
+  private inner class SubmissionMethodVisitor(
+    private val callerClass: String,
+    private val callerMethod: String,
+    private val callerDescriptor: String
+  ) : MethodVisitor(Opcodes.ASM9) {
+    override fun visitInvokeDynamicInsn(
+      name: String,
+      descriptor: String,
+      bootstrapMethodHandle: Handle,
+      vararg bootstrapMethodArguments: Any?
+    ) {
+      verify(callerClass, callerMethod, callerDescriptor, bootstrapMethodHandle.owner, name, descriptor)
+    }
+
+    override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
+      verify(callerClass, callerMethod, callerDescriptor, owner, name, descriptor)
+    }
+  }
+
+  private val illegal: List<String> = mutableListOf(
+    "org/jagrkt", // the autograder should definitely not be referenced in submissions
+    "java/lang/reflect", // reflection is bad
+    "java/lang/Runtime", // runtime.exec and other stuff that shouldn't be touched
+    "javax/tools", // javac
+  )
+
+  private fun verify(
+    callerClass: String,
+    callerMethod: String,
+    callerDescriptor: String,
+    owner: String,
     name: String,
-    descriptor: String,
-    bootstrapMethodHandle: Handle,
-    vararg bootstrapMethodArguments: Any?
+    descriptor: String
   ) {
-    println("Dynamic $name$descriptor, ${with(bootstrapMethodHandle) { "$owner.${this@with.name}$desc" }}$bootstrapMethodArguments")
-    verify(callerClass, callerMethod, callerDescriptor, bootstrapMethodHandle.owner, name, descriptor)
-  }
-
-  override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
-    println("Normal $owner.$name$descriptor")
-    verify(callerClass, callerMethod, callerDescriptor, owner, name, descriptor)
-  }
-}
-
-private val illegal: List<String> = mutableListOf(
-  "org/jagrkt", // the autograder should definitely not be referenced in submissions
-  "java/lang/reflect", // reflection is bad
-  "java/lang/Runtime", // runtime.exec and other stuff that shouldn't be touched
-  "javax/tools", // javac
-)
-
-private fun verify(
-  callerClass: String,
-  callerMethod: String,
-  callerDescriptor: String,
-  owner: String,
-  name: String,
-  descriptor: String
-) {
-  if (illegal.any { owner.contains(it) || descriptor.contains(it) }) {
-    println("Illegal usage in $callerClass.$callerMethod$callerDescriptor :: $owner.$name$descriptor")
+    if (illegal.any { owner.contains(it) || descriptor.contains(it) }) {
+      System.err.println("Illegal usage in $callerClass.$callerMethod$callerDescriptor :: $owner.$name$descriptor")
+    }
   }
 }
