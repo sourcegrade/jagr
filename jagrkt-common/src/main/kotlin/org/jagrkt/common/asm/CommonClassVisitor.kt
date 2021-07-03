@@ -17,28 +17,16 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.transformer
+package org.jagrkt.common.asm
 
-import com.google.inject.Inject
 import org.jagrkt.common.Config
-import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Label
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
-class CommonTransformer @Inject constructor(
-  private val config: Config,
-) : Transformer {
-  override val name: String = "common-transformer"
-
-  override fun transform(reader: ClassReader, writer: ClassWriter) {
-    reader.accept(CommonClassVisitor(config, writer), 0)
-  }
-}
-
-private class CommonClassVisitor(
+class CommonClassVisitor(
   private val config: Config,
   writer: ClassWriter,
 ) : ClassVisitor(Opcodes.ASM9, writer) {
@@ -55,7 +43,7 @@ private class CommonClassVisitor(
 
 private class CommonMethodVisitor(
   private val config: Config,
-  methodVisitor: MethodVisitor,
+  methodVisitor: MethodVisitor?,
 ) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
   override fun visitCode() {
     visitTimeoutIsns()

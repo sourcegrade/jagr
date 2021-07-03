@@ -22,6 +22,8 @@ package org.jagrkt.common
 import com.google.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.jagrkt.api.testing.Submission
+import org.jagrkt.common.asm.BytecodeSecurityException
+import org.jagrkt.common.asm.TransformerManager
 import org.jagrkt.common.compiler.java.CompiledClass
 import org.jagrkt.common.compiler.java.RuntimeJarLoader
 import org.jagrkt.common.executor.WaterfallExecutor
@@ -31,7 +33,6 @@ import org.jagrkt.common.extra.ExtrasManager
 import org.jagrkt.common.testing.JavaSubmission
 import org.jagrkt.common.testing.RuntimeGrader
 import org.jagrkt.common.testing.TestJar
-import org.jagrkt.common.transformer.TransformerManager
 import org.slf4j.Logger
 import java.io.File
 
@@ -49,7 +50,7 @@ class JagrKtImpl @Inject constructor(
   private fun loadTestJars(testJarsLocation: File, solutionsLocation: File): List<TestJar> {
     val solutionClasses = loadLibs(solutionsLocation)
     return testJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
-      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, solutionClasses))) {
+      with(transformerManager.transformGrader(runtimeJarLoader.loadSourcesJar(it, solutionClasses))) {
         printMessages(
           logger,
           { "Test jar ${file.name} has $warnings warnings and $errors errors!" },
@@ -76,7 +77,13 @@ class JagrKtImpl @Inject constructor(
   private fun loadSubmissionJars(submissionJarsLocation: File, libsLocation: File): List<JavaSubmission> {
     val libsClasspath = loadLibs(libsLocation)
     return submissionJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
-      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libsClasspath))) {
+      val compileJarResult = try {
+        transformerManager.transformSubmission(runtimeJarLoader.loadSourcesJar(it, libsClasspath))
+      } catch (e: BytecodeSecurityException) {
+        logger.error("$it failed to verify and must be manually graded!", e)
+        return@parallelMapNotNull null
+      }
+      with(compileJarResult) {
         if (submissionInfo == null) {
           logger.error("$it does not have a submission-info.json! Skipping...")
           return@parallelMapNotNull null

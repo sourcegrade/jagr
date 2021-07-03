@@ -21,7 +21,7 @@ package org.jagrkt.common.executor;
 
 import com.google.inject.Inject;
 import org.jagrkt.common.Config;
-import org.jagrkt.common.transformer.CommonTransformer;
+import org.jagrkt.common.asm.CommonClassVisitor;
 import org.opentest4j.AssertionFailedError;
 import org.slf4j.Logger;
 
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Injected via ASM by {@link CommonTransformer}.
+ * Injected via ASM by {@link CommonClassVisitor}.
  *
  * @see #checkTimeout() for more information.
  */
