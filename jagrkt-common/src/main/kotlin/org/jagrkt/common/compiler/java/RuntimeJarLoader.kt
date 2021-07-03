@@ -25,6 +25,7 @@ import kotlinx.serialization.json.Json
 import org.jagrkt.api.testing.CompileResult
 import org.jagrkt.common.compiler.readEncoded
 import org.jagrkt.common.testing.SubmissionInfoImpl
+import org.jagrkt.common.testing.TestMeta
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
@@ -64,9 +65,18 @@ class RuntimeJarLoader @Inject constructor(
     val jarFile = JarFile(file)
     val sourceFiles: MutableMap<String, JavaSourceFile> = mutableMapOf()
     var submissionInfo: SubmissionInfoImpl? = null
+    var testMeta: TestMeta? = null
     for (entry in jarFile.entries()) {
       when {
         entry.isDirectory -> continue
+        entry.name == "meta-meta.json" -> {
+          testMeta = try {
+            Json.decodeFromString<TestMeta>(jarFile.getInputStream(entry).bufferedReader().use { it.readText() })
+          } catch (e: Exception) {
+            logger.error("$file has invalid meta-meta.json", e)
+            return CompileJarResult(file)
+          }
+        }
         entry.name == "submission-info.json" -> {
           submissionInfo = try {
             Json.decodeFromString<SubmissionInfoImpl>(jarFile.getInputStream(entry).bufferedReader().use { it.readText() })
@@ -89,6 +99,11 @@ class RuntimeJarLoader @Inject constructor(
     if (sourceFiles.isEmpty()) {
       // no source files, skip compilation task
       return CompileJarResult(file, submissionInfo)
+    }
+    testMeta?.testClasses?.forEach { testClass ->
+      if (sourceFiles.remove(testClass) != null) {
+        logger.warn("$submissionInfo :: Removed test class $testClass")
+      }
     }
     val compiledClasses: MutableMap<String, CompiledClass> = mutableMapOf()
     val collector = DiagnosticCollector<JavaFileObject>()
