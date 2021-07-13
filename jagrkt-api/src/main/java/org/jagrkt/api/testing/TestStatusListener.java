@@ -19,11 +19,13 @@
 
 package org.jagrkt.api.testing;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TestIdentifier;
 
 import java.util.Map;
 
+@ApiStatus.NonExtendable
 public interface TestStatusListener {
 
   Map<TestIdentifier, TestExecutionResult> getTestResults();

@@ -20,6 +20,8 @@
 package org.jagrkt.api.rubric;
 
 import com.google.inject.Inject;
+import org.jagrkt.api.inspect.CodeContext;
+import org.jagrkt.api.inspect.ContextResolver;
 import org.jagrkt.api.testing.TestCycle;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;

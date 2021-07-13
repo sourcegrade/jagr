@@ -19,17 +19,20 @@
 
 package org.jagrkt.common.testing
 
+import org.jagrkt.api.executor.ExecutionScopeStack
 import org.jagrkt.api.testing.TestCycle
 
 data class JavaTestCycle(
   private val rubricProviderClassNames: List<String>,
-  private val submission: JavaSubmission,
+  private val submission: JavaSubmissionImpl,
   private val classLoader: ClassLoader,
+  private val executionScopeStack: ExecutionScopeStack,
 ) : TestCycle {
   private var jUnitResult: TestCycle.JUnitResult? = null
+  override fun getExecutionScopes(): ExecutionScopeStack = executionScopeStack
   override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
   override fun getClassLoader(): ClassLoader = classLoader
-  override fun getSubmission(): JavaSubmission = submission
+  override fun getSubmission(): JavaSubmissionImpl = submission
   override fun getJUnitResult(): TestCycle.JUnitResult? = jUnitResult
   fun setJUnitResult(jUnitResult: TestCycle.JUnitResult?) {
     this.jUnitResult = jUnitResult

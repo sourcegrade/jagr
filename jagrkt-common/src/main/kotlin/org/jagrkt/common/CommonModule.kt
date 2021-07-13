@@ -33,8 +33,8 @@ import org.jagrkt.common.testing.*
  */
 abstract class CommonModule : AbstractModule() {
   override fun configure() {
-    bind(ExecutionContext.Factory::class.java).to(ExecutionContextFactoryImpl::class.java)
-    bind(ExecutionContextVerifier.Factory::class.java).to(ExecutionContextVerifierFactoryImpl::class.java)
+    bind(ExecutionSnapshot.Factory::class.java).to(ExecutionContextFactoryImpl::class.java)
+    bind(ExecutionScopeVerifier.Factory::class.java).to(ExecutionContextVerifierFactoryImpl::class.java)
     bind(Criterion.Factory::class.java).to(CriterionFactoryImpl::class.java)
     bind(CriterionHolderPointCalculator.Factory::class.java).to(CriterionHolderPointCalculatorFactoryImpl::class.java)
     bind(Grader.Factory::class.java).to(GraderFactoryImpl::class.java)
@@ -45,8 +45,8 @@ abstract class CommonModule : AbstractModule() {
 
     requestStaticInjection(
       ExecutionContextHandler::class.java,
-      ExecutionContext.FactoryProvider::class.java,
-      ExecutionContextVerifier.FactoryProvider::class.java,
+      ExecutionSnapshot.FactoryProvider::class.java,
+      ExecutionScopeVerifier.FactoryProvider::class.java,
       Criterion.FactoryProvider::class.java,
       CriterionHolderPointCalculator.FactoryProvider::class.java,
       Grader.FactoryProvider::class.java,

@@ -17,13 +17,20 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.export
+package org.jagrkt.common.testing
 
-import org.jagrkt.common.testing.TestJarImpl
-import java.io.File
+import org.jagrkt.api.testing.JavaCompiledProgram
+import spoon.Launcher
+import spoon.reflect.CtModel
+import spoon.support.compiler.VirtualFile
 
-interface Exporter {
-  val name: String
-  fun initialize(directory: File, testJar: TestJarImpl? = null) = Unit
-  fun finalize(directory: File, testJar: TestJarImpl? = null) = Unit
+lateinit var program: JavaCompiledProgram
+fun JavaSubmissionImpl.buildModel(): CtModel {
+  val launcher = Launcher()
+  for ((_, sourceFile) in compileResult.sourceFiles) {
+    launcher.addInputResource(VirtualFile(sourceFile.content, sourceFile.name))
+  }
+  program.compileResult.otherCount
+  launcher.buildModel()
+  return launcher.model
 }

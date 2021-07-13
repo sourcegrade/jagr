@@ -30,7 +30,7 @@ class RuntimeGrader @Inject constructor(
   private val logger: Logger,
   private val testers: Set<RuntimeTester>,
 ) {
-  fun grade(tests: List<TestJar>, submission: Submission): Map<GradedRubric, String> {
+  fun grade(tests: List<TestJarImpl>, submission: Submission): Map<GradedRubric, String> {
     val gradedRubrics: MutableMap<GradedRubric, String> = mutableMapOf()
     for (test in tests) {
       for (tester in testers) {

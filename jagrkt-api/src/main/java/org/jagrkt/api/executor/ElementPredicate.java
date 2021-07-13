@@ -17,13 +17,29 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.export
+package org.jagrkt.api.executor;
 
-import org.jagrkt.common.testing.TestJarImpl
-import java.io.File
+import com.google.inject.Inject;
+import org.jagrkt.api.inspect.Element;
+import org.jetbrains.annotations.ApiStatus;
 
-interface Exporter {
-  val name: String
-  fun initialize(directory: File, testJar: TestJarImpl? = null) = Unit
-  fun finalize(directory: File, testJar: TestJarImpl? = null) = Unit
+@FunctionalInterface
+public interface ElementPredicate {
+
+  static ElementPredicate nonOfType(Class<? extends Element> type) {
+    return FactoryProvider.factory.ofType(type);
+  }
+
+  boolean test(Element element);
+
+  @ApiStatus.Internal
+  final class FactoryProvider {
+    @Inject
+    private static Factory factory;
+  }
+
+  @ApiStatus.Internal
+  interface Factory {
+    ElementPredicate ofType(Class<? extends Element> type);
+  }
 }

@@ -12,5 +12,6 @@ dependencies {
   api("org.junit.jupiter:junit-jupiter:$junitVersion")
   api("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
   api("org.junit.platform:junit-platform-launcher:1.7.1")
+  api("fr.inria.gforge.spoon:spoon-core:9.0.0")
   implementation("org.jetbrains:annotations:20.1.0")
 }

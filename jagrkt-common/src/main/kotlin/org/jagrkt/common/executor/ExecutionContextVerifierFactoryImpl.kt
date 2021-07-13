@@ -19,8 +19,8 @@
 
 package org.jagrkt.common.executor
 
-import org.jagrkt.api.executor.ExecutionContextVerifier
+import org.jagrkt.api.executor.ExecutionScopeVerifier
 
-class ExecutionContextVerifierFactoryImpl : ExecutionContextVerifier.Factory {
-  override fun ensureNotRecursive(): ExecutionContextVerifier = NotRecursiveExecutionContextVerifier
+class ExecutionContextVerifierFactoryImpl : ExecutionScopeVerifier.Factory {
+  override fun ensureNotRecursive(): ExecutionScopeVerifier = NotRecursiveExecutionScopeVerifier
 }

@@ -17,13 +17,21 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.export
+package org.jagrkt.common.testing
 
-import org.jagrkt.common.testing.TestJarImpl
-import java.io.File
+import org.jagrkt.api.testing.JavaSubmission
+import org.jagrkt.api.testing.SourceFile
+import org.jagrkt.api.testing.SubmissionInfo
+import org.jagrkt.common.compiler.java.JavaCompileResult
+import spoon.reflect.CtModel
 
-interface Exporter {
-  val name: String
-  fun initialize(directory: File, testJar: TestJarImpl? = null) = Unit
-  fun finalize(directory: File, testJar: TestJarImpl? = null) = Unit
+data class JavaSubmissionImpl(
+  private val info: SubmissionInfo,
+  private val compileResult: JavaCompileResult,
+) : JavaSubmission {
+  val file = compileResult.file
+  override fun getInfo(): SubmissionInfo = info
+  override fun getCompileResult(): JavaCompileResult = compileResult
+  override fun getSourceFile(fileName: String): SourceFile? = compileResult.sourceFiles[fileName]
+  override fun toString(): String = "$info(${file.name})"
 }

@@ -17,13 +17,25 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.export
+package org.jagrkt.common.executor
 
-import org.jagrkt.common.testing.TestJarImpl
-import java.io.File
+import org.jagrkt.api.executor.ExecutionScope
+import org.jagrkt.api.executor.ExecutionScopeVerifier
+import org.opentest4j.AssertionFailedError
 
-interface Exporter {
-  val name: String
-  fun initialize(directory: File, testJar: TestJarImpl? = null) = Unit
-  fun finalize(directory: File, testJar: TestJarImpl? = null) = Unit
+object NotRecursiveExecutionScopeVerifier : ExecutionScopeVerifier {
+
+  /**
+   * @throws [AssertionFailedError] if [snapshot] is determined to contain recursive elements.
+   */
+  override fun verify(scope: ExecutionScope) {
+    val snapshot = scope.snapshot
+    val elements = HashSet<StackTraceElement>(snapshot.stackTrace.size)
+    for (element in snapshot.stackTrace) {
+      if (element == snapshot.anchor) break
+      if (!elements.add(element)) {
+        throw AssertionFailedError("Recursive invocation detected @ $element")
+      }
+    }
+  }
 }

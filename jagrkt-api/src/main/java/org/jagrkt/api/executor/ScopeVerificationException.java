@@ -17,24 +17,25 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.executor
+package org.jagrkt.api.executor;
 
-import org.jagrkt.api.executor.ExecutionContext
-import org.jagrkt.api.executor.ExecutionContextVerifier
-import org.opentest4j.AssertionFailedError
+public class ScopeVerificationException extends RuntimeException {
+  public ScopeVerificationException() {
+  }
 
-object NotRecursiveExecutionContextVerifier : ExecutionContextVerifier {
+  public ScopeVerificationException(String message) {
+    super(message);
+  }
 
-  /**
-   * @throws [AssertionFailedError] if [context] is determined to contain recursive elements.
-   */
-  override fun verify(context: ExecutionContext) {
-    val elements = HashSet<StackTraceElement>(context.stackTrace.size)
-    for (element in context.stackTrace) {
-      if (element == context.anchor) break
-      if (!elements.add(element)) {
-        throw AssertionFailedError("Recursive invocation detected @ $element")
-      }
-    }
+  public ScopeVerificationException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public ScopeVerificationException(Throwable cause) {
+    super(cause);
+  }
+
+  public ScopeVerificationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    super(message, cause, enableSuppression, writableStackTrace);
   }
 }

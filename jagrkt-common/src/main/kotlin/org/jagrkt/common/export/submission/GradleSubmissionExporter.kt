@@ -27,9 +27,9 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jagrkt.api.testing.Submission
 import org.jagrkt.common.ensure
-import org.jagrkt.common.testing.JavaSubmission
+import org.jagrkt.common.testing.JavaSubmissionImpl
 import org.jagrkt.common.testing.SubmissionInfoImpl
-import org.jagrkt.common.testing.TestJar
+import org.jagrkt.common.testing.TestJarImpl
 import org.jagrkt.common.usePrintWriterSafe
 import org.jagrkt.common.writeStream
 import org.jagrkt.common.writeTextSafe
@@ -90,7 +90,7 @@ class GradleSubmissionExporter @Inject constructor(
     writeGradleResource(classLoader, resource = "gradle-wrapper.properties", targetDir = "gradle/wrapper/")
   }
 
-  override fun initialize(directory: File, testJar: TestJar?) {
+  override fun initialize(directory: File, testJar: TestJarImpl?) {
     directory.writeSkeleton()
   }
 
@@ -103,12 +103,12 @@ class GradleSubmissionExporter @Inject constructor(
     }
   }
 
-  override fun finalize(directory: File, testJar: TestJar?) {
+  override fun finalize(directory: File, testJar: TestJarImpl?) {
     writeSettings(directory, testJar?.name)
   }
 
-  override fun export(submission: Submission, directory: File, testJar: TestJar?) {
-    if (submission !is JavaSubmission) return
+  override fun export(submission: Submission, directory: File, testJar: TestJarImpl?) {
+    if (submission !is JavaSubmissionImpl) return
     val submissionName = submission.info.toString()
     val file = directory.resolve(submissionName).ensure(logger, false) ?: return
     val mainResources = file.resolve("src/main/resources").ensure(logger, false) ?: return

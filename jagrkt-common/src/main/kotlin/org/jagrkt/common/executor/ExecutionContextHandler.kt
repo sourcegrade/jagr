@@ -16,33 +16,17 @@
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+package org.jagrkt.common.executor
 
-package org.jagrkt.api.executor;
+import org.jagrkt.common.inspect.ExecutionScopeImpl
+import org.jagrkt.common.testing.TestCycleParameterResolver
 
-import com.google.inject.Inject;
-import org.jagrkt.api.testing.TestCycle;
-import org.jetbrains.annotations.ApiStatus;
-
-public interface ExecutionContext {
-
-  static void runWithVerifiers(Runnable runnable, ExecutionContextVerifier... verifiers) {
-    FactoryProvider.factory.runWithVerifiers(runnable, verifiers);
-  }
-
-  StackTraceElement getAnchor();
-
-  StackTraceElement[] getStackTrace();
-
-  TestCycle getTestCycle();
-
-  @ApiStatus.Internal
-  final class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
-
-  @ApiStatus.Internal
-  interface Factory {
-    void runWithVerifiers(Runnable runnable, ExecutionContextVerifier... verifiers);
+object ExecutionContextHandler {
+  fun checkExecutionContext() {
+    val callStack = Thread.currentThread().stackTrace
+    for (verifier in CONTEXTS.getOrCreateStack()) {
+      verifier.verify(callStack)
+    }
+    (TestCycleParameterResolver.value.executionScopes.peek() as ExecutionScopeImpl?)?.snapshot =
   }
 }

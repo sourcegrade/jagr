@@ -17,13 +17,15 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.export
+package org.jagrkt.common.executor
 
-import org.jagrkt.common.testing.TestJarImpl
-import java.io.File
+import org.jagrkt.api.testing.TestCycle
 
-interface Exporter {
-  val name: String
-  fun initialize(directory: File, testJar: TestJarImpl? = null) = Unit
-  fun finalize(directory: File, testJar: TestJarImpl? = null) = Unit
+data class LightExecutionSnapshot(
+  val anchor: StackTraceElement,
+  val testCycle: TestCycle,
+) {
+  fun withStackTrace(stackTrace: Array<out StackTraceElement>): ExecutionSnapshotImpl {
+    return ExecutionSnapshotImpl(anchor, stackTrace, testCycle)
+  }
 }

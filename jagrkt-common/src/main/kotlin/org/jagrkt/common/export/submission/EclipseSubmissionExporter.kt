@@ -22,8 +22,8 @@ package org.jagrkt.common.export.submission
 import com.google.inject.Inject
 import org.jagrkt.api.testing.Submission
 import org.jagrkt.common.ensure
-import org.jagrkt.common.testing.JavaSubmission
-import org.jagrkt.common.testing.TestJar
+import org.jagrkt.common.testing.JavaSubmissionImpl
+import org.jagrkt.common.testing.TestJarImpl
 import org.jagrkt.common.writeTextSafe
 import org.slf4j.Logger
 import java.io.File
@@ -33,8 +33,8 @@ class EclipseSubmissionExporter @Inject constructor(
   private val logger: Logger,
 ) : SubmissionExporter {
   override val name: String = "eclipse"
-  override fun export(submission: Submission, directory: File, testJar: TestJar?) {
-    if (submission !is JavaSubmission) return
+  override fun export(submission: Submission, directory: File, testJar: TestJarImpl?) {
+    if (submission !is JavaSubmissionImpl) return
     val file = directory.resolve(submission.info.toString()).ensure(logger, false) ?: return
     val src = file.resolve("src").ensure(logger, false) ?: return
     writeProjectFile(submission, file.resolve(".project"))
@@ -45,7 +45,7 @@ class EclipseSubmissionExporter @Inject constructor(
     }
   }
 
-  private fun writeProjectFile(submission: JavaSubmission, file: File) {
+  private fun writeProjectFile(submission: JavaSubmissionImpl, file: File) {
     val writer = PrintWriter(file, "UTF-8")
     writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
     writer.println("<projectDescription>")
@@ -62,7 +62,7 @@ class EclipseSubmissionExporter @Inject constructor(
     writer.flush()
   }
 
-  private fun writeClasspathFile(submission: JavaSubmission, file: File) {
+  private fun writeClasspathFile(submission: JavaSubmissionImpl, file: File) {
     val writer = PrintWriter(file, "UTF-8")
     writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
     writer.println("<classpath>")

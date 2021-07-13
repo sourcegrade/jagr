@@ -17,32 +17,11 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.api.executor;
+package org.jagrkt.api;
 
-import com.google.inject.Inject;
-import org.jetbrains.annotations.ApiStatus;
+public class Solution {
 
-@FunctionalInterface
-public interface ExecutionContextVerifier {
+  public static void bar(int foo) {
 
-  static ExecutionContextVerifier ensureNotRecursive() {
-    return FactoryProvider.factory.ensureNotRecursive();
-  }
-
-  /**
-   * @param context The {@link ExecutionContext} to verify
-   * @throws Error (or subclass) if the provided {@link ExecutionContext} does not pass verification
-   */
-  void verify(ExecutionContext context);
-
-  @ApiStatus.Internal
-  final class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
-
-  @ApiStatus.Internal
-  interface Factory {
-    ExecutionContextVerifier ensureNotRecursive();
   }
 }

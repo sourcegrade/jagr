@@ -36,8 +36,8 @@ class JavaRuntimeTester @Inject constructor(
   private val logger: Logger,
   private val testCycleParameterResolver: TestCycleParameterResolver,
 ) : RuntimeTester {
-  override fun createTestCycle(testJar: TestJar, submission: Submission): TestCycle? {
-    if (submission !is JavaSubmission) return null
+  override fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle? {
+    if (submission !is JavaSubmissionImpl) return null
     val info = submission.info
     val rubricProviders = testJar.rubricProviders[info.assignmentId] ?: return null
     val classLoader = RuntimeClassLoader(submission.compiledClasses + testJar.compiledClasses)

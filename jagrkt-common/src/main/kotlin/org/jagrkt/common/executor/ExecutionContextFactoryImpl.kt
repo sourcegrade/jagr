@@ -19,36 +19,26 @@
 
 package org.jagrkt.common.executor
 
-import com.google.inject.Inject
 import com.google.inject.Singleton
-import org.jagrkt.api.executor.ExecutionContext
-import org.jagrkt.api.executor.ExecutionContextVerifier
+import org.jagrkt.api.executor.ExecutionSnapshot
+import org.jagrkt.api.executor.ExecutionScopeVerifier
 import org.jagrkt.common.testing.TestCycleParameterResolver
-import java.util.ArrayDeque
-import java.util.Deque
 
 @Singleton
-class ExecutionContextFactoryImpl @Inject constructor(
-  private val testCycleParameterResolver: TestCycleParameterResolver
-) : ExecutionContext.Factory {
+class ExecutionContextFactoryImpl : ExecutionSnapshot.Factory {
 
-  private val stacks: InheritableThreadLocal<Deque<StackTraceVerifier>> = InheritableThreadLocal()
 
-  fun getOrCreateStack(): Deque<StackTraceVerifier> {
-    return stacks.get() ?: ArrayDeque<StackTraceVerifier>().also(stacks::set)
-  }
-
-  override fun runWithVerifiers(runnable: Runnable, vararg verifiers: ExecutionContextVerifier) {
-    val stack = getOrCreateStack()
-    val context = LightExecutionContext(
+  override fun runWithVerifiers(runnable: Runnable, vararg verifiers: ExecutionScopeVerifier) {
+    val testCycle = TestCycleParameterResolver.value
+    val snapshot = LightExecutionSnapshot(
       Thread.currentThread().stackTrace[2],
-      testCycleParameterResolver.value,
+      testCycle,
     )
-    stack.push(verifiers.withAnchor(context))
+    testCycle.push(verifiers.withAnchor(snapshot))
     try {
       runnable.run()
     } finally {
-      stack.pop()
+      testCycle.pop()
     }
   }
 }

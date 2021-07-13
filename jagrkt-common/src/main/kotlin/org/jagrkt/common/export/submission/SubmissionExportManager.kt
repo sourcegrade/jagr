@@ -22,7 +22,7 @@ package org.jagrkt.common.export.submission
 import com.google.inject.Inject
 import org.jagrkt.api.testing.Submission
 import org.jagrkt.common.export.ExportManager
-import org.jagrkt.common.testing.TestJar
+import org.jagrkt.common.testing.TestJarImpl
 import org.slf4j.Logger
 import java.io.File
 
@@ -30,7 +30,7 @@ class SubmissionExportManager @Inject constructor(
   override val logger: Logger,
   override val exporters: Set<SubmissionExporter>,
 ) : ExportManager<SubmissionExporter>() {
-  fun export(submission: Submission, directory: File, testJars: List<TestJar>) {
+  fun export(submission: Submission, directory: File, testJars: List<TestJarImpl>) {
     for (exporter in exporters) {
       val exportDir = directory.resolve(exporter.name)
       exporter.export(submission, exportDir.resolve("default"))

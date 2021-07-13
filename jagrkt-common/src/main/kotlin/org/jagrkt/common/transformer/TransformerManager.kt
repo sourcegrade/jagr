@@ -21,7 +21,7 @@ package org.jagrkt.common.transformer
 
 import com.google.inject.Inject
 import org.jagrkt.common.compiler.java.CompiledClass
-import org.jagrkt.common.compiler.java.RuntimeJarLoader
+import org.jagrkt.common.compiler.java.JavaCompileResult
 
 class TransformerManager @Inject constructor(
   private val commonTransformer: CommonTransformer,
@@ -34,7 +34,7 @@ class TransformerManager @Inject constructor(
     return this
   }
 
-  fun transform(result: RuntimeJarLoader.CompileJarResult): RuntimeJarLoader.CompileJarResult {
+  fun transform(result: JavaCompileResult): JavaCompileResult {
     return result.copyWith(compiledClasses = result.compiledClasses.toMutableMap().transform())
   }
 }

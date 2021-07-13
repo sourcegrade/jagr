@@ -19,7 +19,7 @@
 
 package org.jagrkt.common.executor
 
-import org.jagrkt.api.executor.ExecutionContextVerifier
+import org.jagrkt.api.executor.ExecutionScopeVerifier
 
 interface StackTraceVerifier {
   fun verify(stackTrace: Array<out StackTraceElement>)
@@ -30,28 +30,28 @@ private object AnchoredEmptyExecutionContextVerifier : StackTraceVerifier {
 }
 
 private class AnchoredSingleExecutionContextVerifier(
-  private val context: LightExecutionContext,
-  private val verifier: ExecutionContextVerifier,
+  private val snapshot: LightExecutionSnapshot,
+  private val verifier: ExecutionScopeVerifier,
 ) : StackTraceVerifier {
-  override fun verify(stackTrace: Array<out StackTraceElement>) = verifier.verify(context.withStackTrace(stackTrace))
+  override fun verify(stackTrace: Array<out StackTraceElement>) = verifier.verify(snapshot.withStackTrace(stackTrace))
 }
 
 private class AnchoredManyExecutionContextVerifier(
-  private val context: LightExecutionContext,
-  private val verifiers: Array<out ExecutionContextVerifier>,
+  private val snapshot: LightExecutionSnapshot,
+  private val verifiers: Array<out ExecutionScopeVerifier>,
 ) : StackTraceVerifier {
   override fun verify(stackTrace: Array<out StackTraceElement>) {
-    val context = context.withStackTrace(stackTrace)
+    val context = snapshot.withStackTrace(stackTrace)
     for (verifier in verifiers) {
       verifier.verify(context)
     }
   }
 }
 
-fun Array<out ExecutionContextVerifier>.withAnchor(context: LightExecutionContext): StackTraceVerifier {
+fun Array<out ExecutionScopeVerifier>.withAnchor(snapshot: LightExecutionSnapshot): StackTraceVerifier {
   return when (size) {
     0 -> AnchoredEmptyExecutionContextVerifier
-    1 -> AnchoredSingleExecutionContextVerifier(context, this[0])
-    else -> AnchoredManyExecutionContextVerifier(context, this)
+    1 -> AnchoredSingleExecutionContextVerifier(snapshot, this[0])
+    else -> AnchoredManyExecutionContextVerifier(snapshot, this)
   }
 }

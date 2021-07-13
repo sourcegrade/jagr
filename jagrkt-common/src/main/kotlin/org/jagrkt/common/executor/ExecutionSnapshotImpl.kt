@@ -19,31 +19,15 @@
 
 package org.jagrkt.common.executor
 
-import org.jagrkt.api.executor.ExecutionContext
+import org.jagrkt.api.executor.ExecutionSnapshot
 import org.jagrkt.api.testing.TestCycle
 
-data class ExecutionContextImpl(
+data class ExecutionSnapshotImpl(
   private val anchor: StackTraceElement,
   private val stackTrace: Array<out StackTraceElement>,
   private val testCycle: TestCycle,
-): ExecutionContext {
+): ExecutionSnapshot {
   override fun getAnchor(): StackTraceElement = anchor
   override fun getStackTrace(): Array<out StackTraceElement> = stackTrace
   override fun getTestCycle(): TestCycle = testCycle
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (javaClass != other?.javaClass) return false
-    other as ExecutionContextImpl
-    if (anchor != other.anchor) return false
-    if (!stackTrace.contentEquals(other.stackTrace)) return false
-    if (testCycle != other.testCycle) return false
-    return true
-  }
-
-  override fun hashCode(): Int {
-    var result = anchor.hashCode()
-    result = 31 * result + stackTrace.contentHashCode()
-    result = 31 * result + testCycle.hashCode()
-    return result
-  }
 }

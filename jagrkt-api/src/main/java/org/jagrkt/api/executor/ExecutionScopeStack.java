@@ -17,13 +17,21 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.export
+package org.jagrkt.api.executor;
 
-import org.jagrkt.common.testing.TestJarImpl
-import java.io.File
+import org.jagrkt.api.inspect.Element;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
-interface Exporter {
-  val name: String
-  fun initialize(directory: File, testJar: TestJarImpl? = null) = Unit
-  fun finalize(directory: File, testJar: TestJarImpl? = null) = Unit
+@ApiStatus.NonExtendable
+public interface ExecutionScopeStack extends Iterable<ExecutionScope> {
+
+  @Nullable ExecutionScope peek();
+
+  default void pushElement(Element element) {
+    ExecutionScope scope = peek();
+    if (scope != null) {
+      scope.pushElement(element);
+    }
+  }
 }

@@ -17,25 +17,10 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.testing
+package org.jagrkt.api.testing;
 
-import org.jagrkt.api.testing.CompileResult
-import org.jagrkt.api.testing.SourceFile
-import org.jagrkt.api.testing.Submission
-import org.jagrkt.api.testing.SubmissionInfo
-import org.jagrkt.common.compiler.java.CompiledClass
-import org.jagrkt.common.compiler.java.JavaSourceFile
-import java.io.File
+import org.jetbrains.annotations.ApiStatus;
 
-data class JavaSubmission(
-  val file: File,
-  private val info: SubmissionInfo,
-  private val compileResult: CompileResult,
-  val compiledClasses: Map<String, CompiledClass>,
-  val sourceFiles: Map<String, JavaSourceFile>,
-) : Submission {
-  override fun getInfo(): SubmissionInfo = info
-  override fun getCompileResult(): CompileResult = compileResult
-  override fun getSourceFile(fileName: String): SourceFile? = sourceFiles[fileName]
-  override fun toString(): String = "$info(${file.name})"
+@ApiStatus.NonExtendable
+public interface TestJar extends CompiledProgram {
 }

@@ -21,9 +21,9 @@ package org.jagrkt.common.export.submission
 
 import org.jagrkt.api.testing.Submission
 import org.jagrkt.common.export.Exporter
-import org.jagrkt.common.testing.TestJar
+import org.jagrkt.common.testing.TestJarImpl
 import java.io.File
 
 interface SubmissionExporter : Exporter {
-  fun export(submission: Submission, directory: File, testJar: TestJar? = null)
+  fun export(submission: Submission, directory: File, testJar: TestJarImpl? = null)
 }

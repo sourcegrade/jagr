@@ -17,13 +17,16 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.export
+package org.jagrkt.common.inspect
 
-import org.jagrkt.common.testing.TestJarImpl
-import java.io.File
+import org.jagrkt.api.executor.ElementPredicate
+import org.jagrkt.api.inspect.Element
 
-interface Exporter {
-  val name: String
-  fun initialize(directory: File, testJar: TestJarImpl? = null) = Unit
-  fun finalize(directory: File, testJar: TestJarImpl? = null) = Unit
+class ElementIdVerifier(
+  predicate: ElementPredicate,
+  elementTable: Array<Element>,
+) {
+  private val notAllowed: IntArray = elementTable.filter(predicate::test).map { it.id }.toIntArray()
+
+  fun isNotAllowed(id: Int) = notAllowed.contains(id)
 }

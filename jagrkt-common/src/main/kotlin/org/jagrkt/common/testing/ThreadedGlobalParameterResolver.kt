@@ -41,4 +41,4 @@ sealed class ThreadedGlobalParameterResolver<T : Any>(private val type: KClass<T
 }
 
 @Singleton
-class TestCycleParameterResolver : ThreadedGlobalParameterResolver<TestCycle>(TestCycle::class), TestCycleResolver.Internal
+object TestCycleParameterResolver : ThreadedGlobalParameterResolver<TestCycle>(TestCycle::class), TestCycleResolver.Internal

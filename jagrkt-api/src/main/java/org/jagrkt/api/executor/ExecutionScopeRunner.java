@@ -17,19 +17,28 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.executor;
+package org.jagrkt.api.executor;
 
 import com.google.inject.Inject;
+import org.jetbrains.annotations.ApiStatus;
 
-public final class ExecutionContextHandler {
+@FunctionalInterface
+public interface ExecutionScopeRunner {
 
-  @Inject
-  private static ExecutionContextFactoryImpl CONTEXTS;
+  static void runWithVerifiers(ExecutionScopeRunner runnable, ExecutionScopeVerifier... verifiers) {
+    FactoryProvider.factory.runWithVerifiers(runnable, verifiers);
+  }
 
-  public static void checkExecutionContext() {
-    final StackTraceElement[] callStack = Thread.currentThread().getStackTrace();
-    for (StackTraceVerifier verifier : CONTEXTS.getOrCreateStack()) {
-      verifier.verify(callStack);
-    }
+  void run(ExecutionScope context);
+
+  @ApiStatus.Internal
+  final class FactoryProvider {
+    @Inject
+    private static Factory factory;
+  }
+
+  @ApiStatus.Internal
+  interface Factory {
+    void runWithVerifiers(ExecutionScopeRunner runnable, ExecutionScopeVerifier... verifiers);
   }
 }

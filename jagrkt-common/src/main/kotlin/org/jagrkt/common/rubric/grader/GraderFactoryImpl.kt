@@ -20,6 +20,8 @@
 package org.jagrkt.common.rubric.grader
 
 import com.google.inject.Inject
+import org.jagrkt.api.inspect.CodeContext
+import org.jagrkt.api.inspect.ContextResolver
 import org.jagrkt.api.rubric.Grader
 import org.slf4j.Logger
 
@@ -27,5 +29,7 @@ class GraderFactoryImpl @Inject constructor(
   private val logger: Logger,
 ) : Grader.Factory {
   override fun testAwareBuilder() = TestAwareGraderBuilderImpl()
+  override fun <C : CodeContext> contextAwareBuilder(resolver: ContextResolver<C>): Grader.ContextAwareBuilder<C> = ContextAwareGraderBuilderImpl(resolver)
   override fun descendingPriority(vararg graders: Grader) = DescendingPriorityGrader(logger, *graders)
+  override fun minIfAllUnchanged(vararg contexts: ContextResolver<*>): Grader = MinIfAllUnchangedGrader(*contexts)
 }

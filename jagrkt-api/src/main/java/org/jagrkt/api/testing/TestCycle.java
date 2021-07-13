@@ -19,6 +19,7 @@
 
 package org.jagrkt.api.testing;
 
+import org.jagrkt.api.executor.ExecutionScopeStack;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.junit.platform.launcher.TestPlan;
@@ -28,6 +29,8 @@ import java.util.List;
 
 @ApiStatus.NonExtendable
 public interface TestCycle {
+
+  ExecutionScopeStack getExecutionScopes();
 
   List<String> getRubricProviderClassNames();
 
@@ -41,6 +44,11 @@ public interface TestCycle {
 
   Submission getSubmission();
 
+  /**
+   * This will always be {@code null} during execution of JUnit tests as it is not initialized until after they are completed.
+   *
+   * @return The {@link JUnitResult} if present, otherwise null
+   */
   @Nullable JUnitResult getJUnitResult();
 
   @ApiStatus.NonExtendable

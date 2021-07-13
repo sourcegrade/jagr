@@ -17,15 +17,24 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.jagrkt.common.executor
+package org.jagrkt.api;
 
-import org.jagrkt.api.testing.TestCycle
+import org.jagrkt.api.inspect.ContextResolver;
+import org.jagrkt.api.inspect.JavaMethodContext;
+import org.jagrkt.api.testing.TestCycle;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-data class LightExecutionContext(
-  val anchor: StackTraceElement,
-  val testCycle: TestCycle,
-) {
-  fun withStackTrace(stackTrace: Array<out StackTraceElement>): ExecutionContextImpl {
-    return ExecutionContextImpl(anchor, stackTrace, testCycle)
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class IntegrationTest {
+
+  @Test
+  @DisplayName("Fib Iterative Correct")
+  public void fibIterative(TestCycle testCycle) {
+    JavaMethodContext ctx = ContextResolver.ofJavaMethod(() -> Solution.class.getMethod("bar", int.class))
+      .resolve(testCycle);
+    assertTrue(ctx.modified());
+    assertTrue(ctx.getModifiedSource().contains("for"));
   }
 }

@@ -20,6 +20,10 @@
 package org.jagrkt.api.testing.extension;
 
 import com.google.inject.Inject;
+import org.jagrkt.api.executor.ElementPredicate;
+import org.jagrkt.api.executor.ExecutionScopeRunner;
+import org.jagrkt.api.executor.ExecutionScopeVerifier;
+import org.jagrkt.api.inspect.Loop;
 import org.jetbrains.annotations.ApiStatus;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
@@ -30,6 +34,9 @@ public final class TestCycleResolver implements ParameterResolver {
 
   @Override
   public final boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    ExecutionScopeRunner.runWithVerifiers(scope1 -> {
+
+    }, ExecutionScopeVerifier.ensure(ElementPredicate.nonOfType(Loop.class)));
     return Provider.parameterResolver.supportsParameter(parameterContext, extensionContext);
   }
 

@@ -23,19 +23,23 @@ import com.google.common.base.MoreObjects
 import org.jagrkt.api.rubric.RubricForSubmission
 import org.jagrkt.api.rubric.RubricProvider
 import org.jagrkt.api.rubric.TestForSubmission
+import org.jagrkt.api.testing.CompileResult
+import org.jagrkt.api.testing.JavaCompiledProgram
+import org.jagrkt.api.testing.SourceFile
+import org.jagrkt.api.testing.TestJar
 import org.jagrkt.common.compiler.java.CompiledClass
-import org.jagrkt.common.compiler.java.JavaSourceFile
+import org.jagrkt.common.compiler.java.JavaCompileResult
 import org.jagrkt.common.compiler.java.RuntimeClassLoader
 import org.slf4j.Logger
-import java.io.File
+import spoon.reflect.CtModel
 
-class TestJar(
+class TestJarImpl(
   private val logger: Logger,
-  val file: File,
-  val compiledClasses: Map<String, CompiledClass>,
-  val sourceFiles: Map<String, JavaSourceFile>,
+  private val compileResult: JavaCompileResult,
   solutionClasses: Map<String, CompiledClass>,
-) {
+) : TestJar, JavaCompiledProgram {
+
+  val file = compileResult.file
 
   val name: String = with(file.name) { substring(0, indexOf(".jar")) }
 
@@ -54,6 +58,7 @@ class TestJar(
   init {
     val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
     val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
+    val compiledClasses = compileResult.compiledClasses
     val baseClassLoader = RuntimeClassLoader(compiledClasses + solutionClasses)
     for (className in compiledClasses.keys) {
       val clazz = baseClassLoader.loadClass(className)
@@ -62,6 +67,16 @@ class TestJar(
     }
     this.rubricProviders = rubricProviders
     this.testProviders = testProviders
+  }
+
+  override fun getCompileResult() = compileResult
+
+  override fun getSourceFile(fileName: String?): SourceFile? {
+    TODO("Not yet implemented")
+  }
+
+  override fun getModel(): CtModel {
+    TODO("Not yet implemented")
   }
 
   private fun MutableMap<String, MutableList<String>>.putIfRubric(clazz: Class<*>) {

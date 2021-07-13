@@ -29,5 +29,5 @@ public interface SourceFile {
 
   String getContent();
 
-  @Nullable String getClassName();
+  @Nullable JavaSourceFile asJava();
 }

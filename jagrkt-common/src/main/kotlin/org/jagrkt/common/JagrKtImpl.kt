@@ -28,9 +28,9 @@ import org.jagrkt.common.executor.WaterfallExecutor
 import org.jagrkt.common.export.rubric.GradedRubricExportManager
 import org.jagrkt.common.export.submission.SubmissionExportManager
 import org.jagrkt.common.extra.ExtrasManager
-import org.jagrkt.common.testing.JavaSubmission
+import org.jagrkt.common.testing.JavaSubmissionImpl
 import org.jagrkt.common.testing.RuntimeGrader
-import org.jagrkt.common.testing.TestJar
+import org.jagrkt.common.testing.TestJarImpl
 import org.jagrkt.common.transformer.TransformerManager
 import org.slf4j.Logger
 import java.io.File
@@ -46,17 +46,17 @@ class JagrKtImpl @Inject constructor(
   private val submissionExportManager: SubmissionExportManager,
 ) {
 
-  private fun loadTestJars(testJarsLocation: File, solutionsLocation: File): List<TestJar> {
+  private fun loadTestJars(testJarsLocation: File, solutionsLocation: File): List<TestJarImpl> {
     val solutionClasses = loadLibs(solutionsLocation)
     return testJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
       with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, solutionClasses))) {
         printMessages(
           logger,
-          { "Test jar ${file.name} has $warnings warnings and $errors errors!" },
-          { "Test jar ${file.name} has $warnings warnings!" },
+          { "Test jar ${file.name} has $warningCount warnings and $errorCount errors!" },
+          { "Test jar ${file.name} has $warningCount warnings!" },
         )
         logger.info("Loaded test jar ${it.name}")
-        TestJar(logger, it, compiledClasses, sourceFiles, solutionClasses).takeIf { errors == 0 }
+        TestJarImpl(logger, this, solutionClasses).takeIf { errorCount == 0 }
       }
     }
   }
@@ -73,20 +73,20 @@ class JagrKtImpl @Inject constructor(
       .reduce { a, b -> a + b }
   }
 
-  private fun loadSubmissionJars(submissionJarsLocation: File, libsLocation: File): List<JavaSubmission> {
-    val libsClasspath = loadLibs(libsLocation)
+  private fun loadSubmissionJars(submissionJarsLocation: File, libsLocation: File): List<JavaSubmissionImpl> {
+    val libClasses = loadLibs(libsLocation)
     return submissionJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
-      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libsClasspath))) {
+      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libClasses))) {
         if (submissionInfo == null) {
           logger.error("$it does not have a submission-info.json! Skipping...")
           return@parallelMapNotNull null
         }
         printMessages(
           logger,
-          { "Submission $submissionInfo(${file.name}) has $warnings warnings and $errors errors!" },
-          { "Submission $submissionInfo(${file.name}) has $warnings warnings!" },
+          { "Submission $submissionInfo(${file.name}) has $warningCount warnings and $errorCount errors!" },
+          { "Submission $submissionInfo(${file.name}) has $warningCount warnings!" },
         )
-        JavaSubmission(file, submissionInfo, this, compiledClasses, sourceFiles)
+        JavaSubmissionImpl(submissionInfo, this)
           .apply { logger.info("Loaded submission jar $this") }
       }
     }
@@ -118,7 +118,7 @@ class JagrKtImpl @Inject constructor(
     }
   }
 
-  private fun handleSubmission(submission: Submission, testJars: List<TestJar>, rubricExportLocation: File) {
+  private fun handleSubmission(submission: Submission, testJars: List<TestJarImpl>, rubricExportLocation: File) {
     val gradedRubrics = runtimeGrader.grade(testJars, submission)
     if (gradedRubrics.isEmpty()) {
       logger.warn("$submission :: No matching rubrics!")
