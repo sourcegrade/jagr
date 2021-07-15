@@ -21,7 +21,7 @@ package org.sourcegrade.jagr.common.compiler.java
 
 import org.sourcegrade.jagr.api.testing.SourceFile
 import java.net.URI
-import javax.tools.JavaFileObject.*
+import javax.tools.JavaFileObject.Kind
 import javax.tools.SimpleJavaFileObject
 
 class JavaSourceFile(
