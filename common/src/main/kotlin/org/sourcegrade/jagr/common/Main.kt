@@ -26,7 +26,7 @@ fun main(vararg args: String) {
   val startTime = System.currentTimeMillis()
   val injector = Guice.createInjector(JagrModule())
   val logger = injector.getInstance(Logger::class.java)
-  logger.info("Starting JagrKt")
+  logger.info("Starting Jagr")
   injector.getInstance(JagrImpl::class.java).run()
   val timeTaken = System.currentTimeMillis() - startTime
   logger.info("Finished! Time taken: ${timeTaken}ms")

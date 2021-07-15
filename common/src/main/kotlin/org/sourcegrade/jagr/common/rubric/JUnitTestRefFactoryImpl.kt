@@ -101,24 +101,21 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     }
   }
 
-  class And(private vararg val testRefs: JUnitTestRef) :
-    JUnitTestRef {
+  class And(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
     class AndFailedError(message: String) : AssertionFailedError(message)
 
     override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
       testRefs.execute(testResults, ::AndFailedError, Collection<*>::isNotEmpty)
   }
 
-  class Or(private vararg val testRefs: JUnitTestRef) :
-    JUnitTestRef {
+  class Or(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
     class OrFailedError(message: String) : AssertionFailedError(message)
 
     override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
       testRefs.execute(testResults, ::OrFailedError) { it.size == testRefs.size }
   }
 
-  class Not(private val testRef: JUnitTestRef) :
-    JUnitTestRef {
+  class Not(private val testRef: JUnitTestRef) : JUnitTestRef {
     class NotFailedError : AssertionFailedError("Not expression false")
 
     override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {

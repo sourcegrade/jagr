@@ -28,8 +28,7 @@ class JavaSourceFile(
   private val className: String,
   private val fileName: String,
   private val content: String,
-) : SimpleJavaFileObject(URI.create("string:///$fileName"), Kind.SOURCE),
-  SourceFile {
+) : SimpleJavaFileObject(URI.create("string:///$fileName"), Kind.SOURCE), SourceFile {
   override fun getFileName(): String = fileName
   override fun getContent(): String = content
   override fun getClassName(): String = className

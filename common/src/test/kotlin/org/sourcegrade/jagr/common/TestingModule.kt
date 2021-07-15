@@ -20,9 +20,9 @@
 package org.sourcegrade.jagr.common
 
 import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.*
+import org.slf4j.helpers.NOPLogger.NOP_LOGGER
 
-class TestingModule : org.sourcegrade.jagr.common.CommonModule() {
+class TestingModule : CommonModule() {
   override fun configure() {
     super.configure()
     bind(Logger::class.java).toInstance(NOP_LOGGER)

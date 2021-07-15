@@ -57,9 +57,7 @@ class RubricImpl(
         else -> null
       }?.also(comments::add)
       comments += messages
-      GradeResult.withComments(
-        GradeResult.of(
-          GradeResult.ofNone(), childGraded.map(Graded::getGrade)), comments)
+      GradeResult.withComments(GradeResult.of(GradeResult.ofNone(), childGraded.map(Graded::getGrade)), comments)
     }
     return GradedRubricImpl(testCycle, gradeResult, this, childGraded)
   }

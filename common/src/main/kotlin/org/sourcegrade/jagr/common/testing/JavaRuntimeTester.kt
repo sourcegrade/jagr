@@ -30,6 +30,7 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
 import org.sourcegrade.jagr.common.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.common.executor.TimeoutHandler
 
 class JavaRuntimeTester @Inject constructor(
   private val logger: Logger,
@@ -74,10 +75,10 @@ class JavaRuntimeTester @Inject constructor(
     return try {
       val summaryListener = SummaryGeneratingListener()
       val statusListener = TestStatusListenerImpl(logger)
-      org.sourcegrade.jagr.common.executor.TimeoutHandler.setClassNames(map { it.className })
+      TimeoutHandler.setClassNames(map { it.className })
       launcher.execute(testPlan, summaryListener, statusListener)
       // if total timeout has been reached, reset so that the rubric provider doesn't throw an error
-      org.sourcegrade.jagr.common.executor.TimeoutHandler.disableTimeout()
+      TimeoutHandler.disableTimeout()
       statusListener.logLinkageErrors(info)
       JUnitResultImpl(testPlan, summaryListener, statusListener)
     } catch (e: Throwable) {
