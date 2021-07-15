@@ -69,6 +69,6 @@ private class CommonMethodVisitor(
 
   private fun visitTimeoutIsns() {
     if (!config.transformers.timeout.enabled) return
-    visitMethodInsn(Opcodes.INVOKESTATIC, "org/sourcegrade.jagr/common/executor/TimeoutHandler", "checkTimeout", "()V", false)
+    visitMethodInsn(Opcodes.INVOKESTATIC, "org/sourcegrade/jagr/common/executor/TimeoutHandler", "checkTimeout", "()V", false)
   }
 }

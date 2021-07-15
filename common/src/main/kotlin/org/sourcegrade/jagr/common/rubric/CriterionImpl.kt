@@ -86,11 +86,8 @@ class CriterionImpl(
       return GradedCriterionImpl(testCycle, graderResult, this)
     }
     val childGraded = childCriteria.map { it.grade(testCycle) }
-    val gradeResult = GradeResult.of(
-      graderResult, childGraded.map(
-        Graded::getGrade
-      )
-    )
+    val gradeResult = GradeResult.of(graderResult, childGraded.map(
+      Graded::getGrade))
     return GradedCriterionImpl(testCycle, gradeResult, this, childGraded)
   }
 
