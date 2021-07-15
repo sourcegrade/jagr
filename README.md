@@ -16,7 +16,7 @@ repositories {
   maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" } // only needed for snapshot versions
 }
 dependencies {
-  implementation("org.jagrkt:jagrkt-api:$version")
+  implementation("org.sourcegrade:jagr-grader-api:$version")
 }
 ```
 
@@ -27,7 +27,7 @@ repositories {
   maven("https://s01.oss.sonatype.org/content/repositories/snapshots") // only needed for snapshot versions
 }
 dependencies {
-  implementation("org.jagrkt:jagrkt-api:$version")
+  implementation("org.sourcegrade:jagr-grader-api:$version")
 }
 ```
 
