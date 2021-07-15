@@ -57,18 +57,18 @@ class JagrPublishPlugin : Plugin<Project> {
         create<MavenPublication>("maven") {
           from(components["java"])
           pom {
-            name.set("JagrKt")
+            name.set("Jagr")
             description.set("An automated tool for grading programming assignments")
-            url.set("https://www.jagrkt.org")
+            url.set("https://www.sourcegrade.org")
             scm {
-              url.set("https://github.com/JagrKt/JagrKt")
-              connection.set("scm:git:https://github.com/JagrKt/JagrKt.git")
-              developerConnection.set("scm:git:https://github.com/JagrKt/JagrKt.git")
+              url.set("https://github.com/SourceGrade/Jagr")
+              connection.set("scm:git:https://github.com/SourceGrade/Jagr.git")
+              developerConnection.set("scm:git:https://github.com/SourceGrade/Jagr.git")
             }
             licenses {
               license {
-                name.set("GNU LESSER GENERAL PUBLIC LICENSE Version 3")
-                url.set("https://www.gnu.org/licenses/lgpl-3.0.html")
+                name.set("GNU AFFERO GENERAL PUBLIC LICENSE Version 3")
+                url.set("https://www.gnu.org/licenses/agpl-3.0.html")
                 distribution.set("repo")
               }
             }
