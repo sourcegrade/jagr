@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -21,21 +21,21 @@ package org.sourcegrade.jagr.common
 
 import com.google.inject.Inject
 import kotlinx.coroutines.runBlocking
-import org.jagrkt.common.compiler.java.CompiledClass
-import org.jagrkt.common.compiler.java.RuntimeJarLoader
-import org.jagrkt.common.executor.WaterfallExecutor
-import org.jagrkt.common.export.rubric.GradedRubricExportManager
-import org.jagrkt.common.export.submission.SubmissionExportManager
-import org.jagrkt.common.extra.ExtrasManager
-import org.jagrkt.common.testing.JavaSubmission
-import org.jagrkt.common.testing.RuntimeGrader
-import org.jagrkt.common.testing.TestJar
-import org.jagrkt.common.transformer.TransformerManager
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.common.compiler.java.CompiledClass
+import org.sourcegrade.jagr.common.compiler.java.RuntimeJarLoader
+import org.sourcegrade.jagr.common.executor.WaterfallExecutor
+import org.sourcegrade.jagr.common.export.rubric.GradedRubricExportManager
+import org.sourcegrade.jagr.common.export.submission.SubmissionExportManager
+import org.sourcegrade.jagr.common.extra.ExtrasManager
+import org.sourcegrade.jagr.common.testing.JavaSubmission
+import org.sourcegrade.jagr.common.testing.RuntimeGrader
+import org.sourcegrade.jagr.common.testing.TestJar
+import org.sourcegrade.jagr.common.transformer.TransformerManager
 import java.io.File
 
-class JagrKtImpl @Inject constructor(
+class JagrImpl @Inject constructor(
   private val config: Config,
   private val logger: Logger,
   private val runtimeJarLoader: RuntimeJarLoader,

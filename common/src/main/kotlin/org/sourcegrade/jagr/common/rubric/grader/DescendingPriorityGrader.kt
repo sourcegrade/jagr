@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -19,12 +19,12 @@
 
 package org.sourcegrade.jagr.common.rubric.grader
 
-import org.jagrkt.common.rubric.GradeResultImpl
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.Criterion
 import org.sourcegrade.jagr.api.rubric.GradeResult
 import org.sourcegrade.jagr.api.rubric.Grader
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.common.rubric.GradeResultImpl
 
 class DescendingPriorityGrader(
   private val logger: Logger,

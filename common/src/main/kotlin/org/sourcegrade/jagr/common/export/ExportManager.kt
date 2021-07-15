@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -19,9 +19,9 @@
 
 package org.sourcegrade.jagr.common.export
 
-import org.jagrkt.common.ensure
-import org.jagrkt.common.testing.TestJar
 import org.slf4j.Logger
+import org.sourcegrade.jagr.common.ensure
+import org.sourcegrade.jagr.common.testing.TestJar
 import java.io.File
 
 abstract class ExportManager<E : Exporter> {

@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -25,15 +25,15 @@ import com.google.inject.Inject
 import com.google.inject.Singleton
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.jagrkt.common.ensure
-import org.jagrkt.common.testing.JavaSubmission
-import org.jagrkt.common.testing.SubmissionInfoImpl
-import org.jagrkt.common.testing.TestJar
-import org.jagrkt.common.usePrintWriterSafe
-import org.jagrkt.common.writeStream
-import org.jagrkt.common.writeTextSafe
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.common.ensure
+import org.sourcegrade.jagr.common.testing.JavaSubmission
+import org.sourcegrade.jagr.common.testing.SubmissionInfoImpl
+import org.sourcegrade.jagr.common.testing.TestJar
+import org.sourcegrade.jagr.common.usePrintWriterSafe
+import org.sourcegrade.jagr.common.writeStream
+import org.sourcegrade.jagr.common.writeTextSafe
 import java.io.File
 import java.util.jar.Attributes
 import java.util.jar.JarEntry

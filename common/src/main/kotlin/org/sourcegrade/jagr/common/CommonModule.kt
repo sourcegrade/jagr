@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -20,12 +20,12 @@
 package org.sourcegrade.jagr.common
 
 import com.google.inject.AbstractModule
-import org.jagrkt.api.rubric.*
-import org.jagrkt.api.testing.extension.*
-import org.jagrkt.common.executor.*
-import org.jagrkt.common.rubric.*
-import org.jagrkt.common.rubric.grader.*
-import org.jagrkt.common.testing.*
+import org.sourcegrade.jagr.api.rubric.*
+import org.sourcegrade.jagr.api.testing.extension.*
+import org.sourcegrade.jagr.common.executor.*
+import org.sourcegrade.jagr.common.rubric.*
+import org.sourcegrade.jagr.common.rubric.grader.*
+import org.sourcegrade.jagr.common.testing.*
 
 /**
  * Shared bindings between main and testing guice modules
@@ -48,7 +48,7 @@ abstract class CommonModule : AbstractModule() {
       JUnitTestRef.FactoryProvider::class.java,
       Rubric.FactoryProvider::class.java,
       TestCycleResolver.Provider::class.java,
-      org.sourcegrade.jagr.common.executor.TimeoutHandler::class.java,
+      TimeoutHandler::class.java,
     )
   }
 }

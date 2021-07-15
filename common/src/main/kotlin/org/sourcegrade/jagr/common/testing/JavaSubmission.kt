@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -19,12 +19,12 @@
 
 package org.sourcegrade.jagr.common.testing
 
-import org.jagrkt.common.compiler.java.CompiledClass
-import org.jagrkt.common.compiler.java.JavaSourceFile
 import org.sourcegrade.jagr.api.testing.CompileResult
 import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
+import org.sourcegrade.jagr.common.compiler.java.CompiledClass
+import org.sourcegrade.jagr.common.compiler.java.JavaSourceFile
 import java.io.File
 
 data class JavaSubmission(

@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -20,8 +20,8 @@
 package org.sourcegrade.jagr.common.extra
 
 import com.google.inject.Inject
-import org.jagrkt.common.Config
 import org.slf4j.Logger
+import org.sourcegrade.jagr.common.Config
 
 class ExtrasManager @Inject constructor(
   private val config: Config,

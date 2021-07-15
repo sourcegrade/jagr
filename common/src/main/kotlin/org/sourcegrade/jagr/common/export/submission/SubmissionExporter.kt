@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -19,9 +19,9 @@
 
 package org.sourcegrade.jagr.common.export.submission
 
-import org.jagrkt.common.export.Exporter
-import org.jagrkt.common.testing.TestJar
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.common.export.Exporter
+import org.sourcegrade.jagr.common.testing.TestJar
 import java.io.File
 
 interface SubmissionExporter : Exporter {

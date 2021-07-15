@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -23,11 +23,11 @@ import com.google.inject.Inject
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.jagrkt.common.testing.SubmissionInfoImpl
-import org.jagrkt.common.usePrintWriterSafe
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
+import org.sourcegrade.jagr.common.testing.SubmissionInfoImpl
+import org.sourcegrade.jagr.common.usePrintWriterSafe
 import java.io.File
 
 class MoodleJSONExporter @Inject constructor(

@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -26,9 +26,9 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.jagrkt.common.Config
-import org.jagrkt.common.testing.SubmissionInfoImpl
 import org.slf4j.Logger
+import org.sourcegrade.jagr.common.Config
+import org.sourcegrade.jagr.common.testing.SubmissionInfoImpl
 import java.io.File
 import java.nio.file.FileSystems
 import kotlin.io.path.ExperimentalPathApi

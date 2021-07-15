@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -20,7 +20,6 @@
 package org.sourcegrade.jagr.common.testing
 
 import com.google.inject.Inject
-import org.jagrkt.common.compiler.java.RuntimeClassLoader
 import org.junit.platform.commons.JUnitException
 import org.junit.platform.engine.discovery.ClassSelector
 import org.junit.platform.engine.discovery.DiscoverySelectors
@@ -30,6 +29,7 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.common.compiler.java.RuntimeClassLoader
 
 class JavaRuntimeTester @Inject constructor(
   private val logger: Logger,

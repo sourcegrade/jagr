@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -20,12 +20,12 @@
 package org.sourcegrade.jagr.common.export.submission
 
 import com.google.inject.Inject
-import org.jagrkt.common.ensure
-import org.jagrkt.common.testing.JavaSubmission
-import org.jagrkt.common.testing.TestJar
-import org.jagrkt.common.writeTextSafe
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.common.ensure
+import org.sourcegrade.jagr.common.testing.JavaSubmission
+import org.sourcegrade.jagr.common.testing.TestJar
+import org.sourcegrade.jagr.common.writeTextSafe
 import java.io.File
 import java.io.PrintWriter
 

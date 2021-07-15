@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -42,4 +42,5 @@ sealed class ThreadedGlobalParameterResolver<T : Any>(private val type: KClass<T
 
 @Singleton
 class TestCycleParameterResolver : ThreadedGlobalParameterResolver<TestCycle>(
-  TestCycle::class), TestCycleResolver.Internal
+  TestCycle::class
+), TestCycleResolver.Internal

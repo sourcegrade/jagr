@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -20,13 +20,13 @@
 package org.sourcegrade.jagr.common.transformer
 
 import com.google.inject.Inject
-import org.jagrkt.common.Config
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Label
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
+import org.sourcegrade.jagr.common.Config
 
 class CommonTransformer @Inject constructor(
   private val config: Config,
@@ -69,6 +69,6 @@ private class CommonMethodVisitor(
 
   private fun visitTimeoutIsns() {
     if (!config.transformers.timeout.enabled) return
-    visitMethodInsn(Opcodes.INVOKESTATIC, "org/jagrkt/common/executor/TimeoutHandler", "checkTimeout", "()V", false)
+    visitMethodInsn(Opcodes.INVOKESTATIC, "org/sourcegrade.jagr/common/executor/TimeoutHandler", "checkTimeout", "()V", false)
   }
 }

@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -59,7 +59,9 @@ class RubricImpl(
       comments += messages
       GradeResult.withComments(
         GradeResult.of(
-          GradeResult.ofNone(), childGraded.map(Graded::getGrade)), comments)
+          GradeResult.ofNone(), childGraded.map(Graded::getGrade)
+        ), comments
+      )
     }
     return GradedRubricImpl(testCycle, gradeResult, this, childGraded)
   }

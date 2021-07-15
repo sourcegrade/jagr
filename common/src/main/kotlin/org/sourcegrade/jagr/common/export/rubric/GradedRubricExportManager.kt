@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -20,9 +20,9 @@
 package org.sourcegrade.jagr.common.export.rubric
 
 import com.google.inject.Inject
-import org.jagrkt.common.export.ExportManager
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedRubric
+import org.sourcegrade.jagr.common.export.ExportManager
 import java.io.File
 
 class GradedRubricExportManager @Inject constructor(

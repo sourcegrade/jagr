@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -22,13 +22,13 @@ package org.sourcegrade.jagr.common.compiler.java
 import com.google.inject.Inject
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import org.jagrkt.common.compiler.readEncoded
-import org.jagrkt.common.testing.SubmissionInfoImpl
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.CompileResult
+import org.sourcegrade.jagr.common.compiler.readEncoded
+import org.sourcegrade.jagr.common.testing.SubmissionInfoImpl
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.Locale

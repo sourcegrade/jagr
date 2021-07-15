@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -20,23 +20,23 @@
 package org.sourcegrade.jagr.common
 
 import com.google.inject.multibindings.Multibinder
-import org.jagrkt.common.export.rubric.GermanCSVExporter
-import org.jagrkt.common.export.rubric.GradedRubricExporter
-import org.jagrkt.common.export.rubric.MoodleJSONExporter
-import org.jagrkt.common.export.submission.EclipseSubmissionExporter
-import org.jagrkt.common.export.submission.GradleSubmissionExporter
-import org.jagrkt.common.export.submission.SubmissionExporter
-import org.jagrkt.common.testing.JavaRuntimeTester
-import org.jagrkt.common.testing.RuntimeTester
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.sourcegrade.jagr.common.export.rubric.GermanCSVExporter
+import org.sourcegrade.jagr.common.export.rubric.GradedRubricExporter
+import org.sourcegrade.jagr.common.export.rubric.MoodleJSONExporter
+import org.sourcegrade.jagr.common.export.submission.EclipseSubmissionExporter
+import org.sourcegrade.jagr.common.export.submission.GradleSubmissionExporter
+import org.sourcegrade.jagr.common.export.submission.SubmissionExporter
+import org.sourcegrade.jagr.common.testing.JavaRuntimeTester
+import org.sourcegrade.jagr.common.testing.RuntimeTester
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader
 import java.nio.file.Paths
 
-class JagrKtModule : org.sourcegrade.jagr.common.CommonModule() {
+class JagrModule : CommonModule() {
   override fun configure() {
     super.configure()
-    bind(Logger::class.java).toInstance(LoggerFactory.getLogger("JagrKt"))
+    bind(Logger::class.java).toInstance(LoggerFactory.getLogger("Jagr"))
 
     with(Multibinder.newSetBinder(binder(), GradedRubricExporter::class.java)) {
       addBinding().to(GermanCSVExporter::class.java)
@@ -50,7 +50,7 @@ class JagrKtModule : org.sourcegrade.jagr.common.CommonModule() {
       addBinding().to(JavaRuntimeTester::class.java)
     }
 
-    val loader = HoconConfigurationLoader.builder().path(Paths.get("./jagrkt.conf")).build()
+    val loader = HoconConfigurationLoader.builder().path(Paths.get("./jagr.conf")).build()
     val rootNode = loader.load()
     val config: Config
     if (rootNode.empty()) {

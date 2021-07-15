@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -24,10 +24,10 @@ import org.slf4j.Logger
 
 fun main(vararg args: String) {
   val startTime = System.currentTimeMillis()
-  val injector = Guice.createInjector(JagrKtModule())
+  val injector = Guice.createInjector(JagrModule())
   val logger = injector.getInstance(Logger::class.java)
   logger.info("Starting JagrKt")
-  injector.getInstance(JagrKtImpl::class.java).run()
+  injector.getInstance(JagrImpl::class.java).run()
   val timeTaken = System.currentTimeMillis() - startTime
   logger.info("Finished! Time taken: ${timeTaken}ms")
 }

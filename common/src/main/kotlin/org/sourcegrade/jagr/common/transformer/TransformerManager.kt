@@ -1,5 +1,5 @@
 /*
- *   JagrKt - JagrKt.org
+ *   Jagr - SourceGrade.org
  *   Copyright (C) 2021 Alexander Staeding
  *   Copyright (C) 2021 Contributors
  *
@@ -20,8 +20,8 @@
 package org.sourcegrade.jagr.common.transformer
 
 import com.google.inject.Inject
-import org.jagrkt.common.compiler.java.CompiledClass
-import org.jagrkt.common.compiler.java.RuntimeJarLoader
+import org.sourcegrade.jagr.common.compiler.java.CompiledClass
+import org.sourcegrade.jagr.common.compiler.java.RuntimeJarLoader
 
 class TransformerManager @Inject constructor(
   private val commonTransformer: CommonTransformer,
