@@ -1,4 +1,4 @@
-# JagrKt
+# Jagr
 
 **Java AutoGrader, implemented in Kotlin**
 
