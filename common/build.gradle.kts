@@ -26,7 +26,7 @@ dependencies {
   implementation(files("../gradle/wrapper/gradle-wrapper.jar"))
 }
 application {
-  mainClass.set("org.jagrkt.common.MainKt")
+  mainClass.set("org.sourcegrade.jagr.common.MainKt")
 }
 tasks {
   shadowJar {
@@ -39,7 +39,7 @@ tasks {
     from("../gradle/wrapper/gradle-wrapper.properties") {
       into("org/gradle")
     }
-    archiveFileName.set("JagrKt-${project.version}.jar")
+    archiveFileName.set("Jagr-${project.version}.jar")
   }
   test {
     useJUnitPlatform()
