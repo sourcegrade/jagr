@@ -1,5 +1,5 @@
 rootProject.name = "Jagr"
 include(":jagr-grader-api")
-include(":jagr-common")
+include(":jagr-core")
 project(":jagr-grader-api").projectDir = File("grader-api")
-project(":jagr-common").projectDir = File("common")
+project(":jagr-core").projectDir = File("core")
