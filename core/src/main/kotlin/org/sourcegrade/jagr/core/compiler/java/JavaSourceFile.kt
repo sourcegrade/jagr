@@ -17,15 +17,20 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.compiler.java
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.sourcegrade.jagr.api.testing.SourceFile
+import java.net.URI
+import javax.tools.JavaFileObject.Kind
+import javax.tools.SimpleJavaFileObject
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
-  }
+class JavaSourceFile(
+  private val className: String,
+  private val fileName: String,
+  private val content: String,
+) : SimpleJavaFileObject(URI.create("string:///$fileName"), Kind.SOURCE), SourceFile {
+  override fun getFileName(): String = fileName
+  override fun getContent(): String = content
+  override fun getClassName(): String = className
+  override fun getCharContent(ignoreEncodingErrors: Boolean): CharSequence = content
 }

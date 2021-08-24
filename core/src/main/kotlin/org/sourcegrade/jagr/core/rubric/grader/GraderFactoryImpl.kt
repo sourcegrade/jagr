@@ -17,15 +17,15 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.rubric.grader
 
+import com.google.inject.Inject
 import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.sourcegrade.jagr.api.rubric.Grader
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
-  }
+class GraderFactoryImpl @Inject constructor(
+  private val logger: Logger,
+) : Grader.Factory {
+  override fun testAwareBuilder() = TestAwareGraderBuilderImpl()
+  override fun descendingPriority(vararg graders: Grader) = DescendingPriorityGrader(logger, *graders)
 }

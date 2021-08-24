@@ -17,15 +17,30 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.rubric.grader
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.sourcegrade.jagr.api.rubric.Grader
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
+abstract class AbstractGraderBuilder<B : Grader.Builder<B>> : Grader.Builder<B> {
+
+  var graderPassed: Grader? = null
+  var graderFailed: Grader? = null
+  var commentIfFailed: String? = null
+
+  abstract fun getThis(): B
+
+  override fun pointsPassed(grader: Grader?): B {
+    graderPassed = grader
+    return getThis()
+  }
+
+  override fun pointsFailed(grader: Grader?): B {
+    graderFailed = grader
+    return getThis()
+  }
+
+  override fun commentIfFailed(comment: String?): B {
+    commentIfFailed = comment
+    return getThis()
   }
 }

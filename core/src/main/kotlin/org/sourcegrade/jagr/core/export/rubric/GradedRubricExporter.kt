@@ -17,15 +17,15 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.export.rubric
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.sourcegrade.jagr.api.rubric.GradedRubric
+import org.sourcegrade.jagr.core.export.Exporter
+import java.io.File
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
-  }
+interface GradedRubricExporter : Exporter {
+  /**
+   * Assumes that [directory] exists.
+   */
+  fun export(gradedRubric: GradedRubric, directory: File, fileName: String)
 }

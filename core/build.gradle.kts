@@ -26,7 +26,7 @@ dependencies {
   implementation(files("../gradle/wrapper/gradle-wrapper.jar"))
 }
 application {
-  mainClass.set("org.sourcegrade.jagr.common.MainKt")
+  mainClass.set("org.sourcegrade.jagr.core.MainKt")
 }
 tasks {
   shadowJar {

@@ -17,15 +17,9 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.extra
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
-
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
-  }
+interface Extra {
+  val name: String
+  fun run()
 }

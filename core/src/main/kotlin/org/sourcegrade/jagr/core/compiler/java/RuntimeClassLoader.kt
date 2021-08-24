@@ -17,15 +17,17 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.compiler.java
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+class RuntimeClassLoader(
+  private val classStorage: Map<String, CompiledClass>,
+  parent: ClassLoader = getSystemClassLoader(),
+) : ClassLoader(parent) {
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
+  @Throws(ClassNotFoundException::class, ClassFormatError::class)
+  override fun findClass(name: String): Class<*> {
+    val compiledClass = classStorage[name] ?: return super.findClass(name)
+    val byteCode: ByteArray = compiledClass.byteArray
+    return defineClass(name, byteCode, 0, byteCode.size)
   }
 }

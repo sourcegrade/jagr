@@ -17,15 +17,24 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.transformer
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import com.google.inject.Inject
+import org.sourcegrade.jagr.core.compiler.java.CompiledClass
+import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
+class TransformerManager @Inject constructor(
+  private val commonTransformer: CommonTransformer,
+) {
+
+  private fun MutableMap<String, CompiledClass>.transform(): MutableMap<String, CompiledClass> {
+    for ((className, compiledClass) in this) {
+      this[className] = CompiledClass.Existing(className, commonTransformer.transform(compiledClass.byteArray))
+    }
+    return this
+  }
+
+  fun transform(result: RuntimeJarLoader.CompileJarResult): RuntimeJarLoader.CompileJarResult {
+    return result.copyWith(compiledClasses = result.compiledClasses.toMutableMap().transform())
   }
 }

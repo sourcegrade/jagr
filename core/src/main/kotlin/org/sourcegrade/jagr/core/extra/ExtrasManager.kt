@@ -17,15 +17,26 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.extra
 
+import com.google.inject.Inject
 import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.sourcegrade.jagr.core.Config
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
+class ExtrasManager @Inject constructor(
+  private val config: Config,
+  private val logger: Logger,
+  private val moodleUnpack: MoodleUnpack,
+) {
+
+  private fun tryRunExtra(condition: Boolean, extra: Extra) {
+    if (condition) {
+      logger.info("Running extra ${extra.name}")
+      extra.run()
+    }
+  }
+
+  fun runExtras() {
+    tryRunExtra(config.extras.moodleUnpack.enabled, moodleUnpack)
   }
 }

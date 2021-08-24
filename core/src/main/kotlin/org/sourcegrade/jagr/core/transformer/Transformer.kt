@@ -17,15 +17,19 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.transformer
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassWriter
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
-  }
+interface Transformer {
+  val name: String
+  fun transform(reader: ClassReader, writer: ClassWriter)
+}
+
+fun Transformer.transform(byteArray: ByteArray): ByteArray {
+  val reader = ClassReader(byteArray)
+  val writer = ClassWriter(reader, 0)
+  transform(reader, writer)
+  return writer.toByteArray()
 }

@@ -17,15 +17,19 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.testing
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.junit.platform.launcher.TestPlan
+import org.junit.platform.launcher.listeners.SummaryGeneratingListener
+import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.api.testing.TestStatusListener
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
-  }
+data class JUnitResultImpl(
+  private val testPlan: TestPlan,
+  private val summaryListener: SummaryGeneratingListener,
+  private val statusListener: TestStatusListener,
+) : TestCycle.JUnitResult {
+  override fun getTestPlan(): TestPlan = testPlan
+  override fun getSummaryListener(): SummaryGeneratingListener = summaryListener
+  override fun getStatusListener(): TestStatusListener = statusListener
 }

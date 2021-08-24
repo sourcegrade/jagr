@@ -17,15 +17,21 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.testing
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.sourcegrade.jagr.api.testing.TestCycle
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
+data class JavaTestCycle(
+  private val rubricProviderClassNames: List<String>,
+  private val submission: JavaSubmission,
+  private val classLoader: ClassLoader,
+) : TestCycle {
+  private var jUnitResult: TestCycle.JUnitResult? = null
+  override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
+  override fun getClassLoader(): ClassLoader = classLoader
+  override fun getSubmission(): JavaSubmission = submission
+  override fun getJUnitResult(): TestCycle.JUnitResult? = jUnitResult
+  fun setJUnitResult(jUnitResult: TestCycle.JUnitResult?) {
+    this.jUnitResult = jUnitResult
   }
 }

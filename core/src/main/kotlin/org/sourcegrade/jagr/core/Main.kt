@@ -19,13 +19,15 @@
 
 package org.sourcegrade.jagr.core
 
+import com.google.inject.Guice
 import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
-  }
+fun main(vararg args: String) {
+  val startTime = System.currentTimeMillis()
+  val injector = Guice.createInjector(JagrModule())
+  val logger = injector.getInstance(Logger::class.java)
+  logger.info("Starting Jagr")
+  injector.getInstance(JagrImpl::class.java).run()
+  val timeTaken = System.currentTimeMillis() - startTime
+  logger.info("Finished! Time taken: ${timeTaken}ms")
 }

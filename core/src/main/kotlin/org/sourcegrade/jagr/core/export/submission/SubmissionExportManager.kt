@@ -17,15 +17,26 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.export.submission
 
+import com.google.inject.Inject
 import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.core.export.ExportManager
+import org.sourcegrade.jagr.core.testing.TestJar
+import java.io.File
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
+class SubmissionExportManager @Inject constructor(
+  override val logger: Logger,
+  override val exporters: Set<SubmissionExporter>,
+) : ExportManager<SubmissionExporter>() {
+  fun export(submission: Submission, directory: File, testJars: List<TestJar>) {
+    for (exporter in exporters) {
+      val exportDir = directory.resolve(exporter.name)
+      exporter.export(submission, exportDir.resolve("default"))
+      for (testJar in testJars) {
+        exporter.export(submission, exportDir.resolve(testJar.name), testJar)
+      }
+    }
   }
 }

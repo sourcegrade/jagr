@@ -17,15 +17,20 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.compiler
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.mozilla.universalchardet.UniversalDetector
+import java.io.InputStream
+import java.nio.charset.Charset
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
+fun InputStream.readEncoded(): String {
+  val buffer: ByteArray = readAllBytes()
+  val detector = UniversalDetector()
+  detector.handleData(buffer)
+  detector.dataEnd()
+  return if (detector.detectedCharset != null) {
+    String(buffer, Charset.forName(detector.detectedCharset))
+  } else {
+    String(buffer)
   }
 }

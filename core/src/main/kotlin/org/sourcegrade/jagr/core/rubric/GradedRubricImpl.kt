@@ -17,15 +17,22 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.rubric
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.sourcegrade.jagr.api.rubric.GradeResult
+import org.sourcegrade.jagr.api.rubric.GradedCriterion
+import org.sourcegrade.jagr.api.rubric.GradedRubric
+import org.sourcegrade.jagr.api.rubric.Rubric
+import org.sourcegrade.jagr.api.testing.TestCycle
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
-  }
+data class GradedRubricImpl(
+  private val testCycle: TestCycle,
+  private val grade: GradeResult,
+  private val rubric: Rubric,
+  private val childCriteria: List<GradedCriterion>,
+) : GradedRubric {
+  override fun getTestCycle(): TestCycle = testCycle
+  override fun getGrade(): GradeResult = grade
+  override fun getChildCriteria(): List<GradedCriterion> = childCriteria
+  override fun getRubric(): Rubric = rubric
 }

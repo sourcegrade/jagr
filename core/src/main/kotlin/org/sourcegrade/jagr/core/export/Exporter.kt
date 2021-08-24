@@ -17,15 +17,13 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.core.export
 
-import org.slf4j.Logger
-import org.slf4j.helpers.NOPLogger.NOP_LOGGER
+import org.sourcegrade.jagr.core.testing.TestJar
+import java.io.File
 
-class TestingModule : org.sourcegrade.jagr.core.CommonModule() {
-  override fun configure() {
-    super.configure()
-    bind(Logger::class.java).toInstance(NOP_LOGGER)
-    bind(Config::class.java).toInstance(Config())
-  }
+interface Exporter {
+  val name: String
+  fun initialize(directory: File, testJar: TestJar? = null) = Unit
+  fun finalize(directory: File, testJar: TestJar? = null) = Unit
 }
