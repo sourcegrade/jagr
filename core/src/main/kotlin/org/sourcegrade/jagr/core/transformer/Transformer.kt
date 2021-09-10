@@ -21,6 +21,10 @@ package org.sourcegrade.jagr.core.transformer
 
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Type
+import kotlin.reflect.KFunction
+import kotlin.reflect.jvm.javaMethod
 
 interface Transformer {
   val name: String
@@ -32,4 +36,19 @@ fun Transformer.transform(byteArray: ByteArray): ByteArray {
   val writer = ClassWriter(reader, 0)
   transform(reader, writer)
   return writer.toByteArray()
+}
+
+fun MethodVisitor.visitMethodInsn(
+  opcode: Int,
+  function: KFunction<*>,
+  isInterface: Boolean = false,
+) {
+  val method = requireNotNull(function.javaMethod)
+  visitMethodInsn(
+    opcode,
+    Type.getInternalName(method.declaringClass),
+    method.name,
+    Type.getMethodDescriptor(method),
+    isInterface,
+  )
 }

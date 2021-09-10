@@ -27,6 +27,7 @@ import org.objectweb.asm.Label
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.sourcegrade.jagr.core.Config
+import org.sourcegrade.jagr.core.executor.TimeoutHandler
 
 class CommonTransformer @Inject constructor(
   private val config: Config,
@@ -69,6 +70,6 @@ private class CommonMethodVisitor(
 
   private fun visitTimeoutIsns() {
     if (!config.transformers.timeout.enabled) return
-    visitMethodInsn(Opcodes.INVOKESTATIC, "org/sourcegrade/jagr/common/executor/TimeoutHandler", "checkTimeout", "()V", false)
+    visitMethodInsn(Opcodes.INVOKESTATIC, TimeoutHandler::checkTimeout)
   }
 }
