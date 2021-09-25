@@ -8,18 +8,25 @@ repositories {
   mavenCentral()
   maven("https://repo.spongepowered.org/repository/maven-public/")
 }
+
+val asmVersion: String by project
+val configurateVersion: String by project
+val jansiVersion: String by project
+val juniversalchardetVersion: String by project
+val kotlinCoroutinesVersion: String by project
+val kotlinxSerializationVersion: String by project
+val log4jVersion: String by project
+
 dependencies {
   api(project(":jagr-grader-api"))
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
-  val kotlinxSerializationVersion = "1.2.1"
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
-  implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.0")
-  implementation("org.fusesource.jansi:jansi:2.3.1")
-  implementation("org.ow2.asm:asm:9.1")
-  implementation("com.github.albfernandez:juniversalchardet:2.4.0")
-  val configurateVersion = "4.1.1"
+  implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
+  implementation("org.fusesource.jansi:jansi:$jansiVersion")
+  implementation("org.ow2.asm:asm:$asmVersion")
+  implementation("com.github.albfernandez:juniversalchardet:$juniversalchardetVersion")
   implementation("org.spongepowered:configurate-hocon:$configurateVersion")
   implementation("org.spongepowered:configurate-extra-kotlin:$configurateVersion")
   implementation(kotlin("reflect"))
