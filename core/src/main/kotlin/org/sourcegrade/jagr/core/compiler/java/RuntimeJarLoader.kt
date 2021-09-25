@@ -26,7 +26,6 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 import org.slf4j.Logger
-import org.sourcegrade.jagr.api.testing.CompileResult
 import org.sourcegrade.jagr.core.compiler.readEncoded
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import java.io.File
@@ -60,7 +59,7 @@ class RuntimeJarLoader @Inject constructor(
     return classStorage
   }
 
-  fun loadSourcesJar(file: File, runtimeClassPath: Map<String, CompiledClass> = mapOf()): CompileJarResult {
+  fun loadSourcesJar(file: File, runtimeClassPath: Map<String, CompiledClass> = mapOf()): JavaCompileResult {
     val jarFile = JarFile(file)
     val sourceFiles: MutableMap<String, JavaSourceFile> = mutableMapOf()
     var submissionInfo: SubmissionInfoImpl? = null
@@ -72,7 +71,7 @@ class RuntimeJarLoader @Inject constructor(
             Json.decodeFromString<SubmissionInfoImpl>(jarFile.getInputStream(entry).bufferedReader().use { it.readText() })
           } catch (e: Throwable) {
             logger.error("$file has invalid submission-info.json", e)
-            return CompileJarResult(file)
+            return JavaCompileResult(file)
           }
         }
         entry.name.endsWith(".java") -> {
@@ -88,7 +87,7 @@ class RuntimeJarLoader @Inject constructor(
     }
     if (sourceFiles.isEmpty()) {
       // no source files, skip compilation task
-      return CompileJarResult(file, submissionInfo)
+      return JavaCompileResult(file, submissionInfo)
     }
     val compiledClasses: MutableMap<String, CompiledClass> = mutableMapOf()
     val collector = DiagnosticCollector<JavaFileObject>()
@@ -117,9 +116,9 @@ class RuntimeJarLoader @Inject constructor(
         }
         messages += "${diag.source.name}:${diag.lineNumber} ${diag.kind} :: ${diag.getMessage(Locale.getDefault())}"
       }
-      return CompileJarResult(file, submissionInfo, compiledClasses, sourceFiles, messages, warnings, errors, other)
+      return JavaCompileResult(file, submissionInfo, compiledClasses, sourceFiles, messages, warnings, errors, other)
     }
-    return CompileJarResult(file, submissionInfo, compiledClasses, sourceFiles)
+    return JavaCompileResult(file, submissionInfo, compiledClasses, sourceFiles)
   }
 
   private fun Map<String, CompiledClass>.linkSource(sourceFiles: Map<String, JavaSourceFile>) {
@@ -142,58 +141,5 @@ class RuntimeJarLoader @Inject constructor(
         }, ClassReader.SKIP_CODE)
       }
     }
-  }
-
-  data class CompileJarResult(
-    val file: File,
-    val submissionInfo: SubmissionInfoImpl? = null,
-    val compiledClasses: Map<String, CompiledClass> = mapOf(),
-    val sourceFiles: Map<String, JavaSourceFile> = mapOf(),
-    private val messages: List<String> = listOf(),
-    val warnings: Int = 0,
-    val errors: Int = 0,
-    val other: Int = 0,
-  ) : CompileResult {
-    override fun getMessages(): List<String> = messages
-    override fun getWarningCount(): Int = warnings
-    override fun getErrorCount(): Int = errors
-    override fun getOtherCount(): Int = other
-
-    fun printMessages(logger: Logger, lazyError: () -> String, lazyWarning: () -> String) {
-      when {
-        errors > 0 -> {
-          logger.error(lazyError())
-          for (message in messages) {
-            logger.error(message)
-          }
-        }
-        warnings > 0 -> {
-          logger.warn(lazyWarning())
-          for (message in messages) {
-            logger.warn(message)
-          }
-        }
-      }
-    }
-
-    fun copyWith(
-      file: File? = null,
-      submissionInfo: SubmissionInfoImpl? = null,
-      compiledClasses: Map<String, CompiledClass>? = null,
-      sourceFiles: Map<String, JavaSourceFile>? = null,
-      messages: List<String>? = null,
-      warnings: Int? = null,
-      errors: Int? = null,
-      other: Int? = null,
-    ) = CompileJarResult(
-      file ?: this.file,
-      submissionInfo ?: this.submissionInfo,
-      compiledClasses ?: this.compiledClasses,
-      sourceFiles ?: this.sourceFiles,
-      messages ?: this.messages,
-      warnings ?: this.warnings,
-      errors ?: this.errors,
-      other ?: this.other,
-    )
   }
 }
