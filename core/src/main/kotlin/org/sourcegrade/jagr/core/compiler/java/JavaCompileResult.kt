@@ -22,10 +22,10 @@ package org.sourcegrade.jagr.core.compiler.java
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.CompileResult
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
-import java.io.File
+import org.sourcegrade.jagr.launcher.io.ResourceContainer
 
 data class JavaCompileResult(
-  val file: File,
+  val resourceContainer: ResourceContainer,
   val submissionInfo: SubmissionInfoImpl? = null,
   val compiledClasses: Map<String, CompiledClass> = mapOf(),
   val sourceFiles: Map<String, JavaSourceFile> = mapOf(),

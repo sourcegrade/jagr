@@ -17,17 +17,13 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.launcher.configuration
 
-import com.google.inject.Guice
 import org.slf4j.Logger
+import org.spongepowered.configurate.loader.ConfigurationLoader
+import org.spongepowered.configurate.CommentedConfigurationNode
 
-fun main(vararg args: String) {
-  val startTime = System.currentTimeMillis()
-  val injector = Guice.createInjector(JagrModule())
-  val logger = injector.getInstance(Logger::class.java)
-  logger.info("Starting Jagr")
-  injector.getInstance(JagrImpl::class.java).run()
-  val timeTaken = System.currentTimeMillis() - startTime
-  logger.info("Finished! Time taken: ${timeTaken}ms")
+interface LaunchConfiguration {
+  val configurationLoader: ConfigurationLoader<CommentedConfigurationNode>
+  val logger: Logger
 }

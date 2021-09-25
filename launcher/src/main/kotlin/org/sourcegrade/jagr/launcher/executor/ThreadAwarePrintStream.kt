@@ -17,7 +17,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.executor
+package org.sourcegrade.jagr.launcher.executor
 
 import java.io.PrintStream
 import java.util.Locale

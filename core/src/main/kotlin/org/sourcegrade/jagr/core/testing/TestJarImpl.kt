@@ -27,30 +27,31 @@ import org.sourcegrade.jagr.api.rubric.TestForSubmission
 import org.sourcegrade.jagr.core.compiler.java.CompiledClass
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.launcher.io.TestJar
 import java.io.File
 
-class TestJar(
+class TestJarImpl(
   private val logger: Logger,
   val file: File,
   val compiledClasses: Map<String, CompiledClass>,
   val sourceFiles: Map<String, JavaSourceFile>,
   solutionClasses: Map<String, CompiledClass>,
   resources: Map<String, ByteArray>,
-) {
+) : TestJar {
 
-  val name: String = with(file.name) { substring(0, indexOf(".jar")) }
+  override val name: String = file.nameWithoutExtension
 
   /**
    * A map of assignments ids to classes of rubric providers (in the base classloader).
    *
    * Classes in this map are guaranteed to have an accessible no-args constructor.
    */
-  val rubricProviders: Map<String, List<String>>
+  override val rubricProviders: Map<String, List<String>>
 
   /**
    * A map of assignment ids to JUnit test classes
    */
-  val testProviders: Map<String, List<String>>
+  override val testProviders: Map<String, List<String>>
 
   init {
     val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
