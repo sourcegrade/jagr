@@ -46,17 +46,17 @@ class JagrImpl @Inject constructor(
   private val submissionExportManager: SubmissionExportManager,
 ) {
 
-  private fun loadTestJars(testJarsLocation: File, solutionsLocation: File): List<TestJar> {
-    val solutionClasses = loadLibs(solutionsLocation)
+  private fun loadTestJars(testJarsLocation: File, solutionsLocation: File, libsLocation: File): List<TestJar> {
+    val libs = loadLibs(solutionsLocation) + loadLibs(libsLocation)
     return testJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
-      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, solutionClasses))) {
+      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libs))) {
         printMessages(
           logger,
           { "Test jar ${file.name} has $warnings warnings and $errors errors!" },
           { "Test jar ${file.name} has $warnings warnings!" },
         )
         logger.info("Loaded test jar ${it.name}")
-        TestJar(logger, it, compiledClasses, sourceFiles, solutionClasses).takeIf { errors == 0 }
+        TestJar(logger, it, compiledClasses, sourceFiles, libs).takeIf { errors == 0 }
       }
     }
   }
@@ -74,9 +74,9 @@ class JagrImpl @Inject constructor(
   }
 
   private fun loadSubmissionJars(submissionJarsLocation: File, libsLocation: File): List<JavaSubmission> {
-    val libsClasspath = loadLibs(libsLocation)
+    val libs = loadLibs(libsLocation)
     return submissionJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
-      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libsClasspath))) {
+      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libs))) {
         if (submissionInfo == null) {
           logger.error("$it does not have a submission-info.json! Skipping...")
           return@parallelMapNotNull null
@@ -86,7 +86,7 @@ class JagrImpl @Inject constructor(
           { "Submission $submissionInfo(${file.name}) has $warnings warnings and $errors errors!" },
           { "Submission $submissionInfo(${file.name}) has $warnings warnings!" },
         )
-        JavaSubmission(file, submissionInfo, this, compiledClasses, sourceFiles)
+        JavaSubmission(file, submissionInfo, this, compiledClasses, sourceFiles, libs)
           .apply { logger.info("Loaded submission jar $this") }
       }
     }
@@ -95,7 +95,7 @@ class JagrImpl @Inject constructor(
   fun run() {
     ensureDirs()
     extrasManager.runExtras()
-    val testJars = loadTestJars(File(config.dir.tests), File(config.dir.solutions))
+    val testJars = loadTestJars(File(config.dir.tests), File(config.dir.solutions), File(config.dir.libs))
     val submissions = loadSubmissionJars(File(config.dir.submissions), File(config.dir.libs))
     val rubricExportLocation = File(config.dir.rubrics)
     gradedRubricExportManager.initialize(rubricExportLocation, testJars)
