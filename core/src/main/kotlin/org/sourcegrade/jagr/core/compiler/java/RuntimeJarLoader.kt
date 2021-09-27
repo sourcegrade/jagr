@@ -114,7 +114,7 @@ class RuntimeJarLoader @Inject constructor(
           -> ++errors
           else -> ++other
         }
-        messages += "${diag.source.name}:${diag.lineNumber} ${diag.kind} :: ${diag.getMessage(Locale.getDefault())}"
+        messages += "${diag.source?.name}:${diag.lineNumber} ${diag.kind} :: ${diag.getMessage(Locale.getDefault())}"
       }
       return JavaCompileResult(file, submissionInfo, compiledClasses, sourceFiles, messages, warnings, errors, other)
     }
