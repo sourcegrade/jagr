@@ -41,9 +41,10 @@ class RuntimeJarLoader @Inject constructor(
   private val logger: Logger,
 ) {
 
-  fun loadCompiledJar(file: File): Map<String, CompiledClass> {
+  fun loadCompiledJar(file: File): JavaCompileResult {
     val jarFile = JarFile(file)
     val classStorage: MutableMap<String, CompiledClass> = mutableMapOf()
+    val resources: MutableMap<String, ByteArray> = mutableMapOf()
     for (entry in jarFile.entries()) {
       when {
         entry.isDirectory -> continue
@@ -53,15 +54,16 @@ class RuntimeJarLoader @Inject constructor(
         }
         entry.name.endsWith("MANIFEST.MF") -> { // ignore
         }
-        else -> logger.warn("$file jar entry $entry is not a java class file!")
+        else -> resources[entry.name] = jarFile.getInputStream(entry).use { it.readAllBytes() }
       }
     }
-    return classStorage
+    return JavaCompileResult(file, compiledClasses = classStorage, resources = resources)
   }
 
-  fun loadSourcesJar(file: File, runtimeClassPath: Map<String, CompiledClass> = mapOf()): JavaCompileResult {
+  fun loadSourcesJar(file: File, runtimeClassPath: Map<String, CompiledClass> = mapOf(), resources: Map<String, ByteArray> = mapOf()): JavaCompileResult {
     val jarFile = JarFile(file)
     val sourceFiles: MutableMap<String, JavaSourceFile> = mutableMapOf()
+    val mutableResources = resources.toMutableMap()
     var submissionInfo: SubmissionInfoImpl? = null
     for (entry in jarFile.entries()) {
       when {
@@ -82,7 +84,7 @@ class RuntimeJarLoader @Inject constructor(
         }
         entry.name.endsWith("MANIFEST.MF") -> { // ignore
         }
-        else -> logger.warn("$file jar entry $entry is not a java source file!")
+        else -> mutableResources[entry.name] = jarFile.getInputStream(entry).use { it.readAllBytes() }
       }
     }
     if (sourceFiles.isEmpty()) {
@@ -117,9 +119,9 @@ class RuntimeJarLoader @Inject constructor(
         }
         messages += "${diag.source?.name}:${diag.lineNumber} ${diag.kind} :: ${diag.getMessage(Locale.getDefault())}"
       }
-      return JavaCompileResult(file, submissionInfo, compiledClasses, sourceFiles, messages, warnings, errors, other)
+      return JavaCompileResult(file, submissionInfo, compiledClasses, sourceFiles, resources, messages, warnings, errors, other)
     }
-    return JavaCompileResult(file, submissionInfo, compiledClasses, sourceFiles)
+    return JavaCompileResult(file, submissionInfo, compiledClasses, sourceFiles, resources)
   }
 
   private fun Map<String, CompiledClass>.linkSource(sourceFiles: Map<String, JavaSourceFile>) {
