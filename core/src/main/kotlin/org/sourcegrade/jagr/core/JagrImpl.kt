@@ -56,7 +56,7 @@ class JagrImpl @Inject constructor(
           { "Test jar ${file.name} has $warnings warnings!" },
         )
         logger.info("Loaded test jar ${it.name}")
-        TestJar(logger, it, compiledClasses, sourceFiles, resources, libs.first).takeIf { errors == 0 }
+        TestJar(logger, it, compiledClasses, sourceFiles, libs.first, libs.second + resources).takeIf { errors == 0 }
       }
     }
   }
@@ -86,7 +86,7 @@ class JagrImpl @Inject constructor(
           { "Submission $submissionInfo(${file.name}) has $warnings warnings and $errors errors!" },
           { "Submission $submissionInfo(${file.name}) has $warnings warnings!" },
         )
-        JavaSubmission(file, submissionInfo, this, compiledClasses, sourceFiles, libs, resources)
+        JavaSubmission(file, submissionInfo, this, compiledClasses, sourceFiles, libs.first, libs.second + resources)
           .apply { logger.info("Loaded submission jar $this") }
       }
     }

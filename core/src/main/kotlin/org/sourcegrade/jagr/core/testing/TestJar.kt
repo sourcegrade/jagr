@@ -34,8 +34,8 @@ class TestJar(
   val file: File,
   val compiledClasses: Map<String, CompiledClass>,
   val sourceFiles: Map<String, JavaSourceFile>,
-  resources: Map<String, ByteArray>,
   solutionClasses: Map<String, CompiledClass>,
+  resources: Map<String, ByteArray>,
 ) {
 
   val name: String = with(file.name) { substring(0, indexOf(".jar")) }
