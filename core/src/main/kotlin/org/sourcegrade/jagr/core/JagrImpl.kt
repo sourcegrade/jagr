@@ -61,8 +61,6 @@ class JagrImpl @Inject constructor(
     }
   }
 
-
-
   private fun loadLibs(libsLocation: File): Pair<Map<String, CompiledClass>, Map<String, ByteArray>> {
     return libsLocation.listFiles { _, t -> t.endsWith(".jar") }!!
       .asSequence()
