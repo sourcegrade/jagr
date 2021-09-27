@@ -86,7 +86,7 @@ class JagrImpl @Inject constructor(
           { "Submission $submissionInfo(${file.name}) has $warnings warnings and $errors errors!" },
           { "Submission $submissionInfo(${file.name}) has $warnings warnings!" },
         )
-        JavaSubmission(file, submissionInfo, this, compiledClasses, sourceFiles, resources)
+        JavaSubmission(file, submissionInfo, this, compiledClasses, sourceFiles, libs, resources)
           .apply { logger.info("Loaded submission jar $this") }
       }
     }

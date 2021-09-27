@@ -101,7 +101,6 @@ class RuntimeJarLoader @Inject constructor(
     )
     val result = compiler.getTask(null, fileManager, collector, null, null, sourceFiles.values).call()
     compiledClasses.linkSource(sourceFiles)
-    compiledClasses += runtimeClassPath
     if (!result || collector.diagnostics.isNotEmpty()) {
       val messages = mutableListOf<String>()
       var warnings = 0
