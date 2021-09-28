@@ -95,7 +95,7 @@ class JagrImpl @Inject constructor(
   fun run() {
     ensureDirs()
     extrasManager.runExtras()
-    val testJars = loadTestJars(File(config.dir.tests), File(config.dir.solutions), File(config.dir.libs))
+    val testJars = loadTestJars(File(config.dir.graders), File(config.dir.solutions), File(config.dir.libs))
     val submissions = loadSubmissionJars(File(config.dir.submissions), File(config.dir.libs))
     val rubricExportLocation = File(config.dir.rubrics)
     gradedRubricExportManager.initialize(rubricExportLocation, testJars)
@@ -137,7 +137,7 @@ class JagrImpl @Inject constructor(
       File(solutions).ensure(logger)
       File(submissions).ensure(logger)
       File(submissionsExport).ensure(logger)
-      File(tests).ensure(logger)
+      File(graders).ensure(logger)
     }
   }
 }

@@ -53,8 +53,8 @@ class Dir {
   @Comment("Submission export directory")
   var submissionsExport: String = "submissions-export"
 
-  @Comment("Test jar ingest directory")
-  var tests: String = "tests"
+  @Comment("Grader jar ingest directory")
+  var graders: String = "graders"
 }
 
 @ConfigSerializable
