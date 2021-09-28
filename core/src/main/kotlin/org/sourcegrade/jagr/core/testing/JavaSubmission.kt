@@ -34,6 +34,7 @@ data class JavaSubmission(
   val compiledClasses: Map<String, CompiledClass>,
   val sourceFiles: Map<String, JavaSourceFile>,
   val runtimeClassPath: Map<String, CompiledClass>,
+  val resources: Map<String, ByteArray>
 ) : Submission {
   override fun getInfo(): SubmissionInfo = info
   override fun getCompileResult(): CompileResult = compileResult

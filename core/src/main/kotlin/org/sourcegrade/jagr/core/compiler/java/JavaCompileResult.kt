@@ -29,6 +29,7 @@ data class JavaCompileResult(
   val submissionInfo: SubmissionInfoImpl? = null,
   val compiledClasses: Map<String, CompiledClass> = mapOf(),
   val sourceFiles: Map<String, JavaSourceFile> = mapOf(),
+  val resources: Map<String, ByteArray> = mapOf(),
   private val messages: List<String> = listOf(),
   val warnings: Int = 0,
   val errors: Int = 0,

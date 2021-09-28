@@ -19,8 +19,11 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
+import java.io.InputStream
+
 class RuntimeClassLoader(
   private val classStorage: Map<String, CompiledClass>,
+  private val resources: Map<String, ByteArray>,
   parent: ClassLoader = getSystemClassLoader(),
 ) : ClassLoader(parent) {
 
@@ -29,5 +32,9 @@ class RuntimeClassLoader(
     val compiledClass = classStorage[name] ?: return super.findClass(name)
     val byteCode: ByteArray = compiledClass.byteArray
     return defineClass(name, byteCode, 0, byteCode.size)
+  }
+
+  override fun getResourceAsStream(name: String): InputStream? {
+    return resources[name]?.inputStream() ?: super.getResourceAsStream(name)
   }
 }

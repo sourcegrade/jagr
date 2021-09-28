@@ -35,6 +35,7 @@ class TestJar(
   val compiledClasses: Map<String, CompiledClass>,
   val sourceFiles: Map<String, JavaSourceFile>,
   solutionClasses: Map<String, CompiledClass>,
+  resources: Map<String, ByteArray>,
 ) {
 
   val name: String = with(file.name) { substring(0, indexOf(".jar")) }
@@ -54,7 +55,7 @@ class TestJar(
   init {
     val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
     val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
-    val baseClassLoader = RuntimeClassLoader(compiledClasses + solutionClasses)
+    val baseClassLoader = RuntimeClassLoader(compiledClasses + solutionClasses, resources)
     for (className in compiledClasses.keys) {
       val clazz = baseClassLoader.loadClass(className)
       rubricProviders.putIfRubric(clazz)

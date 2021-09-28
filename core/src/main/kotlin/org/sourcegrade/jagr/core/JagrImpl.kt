@@ -49,34 +49,34 @@ class JagrImpl @Inject constructor(
   private fun loadTestJars(testJarsLocation: File, solutionsLocation: File, libsLocation: File): List<TestJar> {
     val libs = loadLibs(solutionsLocation) + loadLibs(libsLocation)
     return testJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
-      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libs))) {
+      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libs.first, libs.second))) {
         printMessages(
           logger,
           { "Test jar ${file.name} has $warnings warnings and $errors errors!" },
           { "Test jar ${file.name} has $warnings warnings!" },
         )
         logger.info("Loaded test jar ${it.name}")
-        TestJar(logger, it, compiledClasses, sourceFiles, libs).takeIf { errors == 0 }
+        TestJar(logger, it, compiledClasses, sourceFiles, libs.first, libs.second + resources).takeIf { errors == 0 }
       }
     }
   }
 
-  private fun loadLibs(libsLocation: File): Map<String, CompiledClass> {
+  private fun loadLibs(libsLocation: File): Pair<Map<String, CompiledClass>, Map<String, ByteArray>> {
     return libsLocation.listFiles { _, t -> t.endsWith(".jar") }!!
       .asSequence()
       .map {
-        val classStorage = runtimeJarLoader.loadCompiledJar(it)
+        val result = runtimeJarLoader.loadCompiledJar(it)
         logger.info("Loaded lib jar ${it.name}")
-        classStorage
+        result.compiledClasses to result.resources
       }
-      .ifEmpty { listOf(mapOf<String, CompiledClass>()).asSequence() }
+      .ifEmpty { emptySequence() }
       .reduce { a, b -> a + b }
   }
 
   private fun loadSubmissionJars(submissionJarsLocation: File, libsLocation: File): List<JavaSubmission> {
     val libs = loadLibs(libsLocation)
     return submissionJarsLocation.listFiles { _, t -> t.endsWith(".jar") }!!.parallelMapNotNull {
-      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libs))) {
+      with(transformerManager.transform(runtimeJarLoader.loadSourcesJar(it, libs.first, libs.second))) {
         if (submissionInfo == null) {
           logger.error("$it does not have a submission-info.json! Skipping...")
           return@parallelMapNotNull null
@@ -86,7 +86,7 @@ class JagrImpl @Inject constructor(
           { "Submission $submissionInfo(${file.name}) has $warnings warnings and $errors errors!" },
           { "Submission $submissionInfo(${file.name}) has $warnings warnings!" },
         )
-        JavaSubmission(file, submissionInfo, this, compiledClasses, sourceFiles, libs)
+        JavaSubmission(file, submissionInfo, this, compiledClasses, sourceFiles, libs.first, libs.second + resources)
           .apply { logger.info("Loaded submission jar $this") }
       }
     }
@@ -141,3 +141,7 @@ class JagrImpl @Inject constructor(
     }
   }
 }
+
+typealias LibTuple = Pair<Map<String, CompiledClass>, Map<String, ByteArray>>
+
+operator fun LibTuple.plus(other: LibTuple): LibTuple = first + other.first to second + other.second
