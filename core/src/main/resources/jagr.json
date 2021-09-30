@@ -1,5 +1,4 @@
 {
-  "runtimeGrader": "org.sourcegrade.jagr.core.testing.RuntimeGraderImpl",
   "moduleFactories": [
     "org.sourcegrade.jagr.core.CommonModule$Factory"
   ]

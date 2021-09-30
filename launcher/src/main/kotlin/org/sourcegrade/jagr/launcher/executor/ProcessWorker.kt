@@ -22,14 +22,21 @@ package org.sourcegrade.jagr.launcher.executor
 import java.io.File
 
 class ProcessWorker(
-
+  private val addActive: (Worker) -> Unit,
+  private val removeActive: (Worker) -> Unit,
 ) : Worker {
   override var job: GradingJob? = null
   override var status: WorkerStatus = WorkerStatus.PREPARING
   override var userTime: Long = 0
 
+  private val jagrLocation: String = File(javaClass.protectionDomain.codeSource.location.toURI()).path
+
+  init {
+    println("Starting process 'java -jar $jagrLocation'")
+  }
+
   private val process: Process = ProcessBuilder()
-    .command("java", "-jar", File(javaClass.protectionDomain.codeSource.location.toURI()).path)
+    .command("java", "-jar", jagrLocation)
     .start()
 
   override fun assignJob(job: GradingJob) {

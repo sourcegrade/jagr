@@ -36,7 +36,7 @@ class ProgressBar(
   private val whitespaceChar = ' '
 
   fun print() {
-    val total = rubricCollector.totalExpectedCount
+    val total = rubricCollector.total
     val progressDecimal = progress.toDouble() / total.toDouble().coerceAtLeast(0.0)
     val formattedPercentage = decimalFormat.format(progressDecimal * 100.0)
     val barCount = barLengthFull * progressDecimal

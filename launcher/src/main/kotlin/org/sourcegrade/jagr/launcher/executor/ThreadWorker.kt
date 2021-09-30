@@ -23,6 +23,8 @@ import kotlin.concurrent.thread
 
 class ThreadWorker(
   private val runtimeGrader: RuntimeGrader,
+  private val addActive: (Worker) -> Unit,
+  private val removeActive: (Worker) -> Unit,
 ) : Worker {
   override var job: GradingJob? = null
   override var status: WorkerStatus = WorkerStatus.READY
@@ -38,7 +40,9 @@ class ThreadWorker(
       name = GRADING_THREAD_PREFIX + job.request.submission.info.toString(),
       priority = 3,
     ) {
+      addActive(this)
       runtimeGrader.grade(job)
+      removeActive(this)
     }
   }
 

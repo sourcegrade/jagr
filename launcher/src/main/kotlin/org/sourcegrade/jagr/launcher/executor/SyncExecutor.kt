@@ -19,33 +19,35 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.runtimeGrader
 
-class SingleThreadExecutor private constructor(
+class SyncExecutor private constructor(
   private val rubricCollector: MutableRubricCollector,
-  private val environment: Environment,
+  environment: Environment,
 ) : Executor {
 
   object Factory : Executor.Factory {
-    override fun create(rubricCollector: MutableRubricCollector, environment: Environment): SingleThreadExecutor {
-      return SingleThreadExecutor(rubricCollector, environment)
+    override fun create(rubricCollector: MutableRubricCollector, environment: Environment): SyncExecutor {
+      return SyncExecutor(rubricCollector, environment)
     }
   }
 
+  private val mutex = Mutex()
   private val runtimeGrader = environment.runtimeGrader
-  private val scheduled = mutableListOf<GradingJob>()
+  private val scheduled = mutableListOf<GradingQueue>()
 
-  @Synchronized
-  override fun schedule(request: GradingRequest) {
-    scheduled += rubricCollector.schedule(request)
+  override suspend fun schedule(queue: GradingQueue) = mutex.withLock {
+    scheduled += queue
   }
 
-  @Synchronized
-  override suspend fun start() {
-    // scheduled may not be modified during this method invocation
-    // synchronization should take care of that
-    scheduled.forEach(runtimeGrader::grade)
+  override suspend fun start() = mutex.withLock {
+    while (scheduled.isNotEmpty()) {
+      val next = scheduled.next() ?: break
+      runtimeGrader.grade(rubricCollector.start(next))
+    }
     scheduled.clear()
   }
 }

@@ -20,9 +20,9 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.launcher.io.TestJar
+import org.sourcegrade.jagr.launcher.io.GraderJar
 
 data class GradingRequest(
   val submission: Submission,
-  val testJars: List<TestJar>,
+  val graderJars: List<GraderJar>,
 )

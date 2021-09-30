@@ -19,68 +19,75 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Environment
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class MultiWorkerExecutor internal constructor(
   private val rubricCollector: MutableRubricCollector,
-  private val environment: Environment,
   private val workerPool: WorkerPool,
 ) : Executor {
 
-  open class Factory internal constructor(private val workerPoolFactory: WorkerPool.Factory) : Executor.Factory {
+  open class Factory internal constructor(val workerPoolFactory: WorkerPool.Factory) : Executor.Factory {
     companion object Default : Factory(ProcessWorkerPool.Factory)
 
     override fun create(rubricCollector: MutableRubricCollector, environment: Environment): Executor {
-      return MultiWorkerExecutor(rubricCollector, environment, workerPoolFactory.create())
+      return MultiWorkerExecutor(rubricCollector, workerPoolFactory.create(environment))
     }
   }
 
-  class FactoryBuilder {
-    var workerPoolFactory: WorkerPool.Factory = ProcessWorkerPool.Factory
+  companion object {
+    fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
+      FactoryBuilder(from).also(builderAction).factory()
+  }
+
+  class FactoryBuilder internal constructor(factory: Factory) {
+    var workerPoolFactory: WorkerPool.Factory = factory.workerPoolFactory
     fun factory() = Factory(workerPoolFactory)
   }
 
-  private val jobMutex = Mutex()
-  private val scheduled = mutableListOf<GradingJob>()
-  private val finished = mutableListOf<GradingJob>()
+  private val mutex = Mutex()
+  private val scheduled = mutableListOf<GradingQueue>()
 
-  override fun schedule(request: GradingRequest) {
-    runBlocking {
-      jobMutex.withLock {
-        scheduled += rubricCollector.schedule(request)
+  override suspend fun schedule(queue: GradingQueue) = mutex.withLock {
+    scheduled += queue
+  }
+
+  private suspend fun checkWorkers() {
+    val requests = mutex.withLock {
+      workerPool.createWorkers(scheduled.size)
+        .mapNotNull { worker -> scheduled.next()?.let { request -> worker to request } }
+    }
+    // protect against requests being empty
+    // the only way out of this method is by a request completing
+    // no requests, no exit
+    if (requests.isEmpty()) {
+      mutex.withLock {
+        scheduled.removeFirstOrNull()
+      }
+      return
+    }
+    suspendCoroutine<Unit> { continuation ->
+      for (request in requests) {
+        val job = rubricCollector.start(request.second)
+        job.result.invokeOnCompletion {
+          if (it == null) {
+            continuation.resume(Unit)
+          } else {
+            continuation.resumeWithException(it)
+          }
+        }
+        request.first.assignJob(job)
       }
     }
   }
 
-  private fun checkWorkers() {
-    for (worker in workerPool.createWorkers(scheduled.size)) {
-      val job = scheduled.removeFirst()
-      job.result.invokeOnCompletion {
-        finished += job
-      }
-      worker.assignJob(job)
-    }
-    // Removal from scheduled could technically happen directly in the completion listener
-    // for job.result, but we want to avoid extra synchronization overhead and just handle
-    // all finished jobs at once here (instead of each in their own thread).
-    finished.forEach(scheduled::remove)
-    finished.clear()
-  }
-
-  @Synchronized
   override suspend fun start() {
-    val originalSystemOut = System.out
-    System.setOut(ThreadAwarePrintStream(originalSystemOut))
-    while (scheduled.isNotEmpty() && workerPool.activeWorkers.isNotEmpty()) {
-      jobMutex.withLock {
-        checkWorkers()
-      }
-      delay(timeMillis = 5)
+    while (scheduled.isNotEmpty()) {
+      checkWorkers()
     }
-    System.setOut(originalSystemOut)
   }
 }

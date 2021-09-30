@@ -25,11 +25,10 @@ import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 
 data class JavaCompileResult(
-  val resourceContainer: ResourceContainer,
+  val container: ResourceContainer,
+  val runtimeResources: RuntimeResources = RuntimeResources(),
   val submissionInfo: SubmissionInfoImpl? = null,
-  val compiledClasses: Map<String, CompiledClass> = mapOf(),
   val sourceFiles: Map<String, JavaSourceFile> = mapOf(),
-  val resources: Map<String, ByteArray> = mapOf(),
   private val messages: List<String> = listOf(),
   val warnings: Int = 0,
   val errors: Int = 0,

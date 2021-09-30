@@ -23,14 +23,14 @@ import com.google.inject.Inject
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.export.ExportManager
-import org.sourcegrade.jagr.core.testing.TestJarImpl
+import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import java.io.File
 
 class SubmissionExportManager @Inject constructor(
   override val logger: Logger,
   override val exporters: Set<SubmissionExporter>,
 ) : ExportManager<SubmissionExporter>() {
-  fun export(submission: Submission, directory: File, testJars: List<TestJarImpl>) {
+  fun export(submission: Submission, directory: File, testJars: List<GraderJarImpl>) {
     for (exporter in exporters) {
       val exportDir = directory.resolve(exporter.name)
       exporter.export(submission, exportDir.resolve("default"))

@@ -40,7 +40,7 @@ class RuntimeJarLoader @Inject constructor(
   private val logger: Logger,
 ) {
 
-  fun loadCompiledJar(container: ResourceContainer): JavaCompileResult {
+  fun loadCompiled(container: ResourceContainer): JavaCompileResult {
     val classStorage: MutableMap<String, CompiledClass> = mutableMapOf()
     val resources: MutableMap<String, ByteArray> = mutableMapOf()
     for (resource in container) {
@@ -54,18 +54,18 @@ class RuntimeJarLoader @Inject constructor(
         else -> resources[resource.name] = resource.inputStream.use { it.readAllBytes() }
       }
     }
-    return JavaCompileResult(container, compiledClasses = classStorage, resources = resources)
+    return JavaCompileResult(container, classStorage rr resources)
   }
 
-  fun loadSourcesJar(container: ResourceContainer, runtimeClassPath: Map<String, CompiledClass> = mapOf(), resources: Map<String, ByteArray> = mapOf()): JavaCompileResult {
+  fun loadSources(container: ResourceContainer, runtimeResources: RuntimeResources): JavaCompileResult {
     val sourceFiles: MutableMap<String, JavaSourceFile> = mutableMapOf()
-    val mutableResources = resources.toMutableMap()
+    val mutableResources = runtimeResources.resources.toMutableMap()
     var submissionInfo: SubmissionInfoImpl? = null
     for (resource in container) {
       when {
         resource.name == "submission-info.json" -> {
           submissionInfo = try {
-            Json.decodeFromString<SubmissionInfoImpl>(resource.inputStream.bufferedReader().use { it.readText() })
+            Json.decodeFromString<SubmissionInfoImpl>(resource.inputStream.reader().use { it.readText() })
           } catch (e: Throwable) {
             logger.error("$resource has invalid submission-info.json", e)
             return JavaCompileResult(container)
@@ -84,18 +84,19 @@ class RuntimeJarLoader @Inject constructor(
     }
     if (sourceFiles.isEmpty()) {
       // no source files, skip compilation task
-      return JavaCompileResult(container, submissionInfo)
+      return JavaCompileResult(container, submissionInfo = submissionInfo)
     }
     val compiledClasses: MutableMap<String, CompiledClass> = mutableMapOf()
     val collector = DiagnosticCollector<JavaFileObject>()
     val compiler = ToolProvider.getSystemJavaCompiler()
     val fileManager = ExtendedStandardJavaFileManager(
       compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8),
-      runtimeClassPath,
+      runtimeResources.classes,
       compiledClasses,
     )
     val result = compiler.getTask(null, fileManager, collector, null, null, sourceFiles.values).call()
     compiledClasses.linkSource(sourceFiles)
+    val newRuntimeResources = compiledClasses rr mutableResources
     if (!result || collector.diagnostics.isNotEmpty()) {
       val messages = mutableListOf<String>()
       var warnings = 0
@@ -113,9 +114,18 @@ class RuntimeJarLoader @Inject constructor(
         }
         messages += "${diag.source?.name}:${diag.lineNumber} ${diag.kind} :: ${diag.getMessage(Locale.getDefault())}"
       }
-      return JavaCompileResult(container, submissionInfo, compiledClasses, sourceFiles, resources, messages, warnings, errors, other)
+      return JavaCompileResult(
+        container,
+        newRuntimeResources,
+        submissionInfo,
+        sourceFiles,
+        messages,
+        warnings,
+        errors,
+        other
+      )
     }
-    return JavaCompileResult(container, submissionInfo, compiledClasses, sourceFiles, resources)
+    return JavaCompileResult(container, newRuntimeResources, submissionInfo, sourceFiles)
   }
 
   private fun Map<String, CompiledClass>.linkSource(sourceFiles: Map<String, JavaSourceFile>) {

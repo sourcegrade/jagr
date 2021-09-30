@@ -4,25 +4,23 @@
  *   Copyright (C) 2021 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU Lesser General Public License as published by
+ *     it under the terms of the GNU Affero General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
  *
  *     This program is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU Lesser General Public License for more details.
+ *     GNU Affero General Public License for more details.
  *
- *     You should have received a copy of the GNU Lesser General Public License
+ *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher
+package org.sourcegrade.jagr.launcher.io
 
-import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
-import org.sourcegrade.jagr.launcher.executor.Executor
-import org.sourcegrade.jagr.launcher.io.GradingBatch
-
-interface LaunchWrapper {
-  fun launch(configuration: LaunchConfiguration, batch: GradingBatch, executor: Executor)
+interface GraderJar {
+  val name: String
+  val rubricProviders: Map<String, List<String>>
+  val testProviders: Map<String, List<String>>
 }

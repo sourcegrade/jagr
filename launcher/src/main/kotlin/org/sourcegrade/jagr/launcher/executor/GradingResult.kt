@@ -23,8 +23,8 @@ import org.sourcegrade.jagr.api.rubric.GradedRubric
 import java.time.Instant
 
 data class GradingResult(
-  val startTime: Instant,
-  val endTime: Instant,
+  val startedUtc: Instant,
+  val finishedUtc: Instant,
   val request: GradingRequest,
   val rubrics: Map<GradedRubric, String>,
 )

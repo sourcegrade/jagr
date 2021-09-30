@@ -24,22 +24,22 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.RubricForSubmission
 import org.sourcegrade.jagr.api.rubric.RubricProvider
 import org.sourcegrade.jagr.api.rubric.TestForSubmission
-import org.sourcegrade.jagr.core.compiler.java.CompiledClass
-import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
+import org.sourcegrade.jagr.core.compiler.java.JavaCompileResult
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
-import org.sourcegrade.jagr.launcher.io.TestJar
-import java.io.File
+import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.core.compiler.java.plus
+import org.sourcegrade.jagr.launcher.io.GraderJar
+import org.sourcegrade.jagr.launcher.io.nameWithoutExtension
 
-class TestJarImpl(
+class GraderJarImpl(
   private val logger: Logger,
-  val file: File,
-  val compiledClasses: Map<String, CompiledClass>,
-  val sourceFiles: Map<String, JavaSourceFile>,
-  solutionClasses: Map<String, CompiledClass>,
-  resources: Map<String, ByteArray>,
-) : TestJar {
+  val compileResult: JavaCompileResult,
+  runtimeLibraries: RuntimeResources,
+) : GraderJar {
 
-  override val name: String = file.nameWithoutExtension
+  private val container = compileResult.container
+
+  override val name: String = container.nameWithoutExtension
 
   /**
    * A map of assignments ids to classes of rubric providers (in the base classloader).
@@ -56,8 +56,8 @@ class TestJarImpl(
   init {
     val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
     val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
-    val baseClassLoader = RuntimeClassLoader(compiledClasses + solutionClasses, resources)
-    for (className in compiledClasses.keys) {
+    val baseClassLoader = RuntimeClassLoader(compileResult.runtimeResources + runtimeLibraries)
+    for (className in compileResult.runtimeResources.classes.keys) {
       val clazz = baseClassLoader.loadClass(className)
       rubricProviders.putIfRubric(clazz)
       testProviders.putIfTest(clazz)
@@ -79,10 +79,10 @@ class TestJarImpl(
     try {
       clazz.getConstructor()
     } catch (e: NoSuchMethodException) {
-      logger.error("Rubric provider $className in file $file must have a no-args public constructor!")
+      logger.error("Rubric provider $className in grader ${container.name} must have a no-args public constructor!")
       return
     }
-    logger.info("${file.name} Discovered rubric provider $className for assignment $assignmentId")
+    logger.info("${container.name} Discovered rubric provider $className for assignment $assignmentId")
     computeIfAbsent(filter.value) { mutableListOf() }.add(asRubricProvider.name)
   }
 
@@ -93,7 +93,7 @@ class TestJarImpl(
 
   private val stringRep: String by lazy {
     MoreObjects.toStringHelper(this)
-      .add("file", file)
+      .add("container", container)
       .add("applicableSubmissions", rubricProviders.keys.joinToString(", "))
       .toString()
   }

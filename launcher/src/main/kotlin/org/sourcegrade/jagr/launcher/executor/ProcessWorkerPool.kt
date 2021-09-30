@@ -19,20 +19,35 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
+import org.sourcegrade.jagr.launcher.env.Environment
+
 class ProcessWorkerPool(
   private val concurrency: Int,
 ) : WorkerPool {
 
-  open class Factory internal constructor(private val concurrency: Int) : WorkerPool.Factory {
+  open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
     companion object Default : Factory(concurrency = 4)
-    override fun create(): WorkerPool = ProcessWorkerPool(concurrency)
+
+    override fun create(environment: Environment): WorkerPool = ProcessWorkerPool(concurrency)
+  }
+
+  companion object {
+    fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
+      FactoryBuilder(from).also(builderAction).factory()
+  }
+
+  class FactoryBuilder internal constructor(factory: Factory) {
+    var concurrency: Int = factory.concurrency
+    fun factory() = Factory(concurrency)
   }
 
   override val activeWorkers: MutableList<Worker> = mutableListOf()
+  private fun addActiveWorker(worker: Worker) = synchronized(activeWorkers) { activeWorkers += worker }
+  private fun removeActiveWorker(worker: Worker) = synchronized(activeWorkers) { activeWorkers -= worker }
 
   override fun createWorkers(maxCount: Int): List<Worker> {
     if (maxCount == 0) return emptyList()
     val workerCount = minOf(maxCount - concurrency, maxCount)
-    return List(workerCount) { ProcessWorker() }
+    return List(workerCount) { ProcessWorker(this::addActiveWorker, this::removeActiveWorker) }
   }
 }

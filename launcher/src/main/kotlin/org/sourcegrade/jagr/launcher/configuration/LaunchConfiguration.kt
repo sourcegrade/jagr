@@ -20,8 +20,8 @@
 package org.sourcegrade.jagr.launcher.configuration
 
 import org.slf4j.Logger
-import org.spongepowered.configurate.loader.ConfigurationLoader
 import org.spongepowered.configurate.CommentedConfigurationNode
+import org.spongepowered.configurate.loader.ConfigurationLoader
 
 interface LaunchConfiguration {
   val configurationLoader: ConfigurationLoader<CommentedConfigurationNode>

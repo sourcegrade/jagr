@@ -19,8 +19,6 @@
 
 package org.sourcegrade.jagr.launcher
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.option
 import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.executor.RubricCollector

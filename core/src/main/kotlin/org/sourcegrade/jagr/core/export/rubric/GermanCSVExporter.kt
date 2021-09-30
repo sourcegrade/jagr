@@ -23,7 +23,7 @@ import com.google.inject.Inject
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
-import org.sourcegrade.jagr.core.usePrintWriterSafe
+import org.sourcegrade.jagr.launcher.usePrintWriterSafe
 import java.io.File
 import java.io.PrintWriter
 

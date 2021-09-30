@@ -22,26 +22,51 @@ package org.sourcegrade.jagr.core
 import com.google.inject.AbstractModule
 import com.google.inject.multibindings.Multibinder
 import org.slf4j.Logger
-import org.sourcegrade.jagr.api.rubric.*
-import org.sourcegrade.jagr.api.testing.extension.*
-import org.sourcegrade.jagr.core.executor.*
-import org.sourcegrade.jagr.core.export.rubric.*
-import org.sourcegrade.jagr.core.export.submission.*
-import org.sourcegrade.jagr.core.rubric.*
-import org.sourcegrade.jagr.core.rubric.grader.*
-import org.sourcegrade.jagr.core.testing.*
-import org.sourcegrade.jagr.launcher.configuration.*
+import org.sourcegrade.jagr.api.rubric.Criterion
+import org.sourcegrade.jagr.api.rubric.CriterionHolderPointCalculator
+import org.sourcegrade.jagr.api.rubric.GradeResult
+import org.sourcegrade.jagr.api.rubric.Grader
+import org.sourcegrade.jagr.api.rubric.JUnitTestRef
+import org.sourcegrade.jagr.api.rubric.Rubric
+import org.sourcegrade.jagr.api.testing.extension.TestCycleResolver
+import org.sourcegrade.jagr.core.executor.GradingQueueFactoryImpl
+import org.sourcegrade.jagr.core.executor.TimeoutHandler
+import org.sourcegrade.jagr.core.export.rubric.GermanCSVExporter
+import org.sourcegrade.jagr.core.export.rubric.GradedRubricExporter
+import org.sourcegrade.jagr.core.export.rubric.MoodleJSONExporter
+import org.sourcegrade.jagr.core.export.submission.EclipseSubmissionExporter
+import org.sourcegrade.jagr.core.export.submission.GradleSubmissionExporter
+import org.sourcegrade.jagr.core.export.submission.SubmissionExporter
+import org.sourcegrade.jagr.core.rubric.CriterionFactoryImpl
+import org.sourcegrade.jagr.core.rubric.CriterionHolderPointCalculatorFactoryImpl
+import org.sourcegrade.jagr.core.rubric.GradeResultFactoryImpl
+import org.sourcegrade.jagr.core.rubric.JUnitTestRefFactoryImpl
+import org.sourcegrade.jagr.core.rubric.RubricFactoryImpl
+import org.sourcegrade.jagr.core.rubric.grader.GraderFactoryImpl
+import org.sourcegrade.jagr.core.testing.JavaRuntimeTester
+import org.sourcegrade.jagr.core.testing.RuntimeGraderImpl
+import org.sourcegrade.jagr.core.testing.RuntimeTester
+import org.sourcegrade.jagr.core.testing.TestCycleParameterResolver
+import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 import org.sourcegrade.jagr.launcher.env.ModuleFactory
+import org.sourcegrade.jagr.launcher.executor.GradingQueue
+import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
 import org.sourcegrade.jagr.launcher.opt.Config
 
 /**
  * Shared bindings between main and testing guice modules
  */
 class CommonModule(private val configuration: LaunchConfiguration) : AbstractModule() {
+  @Suppress("unused") // src/main/resources/jagr.json
   object Factory : ModuleFactory {
     override fun create(configuration: LaunchConfiguration) = CommonModule(configuration)
   }
   override fun configure() {
+
+    bind(GradingQueue.Factory::class.java).to(GradingQueueFactoryImpl::class.java)
+    bind(RuntimeGrader::class.java).to(RuntimeGraderImpl::class.java)
+
+
     bind(Criterion.Factory::class.java).to(CriterionFactoryImpl::class.java)
     bind(CriterionHolderPointCalculator.Factory::class.java).to(CriterionHolderPointCalculatorFactoryImpl::class.java)
     bind(Grader.Factory::class.java).to(GraderFactoryImpl::class.java)

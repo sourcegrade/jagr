@@ -26,10 +26,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class JagrJson(
-  val launchWrapper: String,
-  val runtimeGrader: String,
   /**
-   * Additional guice modules to bind
+   * guice modules to bind
    */
   val moduleFactories: List<String>,
 )

@@ -21,8 +21,8 @@ package org.sourcegrade.jagr.launcher
 
 import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 import org.sourcegrade.jagr.launcher.env.Environment
-import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.env.SystemResourceEnvironmentFactory
+import org.sourcegrade.jagr.launcher.executor.RubricCollector
 
 interface Launcher {
   fun launch(

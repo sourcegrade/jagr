@@ -6,6 +6,7 @@ plugins {
 
 val configurateVersion: String by project
 val guiceVersion: String by project
+val jetbrainsAnnotationsVersion: String by project
 val kotlinxSerializationVersion: String by project
 val slf4jVersion: String by project
 
@@ -15,6 +16,7 @@ dependencies {
   api("com.google.inject:guice:$guiceVersion")
   api("org.slf4j:slf4j-api:$slf4jVersion")
   api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
+  implementation("org.jetbrains:annotations:$jetbrainsAnnotationsVersion")
   implementation("org.spongepowered:configurate-hocon:$configurateVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")

@@ -17,10 +17,19 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.core.executor
 
-interface TestJar {
-  val name: String
-  val rubricProviders: Map<String, List<String>>
-  val testProviders: Map<String, List<String>>
+import com.google.inject.Inject
+import org.slf4j.Logger
+import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
+import org.sourcegrade.jagr.core.transformer.TransformerManager
+import org.sourcegrade.jagr.launcher.executor.GradingQueue
+import org.sourcegrade.jagr.launcher.io.GradingBatch
+
+class GradingQueueFactoryImpl @Inject constructor(
+  private val logger: Logger,
+  private val runtimeJarLoader: RuntimeJarLoader,
+  private val transformerManager: TransformerManager,
+) : GradingQueue.Factory {
+  override fun create(batch: GradingBatch): GradingQueue = GradingQueueImpl(logger, runtimeJarLoader, transformerManager, batch)
 }

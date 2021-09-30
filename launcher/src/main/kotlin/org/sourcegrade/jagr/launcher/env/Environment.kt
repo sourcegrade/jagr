@@ -19,12 +19,11 @@
 
 package org.sourcegrade.jagr.launcher.env
 
-import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Injector
-import org.sourcegrade.jagr.launcher.LaunchWrapper
 import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 import org.sourcegrade.jagr.launcher.configuration.StandardLaunchConfiguration
+import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -47,35 +46,22 @@ inline fun <reified T : Any> Environment.get(): T = get(T::class)
 
 inline fun <reified T : Any> injected(): ReadOnlyProperty<Environment, T> = ReadOnlyProperty { e, _ -> e.get() }
 
-val Environment.launchWrapper: LaunchWrapper by injected()
+val Environment.gradingQueueFactory: GradingQueue.Factory by injected()
 
 val Environment.runtimeGrader: RuntimeGrader by injected()
 
 fun JagrJson.createEnvironment(configuration: LaunchConfiguration): Environment {
-  val launchWrapper = coerceClass<LaunchWrapper>(launchWrapper)
-  val runtimeGrader = coerceClass<RuntimeGrader>(runtimeGrader)
   val modules = moduleFactories.map {
     coerceClass<ModuleFactory>(it).kotlin.run {
-      (objectInstance ?: primaryConstructor!!.call())
-        .create(configuration)
+      (objectInstance ?: primaryConstructor!!.call()).create(configuration)
     }
   }.toTypedArray()
-  val injector = Guice.createInjector(BaseModule(launchWrapper, runtimeGrader), *modules)
+  val injector = Guice.createInjector(*modules)
   return EnvironmentImpl(injector)
 }
 
 private inline fun <reified T : Any> coerceClass(implementation: String): Class<out T> {
   return Class.forName(implementation).asSubclass(T::class.java)
-}
-
-private class BaseModule(
-  private val launchWrapper: Class<out LaunchWrapper>,
-  private val runtimeGrader: Class<out RuntimeGrader>,
-) : AbstractModule() {
-  override fun configure() {
-    bind(LaunchWrapper::class.java).to(launchWrapper)
-    bind(RuntimeGrader::class.java).to(runtimeGrader)
-  }
 }
 
 private data class EnvironmentImpl(override val injector: Injector) : Environment

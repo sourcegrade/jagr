@@ -28,6 +28,6 @@ import java.io.File
 
 object StandardLaunchConfiguration : LaunchConfiguration {
   override val configurationLoader: ConfigurationLoader<CommentedConfigurationNode> =
-    HoconConfigurationLoader.builder().file(File("sourcegrade.jagr.conf")).build()
-  override val logger: Logger = LoggerFactory.getLogger("sourcegrade.jagr")
+    HoconConfigurationLoader.builder().file(File("jagr.conf")).build()
+  override val logger: Logger = LoggerFactory.getLogger("Jagr")
 }

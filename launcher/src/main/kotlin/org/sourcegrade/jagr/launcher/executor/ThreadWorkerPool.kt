@@ -19,16 +19,38 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
+import org.sourcegrade.jagr.launcher.env.Environment
+import org.sourcegrade.jagr.launcher.env.runtimeGrader
+
 class ThreadWorkerPool(
   private val runtimeGrader: RuntimeGrader,
-  private val maxConcurrentWorkers: Int,
+  private val concurrency: Int,
 ) : WorkerPool {
 
+  open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
+    companion object Default : Factory(concurrency = 4)
+
+    override fun create(environment: Environment): WorkerPool =
+      ThreadWorkerPool(environment.runtimeGrader, concurrency)
+  }
+
+  companion object {
+    fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
+      FactoryBuilder(from).also(builderAction).factory()
+  }
+
+  class FactoryBuilder internal constructor(factory: Factory) {
+    var concurrency: Int = factory.concurrency
+    fun factory() = Factory(concurrency)
+  }
+
   override val activeWorkers: MutableList<Worker> = mutableListOf()
+  private fun addActiveWorker(worker: Worker) = synchronized(activeWorkers) { activeWorkers += worker }
+  private fun removeActiveWorker(worker: Worker) = synchronized(activeWorkers) { activeWorkers -= worker }
 
   override fun createWorkers(maxCount: Int): List<Worker> {
     if (maxCount == 0) return emptyList()
-    val workerCount = minOf(maxCount - maxConcurrentWorkers, maxCount)
-    return List(workerCount) { ThreadWorker(runtimeGrader) }
+    val workerCount = minOf(maxCount, concurrency)
+    return List(workerCount) { ThreadWorker(runtimeGrader, this::addActiveWorker, this::removeActiveWorker) }
   }
 }

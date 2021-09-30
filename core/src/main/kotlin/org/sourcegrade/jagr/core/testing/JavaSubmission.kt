@@ -19,25 +19,19 @@
 
 package org.sourcegrade.jagr.core.testing
 
-import org.sourcegrade.jagr.api.testing.CompileResult
 import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
-import org.sourcegrade.jagr.core.compiler.java.CompiledClass
-import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
-import org.sourcegrade.jagr.launcher.io.ResourceContainer
+import org.sourcegrade.jagr.core.compiler.java.JavaCompileResult
+import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 
 data class JavaSubmission(
-  val resourceContainer: ResourceContainer,
   private val info: SubmissionInfo,
-  private val compileResult: CompileResult,
-  val compiledClasses: Map<String, CompiledClass>,
-  val sourceFiles: Map<String, JavaSourceFile>,
-  val runtimeClassPath: Map<String, CompiledClass>,
-  val resources: Map<String, ByteArray>
+  private val compileResult: JavaCompileResult,
+  val runtimeLibraries: RuntimeResources,
 ) : Submission {
   override fun getInfo(): SubmissionInfo = info
-  override fun getCompileResult(): CompileResult = compileResult
-  override fun getSourceFile(fileName: String): SourceFile? = sourceFiles[fileName]
-  override fun toString(): String = "$info(${resourceContainer.name})"
+  override fun getCompileResult(): JavaCompileResult = compileResult
+  override fun getSourceFile(fileName: String): SourceFile? = compileResult.sourceFiles[fileName]
+  override fun toString(): String = "$info(${compileResult.container.name})"
 }

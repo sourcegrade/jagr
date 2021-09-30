@@ -29,7 +29,7 @@ internal class ZipResourceContainer(
   override val name: String,
   private val input: InputStream,
 ) : ResourceContainer {
-  constructor(file: File) : this(file.name, file.inputStream())
+  constructor(file: File) : this(file.name, file.inputStream().buffered())
 
   override fun iterator(): Iterator<Resource> = ZipResourceIterator(ZipInputStream(input))
   private inner class ZipResourceIterator(
@@ -39,7 +39,7 @@ internal class ZipResourceContainer(
     override fun hasNext(): Boolean {
       if (next == null) {
         next = zip.nextEntry
-        return next == null
+        return next != null
       }
       return true
     }
@@ -59,4 +59,6 @@ internal class ZipResourceContainer(
         get() = ByteArrayInputStream(bytes)
     }
   }
+
+  override fun toString(): String = name
 }

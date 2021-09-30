@@ -19,23 +19,47 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-import org.sourcegrade.jagr.launcher.env.Environment
+import org.sourcegrade.jagr.launcher.io.GradingBatch
+import java.time.Instant
 
-/**
- * A resource which may, or may not give you another [Worker] depending on available resources.
- */
-interface WorkerPool {
-
-  val activeWorkers: List<Worker>
-
-  // TODO: consider fun hasCapacityFor(workerCount: Int): Boolean
+interface GradingQueue {
 
   /**
-   * Creates up to [maxCount] workers depending on availability.
+   * The total number of submissions in this queue.
    */
-  fun createWorkers(maxCount: Int): List<Worker>
+  val total: Int
+
+  /**
+   * The number of submissions in this queue which have not started being graded.
+   */
+  val remaining: Int
+
+  val startedUtc: Instant
+
+  val finishedUtc: Instant?
+
+  suspend fun next(): GradingRequest?
 
   interface Factory {
-    fun create(environment: Environment): WorkerPool
+    /**
+     * Constructs a [GradingQueue] that may be asynchronously polled.
+     */
+    fun create(batch: GradingBatch): GradingQueue
   }
+}
+
+/**
+ * Finds the next [GradingRequest] in a list of [GradingQueues][GradingQueue] and removes empty queues.
+ */
+suspend fun MutableCollection<GradingQueue>.next(): GradingRequest? {
+  val iter = iterator()
+  while (iter.hasNext()) {
+    val request = iter.next().next()
+    if (request == null) {
+      iter.remove()
+    } else {
+      return request
+    }
+  }
+  return null
 }

@@ -22,11 +22,12 @@ package org.sourcegrade.jagr.launcher.executor
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.launcher.env.Environment
-import org.sourcegrade.jagr.launcher.io.TestJar
-import java.time.Instant
+import org.sourcegrade.jagr.launcher.io.GraderJar
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 interface Executor {
-  fun schedule(request: GradingRequest)
+  suspend fun schedule(queue: GradingQueue)
   suspend fun start()
   interface Factory {
     fun create(rubricCollector: MutableRubricCollector, environment: Environment): Executor
@@ -34,14 +35,14 @@ interface Executor {
 }
 
 fun interface RuntimeGrader {
-  fun grade(tests: List<TestJar>, submission: Submission): Map<GradedRubric, String>
+  fun grade(tests: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
 }
 
-fun RuntimeGrader.grade(request: GradingRequest) = grade(request.testJars, request.submission)
+fun RuntimeGrader.grade(request: GradingRequest) = grade(request.graderJars, request.submission)
 
 fun RuntimeGrader.grade(job: GradingJob) {
-  val startTime = Instant.now()
+  val startedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
   val rubrics = grade(job.request)
-  val endTime = Instant.now()
-  job.result.complete(GradingResult(startTime, endTime, job.request, rubrics))
+  val finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+  job.result.complete(GradingResult(startedUtc, finishedUtc, job.request, rubrics))
 }

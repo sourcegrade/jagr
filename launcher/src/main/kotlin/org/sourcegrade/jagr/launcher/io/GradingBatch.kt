@@ -19,12 +19,15 @@
 
 package org.sourcegrade.jagr.launcher.io
 
+import org.sourcegrade.jagr.launcher.ensure
 import java.io.File
 import java.io.FilenameFilter
 
 interface GradingBatch {
   val graders: Sequence<ResourceContainer>
   val submissions: Sequence<ResourceContainer>
+  val graderLibraries: Sequence<ResourceContainer>
+  val submissionLibraries: Sequence<ResourceContainer>
   val expectedSubmissions: Int
 }
 
@@ -33,38 +36,57 @@ fun buildGradingBatch(block: GradingBatchBuilder.() -> Unit): GradingBatch = Gra
 class GradingBatchBuilder internal constructor() {
   private val graders = mutableListOf<ResourceContainer>()
   private val submissions = mutableListOf<ResourceContainer>()
+  private val graderLibraries = mutableListOf<ResourceContainer>()
+  private val submissionLibraries = mutableListOf<ResourceContainer>()
   private var totalExpectedCount: Int = 0
 
-  fun discoverGraders(file: File, filter: FilenameFilter? = null) {
+  private fun discover(file: File, filter: FilenameFilter?, list: MutableList<ResourceContainer>) {
+    file.ensure()
     for (candidate in checkNotNull(file.listFiles(filter)) { "Could not find $file" }) {
-      graders += createResourceContainer(candidate)
+      list += createResourceContainer(candidate)
     }
   }
 
+  fun discoverGraders(file: File, filter: FilenameFilter? = null) = discover(file, filter, graders)
   fun discoverGraders(file: String, filter: FilenameFilter? = null) = discoverGraders(File(file), filter)
 
   fun discoverSubmissions(file: File, filter: FilenameFilter? = null) {
+    file.ensure()
     for (candidate in checkNotNull(file.listFiles(filter)) { "Could not find $file" }) {
-      graders += createResourceContainer(candidate)
+      submissions += createResourceContainer(candidate)
       ++totalExpectedCount
     }
   }
 
   fun discoverSubmissions(file: String, filter: FilenameFilter? = null) = discoverSubmissions(File(file), filter)
+  fun discoverGraderLibraries(file: File, filter: FilenameFilter? = null) = discover(file, filter, graderLibraries)
+  fun discoverGraderLibraries(file: String, filter: FilenameFilter? = null) = discoverGraderLibraries(File(file), filter)
+  fun discoverSubmissionLibraries(file: File, filter: FilenameFilter? = null) = discover(file, filter, submissionLibraries)
+  fun discoverSubmissionLibraries(file: String, filter: FilenameFilter? = null) = discoverSubmissionLibraries(File(file), filter)
 
-  fun addGrader(resourceContainer: ResourceContainer): Boolean {
-    return graders.add(resourceContainer)
-  }
-  fun addSubmission(resourceContainer: ResourceContainer): Boolean {
+  fun addGrader(container: ResourceContainer): Boolean = graders.add(container)
+
+  fun addSubmission(container: ResourceContainer): Boolean {
     ++totalExpectedCount
-    return graders.add(resourceContainer)
+    return graders.add(container)
   }
 
-  fun build(): GradingBatch = GradingBatchImpl(graders.asSequence(), submissions.asSequence(), totalExpectedCount)
+  fun addGraderLibrary(container: ResourceContainer): Boolean = graderLibraries.add(container)
+  fun addSubmissionLibrary(container: ResourceContainer): Boolean = submissionLibraries.add(container)
+
+  fun build(): GradingBatch = GradingBatchImpl(
+    graders.asSequence(),
+    submissions.asSequence(),
+    graderLibraries.asSequence(),
+    submissionLibraries.asSequence(),
+    totalExpectedCount,
+  )
 }
 
 private data class GradingBatchImpl(
   override val graders: Sequence<ResourceContainer>,
   override val submissions: Sequence<ResourceContainer>,
-  override val expectedSubmissions: Int
+  override val graderLibraries: Sequence<ResourceContainer>,
+  override val submissionLibraries: Sequence<ResourceContainer>,
+  override val expectedSubmissions: Int,
 ) : GradingBatch

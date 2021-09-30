@@ -23,7 +23,7 @@ import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 import org.sourcegrade.jagr.launcher.configuration.StandardLaunchConfiguration
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.SystemResourceEnvironmentFactory
-import org.sourcegrade.jagr.launcher.env.launchWrapper
+import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.executor.Executor
 import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
 import org.sourcegrade.jagr.launcher.executor.ProgressBar
@@ -43,10 +43,17 @@ open class Jagr(
     MultiWorkerExecutor.Factory,
   )
 
-  fun launch(batch: GradingBatch): RubricCollector {
-    val collector = RubricCollectorImpl(batch.expectedSubmissions)
+  suspend fun launch(batch: GradingBatch): RubricCollector {
+    val collector = RubricCollectorImpl()
     val progressBar = ProgressBar(collector)
-    environment.launchWrapper.launch(configuration, batch, executorFactory.create(collector, environment))
+    collector.addListener {
+      progressBar.print()
+    }
+    val queue = environment.gradingQueueFactory.create(batch)
+    collector.allocate(queue)
+    val executor = executorFactory.create(collector, environment)
+    executor.schedule(queue)
+    executor.start()
     return collector // TODO: Maybe different return type?
   }
 }

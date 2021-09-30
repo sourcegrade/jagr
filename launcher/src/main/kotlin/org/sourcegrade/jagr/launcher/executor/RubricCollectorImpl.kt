@@ -19,23 +19,35 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-internal class RubricCollectorImpl(override val totalExpectedCount: Int) : MutableRubricCollector {
+internal class RubricCollectorImpl : MutableRubricCollector {
+  private val queued = mutableListOf<GradingQueue>()
   override val gradingScheduled = mutableListOf<GradingJob>()
   override val gradingRunning = mutableListOf<GradingJob>()
   override val gradingFinished = mutableListOf<GradingResult>()
-  override val remainingExpectedCount: Int
-    get() = totalExpectedCount - gradingFinished.size
+  override val total: Int
+    get() = queued.sumOf { it.total }
+  override val remaining: Int
+    get() = queued.sumOf { it.remaining }
 
-  @Synchronized
-  override fun schedule(request: GradingRequest): GradingJob {
+  private val listeners = mutableListOf<() -> Unit>()
+
+  override fun allocate(queue: GradingQueue) {
+    queued += queue
+  }
+
+  override fun addListener(listener: () -> Unit) {
+    listeners += listener
+  }
+
+  override fun start(request: GradingRequest): GradingJob {
     return GradingJob(request)
       .also(gradingRunning::add)
       .also { job -> job.result.invokeOnCompletion { endGrading(job) } }
   }
 
-  @Synchronized
   private fun endGrading(job: GradingJob) {
     check(job.result.isCompleted) { "$job is not finished grading" }
     gradingRunning.remove(job) && gradingFinished.add(job.result.getCompleted())
+    listeners.forEach { it() }
   }
 }

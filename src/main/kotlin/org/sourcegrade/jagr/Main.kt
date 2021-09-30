@@ -19,17 +19,28 @@
 
 package org.sourcegrade.jagr
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.sourcegrade.jagr.launcher.Jagr
-import org.sourcegrade.jagr.launcher.executor.SingleThreadExecutor
+import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
+import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
 import org.sourcegrade.jagr.launcher.io.buildGradingBatch
 
 fun main(vararg args: String) {
-  Jagr {
-    executorFactory = SingleThreadExecutor.Factory
-  }.launch(
-    buildGradingBatch {
-      discoverSubmissions("submissions") { _, n -> n.endsWith(".jar") }
-      discoverGraders("graders") { _, n -> n.endsWith(".jar") }
-    }
-  )
+  runBlocking {
+    delay(15000)
+    val collector = Jagr {
+      executorFactory = MultiWorkerExecutor.Factory {
+        workerPoolFactory = ThreadWorkerPool.Factory
+      }
+    }.launch(
+      buildGradingBatch {
+        discoverSubmissions("submissions")
+        discoverSubmissionLibraries("libs")
+        discoverGraders("graders")
+        discoverGraderLibraries("solutions")
+      }
+    )
+    println(collector.gradingFinished.joinToString("\n") { it.rubrics.keys.first().grade.toString() })
+  }
 }

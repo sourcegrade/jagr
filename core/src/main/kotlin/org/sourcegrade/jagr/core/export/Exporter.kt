@@ -19,11 +19,11 @@
 
 package org.sourcegrade.jagr.core.export
 
-import org.sourcegrade.jagr.core.testing.TestJarImpl
+import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import java.io.File
 
 interface Exporter {
   val name: String
-  fun initialize(directory: File, testJar: TestJarImpl? = null) = Unit
-  fun finalize(directory: File, testJar: TestJarImpl? = null) = Unit
+  fun initialize(directory: File, testJar: GraderJarImpl? = null) = Unit
+  fun finalize(directory: File, testJar: GraderJarImpl? = null) = Unit
 }

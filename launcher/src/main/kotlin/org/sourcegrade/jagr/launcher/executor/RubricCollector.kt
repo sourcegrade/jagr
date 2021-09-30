@@ -23,6 +23,6 @@ sealed interface RubricCollector {
   val gradingScheduled: List<GradingJob>
   val gradingRunning: List<GradingJob>
   val gradingFinished: List<GradingResult>
-  val totalExpectedCount: Int
-  val remainingExpectedCount: Int
+  val total: Int
+  val remaining: Int
 }
