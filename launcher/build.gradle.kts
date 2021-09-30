@@ -12,7 +12,6 @@ val slf4jVersion: String by project
 
 dependencies {
   api(project(":jagr-grader-api"))
-  api(project(":jagr-plugin-api"))
   api("com.google.inject:guice:$guiceVersion")
   api("org.slf4j:slf4j-api:$slf4jVersion")
   api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
