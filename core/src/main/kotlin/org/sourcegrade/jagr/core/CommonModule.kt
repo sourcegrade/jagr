@@ -48,7 +48,6 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
     bind(GradingQueue.Factory::class.java).to(GradingQueueFactoryImpl::class.java)
     bind(RuntimeGrader::class.java).to(RuntimeGraderImpl::class.java)
 
-
     bind(Criterion.Factory::class.java).to(CriterionFactoryImpl::class.java)
     bind(CriterionHolderPointCalculator.Factory::class.java).to(CriterionHolderPointCalculatorFactoryImpl::class.java)
     bind(Grader.Factory::class.java).to(GraderFactoryImpl::class.java)
