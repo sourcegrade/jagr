@@ -23,15 +23,21 @@ import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.io.GraderJar
+import org.sourcegrade.jagr.launcher.io.GradingBatch
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 interface Executor {
   suspend fun schedule(queue: GradingQueue)
-  suspend fun start()
+  suspend fun start(rubricCollector: MutableRubricCollector)
   interface Factory {
-    fun create(rubricCollector: MutableRubricCollector, environment: Environment): Executor
+    fun create(environment: Environment): Executor
   }
+}
+
+fun executorForBatch(batch: GradingBatch): Executor.Factory = when (batch.expectedSubmissions) {
+  0, 1 -> SyncExecutor.Factory
+  else -> MultiWorkerExecutor.Factory
 }
 
 fun interface RuntimeGrader {

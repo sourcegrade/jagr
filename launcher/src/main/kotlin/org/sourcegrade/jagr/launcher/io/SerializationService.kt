@@ -19,16 +19,13 @@
 
 package org.sourcegrade.jagr.launcher.io
 
-import java.io.ByteArrayInputStream
-import java.io.InputStream
+import com.google.common.io.ByteArrayDataInput
+import com.google.common.io.ByteArrayDataOutput
+import kotlin.reflect.KClass
 
-interface Resource {
-  val name: String
-  val size: Int
-  fun getInputStream(): InputStream
+interface SerializationService {
+  fun <T : Any> read(type: KClass<T>, input: ByteArrayDataInput): T
+  fun <T : Any> write(obj: T, output: ByteArrayDataOutput)
 }
 
-internal class ByteArrayResource(override val name: String, val data: ByteArray) : Resource {
-  override val size: Int = data.size
-  override fun getInputStream(): InputStream = ByteArrayInputStream(data)
-}
+inline fun <reified T : Any> SerializationService.read(input: ByteArrayDataInput): T = read(T::class, input)

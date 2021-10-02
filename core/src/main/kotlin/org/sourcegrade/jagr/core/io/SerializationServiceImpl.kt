@@ -17,18 +17,19 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.core.io
 
-import java.io.ByteArrayInputStream
-import java.io.InputStream
+import com.google.common.io.ByteArrayDataInput
+import com.google.common.io.ByteArrayDataOutput
+import org.sourcegrade.jagr.launcher.io.SerializationService
+import kotlin.reflect.KClass
 
-interface Resource {
-  val name: String
-  val size: Int
-  fun getInputStream(): InputStream
-}
+class SerializationServiceImpl : SerializationService {
+  override fun <T : Any> read(type: KClass<T>, input: ByteArrayDataInput): T {
+    TODO("Not yet implemented")
+  }
 
-internal class ByteArrayResource(override val name: String, val data: ByteArray) : Resource {
-  override val size: Int = data.size
-  override fun getInputStream(): InputStream = ByteArrayInputStream(data)
+  override fun <T : Any> write(obj: T, output: ByteArrayDataOutput) {
+    TODO("Not yet implemented")
+  }
 }

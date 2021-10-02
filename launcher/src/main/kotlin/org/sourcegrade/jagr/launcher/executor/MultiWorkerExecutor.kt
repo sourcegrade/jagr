@@ -26,17 +26,12 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class MultiWorkerExecutor internal constructor(
-  private val rubricCollector: MutableRubricCollector,
-  private val workerPool: WorkerPool,
-) : Executor {
+class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPool) : Executor {
 
   open class Factory internal constructor(val workerPoolFactory: WorkerPool.Factory) : Executor.Factory {
     companion object Default : Factory(ProcessWorkerPool.Factory)
 
-    override fun create(rubricCollector: MutableRubricCollector, environment: Environment): Executor {
-      return MultiWorkerExecutor(rubricCollector, workerPoolFactory.create(environment))
-    }
+    override fun create(environment: Environment): Executor = MultiWorkerExecutor(workerPoolFactory.create(environment))
   }
 
   companion object {
@@ -56,7 +51,7 @@ class MultiWorkerExecutor internal constructor(
     scheduled += queue
   }
 
-  private suspend fun checkWorkers() {
+  private suspend fun checkWorkers(rubricCollector: MutableRubricCollector) {
     val requests = mutex.withLock {
       workerPool.createWorkers(scheduled.size)
         .mapNotNull { worker -> scheduled.next()?.let { request -> worker to request } }
@@ -85,9 +80,9 @@ class MultiWorkerExecutor internal constructor(
     }
   }
 
-  override suspend fun start() {
+  override suspend fun start(rubricCollector: MutableRubricCollector) {
     while (scheduled.isNotEmpty()) {
-      checkWorkers()
+      checkWorkers(rubricCollector)
     }
   }
 }

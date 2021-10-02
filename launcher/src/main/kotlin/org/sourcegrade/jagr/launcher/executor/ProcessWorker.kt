@@ -17,8 +17,14 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("UnstableApiUsage")
+
 package org.sourcegrade.jagr.launcher.executor
 
+import com.google.common.io.ByteStreams
+import org.sourcegrade.jagr.launcher.io.openScope
+import org.sourcegrade.jagr.launcher.io.write
+import java.io.ByteArrayOutputStream
 import java.io.File
 
 class ProcessWorker(
@@ -36,10 +42,16 @@ class ProcessWorker(
   }
 
   private val process: Process = ProcessBuilder()
-    .command("java", "-jar", jagrLocation)
+    .command("java", "-jar", jagrLocation, "--child")
     .start()
 
   override fun assignJob(job: GradingJob) {
+    val os = ByteArrayOutputStream()
+    val output = ByteStreams.newDataOutput(os)
+    openScope {
+      output.write(job.request, this)
+    }
+    os.writeTo(process.outputStream)
   }
 
   override fun kill() {

@@ -19,7 +19,6 @@
 
 package org.sourcegrade.jagr.launcher.io
 
-import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
 import java.util.zip.ZipEntry
@@ -32,33 +31,24 @@ internal class ZipResourceContainer(
   constructor(file: File) : this(file.name, file.inputStream().buffered())
 
   override fun iterator(): Iterator<Resource> = ZipResourceIterator(ZipInputStream(input))
-  private inner class ZipResourceIterator(
-    private val zip: ZipInputStream
-  ) : Iterator<Resource> {
-    private var next: ZipEntry? = null
-    override fun hasNext(): Boolean {
-      if (next == null) {
-        next = zip.nextEntry
-        return next != null
-      }
-      return true
-    }
+  override fun toString(): String = name
+}
 
-    override fun next(): Resource {
-      return next?.let {
-        // return cached next from hasNext() and reset it
-        ZipEntryResource(it).also { next = null }
-      } // no cached next, calculate and return
-        ?: ZipEntryResource(requireNotNull(zip.nextEntry) { "No next entry!" })
+private class ZipResourceIterator(private val zip: ZipInputStream) : Iterator<Resource> {
+  private var next: ZipEntry? = null
+  override fun hasNext(): Boolean {
+    if (next == null) {
+      next = zip.nextEntry
+      return next != null
     }
-
-    private inner class ZipEntryResource(entry: ZipEntry) : Resource {
-      private val bytes: ByteArray = zip.readBytes()
-      override val name: String = entry.name
-      override val inputStream: InputStream
-        get() = ByteArrayInputStream(bytes)
-    }
+    return true
   }
 
-  override fun toString(): String = name
+  override fun next(): Resource {
+    return next?.let {
+      // return cached next from hasNext() and reset it
+      ByteArrayResource(it.name, zip.readBytes()).also { next = null }
+    } // no cached next, calculate and return
+      ?: ByteArrayResource(requireNotNull(zip.nextEntry) { "No next entry!" }.name, zip.readBytes())
+  }
 }

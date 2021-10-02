@@ -21,6 +21,9 @@ package org.sourcegrade.jagr.launcher.executor
 
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.concurrent.atomic.AtomicBoolean
 
 interface GradingQueue {
 
@@ -45,6 +48,24 @@ interface GradingQueue {
      * Constructs a [GradingQueue] that may be asynchronously polled.
      */
     fun create(batch: GradingBatch): GradingQueue
+  }
+}
+
+fun gradingQueueOf(request: GradingRequest): GradingQueue = SingletonGradingQueue(request)
+
+private class SingletonGradingQueue(private val job: GradingRequest) : GradingQueue {
+  override val total: Int = 1
+  override val remaining: Int
+    get() = if (wasRead.get()) 0 else 1
+  override val startedUtc: Instant = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+  override val finishedUtc: Instant? = null
+
+  val wasRead = AtomicBoolean()
+
+  override suspend fun next(): GradingRequest? {
+    if (wasRead.get()) return null
+    wasRead.set(true)
+    return job
   }
 }
 

@@ -24,15 +24,12 @@ import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.runtimeGrader
 
-class SyncExecutor private constructor(
-  private val rubricCollector: MutableRubricCollector,
+class SyncExecutor constructor(
   environment: Environment,
 ) : Executor {
 
   object Factory : Executor.Factory {
-    override fun create(rubricCollector: MutableRubricCollector, environment: Environment): SyncExecutor {
-      return SyncExecutor(rubricCollector, environment)
-    }
+    override fun create(environment: Environment): Executor = SyncExecutor(environment)
   }
 
   private val mutex = Mutex()
@@ -43,7 +40,7 @@ class SyncExecutor private constructor(
     scheduled += queue
   }
 
-  override suspend fun start() = mutex.withLock {
+  override suspend fun start(rubricCollector: MutableRubricCollector) = mutex.withLock {
     while (scheduled.isNotEmpty()) {
       val next = scheduled.next() ?: break
       runtimeGrader.grade(rubricCollector.start(next))

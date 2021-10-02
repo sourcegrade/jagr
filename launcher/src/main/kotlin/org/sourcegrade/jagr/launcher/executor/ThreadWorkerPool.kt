@@ -30,8 +30,7 @@ class ThreadWorkerPool(
   open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
     companion object Default : Factory(concurrency = 4)
 
-    override fun create(environment: Environment): WorkerPool =
-      ThreadWorkerPool(environment.runtimeGrader, concurrency)
+    override fun create(environment: Environment): WorkerPool = ThreadWorkerPool(environment.runtimeGrader, concurrency)
   }
 
   companion object {

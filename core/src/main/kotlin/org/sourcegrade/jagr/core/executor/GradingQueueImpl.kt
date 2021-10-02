@@ -64,14 +64,12 @@ class GradingQueueImpl(
   private val graders: List<GraderJar> = batch.graders.compile(
     logger, transformerManager, runtimeJarLoader, graderRuntimeLibraries, "grader",
   ) {
-    println("hulu1")
     if (errors == 0) GraderJarImpl(logger, this, graderRuntimeLibraries) else null
   }
 
   private val submissions: List<Submission> = batch.submissions.compile(
     logger, transformerManager, runtimeJarLoader, baseRuntimeLibraries, "submission"
   ) {
-    println("hulu2")
     if (submissionInfo == null) {
       logger.error("${container.name} does not have a submission-info.json! Skipping...")
       return@compile null

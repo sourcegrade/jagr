@@ -10,6 +10,7 @@ plugins {
 dependencies {
   runtimeOnly(project("jagr-core"))
   implementation(project("jagr-launcher"))
+  implementation("com.github.ajalt.clikt:clikt:3.2.0")
 }
 
 application {

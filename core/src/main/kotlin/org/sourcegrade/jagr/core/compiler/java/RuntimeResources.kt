@@ -19,15 +19,35 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
+import com.google.common.io.ByteArrayDataInput
+import com.google.common.io.ByteArrayDataOutput
 import org.slf4j.Logger
 import org.sourcegrade.jagr.core.parallelMapNotNull
 import org.sourcegrade.jagr.core.transformer.TransformerManager
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.keyOf
+import org.sourcegrade.jagr.launcher.io.readMap
+import org.sourcegrade.jagr.launcher.io.writeMap
 
 data class RuntimeResources(
   val classes: Map<String, CompiledClass> = mapOf(),
   val resources: Map<String, ByteArray> = mapOf(),
-)
+) {
+  companion object Factory : SerializerFactory<RuntimeResources> {
+    override fun read(input: ByteArrayDataInput, scope: SerializationScope): RuntimeResources =
+      RuntimeResources(input.readMap(), input.readMap())
+
+    override fun write(obj: RuntimeResources, output: ByteArrayDataOutput, scope: SerializationScope) {
+      output.writeMap(obj.classes)
+      output.writeMap(obj.resources)
+    }
+  }
+
+  object Base : SerializationScope.Key<RuntimeResources> by keyOf("base")
+  object Grader : SerializationScope.Key<RuntimeResources> by keyOf("grader")
+}
 
 infix fun Map<String, CompiledClass>.rr(resources: Map<String, ByteArray>): RuntimeResources =
   RuntimeResources(this, resources)

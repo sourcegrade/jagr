@@ -19,10 +19,25 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
+import com.google.common.io.ByteArrayDataInput
+import com.google.common.io.ByteArrayDataOutput
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.launcher.io.GraderJar
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.read
 
 data class GradingRequest(
   val submission: Submission,
   val graderJars: List<GraderJar>,
-)
+) {
+  companion object Factory : SerializerFactory<GradingRequest> {
+    override fun read(input: ByteArrayDataInput, scope: SerializationScope): GradingRequest =
+      GradingRequest(input.read(scope), input.readList(scope))
+
+    override fun write(obj: GradingRequest, output: ByteArrayDataOutput, scope: SerializationScope) {
+      TODO("Not yet implemented")
+    }
+  }
+}

@@ -19,7 +19,11 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
+import com.google.common.io.ByteArrayDataInput
+import com.google.common.io.ByteArrayDataOutput
 import org.sourcegrade.jagr.api.testing.SourceFile
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import java.net.URI
 import javax.tools.JavaFileObject.Kind
 import javax.tools.SimpleJavaFileObject
@@ -29,6 +33,17 @@ class JavaSourceFile(
   private val fileName: String,
   private val content: String,
 ) : SimpleJavaFileObject(URI.create("string:///$fileName"), Kind.SOURCE), SourceFile {
+  companion object Factory : SerializerFactory<JavaSourceFile> {
+    override fun read(input: ByteArrayDataInput, scope: SerializationScope): JavaSourceFile =
+      JavaSourceFile(input.readUTF(), input.readUTF(), input.readUTF())
+
+    override fun write(obj: JavaSourceFile, output: ByteArrayDataOutput, scope: SerializationScope) {
+      output.writeUTF(obj.className)
+      output.writeUTF(obj.fileName)
+      output.writeUTF(obj.content)
+    }
+  }
+
   override fun getFileName(): String = fileName
   override fun getContent(): String = content
   override fun getClassName(): String = className

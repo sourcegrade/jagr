@@ -19,50 +19,52 @@
 
 package org.sourcegrade.jagr.launcher
 
-import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
-import org.sourcegrade.jagr.launcher.configuration.StandardLaunchConfiguration
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.SystemResourceEnvironmentFactory
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.executor.Executor
-import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
+import org.sourcegrade.jagr.launcher.executor.MutableRubricCollector
 import org.sourcegrade.jagr.launcher.executor.ProgressBar
 import org.sourcegrade.jagr.launcher.executor.RubricCollector
-import org.sourcegrade.jagr.launcher.executor.RubricCollectorImpl
+import org.sourcegrade.jagr.launcher.executor.emptyCollector
+import org.sourcegrade.jagr.launcher.executor.executorForBatch
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 
-open class Jagr(
-  val environment: Environment,
-  val configuration: LaunchConfiguration,
-  val executorFactory: Executor.Factory,
-) {
+/**
+ * Represents a Jagr implementation.
+ */
+open class Jagr(val environment: Environment) {
 
-  companion object Default : Jagr(
-    SystemResourceEnvironmentFactory.create(),
-    StandardLaunchConfiguration,
-    MultiWorkerExecutor.Factory,
-  )
+  companion object Default : Jagr(SystemResourceEnvironmentFactory.create())
 
-  suspend fun launch(batch: GradingBatch): RubricCollector {
-    val collector = RubricCollectorImpl()
+  suspend fun schedule(
+    batch: GradingBatch,
+    collector: MutableRubricCollector = emptyCollector(),
+    executorFactory: Executor.Factory = executorForBatch(batch),
+  ): RubricCollector {
     val progressBar = ProgressBar(collector)
-    collector.addListener {
+    collector.setListener {
       progressBar.print()
     }
     val queue = environment.gradingQueueFactory.create(batch)
     collector.allocate(queue)
-    val executor = executorFactory.create(collector, environment)
+    val executor = executorFactory.create(environment)
     executor.schedule(queue)
-    executor.start()
+    executor.start(collector)
     return collector // TODO: Maybe different return type?
   }
 }
 
-fun Jagr(from: Jagr = Jagr.Default, builderAction: JagrBuilder.() -> Unit): Jagr = JagrBuilder(from).also(builderAction).build()
+fun Jagr.prepare(builderAction: JagrBuilder.() -> Unit) {
+  JagrBuilder(this).builderAction()
+}
 
-class JagrBuilder internal constructor(jagr: Jagr) {
-  var environment: Environment = jagr.environment
-  var configuration: LaunchConfiguration = jagr.configuration
-  var executorFactory: Executor.Factory = jagr.executorFactory
-  fun build() = Jagr(environment, configuration, executorFactory)
+class JagrBuilder internal constructor(val jagr: Jagr) {
+  lateinit var batch: GradingBatch
+  var collector: MutableRubricCollector? = null
+  var executor: Executor? = null
+}
+
+fun JagrBuilder.setExecutorFactory(executorFactory: Executor.Factory) {
+  executor = executorFactory.create(jagr.environment)
 }

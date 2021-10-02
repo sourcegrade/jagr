@@ -19,14 +19,28 @@
 
 package org.sourcegrade.jagr.launcher.io
 
+import com.google.common.io.ByteArrayDataInput
+import com.google.common.io.ByteArrayDataOutput
 import java.io.File
 import java.io.InputStream
 
 interface ResourceContainer : Sequence<Resource> {
+  val info: ResourceContainerInfo
+}
+
+interface ResourceContainerInfo {
+
+  companion object Factory : SerializerFactory<ResourceContainerInfo> {
+    override fun read(input: ByteArrayDataInput, scope: SerializationScope): ResourceContainerInfo = ResourceContainerInfoImpl(input.readUTF())
+    override fun write(obj: ResourceContainerInfo, output: ByteArrayDataOutput, scope: SerializationScope) = output.writeUTF(obj.name)
+  }
+
   val name: String
 }
 
-val ResourceContainer.nameWithoutExtension: String
+private class ResourceContainerInfoImpl(override val name: String) : ResourceContainerInfo
+
+val ResourceContainerInfo.nameWithoutExtension: String
   get() = name.substringBeforeLast(".")
 
 fun createResourceContainer(name: String, inputStream: InputStream): ResourceContainer {

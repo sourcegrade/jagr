@@ -29,14 +29,14 @@ internal class RubricCollectorImpl : MutableRubricCollector {
   override val remaining: Int
     get() = queued.sumOf { it.remaining }
 
-  private val listeners = mutableListOf<() -> Unit>()
+  private var listener: () -> Unit = {}
 
   override fun allocate(queue: GradingQueue) {
     queued += queue
   }
 
-  override fun addListener(listener: () -> Unit) {
-    listeners += listener
+  override fun setListener(listener: () -> Unit) {
+    this.listener = listener
   }
 
   override fun start(request: GradingRequest): GradingJob {
@@ -48,6 +48,6 @@ internal class RubricCollectorImpl : MutableRubricCollector {
   private fun endGrading(job: GradingJob) {
     check(job.result.isCompleted) { "$job is not finished grading" }
     gradingRunning.remove(job) && gradingFinished.add(job.result.getCompleted())
-    listeners.forEach { it() }
+    listener()
   }
 }
