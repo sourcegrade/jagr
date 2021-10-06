@@ -20,24 +20,62 @@
 package org.sourcegrade.jagr
 
 import kotlinx.coroutines.runBlocking
+import org.sourcegrade.jagr.core.export.rubric.GradedRubricExportManager
+import org.sourcegrade.jagr.core.testing.GraderJarImpl
+import org.sourcegrade.jagr.launcher.ensure
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
+import org.sourcegrade.jagr.launcher.env.logger
+import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
+import org.sourcegrade.jagr.launcher.executor.ProgressBar
+import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
-import org.sourcegrade.jagr.launcher.executor.executorForBatch
 import org.sourcegrade.jagr.launcher.io.buildGradingBatch
+import org.sourcegrade.jagr.launcher.io.createResourceContainer
+import org.sourcegrade.jagr.launcher.opt.Config
+import java.io.File
 
 fun main(vararg args: String) {
   runBlocking {
+    val startTime = System.currentTimeMillis()
     val batch = buildGradingBatch {
-      discoverSubmissions("submissions") { t, _ -> t.extension == "jar"}
-      discoverSubmissionLibraries("libs") { t, _ -> t.extension == "jar"}
-      discoverGraders("graders") { t, _ -> t.extension == "jar"}
-      discoverGraderLibraries("solutions") { t, _ -> t.extension == "jar"}
+      val submissions = File("submissions").ensure(Jagr.logger) ?: throw AssertionError()
+      //discoverSubmissions("submissions") { _, n -> n.endsWith("jar") }
+      // TODO: Remove for production
+      for (candidate in checkNotNull(submissions.listFiles { _, n -> n.endsWith("jar") }) { "Could not find $submissions" }) {
+        repeat(120) {
+          addSubmission(createResourceContainer(candidate))
+        }
+      }
+      discoverSubmissionLibraries("libs") { _, n -> n.endsWith("jar") }
+      discoverGraders("graders") { _, n -> n.endsWith("jar") }
+      discoverGraderLibraries("solutions") { _, n -> n.endsWith("jar") }
     }
-    val executor = executorForBatch(batch).create(Jagr)
+    val queue = Jagr.gradingQueueFactory.create(batch)
+    Jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
+    val executor = MultiWorkerExecutor.Factory {
+      workerPoolFactory = ThreadWorkerPool.Factory {
+        concurrency = Jagr.injector.getInstance(Config::class.java).grading.concurrentThreads
+      }
+    }.create(Jagr)
     val collector = emptyCollector()
-    executor.schedule(Jagr.gradingQueueFactory.create(batch))
+    val progress = ProgressBar(collector)
+    collector.allocate(queue)
+    collector.setListener {
+      progress.print()
+    }
+    executor.schedule(queue)
     executor.start(collector)
-    println(collector.gradingFinished.joinToString("\n") { it.rubrics.keys.first().grade.toString() })
+    val exporter = Jagr.injector.getInstance(GradedRubricExportManager::class.java)
+    val rubricsFile = File("rubrics").ensure(Jagr.logger)!!
+    val graderJars = collector.gradingFinished.firstOrNull()?.request?.graderJars ?: return@runBlocking
+    exporter.initialize(rubricsFile, graderJars as List<GraderJarImpl>)
+    for ((gradedRubric, exportFileName) in collector.gradingFinished
+      .asSequence()
+      .map { it.rubrics }
+      .reduce { acc, map -> acc + map }) {
+      exporter.export(gradedRubric, rubricsFile, exportFileName)
+    }
+    println("Time taken: ${System.currentTimeMillis() - startTime}ms")
   }
 }

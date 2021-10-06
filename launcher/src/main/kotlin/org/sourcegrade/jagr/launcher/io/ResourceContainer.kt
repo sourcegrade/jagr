@@ -38,7 +38,7 @@ interface ResourceContainerInfo {
   }
 }
 
-internal class ResourceContainerInfoImpl(override val name: String) : ResourceContainerInfo
+internal data class ResourceContainerInfoImpl(override val name: String) : ResourceContainerInfo
 
 val ResourceContainerInfo.nameWithoutExtension: String
   get() = name.substringBeforeLast(".")

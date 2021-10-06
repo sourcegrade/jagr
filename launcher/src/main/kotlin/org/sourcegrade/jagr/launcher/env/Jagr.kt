@@ -20,6 +20,7 @@
 package org.sourcegrade.jagr.launcher.env
 
 import com.google.inject.Injector
+import org.slf4j.Logger
 import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 import org.sourcegrade.jagr.launcher.configuration.StandardLaunchConfiguration
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
@@ -38,6 +39,7 @@ interface Jagr {
 }
 
 val Jagr.gradingQueueFactory: GradingQueue.Factory by injected()
+val Jagr.logger: Logger by injected()
 val Jagr.runtimeGrader: RuntimeGrader by injected()
 
 internal operator fun <T : Any> Jagr.get(type: KClass<T>): T = injector.getInstance(type.java)

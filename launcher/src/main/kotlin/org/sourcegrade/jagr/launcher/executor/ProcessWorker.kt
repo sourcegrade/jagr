@@ -51,9 +51,6 @@ class ProcessWorker(
     val output = ByteStreams.newDataOutput(os)
     openScope(output) {
       SerializerFactory.getScoped<GradingRequest>().writeScoped(job.request, this)
-      openScope {
-
-      }
     }
     os.writeTo(process.outputStream)
   }

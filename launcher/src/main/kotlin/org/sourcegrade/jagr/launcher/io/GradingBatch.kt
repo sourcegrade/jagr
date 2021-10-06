@@ -68,7 +68,7 @@ class GradingBatchBuilder internal constructor() {
 
   fun addSubmission(container: ResourceContainer): Boolean {
     ++totalExpectedCount
-    return graders.add(container)
+    return submissions.add(container)
   }
 
   fun addGraderLibrary(container: ResourceContainer): Boolean = graderLibraries.add(container)

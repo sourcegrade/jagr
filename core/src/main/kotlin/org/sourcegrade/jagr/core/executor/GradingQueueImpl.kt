@@ -82,7 +82,7 @@ class GradingQueueImpl(
 
   override val total: Int = batch.expectedSubmissions
 
-  private val _remaining = AtomicInteger()
+  private val _remaining = AtomicInteger(total)
 
   override val remaining: Int
     get() = _remaining.get()

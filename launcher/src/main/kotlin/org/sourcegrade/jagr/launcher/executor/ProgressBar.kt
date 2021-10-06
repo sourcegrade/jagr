@@ -26,8 +26,6 @@ class ProgressBar(
   private val showElementsIfLessThan: Int = 3,
 ) {
 
-  @Volatile
-  private var progress = 0
   private val decimalFormat = DecimalFormat("00.00")
   private val barLengthFull = 50
   private val barChar = '='
@@ -36,8 +34,9 @@ class ProgressBar(
   private val whitespaceChar = ' '
 
   fun print() {
+    val finished = rubricCollector.gradingFinished.size
     val total = rubricCollector.total
-    val progressDecimal = progress.toDouble() / total.toDouble().coerceAtLeast(0.0)
+    val progressDecimal = finished.toDouble() / total.toDouble().coerceAtLeast(0.0)
     val formattedPercentage = decimalFormat.format(progressDecimal * 100.0)
     val barCount = barLengthFull * progressDecimal
     val sb = StringBuilder(30)
@@ -56,13 +55,13 @@ class ProgressBar(
     sb.append(whitespaceChar)
     sb.append(formattedPercentage)
     sb.append('%')
-    sb.append(" (${rubricCollector.gradingFinished.size}/$total)")
+    sb.append(" ($finished/$total)")
     if (rubricCollector.gradingScheduled.size in 1 until showElementsIfLessThan) {
       sb.append(" Remaining: [${rubricCollector.gradingScheduled.joinToString { it.request.submission.toString() }}]")
     }
     // pad with spaces
-    sb.append(" ".repeat((120 - sb.length).coerceAtLeast(0)) + '\r')
-    print(sb.toString())
+    sb.append(" ".repeat((120 - sb.length).coerceAtLeast(0)))
+    println(sb.toString())
   }
 
   fun clear() {

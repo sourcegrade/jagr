@@ -47,7 +47,7 @@ class ProcessWorkerPool(
 
   override fun createWorkers(maxCount: Int): List<Worker> {
     if (maxCount == 0) return emptyList()
-    val workerCount = minOf(maxCount - concurrency, maxCount)
+    val workerCount = minOf(maxCount, concurrency)
     return List(workerCount) { ProcessWorker(this::addActiveWorker, this::removeActiveWorker) }
   }
 }
