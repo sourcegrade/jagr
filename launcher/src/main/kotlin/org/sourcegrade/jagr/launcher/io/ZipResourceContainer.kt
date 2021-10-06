@@ -25,13 +25,14 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 internal class ZipResourceContainer(
-  override val name: String,
+  override val info: ResourceContainerInfo,
   private val input: InputStream,
 ) : ResourceContainer {
+  constructor(name: String, input: InputStream) : this(ResourceContainerInfoImpl(name), input)
   constructor(file: File) : this(file.name, file.inputStream().buffered())
 
   override fun iterator(): Iterator<Resource> = ZipResourceIterator(ZipInputStream(input))
-  override fun toString(): String = name
+  override fun toString(): String = info.toString()
 }
 
 private class ZipResourceIterator(private val zip: ZipInputStream) : Iterator<Resource> {

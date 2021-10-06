@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-import org.sourcegrade.jagr.launcher.env.Environment
+import org.sourcegrade.jagr.launcher.env.Jagr
 
 class ProcessWorkerPool(
   private val concurrency: Int,
@@ -28,7 +28,7 @@ class ProcessWorkerPool(
   open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
     companion object Default : Factory(concurrency = 4)
 
-    override fun create(environment: Environment): WorkerPool = ProcessWorkerPool(concurrency)
+    override fun create(jagr: Jagr): WorkerPool = ProcessWorkerPool(concurrency)
   }
 
   companion object {

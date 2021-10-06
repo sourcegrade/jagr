@@ -23,13 +23,13 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 
-internal object SystemResourceEnvironmentFactory : Environment.Factory {
+internal object SystemResourceJagrFactory : Jagr.Factory {
   private const val RESOURCE_NAME = "/jagr.json"
 
-  override fun create(configuration: LaunchConfiguration): Environment {
+  override fun create(configuration: LaunchConfiguration): Jagr {
     javaClass.getResourceAsStream(RESOURCE_NAME).use {
       checkNotNull(it) { "Could not find resource $RESOURCE_NAME" }
-      return Json.decodeFromString<JagrJson>(it.bufferedReader().readText()).createEnvironment(configuration)
+      return Json.decodeFromString<JagrJson>(it.bufferedReader().readText()).toJagr(configuration)
     }
   }
 }

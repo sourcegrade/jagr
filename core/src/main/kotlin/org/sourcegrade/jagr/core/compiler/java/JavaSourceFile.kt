@@ -19,8 +19,6 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
-import com.google.common.io.ByteArrayDataInput
-import com.google.common.io.ByteArrayDataOutput
 import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -34,13 +32,13 @@ class JavaSourceFile(
   private val content: String,
 ) : SimpleJavaFileObject(URI.create("string:///$fileName"), Kind.SOURCE), SourceFile {
   companion object Factory : SerializerFactory<JavaSourceFile> {
-    override fun read(input: ByteArrayDataInput, scope: SerializationScope): JavaSourceFile =
-      JavaSourceFile(input.readUTF(), input.readUTF(), input.readUTF())
+    override fun read(scope: SerializationScope.Input): JavaSourceFile =
+      JavaSourceFile(scope.input.readUTF(), scope.input.readUTF(), scope.input.readUTF())
 
-    override fun write(obj: JavaSourceFile, output: ByteArrayDataOutput, scope: SerializationScope) {
-      output.writeUTF(obj.className)
-      output.writeUTF(obj.fileName)
-      output.writeUTF(obj.content)
+    override fun write(obj: JavaSourceFile, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.className)
+      scope.output.writeUTF(obj.fileName)
+      scope.output.writeUTF(obj.content)
     }
   }
 

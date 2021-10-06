@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-import org.sourcegrade.jagr.launcher.env.Environment
+import org.sourcegrade.jagr.launcher.env.Jagr
 
 /**
  * A resource which may, or may not give you another [Worker] depending on available resources.
@@ -36,6 +36,6 @@ interface WorkerPool {
   fun createWorkers(maxCount: Int): List<Worker>
 
   interface Factory {
-    fun create(environment: Environment): WorkerPool
+    fun create(jagr: Jagr): WorkerPool
   }
 }

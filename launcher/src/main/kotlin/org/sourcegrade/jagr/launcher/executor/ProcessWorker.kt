@@ -22,8 +22,9 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import com.google.common.io.ByteStreams
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
-import org.sourcegrade.jagr.launcher.io.write
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -48,8 +49,11 @@ class ProcessWorker(
   override fun assignJob(job: GradingJob) {
     val os = ByteArrayOutputStream()
     val output = ByteStreams.newDataOutput(os)
-    openScope {
-      output.write(job.request, this)
+    openScope(output) {
+      SerializerFactory.getScoped<GradingRequest>().writeScoped(job.request, this)
+      openScope {
+
+      }
     }
     os.writeTo(process.outputStream)
   }

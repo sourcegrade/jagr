@@ -19,20 +19,14 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
-import com.google.common.io.ByteArrayDataInput
-import com.google.common.io.ByteArrayDataOutput
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.CompileResult
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
-import org.sourcegrade.jagr.launcher.io.readList
-import org.sourcegrade.jagr.launcher.io.readMap
-import org.sourcegrade.jagr.launcher.io.readNullable
 import org.sourcegrade.jagr.launcher.io.read
-import org.sourcegrade.jagr.launcher.io.writeList
-import org.sourcegrade.jagr.launcher.io.writeMap
+import org.sourcegrade.jagr.launcher.io.readNullable
 import org.sourcegrade.jagr.launcher.io.writeNullable
 import org.sourcegrade.jagr.launcher.io.write
 
@@ -47,26 +41,26 @@ data class JavaCompileResult(
   val other: Int = 0,
 ) : CompileResult {
   companion object Factory : SerializerFactory<JavaCompileResult> {
-    override fun read(input: ByteArrayDataInput, scope: SerializationScope): JavaCompileResult = JavaCompileResult(
-      input.read(scope),
-      input.read(scope),
-      input.readNullable(scope),
-      input.readMap(scope),
-      input.readList(scope),
-      input.readInt(),
-      input.readInt(),
-      input.readInt(),
+    override fun read(scope: SerializationScope.Input): JavaCompileResult = JavaCompileResult(
+      scope.read(),
+      scope.read(),
+      scope.readNullable(),
+      scope.read(),
+      scope.read(),
+      scope.input.readInt(),
+      scope.input.readInt(),
+      scope.input.readInt(),
     )
 
-    override fun write(obj: JavaCompileResult, output: ByteArrayDataOutput, scope: SerializationScope) {
-      output.write(obj.container, scope)
-      output.write(obj.runtimeResources, scope)
-      output.writeNullable(obj.submissionInfo, scope)
-      output.writeMap(obj.sourceFiles, scope)
-      output.writeList(obj.messages, scope)
-      output.writeInt(obj.warnings)
-      output.writeInt(obj.warnings)
-      output.writeInt(obj.warnings)
+    override fun write(obj: JavaCompileResult, scope: SerializationScope.Output) {
+      scope.write(obj.container)
+      scope.write(obj.runtimeResources)
+      scope.writeNullable(obj.submissionInfo)
+      scope.write(obj.sourceFiles)
+      scope.write(obj.messages)
+      scope.output.writeInt(obj.warnings)
+      scope.output.writeInt(obj.warnings)
+      scope.output.writeInt(obj.warnings)
     }
   }
 

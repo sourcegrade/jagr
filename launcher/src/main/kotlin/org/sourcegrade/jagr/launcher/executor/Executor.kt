@@ -21,7 +21,7 @@ package org.sourcegrade.jagr.launcher.executor
 
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.launcher.env.Environment
+import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import java.time.OffsetDateTime
@@ -31,7 +31,7 @@ interface Executor {
   suspend fun schedule(queue: GradingQueue)
   suspend fun start(rubricCollector: MutableRubricCollector)
   interface Factory {
-    fun create(environment: Environment): Executor
+    fun create(jagr: Jagr): Executor
   }
 }
 

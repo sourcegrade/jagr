@@ -19,8 +19,6 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
-import com.google.common.io.ByteArrayDataInput
-import com.google.common.io.ByteArrayDataOutput
 import org.slf4j.Logger
 import org.sourcegrade.jagr.core.parallelMapNotNull
 import org.sourcegrade.jagr.core.transformer.TransformerManager
@@ -36,12 +34,12 @@ data class RuntimeResources(
   val resources: Map<String, ByteArray> = mapOf(),
 ) {
   companion object Factory : SerializerFactory<RuntimeResources> {
-    override fun read(input: ByteArrayDataInput, scope: SerializationScope): RuntimeResources =
-      RuntimeResources(input.readMap(), input.readMap())
+    override fun read(scope: SerializationScope.Input): RuntimeResources =
+      RuntimeResources(scope.readMap(), scope.readMap())
 
-    override fun write(obj: RuntimeResources, output: ByteArrayDataOutput, scope: SerializationScope) {
-      output.writeMap(obj.classes)
-      output.writeMap(obj.resources)
+    override fun write(obj: RuntimeResources, scope: SerializationScope.Output) {
+      scope.writeMap(obj.classes)
+      scope.writeMap(obj.resources)
     }
   }
 

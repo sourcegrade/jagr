@@ -19,8 +19,6 @@
 
 package org.sourcegrade.jagr.launcher.io
 
-import com.google.common.io.ByteArrayDataInput
-import com.google.common.io.ByteArrayDataOutput
 import java.io.File
 import java.io.InputStream
 
@@ -29,16 +27,18 @@ interface ResourceContainer : Sequence<Resource> {
 }
 
 interface ResourceContainerInfo {
+  val name: String
 
   companion object Factory : SerializerFactory<ResourceContainerInfo> {
-    override fun read(input: ByteArrayDataInput, scope: SerializationScope): ResourceContainerInfo = ResourceContainerInfoImpl(input.readUTF())
-    override fun write(obj: ResourceContainerInfo, output: ByteArrayDataOutput, scope: SerializationScope) = output.writeUTF(obj.name)
-  }
+    override fun read(scope: SerializationScope.Input): ResourceContainerInfo =
+      ResourceContainerInfoImpl(scope.input.readUTF())
 
-  val name: String
+    override fun write(obj: ResourceContainerInfo, scope: SerializationScope.Output) =
+      scope.output.writeUTF(obj.name)
+  }
 }
 
-private class ResourceContainerInfoImpl(override val name: String) : ResourceContainerInfo
+internal class ResourceContainerInfoImpl(override val name: String) : ResourceContainerInfo
 
 val ResourceContainerInfo.nameWithoutExtension: String
   get() = name.substringBeforeLast(".")

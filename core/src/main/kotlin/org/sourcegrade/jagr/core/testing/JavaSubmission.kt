@@ -19,8 +19,6 @@
 
 package org.sourcegrade.jagr.core.testing
 
-import com.google.common.io.ByteArrayDataInput
-import com.google.common.io.ByteArrayDataOutput
 import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
@@ -28,6 +26,7 @@ import org.sourcegrade.jagr.core.compiler.java.JavaCompileResult
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.write
 
@@ -37,11 +36,11 @@ data class JavaSubmission(
   val runtimeLibraries: RuntimeResources,
 ) : Submission {
   companion object Factory : SerializerFactory<JavaSubmission> {
-    override fun read(input: ByteArrayDataInput, scope: SerializationScope): JavaSubmission =
-      JavaSubmission(scope[SubmissionInfo::class], input.read(scope), scope[RuntimeResources.Base])
+    override fun read(scope: SerializationScope.Input): JavaSubmission =
+      JavaSubmission(scope.get(), scope.read(), scope[RuntimeResources.Base])
 
-    override fun write(obj: JavaSubmission, output: ByteArrayDataOutput, scope: SerializationScope) {
-      output.write(obj.compileResult, scope)
+    override fun write(obj: JavaSubmission, scope: SerializationScope.Output) {
+      scope.write(obj.compileResult)
     }
   }
 

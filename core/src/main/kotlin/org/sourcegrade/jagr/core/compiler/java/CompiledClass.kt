@@ -19,8 +19,6 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
-import com.google.common.io.ByteArrayDataInput
-import com.google.common.io.ByteArrayDataOutput
 import org.objectweb.asm.ClassReader
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -36,19 +34,10 @@ import javax.tools.SimpleJavaFileObject
 
 sealed class CompiledClass(val className: String) : SimpleJavaFileObject(URI(className), JavaFileObject.Kind.CLASS) {
 
-  companion object Factory : SerializerFactory<CompiledClass> {
-    override fun read(input: ByteArrayDataInput, scope: SerializationScope): CompiledClass = Existing(input.readUTF(), input.readByteArray())
-
-    override fun write(obj: CompiledClass, output: ByteArrayDataOutput, scope: SerializationScope) {
-      output.writeUTF(obj.className)
-      output.writeByteArray(obj.byteArray)
-    }
-  }
-
   abstract val byteArray: ByteArray
+
   val reader: ClassReader by lazy { ClassReader(byteArray) }
   var source: JavaSourceFile? = null
-
   class Runtime(className: String) : CompiledClass(className) {
     private val outputStream = ByteArrayOutputStream()
     override val byteArray: ByteArray get() = outputStream.toByteArray()
@@ -57,5 +46,14 @@ sealed class CompiledClass(val className: String) : SimpleJavaFileObject(URI(cla
 
   class Existing(className: String, override val byteArray: ByteArray) : CompiledClass(className) {
     override fun openInputStream(): InputStream = ByteArrayInputStream(byteArray)
+  }
+
+  companion object Factory : SerializerFactory<CompiledClass> {
+    override fun read(scope: SerializationScope.Input): CompiledClass = Existing(scope.input.readUTF(), scope.input.readByteArray())
+
+    override fun write(obj: CompiledClass, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.className)
+      scope.output.writeByteArray(obj.byteArray)
+    }
   }
 }

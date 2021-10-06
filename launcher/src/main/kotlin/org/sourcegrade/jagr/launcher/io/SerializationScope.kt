@@ -19,46 +19,114 @@
 
 package org.sourcegrade.jagr.launcher.io
 
+import com.google.common.io.ByteArrayDataInput
+import com.google.common.io.ByteArrayDataOutput
 import kotlin.reflect.KClass
 
+/**
+ * A serialization scope
+ */
 interface SerializationScope {
+
+  /**
+   * Gets the value for the provided [Key] in this scope. If this scope has no value for the provided [Key], and there is a
+   * parents scope, the value of the parent scope's [get] method will be returned. Otherwise, an [IllegalStateException] is
+   * thrown.
+   */
+  operator fun <T : Any> get(key: Key<T>): T
+
+  /**
+   * Represents a single entry in this scope's data.
+   */
   interface Key<T : Any> {
+
     val type: KClass<T>
+
     val name: String?
+
+    companion object KeySerializerFactory : SerializerFactory<Key<*>> {
+      /**
+       * Fake constructor hacks because of generics
+       */
+      operator fun <T : Any> invoke(): SerializerFactory<Key<T>> = this as SerializerFactory<Key<T>>
+
+      override fun read(scope: Input): Key<*> =
+        KeyImpl(scope.input.readKClass(), scope.readNullable())
+
+      override fun write(obj: Key<*>, scope: Output) {
+        scope.output.writeKClass(obj.type)
+        scope.writeNullable(obj.name)
+      }
+    }
   }
 
-  operator fun <T : Any> get(key: Key<T>): T
-  operator fun <T : Any> get(type: KClass<T>): T = get(keyOf(type))
-  operator fun <T : Any> set(key: Key<T>, obj: T)
-  operator fun <T : Any> set(type: KClass<T>, obj: T) = set(keyOf(type), obj)
+  interface Input : SerializationScope {
+
+    val input: ByteArrayDataInput
+
+    /**
+     * Reads the value for the provided [Key] from the current [input][ByteArrayDataInput].
+     *
+     * Note: invoking this method will modify the current input's reader index.
+     */
+    fun <T : Any> readScoped(key: Key<T>): T
+  }
+
+  interface Output : SerializationScope {
+
+    val output: ByteArrayDataOutput
+
+    /**
+     * Writes the value for the provided [Key] to the current [output][ByteArrayDataOutput].
+     *
+     * Note: invoking this method will modify the current output's writer index.
+     */
+    fun <T : Any> writeScoped(obj: T, key: Key<T>)
+  }
 }
 
-private class SerializationScopeImpl(private val parent: SerializationScope?) : SerializationScope {
-  val backing = mutableMapOf<SerializationScope.Key<*>, Any>()
+/* === Reified helper functions === */
+
+inline operator fun <reified T : Any> SerializationScope.get(type: KClass<T>, name: String? = null) = get(keyOf(type, name))
+inline fun <reified T : Any> SerializationScope.get(name: String? = null) = get(T::class, name)
+
+inline fun <reified T : Any> SerializationScope.Input.read(factory: SerializerFactory<T> = SerializerFactory.get()): T {
+  return factory.read(this)
+}
+
+inline fun <reified T : Any> SerializationScope.Output.write(obj: T, factory: SerializerFactory<T> = SerializerFactory.get()) {
+  factory.write(obj, this)
+}
+
+inline fun <reified T : Any> SerializationScope.Input.readNullable(
+  factory: SerializerFactory<T> = SerializerFactory.get(),
+): T? {
+  return factory.readNullable(this)
+}
+
+inline fun <reified T : Any> SerializationScope.Output.writeNullable(
+  obj: T?,
+  factory: SerializerFactory<T> = SerializerFactory.get(),
+) {
+  factory.writeNullable(obj, this)
+}
+
+inline fun <reified T : Any> SerializationScope.Input.readScoped() = readScoped(keyOf(T::class))
+inline fun <reified T : Any> SerializationScope.Output.writeScoped(obj: T) = writeScoped(obj, keyOf(T::class))
+
+inline fun <reified T : Any> keyOf(name: String? = null): SerializationScope.Key<T> = keyOf(T::class, name)
+fun <T : Any> keyOf(type: KClass<T>, name: String? = null): SerializationScope.Key<T> = KeyImpl(type, name)
+private data class KeyImpl<T : Any>(override val type: KClass<T>, override val name: String?) : SerializationScope.Key<T>
+
+internal abstract class AbstractSerializationScope : SerializationScope {
+  abstract val parent: SerializationScope?
+  protected val backing = mutableMapOf<SerializationScope.Key<*>, Any>()
   override fun <T : Any> get(key: SerializationScope.Key<T>): T {
     val fromBacking = backing[key]
     return if (fromBacking == null) {
-      if (parent == null) {
-        error("Key $key not found in scope")
-      } else {
-        parent[key]
-      }
+      parent?.let { it[key] } ?: error("Key $key not found in scope")
     } else {
       fromBacking as T
     }
   }
-
-  override fun <T : Any> set(key: SerializationScope.Key<T>, obj: T) {
-    backing[key] = obj
-  }
 }
-
-fun emptyScope(parent: SerializationScope? = null): SerializationScope = SerializationScopeImpl(parent)
-
-inline fun <T> openScope(block: SerializationScope.() -> T): T = emptyScope().block()
-inline fun <T> SerializationScope.openScope(block: SerializationScope.() -> T): T = emptyScope(this).block()
-
-private data class KeyImpl<T : Any>(override val type: KClass<T>, override val name: String?) : SerializationScope.Key<T>
-
-fun <T : Any> keyOf(type: KClass<T>, name: String? = null): SerializationScope.Key<T> = KeyImpl(type, name)
-inline fun <reified T : Any> keyOf(name: String? = null): SerializationScope.Key<T> = keyOf(T::class, name)

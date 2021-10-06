@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-import org.sourcegrade.jagr.launcher.env.Environment
+import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.runtimeGrader
 
 class ThreadWorkerPool(
@@ -30,7 +30,7 @@ class ThreadWorkerPool(
   open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
     companion object Default : Factory(concurrency = 4)
 
-    override fun create(environment: Environment): WorkerPool = ThreadWorkerPool(environment.runtimeGrader, concurrency)
+    override fun create(jagr: Jagr): WorkerPool = ThreadWorkerPool(jagr.runtimeGrader, concurrency)
   }
 
   companion object {

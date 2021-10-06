@@ -20,6 +20,13 @@ package org.sourcegrade.jagr.launcher.io
 import com.google.common.io.ByteArrayDataInput
 import com.google.common.io.ByteArrayDataOutput
 import java.time.Instant
+import kotlin.reflect.KClass
+
+fun <T : Any> ByteArrayDataInput.readKClass(): KClass<T> = Class.forName(readUTF()).kotlin as KClass<T>
+
+fun ByteArrayDataOutput.writeKClass(type: KClass<*>) {
+  writeUTF(requireNotNull(type.qualifiedName) { "$type must have a qualified name" })
+}
 
 fun ByteArrayDataInput.readByteArray(): ByteArray = ByteArray(readInt()) { readByte() }
 

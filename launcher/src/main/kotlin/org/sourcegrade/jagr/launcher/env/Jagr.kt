@@ -19,7 +19,6 @@
 
 package org.sourcegrade.jagr.launcher.env
 
-import com.google.inject.Guice
 import com.google.inject.Injector
 import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 import org.sourcegrade.jagr.launcher.configuration.StandardLaunchConfiguration
@@ -27,41 +26,20 @@ import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
-import kotlin.reflect.full.primaryConstructor
 
-/**
- * Service bindings from common
- */
-interface Environment {
+interface Jagr {
   val injector: Injector
 
+  companion object Default : Jagr by SystemResourceJagrFactory.create()
+
   interface Factory {
-    fun create(configuration: LaunchConfiguration = StandardLaunchConfiguration): Environment
+    fun create(configuration: LaunchConfiguration = StandardLaunchConfiguration): Jagr
   }
 }
 
-operator fun <T : Any> Environment.get(type: KClass<T>): T = injector.getInstance(type.java)
+val Jagr.gradingQueueFactory: GradingQueue.Factory by injected()
+val Jagr.runtimeGrader: RuntimeGrader by injected()
 
-inline fun <reified T : Any> Environment.get(): T = get(T::class)
-
-inline fun <reified T : Any> injected(): ReadOnlyProperty<Environment, T> = ReadOnlyProperty { e, _ -> e.get() }
-
-val Environment.gradingQueueFactory: GradingQueue.Factory by injected()
-
-val Environment.runtimeGrader: RuntimeGrader by injected()
-
-fun JagrJson.createEnvironment(configuration: LaunchConfiguration): Environment {
-  val modules = moduleFactories.map {
-    coerceClass<ModuleFactory>(it).kotlin.run {
-      (objectInstance ?: primaryConstructor!!.call()).create(configuration)
-    }
-  }.toTypedArray()
-  val injector = Guice.createInjector(*modules)
-  return EnvironmentImpl(injector)
-}
-
-private inline fun <reified T : Any> coerceClass(implementation: String): Class<out T> {
-  return Class.forName(implementation).asSubclass(T::class.java)
-}
-
-private data class EnvironmentImpl(override val injector: Injector) : Environment
+internal operator fun <T : Any> Jagr.get(type: KClass<T>): T = injector.getInstance(type.java)
+internal inline fun <reified T : Any> Jagr.get(): T = get(T::class)
+private inline fun <reified T : Any> injected(): ReadOnlyProperty<Jagr, T> = ReadOnlyProperty { e, _ -> e.get() }

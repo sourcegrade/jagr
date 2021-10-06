@@ -21,7 +21,7 @@ package org.sourcegrade.jagr.launcher.executor
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.sourcegrade.jagr.launcher.env.Environment
+import org.sourcegrade.jagr.launcher.env.Jagr
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -31,7 +31,7 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
   open class Factory internal constructor(val workerPoolFactory: WorkerPool.Factory) : Executor.Factory {
     companion object Default : Factory(ProcessWorkerPool.Factory)
 
-    override fun create(environment: Environment): Executor = MultiWorkerExecutor(workerPoolFactory.create(environment))
+    override fun create(jagr: Jagr): Executor = MultiWorkerExecutor(workerPoolFactory.create(jagr))
   }
 
   companion object {

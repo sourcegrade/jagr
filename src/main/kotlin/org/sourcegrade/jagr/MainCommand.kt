@@ -22,7 +22,7 @@ package org.sourcegrade.jagr
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import org.sourcegrade.jagr.launcher.Jagr
+import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.executor.Executor
 import org.sourcegrade.jagr.launcher.executor.GradingRequest
 import org.sourcegrade.jagr.launcher.executor.RubricCollector
@@ -38,7 +38,7 @@ class MainCommand : CliktCommand() {
   }
 
   suspend fun startChildProcess() {
-    val executor: Executor = SyncExecutor(Jagr.environment)
+    val executor: Executor = SyncExecutor(Jagr)
     while (true) {
       val nextRequest = nextRequest() ?: break
       executor.schedule(gradingQueueOf(nextRequest))

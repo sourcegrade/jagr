@@ -21,19 +21,19 @@ package org.sourcegrade.jagr.launcher.executor
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.sourcegrade.jagr.launcher.env.Environment
+import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.runtimeGrader
 
 class SyncExecutor constructor(
-  environment: Environment,
+  jagr: Jagr,
 ) : Executor {
 
   object Factory : Executor.Factory {
-    override fun create(environment: Environment): Executor = SyncExecutor(environment)
+    override fun create(jagr: Jagr): Executor = SyncExecutor(jagr)
   }
 
   private val mutex = Mutex()
-  private val runtimeGrader = environment.runtimeGrader
+  private val runtimeGrader = jagr.runtimeGrader
   private val scheduled = mutableListOf<GradingQueue>()
 
   override suspend fun schedule(queue: GradingQueue) = mutex.withLock {

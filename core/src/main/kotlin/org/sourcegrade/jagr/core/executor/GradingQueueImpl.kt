@@ -100,7 +100,7 @@ class GradingQueueImpl(
         null
       } else if (submissionIterator.hasNext()) {
         _remaining.getAndDecrement()
-        GradingRequest(submissionIterator.next(), graders)
+        GradingRequestImpl(submissionIterator.next(), graders, baseRuntimeLibraries, graderRuntimeLibraries)
       } else {
         finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
         null

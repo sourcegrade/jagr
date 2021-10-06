@@ -19,8 +19,6 @@
 
 package org.sourcegrade.jagr.core.testing
 
-import com.google.common.io.ByteArrayDataInput
-import com.google.common.io.ByteArrayDataOutput
 import kotlinx.serialization.Serializable
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
@@ -37,14 +35,14 @@ data class SubmissionInfoImpl(
   private val lastName: String,
 ) : SubmissionInfo {
   companion object Factory : SerializerFactory<SubmissionInfoImpl> {
-    override fun read(input: ByteArrayDataInput, scope: SerializationScope): SubmissionInfoImpl =
-      SubmissionInfoImpl(input.readUTF(), input.readUTF(), input.readUTF(), input.readUTF())
+    override fun read(scope: SerializationScope.Input): SubmissionInfoImpl =
+      SubmissionInfoImpl(scope.input.readUTF(), scope.input.readUTF(), scope.input.readUTF(), scope.input.readUTF())
 
-    override fun write(obj: SubmissionInfoImpl, output: ByteArrayDataOutput, scope: SerializationScope) {
-      output.writeUTF(obj.assignmentId)
-      output.writeUTF(obj.studentId)
-      output.writeUTF(obj.firstName)
-      output.writeUTF(obj.lastName)
+    override fun write(obj: SubmissionInfoImpl, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.assignmentId)
+      scope.output.writeUTF(obj.studentId)
+      scope.output.writeUTF(obj.firstName)
+      scope.output.writeUTF(obj.lastName)
     }
   }
 

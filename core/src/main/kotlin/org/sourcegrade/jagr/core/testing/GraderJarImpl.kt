@@ -29,13 +29,27 @@ import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.launcher.io.GraderJar
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.nameWithoutExtension
+import org.sourcegrade.jagr.launcher.io.read
+import org.sourcegrade.jagr.launcher.io.write
 
 class GraderJarImpl(
   private val logger: Logger,
   val compileResult: JavaCompileResult,
   runtimeLibraries: RuntimeResources,
 ) : GraderJar {
+
+  companion object Factory : SerializerFactory<GraderJarImpl> {
+    override fun read(scope: SerializationScope.Input): GraderJarImpl =
+      GraderJarImpl(scope.get(), scope.read(), scope[RuntimeResources.Grader])
+
+    override fun write(obj: GraderJarImpl, scope: SerializationScope.Output) {
+      scope.write(obj.compileResult)
+    }
+  }
 
   private val container = compileResult.container
 
