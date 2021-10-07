@@ -57,8 +57,7 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
 
   private suspend fun checkWorkers(police: ThreadPolice, rubricCollector: MutableRubricCollector) {
     val requests = mutex.withLock {
-      val remaining = scheduled.sumOf { it.remaining }
-      workerPool.createWorkers(remaining)
+      workerPool.createWorkers(scheduled.sumOf { it.remaining })
         .mapNotNull { worker -> scheduled.next()?.let { request -> worker to request } }
     }
     // protect against requests being empty
