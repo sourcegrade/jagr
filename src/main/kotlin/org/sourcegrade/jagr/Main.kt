@@ -70,7 +70,7 @@ fun main(vararg args: String) {
     val rubricsFile = File("rubrics").ensure(Jagr.logger)!!
     val graderJars = collector.gradingFinished.firstOrNull()?.request?.graderJars ?: return@runBlocking
     exporter.initialize(rubricsFile, graderJars as List<GraderJarImpl>)
-    for ((gradedRubric, exportFileName) in collector.gradingFinished
+    for ((gradedRubric, exportFileName) in collector.gradingFinished.toList()
       .asSequence()
       .map { it.rubrics }
       .reduce { acc, map -> acc + map }) {

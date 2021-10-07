@@ -26,7 +26,7 @@ import org.sourcegrade.jagr.launcher.env.Jagr
  */
 interface WorkerPool {
 
-  val activeWorkers: List<Worker>
+  suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T): T
 
   // TODO: consider fun hasCapacityFor(workerCount: Int): Boolean
 

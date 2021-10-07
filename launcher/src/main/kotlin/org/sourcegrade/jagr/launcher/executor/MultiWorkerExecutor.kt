@@ -24,6 +24,8 @@ import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -56,11 +58,9 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
   private suspend fun checkWorkers(police: ThreadPolice, rubricCollector: MutableRubricCollector) {
     val requests = mutex.withLock {
       val remaining = scheduled.sumOf { it.remaining }
-      println("Remaining: $remaining")
       workerPool.createWorkers(remaining)
         .mapNotNull { worker -> scheduled.next()?.let { request -> worker to request } }
     }
-    println("Requests: ${requests.size}")
     // protect against requests being empty
     // the only way out of this method is by a request completing
     // no requests, no exit
@@ -68,7 +68,16 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
       mutex.withLock {
         scheduled.removeIf { it.remaining == 0 }
       }
-      return
+      if (workerPool.withActiveWorkers { it.isNotEmpty() }) {
+        // there are no new requests, but workers are still handling submissions
+        // wait here until at least one is finished
+        suspendCoroutine<Unit> {
+          police.setContinuation(it, exitDirectly = true)
+        }
+      }
+      if (workerPool.withActiveWorkers { it.isEmpty() }) {
+        return
+      }
     }
     suspendCoroutine<Unit> { continuation ->
       police.setContinuation(continuation)
@@ -83,42 +92,51 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
 
   override suspend fun start(rubricCollector: MutableRubricCollector) {
     val police = ThreadPolice()
-    while (scheduled.isNotEmpty()) {
+    while (scheduled.isNotEmpty() || workerPool.withActiveWorkers { it.isNotEmpty() }) {
       checkWorkers(police, rubricCollector)
     }
   }
 }
 
 private class ThreadPolice {
-  private var finishedBetweenContinuation = AtomicBoolean()
-  private var currentContinuation: Continuation<Unit>? = null
+  private val finishedBetweenContinuation = AtomicBoolean()
+  private val exitDirectly = AtomicBoolean()
+  private val lock = ReentrantLock()
+  private var continuation: Continuation<Unit>? = null
 
-  fun setContinuation(continuation: Continuation<Unit>) {
-    currentContinuation = continuation
+  fun setContinuation(continuation: Continuation<Unit>, exitDirectly: Boolean = false) = lock.withLock {
+    this.continuation = continuation
+    this.exitDirectly.set(exitDirectly)
   }
 
-  @Synchronized
-  fun notifyContinuation(throwable: Throwable? = null) {
+  fun notifyContinuation(throwable: Throwable? = null) = lock.withLock {
     if (throwable != null) {
       Jagr.logger.error("Encountered error in worker", throwable)
     }
     if (finishedBetweenContinuation.get()) {
-      return
+      if (exitDirectly.get()) {
+        resume()
+      } else {
+        return
+      }
     }
-    val cont = currentContinuation
+    val cont = continuation
     if (cont == null) {
       finishedBetweenContinuation.set(true)
     } else {
-      currentContinuation = null
-      cont.resume(Unit)
+      resume()
     }
   }
 
-  @Synchronized
-  fun handleBetween() {
+  fun handleBetween() = lock.withLock {
     if (finishedBetweenContinuation.get()) {
       finishedBetweenContinuation.set(false)
-      currentContinuation?.resume(Unit)
+      resume()
     }
+  }
+
+  private fun resume() {
+    continuation?.resume(Unit)
+    continuation = null
   }
 }

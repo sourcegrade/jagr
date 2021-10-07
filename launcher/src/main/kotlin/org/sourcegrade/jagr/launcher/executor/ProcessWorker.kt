@@ -29,7 +29,6 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 
 class ProcessWorker(
-  private val addActive: (Worker) -> Unit,
   private val removeActive: (Worker) -> Unit,
 ) : Worker {
   override var job: GradingJob? = null

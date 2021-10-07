@@ -21,6 +21,11 @@ package org.sourcegrade.jagr.launcher.executor
 
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.runtimeGrader
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class ThreadWorkerPool(
   private val runtimeGrader: RuntimeGrader,
@@ -43,10 +48,21 @@ class ThreadWorkerPool(
     fun factory() = Factory(concurrency)
   }
 
-  override val activeWorkers: MutableList<Worker> = mutableListOf()
-  private fun removeActiveWorker(worker: Worker) = synchronized(activeWorkers) { activeWorkers -= worker }
+  private val activeWorkers: MutableList<Worker> = mutableListOf()
+  private val activeWorkersLock = ReentrantLock()
+  private fun removeActiveWorker(worker: Worker) = activeWorkersLock.withLock { activeWorkers -= worker }
 
-  override fun createWorkers(maxCount: Int): List<Worker> {
+  override suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T) = suspendCoroutine<T> {
+    activeWorkersLock.withLock {
+      try {
+        it.resume(block(activeWorkers))
+      } catch (e: Exception) {
+        it.resumeWithException(e)
+      }
+    }
+  }
+
+  override fun createWorkers(maxCount: Int): List<Worker> = activeWorkersLock.withLock {
     if (maxCount == 0) return emptyList()
     val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
     return List(workerCount) { ThreadWorker(runtimeGrader, this::removeActiveWorker).also(activeWorkers::add) }
