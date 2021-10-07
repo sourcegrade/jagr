@@ -44,12 +44,11 @@ class ThreadWorkerPool(
   }
 
   override val activeWorkers: MutableList<Worker> = mutableListOf()
-  private fun addActiveWorker(worker: Worker) = synchronized(activeWorkers) { activeWorkers += worker }
   private fun removeActiveWorker(worker: Worker) = synchronized(activeWorkers) { activeWorkers -= worker }
 
   override fun createWorkers(maxCount: Int): List<Worker> {
     if (maxCount == 0) return emptyList()
-    val workerCount = minOf(maxCount, concurrency)
-    return List(workerCount) { ThreadWorker(runtimeGrader, this::addActiveWorker, this::removeActiveWorker) }
+    val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
+    return List(workerCount) { ThreadWorker(runtimeGrader, this::removeActiveWorker).also(activeWorkers::add) }
   }
 }

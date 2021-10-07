@@ -23,8 +23,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
-import java.util.Deque
-import java.util.LinkedList
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -78,7 +77,7 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
         job.result.invokeOnCompletion(police::notifyContinuation)
         request.first.assignJob(job)
       }
-      police.handleExistingResults()
+      police.handleBetween()
     }
   }
 
@@ -91,55 +90,37 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
 }
 
 private class ThreadPolice {
-  private var existingFinishedJobs = false
+  private var finishedBetweenContinuation = AtomicBoolean()
   private var currentContinuation: Continuation<Unit>? = null
 
   fun setContinuation(continuation: Continuation<Unit>) {
     currentContinuation = continuation
-    existingFinishedJobs = resultQueue.isNotEmpty()
   }
-
-  private fun clear() {
-    currentContinuation = null
-  }
-
-  private val resultQueue: Deque<Result<Unit>> = LinkedList()
 
   @Synchronized
   fun notifyContinuation(throwable: Throwable? = null) {
-    val result = throwable.toResult()
-    if (existingFinishedJobs) {
-      resultQueue.add(result)
+    Jagr.logger.warn("Worker finished. State ${finishedBetweenContinuation.get()} : $currentContinuation")
+    if (throwable != null) {
+      Jagr.logger.error("Encountered error in worker", throwable)
+    }
+    if (finishedBetweenContinuation.get()) {
       return
     }
     val cont = currentContinuation
     if (cont == null) {
-      resultQueue.add(result)
-    } else if (resultQueue.isEmpty()) {
-      cont.resumeWith(result)
-      clear()
+      finishedBetweenContinuation.set(true)
     } else {
-      handleMultipleResults()
+      currentContinuation = null
+      cont.resume(Unit)
     }
   }
 
   @Synchronized
-  fun handleExistingResults() {
-    if (existingFinishedJobs) {
-      handleMultipleResults()
-      existingFinishedJobs = false
+  fun handleBetween() {
+    Jagr.logger.warn("Handle between. State ${finishedBetweenContinuation.get()} : $currentContinuation")
+    if (finishedBetweenContinuation.get()) {
+      finishedBetweenContinuation.set(false)
+      currentContinuation?.resume(Unit)
     }
   }
-
-  private fun handleMultipleResults() {
-    for (result in resultQueue) {
-      if (result.isFailure) {
-        Jagr.logger.error("Encountered error in worker", result.exceptionOrNull())
-      }
-    }
-    resultQueue.clear()
-    currentContinuation!!.resume(Unit)
-  }
-
-  private fun Throwable?.toResult(): Result<Unit> = if (this == null) Result.success(Unit) else Result.failure(this)
 }
