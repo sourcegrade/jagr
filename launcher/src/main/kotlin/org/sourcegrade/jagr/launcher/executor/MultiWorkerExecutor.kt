@@ -99,7 +99,6 @@ private class ThreadPolice {
 
   @Synchronized
   fun notifyContinuation(throwable: Throwable? = null) {
-    Jagr.logger.warn("Worker finished. State ${finishedBetweenContinuation.get()} : $currentContinuation")
     if (throwable != null) {
       Jagr.logger.error("Encountered error in worker", throwable)
     }
@@ -117,7 +116,6 @@ private class ThreadPolice {
 
   @Synchronized
   fun handleBetween() {
-    Jagr.logger.warn("Handle between. State ${finishedBetweenContinuation.get()} : $currentContinuation")
     if (finishedBetweenContinuation.get()) {
       finishedBetweenContinuation.set(false)
       currentContinuation?.resume(Unit)
