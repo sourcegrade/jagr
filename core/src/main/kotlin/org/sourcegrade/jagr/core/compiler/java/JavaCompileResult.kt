@@ -26,9 +26,13 @@ import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.read
+import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.readMap
 import org.sourcegrade.jagr.launcher.io.readNullable
-import org.sourcegrade.jagr.launcher.io.writeNullable
 import org.sourcegrade.jagr.launcher.io.write
+import org.sourcegrade.jagr.launcher.io.writeList
+import org.sourcegrade.jagr.launcher.io.writeMap
+import org.sourcegrade.jagr.launcher.io.writeNullable
 
 data class JavaCompileResult(
   val container: ResourceContainerInfo,
@@ -45,8 +49,8 @@ data class JavaCompileResult(
       scope.read(),
       scope.read(),
       scope.readNullable(),
-      scope.read(),
-      scope.read(),
+      scope.readMap(),
+      scope.readList(),
       scope.input.readInt(),
       scope.input.readInt(),
       scope.input.readInt(),
@@ -56,8 +60,8 @@ data class JavaCompileResult(
       scope.write(obj.container)
       scope.write(obj.runtimeResources)
       scope.writeNullable(obj.submissionInfo)
-      scope.write(obj.sourceFiles)
-      scope.write(obj.messages)
+      scope.writeMap(obj.sourceFiles)
+      scope.writeList(obj.messages)
       scope.output.writeInt(obj.warnings)
       scope.output.writeInt(obj.warnings)
       scope.output.writeInt(obj.warnings)

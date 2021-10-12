@@ -25,6 +25,7 @@ import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 import org.sourcegrade.jagr.launcher.configuration.StandardLaunchConfiguration
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
@@ -41,6 +42,7 @@ interface Jagr {
 val Jagr.gradingQueueFactory: GradingQueue.Factory by injected()
 val Jagr.logger: Logger by injected()
 val Jagr.runtimeGrader: RuntimeGrader by injected()
+val Jagr.serializerFactoryLocator: SerializerFactory.Locator by injected()
 
 internal operator fun <T : Any> Jagr.get(type: KClass<T>): T = injector.getInstance(type.java)
 internal inline fun <reified T : Any> Jagr.get(): T = get(T::class)

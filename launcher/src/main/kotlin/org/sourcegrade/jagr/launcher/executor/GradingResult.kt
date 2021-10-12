@@ -20,6 +20,13 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import org.sourcegrade.jagr.api.rubric.GradedRubric
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.get
+import org.sourcegrade.jagr.launcher.io.readInstant
+import org.sourcegrade.jagr.launcher.io.readMap
+import org.sourcegrade.jagr.launcher.io.writeInstant
+import org.sourcegrade.jagr.launcher.io.writeMap
 import java.time.Instant
 
 data class GradingResult(
@@ -27,4 +34,20 @@ data class GradingResult(
   val finishedUtc: Instant,
   val request: GradingRequest,
   val rubrics: Map<GradedRubric, String>,
-)
+) {
+  companion object Factory : SerializerFactory<GradingResult> {
+    override fun read(scope: SerializationScope.Input) = GradingResult(
+      scope.input.readInstant(),
+      scope.input.readInstant(),
+      scope[GradingRequest::class],
+      scope.readMap(),
+    )
+
+    override fun write(obj: GradingResult, scope: SerializationScope.Output) {
+      scope.output.writeInstant(obj.startedUtc)
+      scope.output.writeInstant(obj.finishedUtc)
+      // skip request because parent process already has it
+      scope.writeMap(obj.rubrics)
+    }
+  }
+}

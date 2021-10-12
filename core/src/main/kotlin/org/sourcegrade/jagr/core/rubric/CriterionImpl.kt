@@ -29,6 +29,12 @@ import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.Grader
 import org.sourcegrade.jagr.api.rubric.Rubric
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.readNullable
+import org.sourcegrade.jagr.launcher.io.writeList
+import org.sourcegrade.jagr.launcher.io.writeNullable
 
 /**
  * This implementation relies on the fact that its internal state is not modified after a call to any of the methods
@@ -45,6 +51,24 @@ class CriterionImpl(
   private val minCalculator: CriterionHolderPointCalculator,
   private val childCriteria: List<CriterionImpl>,
 ) : Criterion {
+
+  companion object Factory : SerializerFactory<CriterionImpl> {
+    override fun read(scope: SerializationScope.Input) = CriterionImpl(
+      scope.input.readUTF(),
+      scope.readNullable(),
+      // the next lines are *technically* incorrect, but they aren't going to be used anyways so this is ok
+      null,
+      CriterionHolderPointCalculator.fixed(0),
+      CriterionHolderPointCalculator.fixed(0),
+      scope.readList(),
+    )
+
+    override fun write(obj: CriterionImpl, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.shortDescription)
+      scope.writeNullable(obj.shortDescription)
+      scope.writeList(obj.childCriteria)
+    }
+  }
 
   init {
     for (criterion in childCriteria) {
@@ -86,8 +110,11 @@ class CriterionImpl(
       return GradedCriterionImpl(testCycle, graderResult, this)
     }
     val childGraded = childCriteria.map { it.grade(testCycle) }
-    val gradeResult = GradeResult.of(graderResult, childGraded.map(
-      Graded::getGrade))
+    val gradeResult = GradeResult.of(
+      graderResult, childGraded.map(
+        Graded::getGrade
+      )
+    )
     return GradedCriterionImpl(testCycle, gradeResult, this, childGraded)
   }
 

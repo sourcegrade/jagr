@@ -19,6 +19,8 @@
 
 package org.sourcegrade.jagr.launcher.io
 
+import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.env.serializerFactoryLocator
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
 
@@ -33,13 +35,16 @@ interface SerializerFactory<T : Any> {
 
   companion object Factory {
     @Suppress("UNCHECKED_CAST")
-    operator fun <T : Any> get(type: KClass<T>): SerializerFactory<T> = when (type) {
+    operator fun <T : Any> get(type: KClass<T>, locator: Locator? = null): SerializerFactory<T> = when (type) {
+      ByteArray::class -> ByteArraySerializerFactory
       String::class -> StringSerializerFactory
       else -> type.companionObjectInstance
     } as? SerializerFactory<T>
+    // as a last resort, look in the provided factory locator (usually from Jagr.serializerFactoryLocator)
+      ?: locator?.get(type)
       ?: error("Could not find serializer factory for $type! (searched standard serializable types and companion object)")
 
-    fun <T : Any> getScoped(type: KClass<T>): Scoped<T> = get(type) as Scoped<T>
+    fun <T : Any> getScoped(type: KClass<T>, locator: Locator? = null): Scoped<T> = get(type, locator) as Scoped<T>
   }
 
   /**
@@ -51,12 +56,33 @@ interface SerializerFactory<T : Any> {
 
     fun writeScoped(obj: T, scope: SerializationScope.Output)
   }
+
+  interface Locator {
+    operator fun <T : Any> get(type: KClass<T>): SerializerFactory<T>?
+    fun <T : Any> getScoped(type: KClass<T>): Scoped<T>? = get(type) as Scoped<T>?
+  }
 }
 
 /* === Reified helper functions === */
 
 inline fun <reified T : Any> SerializerFactory.Factory.get(): SerializerFactory<T> = get(T::class)
 inline fun <reified T : Any> SerializerFactory.Factory.getScoped(): SerializerFactory.Scoped<T> = getScoped(T::class)
+
+inline fun <reified T : Any> SerializerFactory.Factory.get(locator: SerializerFactory.Locator): SerializerFactory<T> {
+  return get(T::class, locator)
+}
+
+inline fun <reified T : Any> SerializerFactory.Factory.getScoped(locator: SerializerFactory.Locator): SerializerFactory.Scoped<T> {
+  return getScoped(T::class, locator)
+}
+
+inline fun <reified T : Any> SerializerFactory.Factory.get(jagr: Jagr): SerializerFactory<T> {
+  return get(T::class, jagr.serializerFactoryLocator)
+}
+
+inline fun <reified T : Any> SerializerFactory.Factory.getScoped(jagr: Jagr): SerializerFactory.Scoped<T> {
+  return getScoped(T::class, jagr.serializerFactoryLocator)
+}
 
 /* === Nullable serializer adapters === */
 
@@ -77,17 +103,25 @@ fun <T : Any> SerializerFactory<T>.writeNullable(obj: T?, scope: SerializationSc
   }
 }
 
-inline fun <reified T : Any> SerializationScope.Input.readList(): List<T> =
-  ListSerializerFactory<T>().read(this)
+inline fun <reified T : Any> SerializationScope.Input.readList(
+  elementSerializer: SerializerFactory<T> = SerializerFactory.get(jagr),
+): List<T> = ListSerializerFactory(elementSerializer).read(this)
 
-inline fun <reified T : Any> SerializationScope.Output.writeList(obj: List<T>) =
-  ListSerializerFactory<T>().write(obj, this)
+inline fun <reified T : Any> SerializationScope.Output.writeList(
+  obj: List<T>,
+  elementSerializer: SerializerFactory<T> = SerializerFactory.get(jagr),
+) = ListSerializerFactory(elementSerializer).write(obj, this)
 
-inline fun <reified K : Any, reified V : Any> SerializationScope.Input.readMap(): Map<K, V> =
-  MapSerializerFactory<K, V>().read(this)
+inline fun <reified K : Any, reified V : Any> SerializationScope.Input.readMap(
+  keySerializer: SerializerFactory<K> = SerializerFactory.get(jagr),
+  valueSerializer: SerializerFactory<V> = SerializerFactory.get(jagr),
+): Map<K, V> = MapSerializerFactory(keySerializer, valueSerializer).read(this)
 
-inline fun <reified K : Any, reified V : Any> SerializationScope.Output.writeMap(obj: Map<K, V>) =
-  MapSerializerFactory<K, V>().write(obj, this)
+inline fun <reified K : Any, reified V : Any> SerializationScope.Output.writeMap(
+  obj: Map<K, V>,
+  keySerializer: SerializerFactory<K> = SerializerFactory.get(jagr),
+  valueSerializer: SerializerFactory<V> = SerializerFactory.get(jagr),
+) = MapSerializerFactory(keySerializer, valueSerializer).write(obj, this)
 
 /* === Base serializers === */
 
@@ -98,17 +132,18 @@ internal object StringSerializerFactory : SerializerFactory<String> {
   }
 }
 
+internal object ByteArraySerializerFactory : SerializerFactory<ByteArray> {
+  override fun read(scope: SerializationScope.Input): ByteArray = scope.input.readByteArray()
+  override fun write(obj: ByteArray, scope: SerializationScope.Output) {
+    scope.output.writeByteArray(obj)
+  }
+}
+
 /* === Decomposing serializers === */
 
-class ListSerializerFactory<T : Any>(type: KClass<T>) : SerializerFactory<List<T>> {
-  companion object Factory {
-    inline operator fun <reified T : Any> invoke() = ListSerializerFactory(T::class)
-  }
-
-  /**
-   * [SerializerFactory] for list's element type.
-   */
-  private val elementSerializer = SerializerFactory[type]
+class ListSerializerFactory<T : Any>(
+  private val elementSerializer: SerializerFactory<T>,
+) : SerializerFactory<List<T>> {
   override fun read(scope: SerializationScope.Input): List<T> =
     (0 until scope.input.readInt()).map { elementSerializer.read(scope) }
 
@@ -120,20 +155,10 @@ class ListSerializerFactory<T : Any>(type: KClass<T>) : SerializerFactory<List<T
   }
 }
 
-class MapSerializerFactory<K : Any, V : Any>(keyType: KClass<K>, valueType: KClass<V>) : SerializerFactory<Map<K, V>> {
-  companion object Factory {
-    inline operator fun <reified K : Any, reified V : Any> invoke() = MapSerializerFactory(K::class, V::class)
-  }
-
-  /**
-   * [SerializerFactory] for map's key type.Í
-   */
-  private val keySerializer = SerializerFactory[keyType]
-
-  /**
-   * [SerializerFactory] for map's value type.
-   */
-  private val valueSerializer = SerializerFactory[valueType]
+class MapSerializerFactory<K : Any, V : Any>(
+  private val keySerializer: SerializerFactory<K>,
+  private val valueSerializer: SerializerFactory<V>,
+) : SerializerFactory<Map<K, V>> {
   override fun read(scope: SerializationScope.Input): Map<K, V> {
     return (0 until scope.input.readInt()).associate { keySerializer.read(scope) to valueSerializer.read(scope) }
   }

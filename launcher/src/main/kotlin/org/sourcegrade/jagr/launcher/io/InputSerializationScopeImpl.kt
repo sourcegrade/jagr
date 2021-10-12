@@ -20,28 +20,29 @@
 package org.sourcegrade.jagr.launcher.io
 
 import com.google.common.io.ByteArrayDataInput
+import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.env.serializerFactoryLocator
 
 private class InputSerializationScopeImpl(
   override val input: ByteArrayDataInput,
-  override val parent: SerializationScope?
+  override val jagr: Jagr,
+  override val parent: SerializationScope?,
 ) : AbstractSerializationScope(), SerializationScope.Input {
   override fun <T : Any> readScoped(key: SerializationScope.Key<T>): T {
-    val actualKey = SerializationScope.Key<T>().read(this)
-    check(key == actualKey) { "Expected $key but read $actualKey" }
-    val obj = SerializerFactory[key.type].read(this)
+    val obj = SerializerFactory[key.type, jagr.serializerFactoryLocator].read(this)
     backing[key] = obj
     return obj
   }
 }
 
-fun createScope(input: ByteArrayDataInput, parent: SerializationScope.Input? = null): SerializationScope.Input {
-  return InputSerializationScopeImpl(input, parent)
+fun createScope(input: ByteArrayDataInput, jagr: Jagr, parent: SerializationScope.Input? = null): SerializationScope.Input {
+  return InputSerializationScopeImpl(input, jagr, parent)
 }
 
-inline fun <T> openScope(input: ByteArrayDataInput, block: SerializationScope.Input.() -> T): T {
-  return createScope(input).block()
+inline fun <T> openScope(input: ByteArrayDataInput, jagr: Jagr, block: SerializationScope.Input.() -> T): T {
+  return createScope(input, jagr).block()
 }
 
 inline fun <T> SerializationScope.Input.openScope(block: SerializationScope.Input.() -> T): T {
-  return createScope(input, this).block()
+  return createScope(input, jagr, this).block()
 }

@@ -21,6 +21,8 @@ package org.sourcegrade.jagr.launcher.io
 
 import com.google.common.io.ByteArrayDataInput
 import com.google.common.io.ByteArrayDataOutput
+import com.google.inject.Key
+import org.sourcegrade.jagr.launcher.env.Jagr
 import kotlin.reflect.KClass
 
 /**
@@ -28,12 +30,23 @@ import kotlin.reflect.KClass
  */
 interface SerializationScope {
 
+  val jagr: Jagr
+
   /**
    * Gets the value for the provided [Key] in this scope. If this scope has no value for the provided [Key], and there is a
    * parents scope, the value of the parent scope's [get] method will be returned. Otherwise, an [IllegalStateException] is
    * thrown.
    */
   operator fun <T : Any> get(key: Key<T>): T
+
+  fun <T : Any> getOrNull(key: Key<T>): T?
+
+  operator fun <T : Any> set(key: Key<T>, obj: T)
+
+  /**
+   * Redirects scope access to [key] to [from].
+   */
+  fun <T : Any> proxy(key: Key<T>, from: Key<T>)
 
   /**
    * Represents a single entry in this scope's data.
@@ -90,23 +103,26 @@ interface SerializationScope {
 inline operator fun <reified T : Any> SerializationScope.get(type: KClass<T>, name: String? = null) = get(keyOf(type, name))
 inline fun <reified T : Any> SerializationScope.get(name: String? = null) = get(T::class, name)
 
-inline fun <reified T : Any> SerializationScope.Input.read(factory: SerializerFactory<T> = SerializerFactory.get()): T {
+inline fun <reified T : Any> SerializationScope.Input.read(factory: SerializerFactory<T> = SerializerFactory.get(jagr)): T {
   return factory.read(this)
 }
 
-inline fun <reified T : Any> SerializationScope.Output.write(obj: T, factory: SerializerFactory<T> = SerializerFactory.get()) {
+inline fun <reified T : Any> SerializationScope.Output.write(
+  obj: T,
+  factory: SerializerFactory<T> = SerializerFactory.get(jagr)
+) {
   factory.write(obj, this)
 }
 
 inline fun <reified T : Any> SerializationScope.Input.readNullable(
-  factory: SerializerFactory<T> = SerializerFactory.get(),
+  factory: SerializerFactory<T> = SerializerFactory.get(jagr),
 ): T? {
   return factory.readNullable(this)
 }
 
 inline fun <reified T : Any> SerializationScope.Output.writeNullable(
   obj: T?,
-  factory: SerializerFactory<T> = SerializerFactory.get(),
+  factory: SerializerFactory<T> = SerializerFactory.get(jagr),
 ) {
   factory.writeNullable(obj, this)
 }
@@ -121,12 +137,38 @@ private data class KeyImpl<T : Any>(override val type: KClass<T>, override val n
 internal abstract class AbstractSerializationScope : SerializationScope {
   abstract val parent: SerializationScope?
   protected val backing = mutableMapOf<SerializationScope.Key<*>, Any>()
+  private val proxy = mutableMapOf<SerializationScope.Key<*>, SerializationScope.Key<*>>()
+  private fun <T : Any> getProxy(key: SerializationScope.Key<T>): SerializationScope.Key<T>? {
+    return proxy[key] as SerializationScope.Key<T>?
+  }
+
+  private fun <T : Any> getInjected(key: SerializationScope.Key<T>): T? {
+    return if (key.name == null) {
+      jagr.injector.getExistingBinding(Key.get(key.type.java))?.run { provider.get() }
+    } else null
+  }
+
   override fun <T : Any> get(key: SerializationScope.Key<T>): T {
     val fromBacking = backing[key]
     return if (fromBacking == null) {
-      parent?.let { it[key] } ?: error("Key $key not found in scope")
+      parent?.getOrNull(key)
+        ?: getInjected(key)
+        ?: getProxy(key)?.let { get(it) }
+        ?: error("Key $key not found in scope")
     } else {
       fromBacking as T
     }
+  }
+
+  override fun <T : Any> getOrNull(key: SerializationScope.Key<T>): T? {
+    return backing[key] as T?
+  }
+
+  override fun <T : Any> set(key: SerializationScope.Key<T>, obj: T) {
+    backing[key] = obj
+  }
+
+  override fun <T : Any> proxy(key: SerializationScope.Key<T>, from: SerializationScope.Key<T>) {
+    proxy[key] = from
   }
 }

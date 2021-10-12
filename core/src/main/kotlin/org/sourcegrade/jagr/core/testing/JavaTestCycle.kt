@@ -19,13 +19,39 @@
 
 package org.sourcegrade.jagr.core.testing
 
+import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.get
+import org.sourcegrade.jagr.launcher.io.keyOf
+import org.sourcegrade.jagr.launcher.io.openScope
+import org.sourcegrade.jagr.launcher.io.read
+import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.writeList
 
 data class JavaTestCycle(
   private val rubricProviderClassNames: List<String>,
   private val submission: JavaSubmission,
-  private val classLoader: ClassLoader,
+  private val classLoader: RuntimeClassLoader,
 ) : TestCycle {
+  companion object Factory : SerializerFactory<JavaTestCycle> {
+    override fun read(scope: SerializationScope.Input) = JavaTestCycle(
+      scope.readList(),
+      scope[Submission::class] as JavaSubmission,
+      scope.openScope {
+        proxy(keyOf(RuntimeResources::class), RuntimeResources.base)
+        read()
+      },
+    )
+
+    override fun write(obj: JavaTestCycle, scope: SerializationScope.Output) {
+      scope.writeList(obj.rubricProviderClassNames)
+    }
+  }
+
   private var jUnitResult: TestCycle.JUnitResult? = null
   override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
   override fun getClassLoader(): ClassLoader = classLoader

@@ -24,6 +24,14 @@ import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.rubric.Rubric
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.read
+import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.readScoped
+import org.sourcegrade.jagr.launcher.io.write
+import org.sourcegrade.jagr.launcher.io.writeList
+import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class GradedRubricImpl(
   private val testCycle: TestCycle,
@@ -31,6 +39,22 @@ data class GradedRubricImpl(
   private val rubric: Rubric,
   private val childCriteria: List<GradedCriterion>,
 ) : GradedRubric {
+  companion object Factory : SerializerFactory<GradedRubricImpl> {
+    override fun read(scope: SerializationScope.Input) = GradedRubricImpl(
+      scope.readScoped(),
+      scope.read(),
+      scope.read(),
+      scope.readList(),
+    )
+
+    override fun write(obj: GradedRubricImpl, scope: SerializationScope.Output) {
+      scope.writeScoped(obj.testCycle)
+      scope.write(obj.grade)
+      scope.write(obj.rubric)
+      scope.writeList(obj.childCriteria)
+    }
+  }
+
   override fun getTestCycle(): TestCycle = testCycle
   override fun getGrade(): GradeResult = grade
   override fun getChildCriteria(): List<GradedCriterion> = childCriteria

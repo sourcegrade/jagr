@@ -22,13 +22,25 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import com.google.common.io.ByteStreams
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
+import org.sourcegrade.jagr.launcher.io.keyOf
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
+import java.io.EOFException
 import java.io.File
 
 class ProcessWorker(
+  private val jagr: Jagr,
+  processIODispatcher: CoroutineDispatcher,
   private val removeActive: (Worker) -> Unit,
 ) : Worker {
   override var job: GradingJob? = null
@@ -43,18 +55,66 @@ class ProcessWorker(
 
   private val process: Process = ProcessBuilder()
     .command("java", "-jar", jagrLocation, "--child")
+//    .redirectError(File("error.txt"))
+//    .redirectOutput(File("output.txt"))
     .start()
 
+  private val coroutineScope = CoroutineScope(processIODispatcher)
+
   override fun assignJob(job: GradingJob) {
-    val os = ByteArrayOutputStream()
-    val output = ByteStreams.newDataOutput(os)
-    openScope(output) {
-      SerializerFactory.getScoped<GradingRequest>().writeScoped(job.request, this)
+    coroutineScope.launch {
+      sendRequest(job.request)
+      Jagr.logger.info("Sent request, waiting...")
+      val result = receiveResult(job)
+      Jagr.logger.info("Received result: $result")
+      job.result.complete(result)
+      removeActive(this@ProcessWorker)
     }
-    os.writeTo(process.outputStream)
+    coroutineScope.launch {
+      process.errorStream.reader().forEachLine {
+        Jagr.logger.error(it)
+      }
+    }
+  }
+
+  private fun sendRequest(request: GradingRequest) {
+    val outputStream = ByteArrayOutputStream(200_000)
+    val output = ByteStreams.newDataOutput(outputStream)
+    openScope(output, jagr) {
+      SerializerFactory.getScoped<GradingRequest>(jagr).writeScoped(request, this)
+    }
+    outputStream.writeTo(process.outputStream)
+    process.outputStream.close()
+  }
+
+  private fun receiveResult(job: GradingJob): GradingResult {
+    // ignore bytes until 7
+    val stdIn = process.inputStream
+    Jagr.logger.info("Throwing bytes until 7")
+    while (true) {
+      val next = stdIn.read()
+      if (next == 7) {
+        Jagr.logger.info("Received byte 7")
+        break
+      } else
+        if (next == -1) {
+          Jagr.logger.error("Received unexpected EOF while waiting for child process to complete")
+          job.result.completeExceptionally(EOFException())
+        }
+    }
+    return openScope(ByteStreams.newDataInput(process.inputStream.readAllBytes()), jagr) {
+      val request = job.request
+      this[keyOf(GradingRequest::class)] = request
+      this[keyOf(Submission::class)] = request.submission
+//      request as GradingRequestImpl
+//      this[RuntimeResources.base] = request.baseRuntimeLibraries
+//      this[RuntimeResources.grader] = request.graderRuntimeLibraries
+      SerializerFactory.get<GradingResult>().read(this)
+    }
   }
 
   override fun kill() {
     process.destroy()
+    coroutineScope.cancel("Killed by ProcessWorker")
   }
 }

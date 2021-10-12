@@ -51,7 +51,7 @@ interface GradingQueue {
   }
 }
 
-fun gradingQueueOf(request: GradingRequest): GradingQueue = SingletonGradingQueue(request)
+fun GradingRequest.toGradingQueue(): GradingQueue = SingletonGradingQueue(this)
 
 private class SingletonGradingQueue(private val job: GradingRequest) : GradingQueue {
   override val total: Int = 1

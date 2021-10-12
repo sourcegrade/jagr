@@ -19,7 +19,9 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
+import kotlinx.coroutines.asCoroutineDispatcher
 import org.sourcegrade.jagr.launcher.env.Jagr
+import java.util.concurrent.Executors
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.coroutines.resume
@@ -27,13 +29,14 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class ProcessWorkerPool(
+  private val jagr: Jagr,
   private val concurrency: Int,
 ) : WorkerPool {
 
   open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
     companion object Default : Factory(concurrency = 4)
 
-    override fun create(jagr: Jagr): WorkerPool = ProcessWorkerPool(concurrency)
+    override fun create(jagr: Jagr): WorkerPool = ProcessWorkerPool(jagr, concurrency)
   }
 
   companion object {
@@ -50,6 +53,11 @@ class ProcessWorkerPool(
   private val activeWorkersLock = ReentrantLock()
   private fun removeActiveWorker(worker: Worker) = activeWorkersLock.withLock { activeWorkers -= worker }
 
+  /**
+   * These threads are used to send and listen to results from each child process.
+   */
+  private val processIODispatcher = Executors.newFixedThreadPool(concurrency * 2).asCoroutineDispatcher()
+
   override suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T) = suspendCoroutine<T> {
     activeWorkersLock.withLock {
       try {
@@ -63,6 +71,6 @@ class ProcessWorkerPool(
   override fun createWorkers(maxCount: Int): List<Worker> {
     if (maxCount == 0) return emptyList()
     val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
-    return List(workerCount) { ProcessWorker(this::removeActiveWorker) }
+    return List(workerCount) { ProcessWorker(jagr, processIODispatcher, this::removeActiveWorker) }
   }
 }

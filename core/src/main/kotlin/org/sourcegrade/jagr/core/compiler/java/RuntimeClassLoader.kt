@@ -19,12 +19,22 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.get
 import java.io.InputStream
 
 class RuntimeClassLoader(
   private val runtimeResources: RuntimeResources,
   parent: ClassLoader = getSystemClassLoader(),
 ) : ClassLoader(parent) {
+
+  companion object Factory : SerializerFactory<RuntimeClassLoader> {
+    override fun read(scope: SerializationScope.Input) = RuntimeClassLoader(scope[RuntimeResources::class])
+
+    override fun write(obj: RuntimeClassLoader, scope: SerializationScope.Output) {
+    }
+  }
 
   @Throws(ClassNotFoundException::class, ClassFormatError::class)
   override fun findClass(name: String): Class<*> {

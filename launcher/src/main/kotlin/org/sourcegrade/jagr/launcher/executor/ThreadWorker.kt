@@ -19,6 +19,7 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
+import kotlinx.coroutines.runBlocking
 import kotlin.concurrent.thread
 
 class ThreadWorker(
@@ -39,7 +40,9 @@ class ThreadWorker(
       name = GRADING_THREAD_PREFIX + job.request.submission.info.toString(),
       priority = 3,
     ) {
-      runtimeGrader.grade(job)
+      runBlocking {
+        runtimeGrader.grade(job)
+      }
       removeActive(this)
     }
   }

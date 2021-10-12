@@ -44,7 +44,7 @@ class GraderJarImpl(
 
   companion object Factory : SerializerFactory<GraderJarImpl> {
     override fun read(scope: SerializationScope.Input): GraderJarImpl =
-      GraderJarImpl(scope.get(), scope.read(), scope[RuntimeResources.Grader])
+      GraderJarImpl(scope.get(), scope.read(), scope[RuntimeResources.grader])
 
     override fun write(obj: GraderJarImpl, scope: SerializationScope.Output) {
       scope.write(obj.compileResult)

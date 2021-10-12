@@ -26,11 +26,24 @@ import org.sourcegrade.jagr.api.rubric.Graded
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.rubric.Rubric
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.writeList
 
 class RubricImpl(
   private val title: String,
   private val criteria: List<CriterionImpl>,
 ) : Rubric {
+
+  companion object Factory : SerializerFactory<RubricImpl> {
+    override fun read(scope: SerializationScope.Input) = RubricImpl(scope.input.readUTF(), scope.readList())
+
+    override fun write(obj: RubricImpl, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.title)
+      scope.writeList(obj.criteria)
+    }
+  }
 
   init {
     for (criterion in criteria) {

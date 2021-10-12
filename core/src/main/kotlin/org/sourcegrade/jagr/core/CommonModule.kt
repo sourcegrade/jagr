@@ -27,12 +27,14 @@ import org.sourcegrade.jagr.api.testing.extension.*
 import org.sourcegrade.jagr.core.executor.*
 import org.sourcegrade.jagr.core.export.rubric.*
 import org.sourcegrade.jagr.core.export.submission.*
+import org.sourcegrade.jagr.core.io.SerializationFactoryLocatorImpl
 import org.sourcegrade.jagr.core.rubric.*
 import org.sourcegrade.jagr.core.rubric.grader.*
 import org.sourcegrade.jagr.core.testing.*
 import org.sourcegrade.jagr.launcher.configuration.*
 import org.sourcegrade.jagr.launcher.env.*
 import org.sourcegrade.jagr.launcher.executor.*
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.opt.*
 
 /**
@@ -47,6 +49,7 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
 
     bind(GradingQueue.Factory::class.java).to(GradingQueueFactoryImpl::class.java)
     bind(RuntimeGrader::class.java).to(RuntimeGraderImpl::class.java)
+    bind(SerializerFactory.Locator::class.java).to(SerializationFactoryLocatorImpl::class.java)
 
     bind(Criterion.Factory::class.java).to(CriterionFactoryImpl::class.java)
     bind(CriterionHolderPointCalculator.Factory::class.java).to(CriterionHolderPointCalculatorFactoryImpl::class.java)
