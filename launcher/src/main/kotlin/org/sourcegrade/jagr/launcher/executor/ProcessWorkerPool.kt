@@ -71,7 +71,7 @@ class ProcessWorkerPool(
   override fun createWorkers(maxCount: Int): List<Worker> {
     if (maxCount == 0) return emptyList()
     val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
-    return List(workerCount) { ProcessWorker(jagr, processIODispatcher, this::removeActiveWorker) }
+    return List(workerCount) { ProcessWorker(jagr, processIODispatcher, this::removeActiveWorker).also(activeWorkers::add) }
   }
 
   override fun close() {
