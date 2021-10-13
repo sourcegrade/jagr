@@ -51,12 +51,8 @@ class ProcessWorker(
 
   private val jagrLocation: String = File(javaClass.protectionDomain.codeSource.location.toURI()).path
 
-  init {
-    println("Starting process 'java -jar $jagrLocation'")
-  }
-
   private val process: Process = ProcessBuilder()
-    .command("java", "-jar", jagrLocation, "--child")
+    .command("java", "-Dlog4j.configurationFile=log4j2-child.xml", "-jar", jagrLocation, "--child")
     .start()
 
   private val coroutineScope = CoroutineScope(processIODispatcher)
@@ -64,9 +60,7 @@ class ProcessWorker(
   override fun assignJob(job: GradingJob) {
     coroutineScope.launch {
       sendRequest(job.request)
-      Jagr.logger.info("Sent request, waiting...")
       val result = receiveResult(job)
-      Jagr.logger.info("Received result: $result")
       job.result.complete(result)
       removeActive(this@ProcessWorker)
     }
