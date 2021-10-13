@@ -67,4 +67,7 @@ class ThreadWorkerPool(
     val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
     return List(workerCount) { ThreadWorker(runtimeGrader, this::removeActiveWorker).also(activeWorkers::add) }
   }
+
+  override fun close() {
+  }
 }

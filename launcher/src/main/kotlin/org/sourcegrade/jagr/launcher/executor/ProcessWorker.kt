@@ -26,13 +26,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
-import org.sourcegrade.jagr.launcher.io.keyOf
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.EOFException
@@ -43,6 +41,9 @@ class ProcessWorker(
   processIODispatcher: CoroutineDispatcher,
   private val removeActive: (Worker) -> Unit,
 ) : Worker {
+  companion object {
+    const val MARK_RESULT_BYTE = 7
+  }
   override var job: GradingJob? = null
   override var status: WorkerStatus = WorkerStatus.PREPARING
   override var userTime: Long = 0
@@ -89,12 +90,14 @@ class ProcessWorker(
 
   private fun receiveResult(job: GradingJob): GradingResult {
     // ignore bytes until 7
-    val stdIn = process.inputStream
+    val childProcessIn = process.inputStream
+    val stdOut = System.out
     Jagr.logger.info("Throwing bytes until 7")
     while (true) {
-      val next = stdIn.read()
-      if (next == 7) {
-        Jagr.logger.info("Received byte 7")
+      val next = childProcessIn.read()
+      stdOut.write(next)
+      if (next == MARK_RESULT_BYTE) {
+        Jagr.logger.info("Received byte $MARK_RESULT_BYTE")
         break
       } else
         if (next == -1) {

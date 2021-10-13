@@ -20,11 +20,12 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import org.sourcegrade.jagr.launcher.env.Jagr
+import java.io.Closeable
 
 /**
  * A resource which may, or may not give you another [Worker] depending on available resources.
  */
-interface WorkerPool {
+interface WorkerPool : Closeable {
 
   suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T): T
 
@@ -34,6 +35,11 @@ interface WorkerPool {
    * Creates up to [maxCount] workers depending on availability.
    */
   fun createWorkers(maxCount: Int): List<Worker>
+
+  /**
+   * Closes this [WorkerPool] and any resources associated with it. (e.g. Extra monitor/IO threads)
+   */
+  override fun close()
 
   interface Factory {
     fun create(jagr: Jagr): WorkerPool

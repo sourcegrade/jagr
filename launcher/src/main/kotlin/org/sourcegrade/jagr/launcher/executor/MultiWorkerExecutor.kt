@@ -91,8 +91,10 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
 
   override suspend fun start(rubricCollector: MutableRubricCollector) {
     val police = ThreadPolice()
-    while (scheduled.isNotEmpty() || workerPool.withActiveWorkers { it.isNotEmpty() }) {
-      checkWorkers(police, rubricCollector)
+    workerPool.use {
+      while (scheduled.isNotEmpty() || workerPool.withActiveWorkers { it.isNotEmpty() }) {
+        checkWorkers(police, rubricCollector)
+      }
     }
   }
 }

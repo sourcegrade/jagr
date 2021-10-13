@@ -37,6 +37,7 @@ import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.GradingRequest
 import org.sourcegrade.jagr.launcher.executor.GradingResult
 import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
+import org.sourcegrade.jagr.launcher.executor.ProcessWorker.Companion.MARK_RESULT_BYTE
 import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
 import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
@@ -82,7 +83,7 @@ class MainCommand : CliktCommand() {
   private fun notifyParent(collector: RubricCollector) {
     val outputStream = ByteArrayOutputStream(8192)
     val output = ByteStreams.newDataOutput(outputStream)
-    System.out.write(7)
+    System.out.write(MARK_RESULT_BYTE)
     val before = collector.gradingFinished[0]
     openScope(output, Jagr) {
       SerializerFactory.get<GradingResult>().write(before, this)
