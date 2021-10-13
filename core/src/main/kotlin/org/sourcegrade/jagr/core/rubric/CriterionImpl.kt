@@ -56,7 +56,9 @@ class CriterionImpl(
     override fun read(scope: SerializationScope.Input) = CriterionImpl(
       scope.input.readUTF(),
       scope.readNullable(),
-      // the next line is *technically* incorrect, but it won't be used anyways so this is ok
+      // The next line is *technically* incorrect, but it won't be used anyways so this is ok.
+      // Serializing a grader would require cooperation from the implementer. This doesn't really make any
+      // sense though, as it won't be used after serialization (which happens after rubrics have been graded).
       null,
       CriterionHolderPointCalculator.fixed(scope.input.readInt()),
       CriterionHolderPointCalculator.fixed(scope.input.readInt()),
@@ -112,11 +114,7 @@ class CriterionImpl(
       return GradedCriterionImpl(testCycle, graderResult, this)
     }
     val childGraded = childCriteria.map { it.grade(testCycle) }
-    val gradeResult = GradeResult.of(
-      graderResult, childGraded.map(
-        Graded::getGrade
-      )
-    )
+    val gradeResult = GradeResult.of(graderResult, childGraded.map(Graded::getGrade))
     return GradedCriterionImpl(testCycle, gradeResult, this, childGraded)
   }
 
