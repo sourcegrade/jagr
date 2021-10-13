@@ -23,7 +23,7 @@ import com.google.inject.Inject;
 import org.opentest4j.AssertionFailedError;
 import org.slf4j.Logger;
 import org.sourcegrade.jagr.core.transformer.CommonTransformer;
-import org.sourcegrade.jagr.launcher.opt.Config;
+import org.sourcegrade.jagr.launcher.env.Config;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;

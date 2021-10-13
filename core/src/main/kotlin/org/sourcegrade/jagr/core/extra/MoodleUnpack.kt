@@ -21,7 +21,7 @@ package org.sourcegrade.jagr.core.extra
 
 import com.google.inject.Inject
 import org.slf4j.Logger
-import org.sourcegrade.jagr.launcher.opt.Config
+import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.writeStream
 import java.io.File
 import java.util.zip.ZipEntry

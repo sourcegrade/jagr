@@ -27,7 +27,7 @@ import org.objectweb.asm.Label
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.sourcegrade.jagr.core.executor.TimeoutHandler
-import org.sourcegrade.jagr.launcher.opt.Config
+import org.sourcegrade.jagr.launcher.env.Config
 
 class CommonTransformer @Inject constructor(
   private val config: Config,

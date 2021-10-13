@@ -49,7 +49,7 @@ import org.sourcegrade.jagr.launcher.io.createResourceContainer
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
-import org.sourcegrade.jagr.launcher.opt.Config
+import org.sourcegrade.jagr.launcher.env.Config
 import java.io.ByteArrayOutputStream
 import java.io.File
 
