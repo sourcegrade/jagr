@@ -21,8 +21,6 @@ package org.sourcegrade.jagr.launcher.env
 
 import com.google.inject.Injector
 import org.slf4j.Logger
-import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
-import org.sourcegrade.jagr.launcher.configuration.StandardLaunchConfiguration
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -35,7 +33,7 @@ interface Jagr {
   companion object Default : Jagr by SystemResourceJagrFactory.create()
 
   interface Factory {
-    fun create(configuration: LaunchConfiguration = StandardLaunchConfiguration): Jagr
+    fun create(configuration: LaunchConfiguration = LaunchConfiguration.Standard): Jagr
   }
 }
 

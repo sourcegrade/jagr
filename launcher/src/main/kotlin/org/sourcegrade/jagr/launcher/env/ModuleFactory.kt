@@ -20,7 +20,6 @@
 package org.sourcegrade.jagr.launcher.env
 
 import com.google.inject.Module
-import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 
 fun interface ModuleFactory {
   fun create(configuration: LaunchConfiguration): Module

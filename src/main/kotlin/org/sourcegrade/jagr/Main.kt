@@ -32,19 +32,20 @@ import org.sourcegrade.jagr.launcher.ensure
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
-import org.sourcegrade.jagr.launcher.executor.Executor
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.GradingRequest
 import org.sourcegrade.jagr.launcher.executor.GradingResult
 import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
 import org.sourcegrade.jagr.launcher.executor.ProcessWorker.Companion.MARK_RESULT_BYTE
 import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
+import org.sourcegrade.jagr.launcher.executor.ProgressBar
 import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.executor.toGradingQueue
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.buildGradingBatch
+import org.sourcegrade.jagr.launcher.io.createResourceContainer
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
@@ -60,24 +61,25 @@ class MainCommand : CliktCommand() {
    */
   private val child by option("--child", "-c").flag()
   override fun run() {
-    Jagr.logger.info("Starting Jagr")
     if (!child) {
-      Jagr.logger.info("Running in parent mode")
       return standardGrading()
     }
-    Jagr.logger.info("Running in child mode")
     runBlocking {
-      val req = next()
-      val queue = req.toGradingQueue()
-      Jagr.logger.info("Processing queue $queue")
-      notifyParent(grade(queue, SyncExecutor(Jagr)))
+      val jagr = Jagr
+      val queue = next(jagr)
+      val collector = emptyCollector()
+      collector.allocate(queue)
+      val executor = SyncExecutor(jagr)
+      executor.schedule(queue)
+      executor.start(collector)
+      notifyParent(collector)
     }
   }
 
-  private suspend fun next(): GradingRequest = withContext(Dispatchers.IO) {
-    openScope(ByteStreams.newDataInput(System.`in`.readAllBytes()), Jagr) {
+  private suspend fun next(jagr: Jagr): GradingQueue = withContext(Dispatchers.IO) {
+    openScope(ByteStreams.newDataInput(System.`in`.readAllBytes()), jagr) {
       SerializerFactory.getScoped<GradingRequest>(jagr).readScoped(this)
-    }
+    }.toGradingQueue()
   }
 
   private fun notifyParent(collector: RubricCollector) {
@@ -109,17 +111,17 @@ fun standardGrading() {
         concurrency = Jagr.injector.getInstance(Config::class.java).grading.concurrentThreads
       }
     }.create(Jagr)
-    export(grade(queue, executor))
+    val collector = emptyCollector()
+    val progress = ProgressBar(collector)
+    collector.setListener {
+      progress.print()
+    }
+    collector.allocate(queue)
+    executor.schedule(queue)
+    executor.start(collector)
+    export(collector)
     println("Time taken: ${System.currentTimeMillis() - startTime}")
   }
-}
-
-suspend fun grade(queue: GradingQueue, executor: Executor): RubricCollector {
-  val collector = emptyCollector()
-  collector.allocate(queue)
-  executor.schedule(queue)
-  executor.start(collector)
-  return collector
 }
 
 fun export(collector: RubricCollector) {
@@ -127,10 +129,11 @@ fun export(collector: RubricCollector) {
   val rubricsFile = File("rubrics").ensure(Jagr.logger)!!
   val graderJars = collector.gradingFinished.firstOrNull()?.request?.graderJars ?: return
   exporter.initialize(rubricsFile, graderJars as List<GraderJarImpl>)
+  var counter = 0
   for ((gradedRubric, exportFileName) in collector.gradingFinished.toList()
     .asSequence()
     .map { it.rubrics }
     .reduce { acc, map -> acc + map }) {
-    exporter.export(gradedRubric, rubricsFile, exportFileName)
+    exporter.export(gradedRubric, rubricsFile, (counter++).toString() + exportFileName)
   }
 }

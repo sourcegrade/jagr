@@ -21,9 +21,8 @@ package org.sourcegrade.jagr.launcher.env
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import org.sourcegrade.jagr.launcher.configuration.LaunchConfiguration
 
-internal object SystemResourceJagrFactory : Jagr.Factory {
+object SystemResourceJagrFactory : Jagr.Factory {
   private const val RESOURCE_NAME = "/jagr.json"
 
   override fun create(configuration: LaunchConfiguration): Jagr {

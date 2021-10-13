@@ -31,7 +31,6 @@ import org.sourcegrade.jagr.core.io.SerializationFactoryLocatorImpl
 import org.sourcegrade.jagr.core.rubric.*
 import org.sourcegrade.jagr.core.rubric.grader.*
 import org.sourcegrade.jagr.core.testing.*
-import org.sourcegrade.jagr.launcher.configuration.*
 import org.sourcegrade.jagr.launcher.env.*
 import org.sourcegrade.jagr.launcher.executor.*
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
