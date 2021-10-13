@@ -44,15 +44,11 @@ fun interface RuntimeGrader {
   fun grade(tests: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
 }
 
-// TODO combine
-fun RuntimeGrader.grade(request: GradingRequest) = grade(request.graderJars, request.submission)
-
-suspend fun RuntimeGrader.grade(
-  job: GradingJob,
-  grading: suspend (GradingRequest) -> Map<GradedRubric, String> = { grade(it) },
-) {
+fun RuntimeGrader.grade(job: GradingJob) {
   val startedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
-  val rubrics = grading(job.request)
+  val rubrics = with(job.request) {
+    grade(graderJars, submission)
+  }
   val finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
   job.result.complete(GradingResult(startedUtc, finishedUtc, job.request, rubrics))
 }
