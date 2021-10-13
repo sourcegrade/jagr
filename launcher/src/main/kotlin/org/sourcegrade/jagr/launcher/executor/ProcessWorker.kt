@@ -44,6 +44,7 @@ class ProcessWorker(
   companion object {
     const val MARK_RESULT_BYTE = 7
   }
+
   override var job: GradingJob? = null
   override var status: WorkerStatus = WorkerStatus.PREPARING
   override var userTime: Long = 0
@@ -56,8 +57,6 @@ class ProcessWorker(
 
   private val process: Process = ProcessBuilder()
     .command("java", "-jar", jagrLocation, "--child")
-//    .redirectError(File("error.txt"))
-//    .redirectOutput(File("output.txt"))
     .start()
 
   private val coroutineScope = CoroutineScope(processIODispatcher)
@@ -89,21 +88,18 @@ class ProcessWorker(
   }
 
   private fun receiveResult(job: GradingJob): GradingResult {
-    // ignore bytes until 7
     val childProcessIn = process.inputStream
     val stdOut = System.out
-    Jagr.logger.info("Throwing bytes until 7")
     while (true) {
       val next = childProcessIn.read()
-      stdOut.write(next)
       if (next == MARK_RESULT_BYTE) {
-        Jagr.logger.info("Received byte $MARK_RESULT_BYTE")
         break
-      } else
-        if (next == -1) {
-          Jagr.logger.error("Received unexpected EOF while waiting for child process to complete")
-          job.result.completeExceptionally(EOFException())
-        }
+      } else if (next == -1) {
+        Jagr.logger.error("Received unexpected EOF while waiting for child process to complete")
+        job.result.completeExceptionally(EOFException())
+      } else {
+        stdOut.write(next)
+      }
     }
     return openScope(ByteStreams.newDataInput(process.inputStream.readAllBytes()), jagr) {
       SerializerFactory.getScoped<GradingRequest>(jagr).putInScope(job.request, this)

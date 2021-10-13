@@ -58,7 +58,7 @@ class MainCommand : CliktCommand() {
   /**
    * Command line option to indicate that this process will listen to (via std in) to a grading request
    */
-  val child by option("--child", "-c").flag()
+  private val child by option("--child", "-c").flag()
   override fun run() {
     Jagr.logger.info("Starting Jagr")
     if (!child) {
@@ -88,22 +88,6 @@ class MainCommand : CliktCommand() {
     openScope(output, Jagr) {
       SerializerFactory.get<GradingResult>().write(before, this)
     }
-//    val result = openScope(ByteStreams.newDataInput(outputStream.toByteArray()), Jagr) {
-//      this[keyOf(GradingRequest::class)] = request
-//      this[keyOf(JavaSubmission::class)] = request.submission as JavaSubmission
-//      request as GradingRequestImpl
-//      this[RuntimeResources.base] = request.baseRuntimeLibraries
-//      this[RuntimeResources.grader] = request.graderRuntimeLibraries
-//      SerializerFactory.get<GradingResult>().read(this)
-//    }
-//    println("==============================================")
-//    println("================ Before ======================")
-//    println("==============================================")
-//    println(before)
-//    println("==============================================")
-//    println("================ After ======================")
-//    println("==============================================")
-//    println(result)
     outputStream.writeTo(System.out)
     System.out.close()
   }
