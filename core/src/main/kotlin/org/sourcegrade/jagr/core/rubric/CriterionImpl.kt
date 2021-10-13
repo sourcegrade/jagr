@@ -56,16 +56,18 @@ class CriterionImpl(
     override fun read(scope: SerializationScope.Input) = CriterionImpl(
       scope.input.readUTF(),
       scope.readNullable(),
-      // the next lines are *technically* incorrect, but they aren't going to be used anyways so this is ok
+      // the next line is *technically* incorrect, but it won't be used anyways so this is ok
       null,
-      CriterionHolderPointCalculator.fixed(0),
-      CriterionHolderPointCalculator.fixed(0),
+      CriterionHolderPointCalculator.fixed(scope.input.readInt()),
+      CriterionHolderPointCalculator.fixed(scope.input.readInt()),
       scope.readList(),
     )
 
     override fun write(obj: CriterionImpl, scope: SerializationScope.Output) {
       scope.output.writeUTF(obj.shortDescription)
-      scope.writeNullable(obj.shortDescription)
+      scope.writeNullable(obj.hiddenNotes)
+      scope.output.writeInt(obj.maxPointsKt)
+      scope.output.writeInt(obj.minPointsKt)
       scope.writeList(obj.childCriteria)
     }
   }
