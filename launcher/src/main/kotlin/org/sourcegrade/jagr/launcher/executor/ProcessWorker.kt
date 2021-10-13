@@ -103,13 +103,8 @@ class ProcessWorker(
         }
     }
     return openScope(ByteStreams.newDataInput(process.inputStream.readAllBytes()), jagr) {
-      val request = job.request
-      this[keyOf(GradingRequest::class)] = request
-      this[keyOf(Submission::class)] = request.submission
-//      request as GradingRequestImpl
-//      this[RuntimeResources.base] = request.baseRuntimeLibraries
-//      this[RuntimeResources.grader] = request.graderRuntimeLibraries
-      SerializerFactory.get<GradingResult>().read(this)
+      SerializerFactory.getScoped<GradingRequest>(jagr).putInScope(job.request, this)
+      SerializerFactory.get<GradingResult>(jagr).read(this)
     }
   }
 

@@ -44,6 +44,7 @@ fun interface RuntimeGrader {
   fun grade(tests: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
 }
 
+// TODO combine
 fun RuntimeGrader.grade(request: GradingRequest) = grade(request.graderJars, request.submission)
 
 suspend fun RuntimeGrader.grade(

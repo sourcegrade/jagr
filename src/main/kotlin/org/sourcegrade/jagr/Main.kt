@@ -26,11 +26,8 @@ import com.google.common.io.ByteStreams
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
-import org.sourcegrade.jagr.core.executor.GradingRequestImpl
 import org.sourcegrade.jagr.core.export.rubric.GradedRubricExportManager
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
-import org.sourcegrade.jagr.core.testing.JavaSubmission
 import org.sourcegrade.jagr.launcher.ensure
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
@@ -49,7 +46,6 @@ import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.buildGradingBatch
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
-import org.sourcegrade.jagr.launcher.io.keyOf
 import org.sourcegrade.jagr.launcher.io.openScope
 import org.sourcegrade.jagr.launcher.opt.Config
 import java.io.ByteArrayOutputStream
@@ -73,7 +69,7 @@ class MainCommand : CliktCommand() {
       val req = next()
       val queue = req.toGradingQueue()
       Jagr.logger.info("Processing queue $queue")
-      notifyParent(grade(queue, SyncExecutor(Jagr)), req)
+      notifyParent(grade(queue, SyncExecutor(Jagr)))
     }
   }
 
@@ -83,7 +79,7 @@ class MainCommand : CliktCommand() {
     }
   }
 
-  private suspend fun notifyParent(collector: RubricCollector, request: GradingRequest) = withContext(Dispatchers.IO) {
+  private fun notifyParent(collector: RubricCollector) {
     val outputStream = ByteArrayOutputStream(8192)
     val output = ByteStreams.newDataOutput(outputStream)
     System.out.write(7)

@@ -55,6 +55,8 @@ interface SerializerFactory<T : Any> {
     fun readScoped(scope: SerializationScope.Input): T
 
     fun writeScoped(obj: T, scope: SerializationScope.Output)
+
+    fun putInScope(obj: T, scope: SerializationScope)
   }
 
   interface Locator {

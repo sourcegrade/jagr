@@ -25,6 +25,7 @@ import org.sourcegrade.jagr.launcher.executor.GradingRequest
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.keyOf
 import org.sourcegrade.jagr.launcher.io.readList
 import org.sourcegrade.jagr.launcher.io.readScoped
 import org.sourcegrade.jagr.launcher.io.writeList
@@ -61,6 +62,13 @@ data class GradingRequestImpl(
       scope.writeScoped(obj.baseRuntimeLibraries, RuntimeResources.base)
       scope.writeScoped(obj.graderRuntimeLibraries, RuntimeResources.grader)
       write(obj, scope)
+    }
+
+    override fun putInScope(obj: GradingRequestImpl, scope: SerializationScope) {
+      scope[keyOf(GradingRequest::class)] = obj
+      scope[keyOf(Submission::class)] = obj.submission
+      scope[RuntimeResources.base] = obj.baseRuntimeLibraries
+      scope[RuntimeResources.grader] = obj.graderRuntimeLibraries
     }
   }
 }
