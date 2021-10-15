@@ -26,7 +26,7 @@ import java.net.URI
 import javax.tools.JavaFileObject.Kind
 import javax.tools.SimpleJavaFileObject
 
-class JavaSourceFile(
+data class JavaSourceFile(
   private val className: String,
   private val fileName: String,
   private val content: String,

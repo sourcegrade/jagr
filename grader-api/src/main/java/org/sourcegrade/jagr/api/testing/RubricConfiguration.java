@@ -17,26 +17,13 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.transformer
+package org.sourcegrade.jagr.api.testing;
 
-import com.google.inject.Inject
-import org.sourcegrade.jagr.core.compiler.java.CompiledClass
-import org.sourcegrade.jagr.core.compiler.java.JavaCompileResult
+import java.util.List;
 
-class TransformerManager @Inject constructor(
-  private val commonTransformer: CommonTransformer,
-) {
+public interface RubricConfiguration {
 
-  private fun MutableMap<String, CompiledClass>.transform(): MutableMap<String, CompiledClass> {
-    for ((className, compiledClass) in this) {
-      this[className] = CompiledClass.Existing(className, commonTransformer.transform(compiledClass.byteArray))
-    }
-    return this
-  }
+  List<ClassTransformer> getTransformers();
 
-  fun transform(result: JavaCompileResult): JavaCompileResult = result.copy(
-    runtimeResources = result.runtimeResources.copy(
-      classes = result.runtimeResources.classes.toMutableMap().transform(),
-    ),
-  )
+  RubricConfiguration addTransformer(ClassTransformer transformer);
 }

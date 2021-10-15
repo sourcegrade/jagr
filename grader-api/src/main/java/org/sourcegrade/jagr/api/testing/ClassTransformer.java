@@ -17,13 +17,13 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.api.testing;
 
-import org.sourcegrade.jagr.api.testing.RubricConfiguration
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 
-interface GraderJar {
-  val name: String
-  val configuration: RubricConfiguration
-  val rubricProviders: Map<String, List<String>>
-  val testProviders: Map<String, List<String>>
+public interface ClassTransformer {
+  String getName();
+
+  void transform(ClassReader reader, ClassWriter writer);
 }

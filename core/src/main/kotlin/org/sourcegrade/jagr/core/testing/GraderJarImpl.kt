@@ -46,6 +46,8 @@ class GraderJarImpl(
 
   override val name: String = container.nameWithoutExtension
 
+  override val configuration = RubricConfigurationImpl()
+
   /**
    * A map of assignments ids to classes of rubric providers (in the base classloader).
    *
@@ -81,12 +83,13 @@ class GraderJarImpl(
     }
     val assignmentId = filter.value
     val className = clazz.name
-    try {
-      clazz.getConstructor()
+    val rubricProvider = try {
+      asRubricProvider.getConstructor().newInstance()!!
     } catch (e: NoSuchMethodException) {
       logger.error("Rubric provider $className in grader ${container.name} must have a no-args public constructor!")
       return
     }
+    rubricProvider.configure(configuration)
     logger.info("${container.name} Discovered rubric provider $className for assignment $assignmentId")
     computeIfAbsent(filter.value) { mutableListOf() }.add(asRubricProvider.name)
   }

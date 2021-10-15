@@ -26,13 +26,15 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Label
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
+import org.sourcegrade.jagr.api.testing.ClassTransformer
 import org.sourcegrade.jagr.core.executor.TimeoutHandler
 import org.sourcegrade.jagr.launcher.env.Config
 
-class CommonTransformer @Inject constructor(
+class CommonClassTransformer @Inject constructor(
   private val config: Config,
-) : Transformer {
-  override val name: String = "common-transformer"
+) : ClassTransformer {
+  private val name: String = "common-transformer"
+  override fun getName(): String = name
 
   override fun transform(reader: ClassReader, writer: ClassWriter) {
     reader.accept(CommonClassVisitor(config, writer), 0)

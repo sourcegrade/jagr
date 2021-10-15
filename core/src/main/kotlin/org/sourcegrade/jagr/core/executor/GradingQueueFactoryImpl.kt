@@ -22,14 +22,14 @@ package org.sourcegrade.jagr.core.executor
 import com.google.inject.Inject
 import org.slf4j.Logger
 import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
-import org.sourcegrade.jagr.core.transformer.TransformerManager
+import org.sourcegrade.jagr.core.transformer.CommonClassTransformer
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 
 class GradingQueueFactoryImpl @Inject constructor(
   private val logger: Logger,
   private val runtimeJarLoader: RuntimeJarLoader,
-  private val transformerManager: TransformerManager,
+  private val commonClassTransformer: CommonClassTransformer,
 ) : GradingQueue.Factory {
-  override fun create(batch: GradingBatch): GradingQueue = GradingQueueImpl(logger, runtimeJarLoader, transformerManager, batch)
+  override fun create(batch: GradingBatch): GradingQueue = GradingQueueImpl(logger, runtimeJarLoader, commonClassTransformer, batch)
 }

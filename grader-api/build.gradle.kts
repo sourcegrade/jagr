@@ -6,6 +6,7 @@ repositories {
   mavenCentral()
 }
 
+val asmVersion: String by project
 val guiceVersion: String by project
 val jetbrainsAnnotationsVersion: String by project
 val junitVersion: String by project
@@ -18,5 +19,6 @@ dependencies {
   api("org.junit.jupiter:junit-jupiter:$junitVersion")
   api("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
   api("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
+  api("org.ow2.asm:asm:$asmVersion")
   implementation("org.jetbrains:annotations:$jetbrainsAnnotationsVersion")
 }
