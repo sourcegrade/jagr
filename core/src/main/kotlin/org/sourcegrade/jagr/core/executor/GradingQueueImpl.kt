@@ -30,6 +30,7 @@ import org.sourcegrade.jagr.core.compiler.java.loadCompiled
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
+import org.sourcegrade.jagr.core.transformer.SubmissionVerificationTransformer
 import org.sourcegrade.jagr.core.transformer.applierOf
 import org.sourcegrade.jagr.core.transformer.plus
 import org.sourcegrade.jagr.core.transformer.useWhen
@@ -68,6 +69,8 @@ class GradingQueueImpl(
     if (errors == 0) GraderJarImpl(logger, this, graderRuntimeLibraries) else null
   }
 
+  private val baseSubmissionTransformerApplier = applierOf(SubmissionVerificationTransformer())
+
   /**
    * Create a transformer applier that selectively applies transformations to
    * submissions only if the grader contains a rubric for it
@@ -76,7 +79,7 @@ class GradingQueueImpl(
     graderJar.configuration.transformers useWhen { result ->
       result.submissionInfo?.assignmentId?.let(graderJar.rubricProviders::containsKey) == true
     }
-  }.fold(applierOf()) { a, b -> a + b }
+  }.fold(baseSubmissionTransformerApplier) { a, b -> a + b }
 
   override val submissions: List<Submission> = batch.submissions.compile(
     logger, submissionTransformerApplier, runtimeJarLoader, baseRuntimeLibraries, "submission"
