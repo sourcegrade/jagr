@@ -34,7 +34,6 @@ import org.sourcegrade.jagr.core.testing.*
 import org.sourcegrade.jagr.launcher.env.*
 import org.sourcegrade.jagr.launcher.executor.*
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
-import org.sourcegrade.jagr.launcher.opt.*
 
 /**
  * Shared bindings between main and testing guice modules
