@@ -75,6 +75,7 @@ abstract class Unpack : Extra {
             if (replaceStudentId) studentId!! else submissionInfo.studentId,
             if (replaceFirstName) firstName!! else submissionInfo.firstName,
             if (replaceLastName) lastName!! else submissionInfo.lastName,
+            submissionInfo.sourceSets,
           )
         } else return
       } ?: SubmissionInfoImpl(
@@ -82,6 +83,7 @@ abstract class Unpack : Extra {
         studentId = studentId ?: "none",
         firstName = firstName ?: "none",
         lastName = lastName ?: "none",
+        sourceSets = listOf(),
       )
       submissionInfoPath.bufferedWriter().use { writer ->
         writer.write(Json.encodeToString(replacedSubmissionInfo))
