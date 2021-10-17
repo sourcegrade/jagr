@@ -35,8 +35,12 @@ data class SubmissionInfoImpl(
   private val lastName: String,
 ) : SubmissionInfo {
   companion object Factory : SerializerFactory<SubmissionInfoImpl> {
-    override fun read(scope: SerializationScope.Input): SubmissionInfoImpl =
-      SubmissionInfoImpl(scope.input.readUTF(), scope.input.readUTF(), scope.input.readUTF(), scope.input.readUTF())
+    override fun read(scope: SerializationScope.Input) = SubmissionInfoImpl(
+      scope.input.readUTF(),
+      scope.input.readUTF(),
+      scope.input.readUTF(),
+      scope.input.readUTF(),
+    )
 
     override fun write(obj: SubmissionInfoImpl, scope: SerializationScope.Output) {
       scope.output.writeUTF(obj.assignmentId)
