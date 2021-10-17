@@ -31,6 +31,7 @@ data class SubmissionInfoImpl(
   private val studentId: String,
   private val firstName: String,
   private val lastName: String,
+  val sourceSets: List<SourceSetInfo>,
 ) : SubmissionInfo {
 
   override fun getAssignmentId(): String = assignmentId
@@ -39,3 +40,9 @@ data class SubmissionInfoImpl(
   override fun getLastName(): String = lastName
   override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
 }
+
+@Serializable
+data class SourceSetInfo(
+  val name: String,
+  val files: List<String>,
+)
