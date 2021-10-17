@@ -23,6 +23,8 @@ import kotlinx.serialization.Serializable
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.writeList
 
 /**
  * Represents the contents of a submission-info.json file
@@ -33,6 +35,7 @@ data class SubmissionInfoImpl(
   private val studentId: String,
   private val firstName: String,
   private val lastName: String,
+  val sourceSets: List<SourceSetInfo>,
 ) : SubmissionInfo {
   companion object Factory : SerializerFactory<SubmissionInfoImpl> {
     override fun read(scope: SerializationScope.Input) = SubmissionInfoImpl(
@@ -40,6 +43,7 @@ data class SubmissionInfoImpl(
       scope.input.readUTF(),
       scope.input.readUTF(),
       scope.input.readUTF(),
+      scope.readList(),
     )
 
     override fun write(obj: SubmissionInfoImpl, scope: SerializationScope.Output) {
@@ -47,6 +51,7 @@ data class SubmissionInfoImpl(
       scope.output.writeUTF(obj.studentId)
       scope.output.writeUTF(obj.firstName)
       scope.output.writeUTF(obj.lastName)
+      scope.writeList(obj.sourceSets)
     }
   }
 
@@ -55,4 +60,19 @@ data class SubmissionInfoImpl(
   override fun getFirstName(): String = firstName
   override fun getLastName(): String = lastName
   override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
+}
+
+@Serializable
+data class SourceSetInfo(
+  val name: String,
+  val files: List<String>,
+) {
+  companion object Factory : SerializerFactory<SourceSetInfo> {
+    override fun read(scope: SerializationScope.Input) = SourceSetInfo(scope.input.readUTF(), scope.readList())
+
+    override fun write(obj: SourceSetInfo, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.name)
+      scope.writeList(obj.files)
+    }
+  }
 }
