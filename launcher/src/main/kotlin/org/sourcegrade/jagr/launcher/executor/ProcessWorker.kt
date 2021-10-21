@@ -33,7 +33,6 @@ import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
-import java.io.EOFException
 import java.io.File
 
 class ProcessWorker(
@@ -60,8 +59,12 @@ class ProcessWorker(
   override fun assignJob(job: GradingJob) {
     coroutineScope.launch {
       sendRequest(job.request)
-      val result = receiveResult(job)
-      job.result.complete(result)
+      try {
+        job.result.complete(receiveResult(job))
+      } catch (e: Exception) {
+        Jagr.logger.error("An error occurred receiving result for grading job", e)
+        job.result.completeExceptionally(e)
+      }
       removeActive(this@ProcessWorker)
     }
     coroutineScope.launch {
@@ -89,9 +92,7 @@ class ProcessWorker(
       if (next == MARK_RESULT_BYTE) {
         break
       } else if (next == -1) {
-        Jagr.logger.error("Received unexpected EOF while waiting for child process to complete")
-        job.result.completeExceptionally(EOFException())
-        removeActive(this)
+        throw error("${job.request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
       } else {
         stdOut.write(next)
       }
