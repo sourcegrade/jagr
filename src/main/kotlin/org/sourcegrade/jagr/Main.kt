@@ -29,6 +29,7 @@ import kotlinx.coroutines.withContext
 import org.sourcegrade.jagr.core.export.rubric.GradedRubricExportManager
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.launcher.ensure
+import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
@@ -45,11 +46,9 @@ import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.executor.toGradingQueue
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.buildGradingBatch
-import org.sourcegrade.jagr.launcher.io.createResourceContainer
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
-import org.sourcegrade.jagr.launcher.env.Config
 import java.io.ByteArrayOutputStream
 import java.io.File
 
