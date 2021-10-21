@@ -31,6 +31,9 @@ import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.ensure
+import org.sourcegrade.jagr.launcher.executor.GradingRequest
+import org.sourcegrade.jagr.launcher.io.ResourceContainer
+import org.sourcegrade.jagr.launcher.io.SubmissionExporter
 import org.sourcegrade.jagr.launcher.usePrintWriterSafe
 import org.sourcegrade.jagr.launcher.writeStream
 import org.sourcegrade.jagr.launcher.writeTextSafe
@@ -43,9 +46,7 @@ import java.util.jar.Manifest
 @Singleton // stateful because of submissionMap
 class GradleSubmissionExporter @Inject constructor(
   private val logger: Logger,
-) : SubmissionExporter {
-  override val name: String = "gradle"
-
+) : SubmissionExporter.Gradle {
   private val submissionMap: MutableMap<String?, MutableList<String>> = mutableMapOf()
 
   private fun File.writeGradleResource(
@@ -90,7 +91,7 @@ class GradleSubmissionExporter @Inject constructor(
     writeGradleResource(classLoader, resource = "gradle-wrapper.properties", targetDir = "gradle/wrapper/")
   }
 
-  override fun initialize(directory: File, testJar: GraderJarImpl?) {
+  fun initialize(directory: File, testJar: GraderJarImpl?) {
     directory.writeSkeleton()
   }
 
@@ -103,11 +104,11 @@ class GradleSubmissionExporter @Inject constructor(
     }
   }
 
-  override fun finalize(directory: File, testJar: GraderJarImpl?) {
+  fun finalize(directory: File, testJar: GraderJarImpl?) {
     writeSettings(directory, testJar?.name)
   }
 
-  override fun export(submission: Submission, directory: File, testJar: GraderJarImpl?) {
+  fun export(submission: Submission, directory: File, testJar: GraderJarImpl?) {
     if (submission !is JavaSubmission) return
     val submissionName = submission.info.toString()
     val file = directory.resolve(submissionName).ensure(logger, false) ?: return
@@ -125,5 +126,9 @@ class GradleSubmissionExporter @Inject constructor(
       testSource.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
     }
     submissionMap.computeIfAbsent(testJar?.name) { mutableListOf() }.add(submissionName)
+  }
+
+  override fun export(request: GradingRequest): List<ResourceContainer> {
+    TODO("Not yet implemented")
   }
 }

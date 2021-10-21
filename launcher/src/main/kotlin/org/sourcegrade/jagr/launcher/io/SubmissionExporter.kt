@@ -17,13 +17,19 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.export.submission
+package org.sourcegrade.jagr.launcher.io
 
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.core.export.Exporter
-import org.sourcegrade.jagr.core.testing.GraderJarImpl
-import java.io.File
+import org.sourcegrade.jagr.launcher.executor.GradingRequest
 
-interface SubmissionExporter : Exporter {
-  fun export(submission: Submission, directory: File, testJar: GraderJarImpl? = null)
+interface SubmissionExporter {
+  /**
+   * Creates a list of [ResourceContainer] for every combination of [Submission] + [GraderJar].
+   *
+   * The resulting list has [GraderJar].size + 1 entries. (The first entry is the default export without
+   * a combined [GraderJar])
+   */
+  fun export(request: GradingRequest): List<ResourceContainer>
+  interface Gradle : SubmissionExporter
+  interface Eclipse : SubmissionExporter
 }

@@ -26,8 +26,7 @@ import com.google.common.io.ByteStreams
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.sourcegrade.jagr.core.export.rubric.GradedRubricExportManager
-import org.sourcegrade.jagr.core.testing.GraderJarImpl
+import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.ensure
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.Jagr
@@ -44,11 +43,13 @@ import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.executor.toGradingQueue
+import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.buildGradingBatch
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
+import org.sourcegrade.jagr.launcher.io.writeToDir
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -123,16 +124,30 @@ fun standardGrading() {
   }
 }
 
+fun GradedRubric.log() {
+  val listener = testCycle.jUnitResult?.summaryListener
+  val succeeded = listener?.summary?.testsSucceededCount
+  val total = listener?.summary?.testsStartedCount
+  Jagr.logger.info(
+    "${testCycle.submission} ::"
+      + if (listener == null && grade.correctPoints == 0) " (no tests found)" else " ($succeeded / $total tests)"
+      + " points=${grade.correctPoints} -points=${grade.incorrectPoints} maxPoints=${rubric.maxPoints}"
+      + " from '${rubric.title}'"
+  )
+}
+
 fun export(collector: RubricCollector) {
-  val exporter = Jagr.injector.getInstance(GradedRubricExportManager::class.java)
+  val csvExporter = Jagr.injector.getInstance(GradedRubricExporter.CSV::class.java)
+  val htmlExporter = Jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
   val rubricsFile = File("rubrics").ensure(Jagr.logger)!!
-  val graderJars = collector.gradingFinished.firstOrNull()?.request?.graderJars ?: return
-  exporter.initialize(rubricsFile, graderJars as List<GraderJarImpl>)
-  var counter = 0
+  val csvFile = rubricsFile.resolve("csv").ensure(Jagr.logger)!!
+  val htmlFile = rubricsFile.resolve("moodle").ensure(Jagr.logger)!!
   for ((gradedRubric, exportFileName) in collector.gradingFinished.toList()
     .asSequence()
     .map { it.rubrics }
     .reduce { acc, map -> acc + map }) {
-    exporter.export(gradedRubric, rubricsFile, (counter++).toString() + exportFileName)
+    gradedRubric.log()
+    csvExporter.export(gradedRubric).writeToDir(csvFile, exportFileName)
+    htmlExporter.export(gradedRubric).writeToDir(htmlFile, exportFileName)
   }
 }

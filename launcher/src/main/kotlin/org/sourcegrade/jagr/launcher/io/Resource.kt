@@ -19,13 +19,46 @@
 
 package org.sourcegrade.jagr.launcher.io
 
+import org.sourcegrade.jagr.launcher.writeStream
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.InputStream
 
 interface Resource {
   val name: String
   val size: Int
   fun getInputStream(): InputStream
+  interface Builder {
+    var name: String
+    val outputStream: ByteArrayOutputStream
+    fun build(): Resource
+  }
+}
+
+inline fun buildResource(configure: Resource.Builder.() -> Unit): Resource = createResourceBuilder().apply(configure).build()
+
+fun createResourceBuilder(): Resource.Builder = ResourceBuilderImpl()
+
+fun Resource.writeToDir(dir: File, name: String? = null) = dir.resolve(name ?: this.name).writeStream { getInputStream() }
+
+private class ResourceBuilderImpl : Resource.Builder {
+  override lateinit var name: String
+  override val outputStream = ReadableByteArrayOutputStream()
+  override fun build(): Resource = outputStream.toResource(name)
+}
+
+private class ReadableByteArrayOutputStream : ByteArrayOutputStream() {
+  fun toResource(name: String): Resource = BackedByStreamResource(name, buf, count)
+}
+
+private class BackedByStreamResource(
+  override val name: String,
+  private val buf: ByteArray,
+  count: Int,
+) : Resource {
+  override val size: Int = count
+  override fun getInputStream(): InputStream = ByteArrayInputStream(buf, 0, size)
 }
 
 internal class ByteArrayResource(override val name: String, val data: ByteArray) : Resource {

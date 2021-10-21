@@ -24,7 +24,7 @@ import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.launcher.ensure
 import java.io.File
 
-abstract class ExportManager<E : Exporter> {
+abstract class AbstractExporterManager<E : Exporter> {
 
   protected abstract val logger: Logger
   protected abstract val exporters: Set<E>

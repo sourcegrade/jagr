@@ -17,15 +17,12 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.export.rubric
+package org.sourcegrade.jagr.launcher.io
 
 import org.sourcegrade.jagr.api.rubric.GradedRubric
-import org.sourcegrade.jagr.core.export.Exporter
-import java.io.File
 
-interface GradedRubricExporter : Exporter {
-  /**
-   * Assumes that [directory] exists.
-   */
-  fun export(gradedRubric: GradedRubric, directory: File, fileName: String)
+interface GradedRubricExporter {
+  fun export(gradedRubric: GradedRubric): Resource
+  interface CSV : GradedRubricExporter
+  interface HTML : GradedRubricExporter
 }

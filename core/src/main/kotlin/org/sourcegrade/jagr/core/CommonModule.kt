@@ -26,25 +26,24 @@ import org.sourcegrade.jagr.api.rubric.*
 import org.sourcegrade.jagr.api.testing.extension.*
 import org.sourcegrade.jagr.core.executor.*
 import org.sourcegrade.jagr.core.export.rubric.*
-import org.sourcegrade.jagr.core.export.submission.*
-import org.sourcegrade.jagr.core.io.SerializationFactoryLocatorImpl
+import org.sourcegrade.jagr.core.io.*
 import org.sourcegrade.jagr.core.rubric.*
 import org.sourcegrade.jagr.core.rubric.grader.*
 import org.sourcegrade.jagr.core.testing.*
 import org.sourcegrade.jagr.launcher.env.*
 import org.sourcegrade.jagr.launcher.executor.*
-import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.*
 
 /**
  * Shared bindings between main and testing guice modules
  */
+@Suppress("unused") // src/main/resources/jagr.json
 class CommonModule(private val configuration: LaunchConfiguration) : AbstractModule() {
-  @Suppress("unused") // src/main/resources/jagr.json
   object Factory : ModuleFactory {
     override fun create(configuration: LaunchConfiguration) = CommonModule(configuration)
   }
-  override fun configure() {
 
+  override fun configure() {
     bind(GradingQueue.Factory::class.java).to(GradingQueueFactoryImpl::class.java)
     bind(RuntimeGrader::class.java).to(RuntimeGraderImpl::class.java)
     bind(SerializerFactory.Locator::class.java).to(SerializationFactoryLocatorImpl::class.java)
@@ -57,14 +56,8 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
     bind(Rubric.Factory::class.java).to(RubricFactoryImpl::class.java)
     bind(TestCycleResolver.Internal::class.java).to(TestCycleParameterResolver::class.java)
 
-    with(Multibinder.newSetBinder(binder(), GradedRubricExporter::class.java)) {
-      addBinding().to(GermanCSVExporter::class.java)
-      addBinding().to(MoodleJSONExporter::class.java)
-    }
-    with(Multibinder.newSetBinder(binder(), SubmissionExporter::class.java)) {
-      addBinding().to(EclipseSubmissionExporter::class.java)
-      addBinding().to(GradleSubmissionExporter::class.java)
-    }
+    bind(GradedRubricExporter.CSV::class.java).to(GermanCSVExporter::class.java)
+    bind(GradedRubricExporter.HTML::class.java).to(MoodleJSONExporter::class.java)
     with(Multibinder.newSetBinder(binder(), RuntimeTester::class.java)) {
       addBinding().to(JavaRuntimeTester::class.java)
     }

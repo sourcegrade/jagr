@@ -23,24 +23,24 @@ import com.google.inject.Inject
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
-import org.sourcegrade.jagr.launcher.usePrintWriterSafe
-import java.io.File
-import java.io.PrintWriter
+import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
+import org.sourcegrade.jagr.launcher.io.Resource
+import org.sourcegrade.jagr.launcher.io.buildResource
+import java.io.BufferedWriter
 
 class GermanCSVExporter @Inject constructor(
   private val logger: Logger,
-) : GradedRubricExporter {
+) : GradedRubricExporter.CSV {
 
   companion object {
     // delimiter
     const val DEL = '\t'
   }
 
-  override val name: String = "csv"
-  override fun export(gradedRubric: GradedRubric, directory: File, fileName: String) {
+  override fun export(gradedRubric: GradedRubric): Resource {
     val rubric = gradedRubric.rubric
     val grade = gradedRubric.grade
-    directory.resolve("$fileName.csv").usePrintWriterSafe(logger) {
+    fun BufferedWriter.export() {
       appendLine("sep=$DEL")
       appendLine(rubric.title)
       append("Kriterium")
@@ -69,9 +69,13 @@ class GermanCSVExporter @Inject constructor(
         appendLine("$DEL$DEL$DEL${grade.comments[i]}")
       }
     }
+    return buildResource {
+      name = gradedRubric.rubric.title + gradedRubric.testCycle.submission.info
+      outputStream.bufferedWriter().use { it.export() }
+    }
   }
 
-  private fun PrintWriter.appendCriterion(gradedCriterion: GradedCriterion): PrintWriter {
+  private fun BufferedWriter.appendCriterion(gradedCriterion: GradedCriterion): BufferedWriter {
     val criterion = gradedCriterion.criterion
     val grade = gradedCriterion.grade
     val comments = grade.comments.joinToString("; ")

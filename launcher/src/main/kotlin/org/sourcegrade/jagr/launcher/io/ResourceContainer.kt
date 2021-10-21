@@ -24,10 +24,21 @@ import java.io.InputStream
 
 interface ResourceContainer : Sequence<Resource> {
   val info: ResourceContainerInfo
+
+  interface Builder {
+    var info: ResourceContainerInfo
+    fun addResource(resource: Resource)
+    fun build(): ResourceContainer
+  }
 }
 
 interface ResourceContainerInfo {
   val name: String
+
+  interface Builder {
+    var name: String
+    fun build(): ResourceContainerInfo
+  }
 
   companion object Factory : SerializerFactory<ResourceContainerInfo> {
     override fun read(scope: SerializationScope.Input): ResourceContainerInfo =
@@ -43,6 +54,13 @@ internal data class ResourceContainerInfoImpl(override val name: String) : Resou
 val ResourceContainerInfo.nameWithoutExtension: String
   get() = name.substringBeforeLast(".")
 
+inline fun buildResourceContainer(configure: ResourceContainer.Builder.() -> Unit): ResourceContainer =
+  createResourceContainerBuilder().apply(configure).build()
+
+inline fun ResourceContainer.Builder.addResource(configure: Resource.Builder.() -> Unit) = addResource(buildResource(configure))
+
+fun createResourceContainerBuilder(): ResourceContainer.Builder = ResourceContainerBuilderImpl()
+
 fun createResourceContainer(name: String, inputStream: InputStream): ResourceContainer {
   // we assume inputStream is in ZIP format
   return ZipResourceContainer(name, inputStream)
@@ -53,4 +71,21 @@ fun createResourceContainer(file: File): ResourceContainer = when (file.extensio
   "jar"
   -> ZipResourceContainer(file)
   else -> throw IllegalArgumentException("Could not an appropriate resource container for $file")
+}
+
+private class ResourceContainerBuilderImpl : ResourceContainer.Builder {
+  private val resources = mutableListOf<Resource>()
+  override lateinit var info: ResourceContainerInfo
+  override fun addResource(resource: Resource) {
+    resources += resource
+  }
+
+  override fun build(): ResourceContainer = ListResourceContainer(info, resources)
+}
+
+private class ListResourceContainer(
+  override val info: ResourceContainerInfo,
+  private val resources: List<Resource>,
+) : ResourceContainer {
+  override fun iterator(): Iterator<Resource> = resources.iterator()
 }

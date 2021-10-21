@@ -25,24 +25,27 @@ import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
 import org.sourcegrade.jagr.launcher.ensure
+import org.sourcegrade.jagr.launcher.executor.GradingRequest
+import org.sourcegrade.jagr.launcher.io.ResourceContainer
+import org.sourcegrade.jagr.launcher.io.SubmissionExporter
 import org.sourcegrade.jagr.launcher.writeTextSafe
 import java.io.File
 import java.io.PrintWriter
 
 class EclipseSubmissionExporter @Inject constructor(
   private val logger: Logger,
-) : SubmissionExporter {
-  override val name: String = "eclipse"
-  override fun export(submission: Submission, directory: File, testJar: GraderJarImpl?) {
-    if (submission !is JavaSubmission) return
-    val file = directory.resolve(submission.info.toString()).ensure(logger, false) ?: return
-    val src = file.resolve("src").ensure(logger, false) ?: return
-    writeProjectFile(submission, file.resolve(".project"))
-    writeClasspathFile(submission, file.resolve(".classpath"))
-    // sourceFile.name starts with a / and needs to be converted to a relative path
-    for ((_, sourceFile) in submission.compileResult.sourceFiles) {
-      src.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
-    }
+) : SubmissionExporter.Eclipse {
+  override fun export(request: GradingRequest): List<ResourceContainer> {
+    val submission = request.submission as JavaSubmission
+    return listOf()
+//    val file = directory.resolve(submission.info.toString()).ensure(logger, false) ?: return
+//    val src = file.resolve("src").ensure(logger, false) ?: return
+//    writeProjectFile(submission, file.resolve(".project"))
+//    writeClasspathFile(submission, file.resolve(".classpath"))
+//    // sourceFile.name starts with a / and needs to be converted to a relative path
+//    for ((_, sourceFile) in submission.compileResult.sourceFiles) {
+//      src.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
+//    }
   }
 
   private fun writeProjectFile(submission: JavaSubmission, file: File) {
