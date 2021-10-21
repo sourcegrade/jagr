@@ -91,6 +91,7 @@ class ProcessWorker(
       } else if (next == -1) {
         Jagr.logger.error("Received unexpected EOF while waiting for child process to complete")
         job.result.completeExceptionally(EOFException())
+        removeActive(this)
       } else {
         stdOut.write(next)
       }
