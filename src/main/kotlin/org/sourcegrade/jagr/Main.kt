@@ -128,12 +128,14 @@ fun GradedRubric.log() {
   val listener = testCycle.jUnitResult?.summaryListener
   val succeeded = listener?.summary?.testsSucceededCount
   val total = listener?.summary?.testsStartedCount
-  Jagr.logger.info(
-    "${testCycle.submission} ::"
-      + if (listener == null && grade.correctPoints == 0) " (no tests found)" else " ($succeeded / $total tests)"
-      + " points=${grade.correctPoints} -points=${grade.incorrectPoints} maxPoints=${rubric.maxPoints}"
-      + " from '${rubric.title}'"
-  )
+  val info = if (listener == null && grade.correctPoints == 0 && grade.incorrectPoints == 0) {
+    " (no tests found)"
+  } else {
+    " ($succeeded/$total tests)" +
+      " points=${grade.correctPoints} -points=${grade.incorrectPoints} maxPoints=${rubric.maxPoints}" +
+      " from '${rubric.title}'"
+  }
+  Jagr.logger.info("${testCycle.submission} :: $info")
 }
 
 fun export(collector: RubricCollector) {
@@ -142,12 +144,12 @@ fun export(collector: RubricCollector) {
   val rubricsFile = File("rubrics").ensure(Jagr.logger)!!
   val csvFile = rubricsFile.resolve("csv").ensure(Jagr.logger)!!
   val htmlFile = rubricsFile.resolve("moodle").ensure(Jagr.logger)!!
-  for ((gradedRubric, exportFileName) in collector.gradingFinished.toList()
+  for ((gradedRubric, _) in collector.gradingFinished.toList()
     .asSequence()
     .map { it.rubrics }
     .reduce { acc, map -> acc + map }) {
     gradedRubric.log()
-    csvExporter.export(gradedRubric).writeToDir(csvFile, exportFileName)
-    htmlExporter.export(gradedRubric).writeToDir(htmlFile, exportFileName)
+    csvExporter.export(gradedRubric).writeToDir(csvFile)
+    htmlExporter.export(gradedRubric).writeToDir(htmlFile)
   }
 }

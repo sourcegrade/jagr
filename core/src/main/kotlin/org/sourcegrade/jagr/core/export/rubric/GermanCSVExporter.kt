@@ -70,7 +70,7 @@ class GermanCSVExporter @Inject constructor(
       }
     }
     return buildResource {
-      name = gradedRubric.rubric.title + gradedRubric.testCycle.submission.info
+      name = "${gradedRubric.rubric.title}_${gradedRubric.testCycle.submission.info}.csv"
       outputStream.bufferedWriter().use { it.export() }
     }
   }

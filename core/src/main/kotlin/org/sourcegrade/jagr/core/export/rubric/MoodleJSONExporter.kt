@@ -42,7 +42,7 @@ class MoodleJSONExporter @Inject constructor(
     )
     val jsonString = Json.encodeToString(json)
     return buildResource {
-      name = gradedRubric.rubric.title + gradedRubric.testCycle.submission.info
+      name = "${gradedRubric.rubric.title}_${gradedRubric.testCycle.submission.info}.json"
       outputStream.bufferedWriter().use { it.write(jsonString) }
     }
   }
