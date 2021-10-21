@@ -63,8 +63,8 @@ data class JavaCompileResult(
       scope.writeMap(obj.sourceFiles)
       scope.writeList(obj.messages)
       scope.output.writeInt(obj.warnings)
-      scope.output.writeInt(obj.warnings)
-      scope.output.writeInt(obj.warnings)
+      scope.output.writeInt(obj.errors)
+      scope.output.writeInt(obj.other)
     }
   }
 
