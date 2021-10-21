@@ -92,7 +92,7 @@ class ProcessWorker(
       if (next == MARK_RESULT_BYTE) {
         break
       } else if (next == -1) {
-        throw error("${job.request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
+        error("${job.request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
       } else {
         stdOut.write(next)
       }
