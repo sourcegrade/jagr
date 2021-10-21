@@ -24,39 +24,54 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.RubricForSubmission
 import org.sourcegrade.jagr.api.rubric.RubricProvider
 import org.sourcegrade.jagr.api.rubric.TestForSubmission
-import org.sourcegrade.jagr.core.compiler.java.CompiledClass
-import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
+import org.sourcegrade.jagr.core.compiler.java.JavaCompileResult
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
-import java.io.File
+import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.core.compiler.java.plus
+import org.sourcegrade.jagr.launcher.io.GraderJar
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.get
+import org.sourcegrade.jagr.launcher.io.nameWithoutExtension
+import org.sourcegrade.jagr.launcher.io.read
+import org.sourcegrade.jagr.launcher.io.write
 
-class TestJar(
+class GraderJarImpl(
   private val logger: Logger,
-  val file: File,
-  val compiledClasses: Map<String, CompiledClass>,
-  val sourceFiles: Map<String, JavaSourceFile>,
-  solutionClasses: Map<String, CompiledClass>,
-  resources: Map<String, ByteArray>,
-) {
+  val compileResult: JavaCompileResult,
+  runtimeLibraries: RuntimeResources,
+) : GraderJar {
 
-  val name: String = with(file.name) { substring(0, indexOf(".jar")) }
+  companion object Factory : SerializerFactory<GraderJarImpl> {
+    override fun read(scope: SerializationScope.Input): GraderJarImpl =
+      GraderJarImpl(scope.get(), scope.read(), scope[RuntimeResources.grader])
+
+    override fun write(obj: GraderJarImpl, scope: SerializationScope.Output) {
+      scope.write(obj.compileResult)
+    }
+  }
+
+  private val container = compileResult.container
+
+  override val name: String = container.nameWithoutExtension
 
   /**
    * A map of assignments ids to classes of rubric providers (in the base classloader).
    *
    * Classes in this map are guaranteed to have an accessible no-args constructor.
    */
-  val rubricProviders: Map<String, List<String>>
+  override val rubricProviders: Map<String, List<String>>
 
   /**
    * A map of assignment ids to JUnit test classes
    */
-  val testProviders: Map<String, List<String>>
+  override val testProviders: Map<String, List<String>>
 
   init {
     val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
     val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
-    val baseClassLoader = RuntimeClassLoader(compiledClasses + solutionClasses, resources)
-    for (className in compiledClasses.keys) {
+    val baseClassLoader = RuntimeClassLoader(compileResult.runtimeResources + runtimeLibraries)
+    for (className in compileResult.runtimeResources.classes.keys) {
       val clazz = baseClassLoader.loadClass(className)
       rubricProviders.putIfRubric(clazz)
       testProviders.putIfTest(clazz)
@@ -78,10 +93,10 @@ class TestJar(
     try {
       clazz.getConstructor()
     } catch (e: NoSuchMethodException) {
-      logger.error("Rubric provider $className in file $file must have a no-args public constructor!")
+      logger.error("Rubric provider $className in grader ${container.name} must have a no-args public constructor!")
       return
     }
-    logger.info("${file.name} Discovered rubric provider $className for assignment $assignmentId")
+    logger.info("${container.name} Discovered rubric provider $className for assignment $assignmentId")
     computeIfAbsent(filter.value) { mutableListOf() }.add(asRubricProvider.name)
   }
 
@@ -92,7 +107,7 @@ class TestJar(
 
   private val stringRep: String by lazy {
     MoreObjects.toStringHelper(this)
-      .add("file", file)
+      .add("container", container)
       .add("applicableSubmissions", rubricProviders.keys.joinToString(", "))
       .toString()
   }

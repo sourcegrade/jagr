@@ -22,19 +22,52 @@ package org.sourcegrade.jagr.core.compiler.java
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.CompileResult
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
-import java.io.File
+import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.read
+import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.readMap
+import org.sourcegrade.jagr.launcher.io.readNullable
+import org.sourcegrade.jagr.launcher.io.write
+import org.sourcegrade.jagr.launcher.io.writeList
+import org.sourcegrade.jagr.launcher.io.writeMap
+import org.sourcegrade.jagr.launcher.io.writeNullable
 
 data class JavaCompileResult(
-  val file: File,
+  val container: ResourceContainerInfo,
+  val runtimeResources: RuntimeResources = RuntimeResources(),
   val submissionInfo: SubmissionInfoImpl? = null,
-  val compiledClasses: Map<String, CompiledClass> = mapOf(),
   val sourceFiles: Map<String, JavaSourceFile> = mapOf(),
-  val resources: Map<String, ByteArray> = mapOf(),
   private val messages: List<String> = listOf(),
   val warnings: Int = 0,
   val errors: Int = 0,
   val other: Int = 0,
 ) : CompileResult {
+  companion object Factory : SerializerFactory<JavaCompileResult> {
+    override fun read(scope: SerializationScope.Input): JavaCompileResult = JavaCompileResult(
+      scope.read(),
+      scope.read(),
+      scope.readNullable(),
+      scope.readMap(),
+      scope.readList(),
+      scope.input.readInt(),
+      scope.input.readInt(),
+      scope.input.readInt(),
+    )
+
+    override fun write(obj: JavaCompileResult, scope: SerializationScope.Output) {
+      scope.write(obj.container)
+      scope.write(obj.runtimeResources)
+      scope.writeNullable(obj.submissionInfo)
+      scope.writeMap(obj.sourceFiles)
+      scope.writeList(obj.messages)
+      scope.output.writeInt(obj.warnings)
+      scope.output.writeInt(obj.warnings)
+      scope.output.writeInt(obj.warnings)
+    }
+  }
+
   override fun getMessages(): List<String> = messages
   override fun getWarningCount(): Int = warnings
   override fun getErrorCount(): Int = errors

@@ -19,25 +19,35 @@
 
 package org.sourcegrade.jagr.core.testing
 
-import org.sourcegrade.jagr.api.testing.CompileResult
 import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
-import org.sourcegrade.jagr.core.compiler.java.CompiledClass
-import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
-import java.io.File
+import org.sourcegrade.jagr.core.compiler.java.JavaCompileResult
+import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.read
+import org.sourcegrade.jagr.launcher.io.readScoped
+import org.sourcegrade.jagr.launcher.io.write
+import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class JavaSubmission(
-  val file: File,
   private val info: SubmissionInfo,
-  private val compileResult: CompileResult,
-  val compiledClasses: Map<String, CompiledClass>,
-  val sourceFiles: Map<String, JavaSourceFile>,
-  val runtimeClassPath: Map<String, CompiledClass>,
-  val resources: Map<String, ByteArray>
+  private val compileResult: JavaCompileResult,
+  val runtimeLibraries: RuntimeResources,
 ) : Submission {
+  companion object Factory : SerializerFactory<JavaSubmission> {
+    override fun read(scope: SerializationScope.Input): JavaSubmission =
+      JavaSubmission(scope.readScoped(), scope.read(), scope[RuntimeResources.base])
+
+    override fun write(obj: JavaSubmission, scope: SerializationScope.Output) {
+      scope.writeScoped(obj.info)
+      scope.write(obj.compileResult)
+    }
+  }
+
   override fun getInfo(): SubmissionInfo = info
-  override fun getCompileResult(): CompileResult = compileResult
-  override fun getSourceFile(fileName: String): SourceFile? = sourceFiles[fileName]
-  override fun toString(): String = "$info(${file.name})"
+  override fun getCompileResult(): JavaCompileResult = compileResult
+  override fun getSourceFile(fileName: String): SourceFile? = compileResult.sourceFiles[fileName]
+  override fun toString(): String = "$info(${compileResult.container.name})"
 }

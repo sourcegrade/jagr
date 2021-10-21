@@ -22,10 +22,10 @@ package org.sourcegrade.jagr.core.export.submission
 import com.google.inject.Inject
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.core.ensure
+import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.core.testing.TestJar
-import org.sourcegrade.jagr.core.writeTextSafe
+import org.sourcegrade.jagr.launcher.ensure
+import org.sourcegrade.jagr.launcher.writeTextSafe
 import java.io.File
 import java.io.PrintWriter
 
@@ -33,14 +33,14 @@ class EclipseSubmissionExporter @Inject constructor(
   private val logger: Logger,
 ) : SubmissionExporter {
   override val name: String = "eclipse"
-  override fun export(submission: Submission, directory: File, testJar: TestJar?) {
+  override fun export(submission: Submission, directory: File, testJar: GraderJarImpl?) {
     if (submission !is JavaSubmission) return
     val file = directory.resolve(submission.info.toString()).ensure(logger, false) ?: return
     val src = file.resolve("src").ensure(logger, false) ?: return
     writeProjectFile(submission, file.resolve(".project"))
     writeClasspathFile(submission, file.resolve(".classpath"))
     // sourceFile.name starts with a / and needs to be converted to a relative path
-    for ((_, sourceFile) in submission.sourceFiles) {
+    for ((_, sourceFile) in submission.compileResult.sourceFiles) {
       src.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
     }
   }

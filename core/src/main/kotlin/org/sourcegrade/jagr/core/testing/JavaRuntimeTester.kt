@@ -30,21 +30,23 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.plus
 
 class JavaRuntimeTester @Inject constructor(
   private val logger: Logger,
   private val testCycleParameterResolver: TestCycleParameterResolver,
 ) : RuntimeTester {
-  override fun createTestCycle(testJar: TestJar, submission: Submission): TestCycle? {
+  override fun createTestCycle(graderJar: GraderJarImpl, submission: Submission): TestCycle? {
     if (submission !is JavaSubmission) return null
     val info = submission.info
-    val rubricProviders = testJar.rubricProviders[info.assignmentId] ?: return null
+    val rubricProviders = graderJar.rubricProviders[info.assignmentId] ?: return null
     val classLoader = RuntimeClassLoader(
-      submission.compiledClasses + submission.runtimeClassPath + testJar.compiledClasses,
-      submission.resources,
+      submission.compileResult.runtimeResources
+        + submission.runtimeLibraries
+        + graderJar.compileResult.runtimeResources
     )
     val testCycle = JavaTestCycle(rubricProviders, submission, classLoader)
-    testJar.testProviders[info.assignmentId]
+    graderJar.testProviders[info.assignmentId]
       ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
       ?.runJUnit(testCycle)
       ?.also(testCycle::setJUnitResult)

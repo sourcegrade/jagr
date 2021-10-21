@@ -25,15 +25,18 @@ import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.rubric.RubricProvider
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
+import org.sourcegrade.jagr.launcher.io.GraderJar
 
-class RuntimeGrader @Inject constructor(
+class RuntimeGraderImpl @Inject constructor(
   private val logger: Logger,
   private val testers: Set<RuntimeTester>,
-) {
-  fun grade(tests: List<TestJar>, submission: Submission): Map<GradedRubric, String> {
+) : RuntimeGrader {
+  override fun grade(tests: List<GraderJar>, submission: Submission): Map<GradedRubric, String> {
     val gradedRubrics: MutableMap<GradedRubric, String> = mutableMapOf()
     for (test in tests) {
       for (tester in testers) {
+        test as GraderJarImpl // for now, I want to keep the API as small as possible
         tester.createTestCycle(test, submission)?.collectResults()?.also { gradedRubrics += it }
       }
     }

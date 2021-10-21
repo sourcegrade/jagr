@@ -28,10 +28,9 @@ import org.objectweb.asm.Opcodes
 import org.slf4j.Logger
 import org.sourcegrade.jagr.core.compiler.readEncoded
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
-import java.io.File
+import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import java.nio.charset.StandardCharsets
 import java.util.Locale
-import java.util.jar.JarFile
 import javax.tools.Diagnostic
 import javax.tools.DiagnosticCollector
 import javax.tools.JavaFileObject
@@ -41,66 +40,63 @@ class RuntimeJarLoader @Inject constructor(
   private val logger: Logger,
 ) {
 
-  fun loadCompiledJar(file: File): JavaCompileResult {
-    val jarFile = JarFile(file)
+  fun loadCompiled(container: ResourceContainer): JavaCompileResult {
     val classStorage: MutableMap<String, CompiledClass> = mutableMapOf()
     val resources: MutableMap<String, ByteArray> = mutableMapOf()
-    for (entry in jarFile.entries()) {
+    for (resource in container) {
       when {
-        entry.isDirectory -> continue
-        entry.name.endsWith(".class") -> {
-          val className = entry.name.replace('/', '.').substring(0, entry.name.length - 6)
-          classStorage[className] = CompiledClass.Existing(className, jarFile.getInputStream(entry).use { it.readBytes() })
+        resource.name.endsWith(".class") -> {
+          val className = resource.name.replace('/', '.').substring(0, resource.name.length - 6)
+          classStorage[className] = CompiledClass.Existing(className, resource.getInputStream().use { it.readBytes() })
         }
-        entry.name.endsWith("MANIFEST.MF") -> { // ignore
+        resource.name.endsWith("MANIFEST.MF") -> { // ignore
         }
-        else -> resources[entry.name] = jarFile.getInputStream(entry).use { it.readAllBytes() }
+        else -> resources[resource.name] = resource.getInputStream().use { it.readAllBytes() }
       }
     }
-    return JavaCompileResult(file, compiledClasses = classStorage, resources = resources)
+    return JavaCompileResult(container.info, classStorage rr resources)
   }
 
-  fun loadSourcesJar(file: File, runtimeClassPath: Map<String, CompiledClass> = mapOf(), resources: Map<String, ByteArray> = mapOf()): JavaCompileResult {
-    val jarFile = JarFile(file)
+  fun loadSources(container: ResourceContainer, runtimeResources: RuntimeResources): JavaCompileResult {
     val sourceFiles: MutableMap<String, JavaSourceFile> = mutableMapOf()
-    val mutableResources = resources.toMutableMap()
+    val mutableResources = runtimeResources.resources.toMutableMap()
     var submissionInfo: SubmissionInfoImpl? = null
-    for (entry in jarFile.entries()) {
+    for (resource in container) {
       when {
-        entry.isDirectory -> continue
-        entry.name == "submission-info.json" -> {
+        resource.name == "submission-info.json" -> {
           submissionInfo = try {
-            Json.decodeFromString<SubmissionInfoImpl>(jarFile.getInputStream(entry).bufferedReader().use { it.readText() })
+            Json.decodeFromString<SubmissionInfoImpl>(resource.getInputStream().reader().use { it.readText() })
           } catch (e: Throwable) {
-            logger.error("$file has invalid submission-info.json", e)
-            return JavaCompileResult(file)
+            logger.error("$resource has invalid submission-info.json", e)
+            return JavaCompileResult(container.info)
           }
         }
-        entry.name.endsWith(".java") -> {
-          val className = entry.name.replace('/', '.').substring(0, entry.name.length - 5)
-          val content = jarFile.getInputStream(entry).use { it.readEncoded() }
-          val sourceFile = JavaSourceFile(className, entry.name, content)
-          sourceFiles[entry.name] = sourceFile
+        resource.name.endsWith(".java") -> {
+          val className = resource.name.replace('/', '.').substring(0, resource.name.length - 5)
+          val content = resource.getInputStream().use { it.readEncoded() }
+          val sourceFile = JavaSourceFile(className, resource.name, content)
+          sourceFiles[resource.name] = sourceFile
         }
-        entry.name.endsWith("MANIFEST.MF") -> { // ignore
+        resource.name.endsWith("MANIFEST.MF") -> { // ignore
         }
-        else -> mutableResources[entry.name] = jarFile.getInputStream(entry).use { it.readAllBytes() }
+        else -> mutableResources[resource.name] = resource.getInputStream().use { it.readAllBytes() }
       }
     }
     if (sourceFiles.isEmpty()) {
       // no source files, skip compilation task
-      return JavaCompileResult(file, submissionInfo)
+      return JavaCompileResult(container.info, submissionInfo = submissionInfo)
     }
     val compiledClasses: MutableMap<String, CompiledClass> = mutableMapOf()
     val collector = DiagnosticCollector<JavaFileObject>()
     val compiler = ToolProvider.getSystemJavaCompiler()
     val fileManager = ExtendedStandardJavaFileManager(
       compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8),
-      runtimeClassPath,
+      runtimeResources.classes,
       compiledClasses,
     )
     val result = compiler.getTask(null, fileManager, collector, null, null, sourceFiles.values).call()
     compiledClasses.linkSource(sourceFiles)
+    val newRuntimeResources = compiledClasses rr mutableResources
     if (!result || collector.diagnostics.isNotEmpty()) {
       val messages = mutableListOf<String>()
       var warnings = 0
@@ -118,9 +114,18 @@ class RuntimeJarLoader @Inject constructor(
         }
         messages += "${diag.source?.name}:${diag.lineNumber} ${diag.kind} :: ${diag.getMessage(Locale.getDefault())}"
       }
-      return JavaCompileResult(file, submissionInfo, compiledClasses, sourceFiles, resources, messages, warnings, errors, other)
+      return JavaCompileResult(
+        container.info,
+        newRuntimeResources,
+        submissionInfo,
+        sourceFiles,
+        messages,
+        warnings,
+        errors,
+        other
+      )
     }
-    return JavaCompileResult(file, submissionInfo, compiledClasses, sourceFiles, resources)
+    return JavaCompileResult(container.info, newRuntimeResources, submissionInfo, sourceFiles)
   }
 
   private fun Map<String, CompiledClass>.linkSource(sourceFiles: Map<String, JavaSourceFile>) {

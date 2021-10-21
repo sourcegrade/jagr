@@ -27,7 +27,7 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
-import org.sourcegrade.jagr.core.usePrintWriterSafe
+import org.sourcegrade.jagr.launcher.usePrintWriterSafe
 import java.io.File
 
 class MoodleJSONExporter @Inject constructor(

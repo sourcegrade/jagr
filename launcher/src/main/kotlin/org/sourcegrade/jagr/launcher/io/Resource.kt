@@ -17,17 +17,18 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core
+package org.sourcegrade.jagr.launcher.io
 
-import com.google.inject.Guice
-import org.slf4j.Logger
+import java.io.ByteArrayInputStream
+import java.io.InputStream
 
-fun main(vararg args: String) {
-  val startTime = System.currentTimeMillis()
-  val injector = Guice.createInjector(JagrModule())
-  val logger = injector.getInstance(Logger::class.java)
-  logger.info("Starting Jagr")
-  injector.getInstance(JagrImpl::class.java).run()
-  val timeTaken = System.currentTimeMillis() - startTime
-  logger.info("Finished! Time taken: ${timeTaken}ms")
+interface Resource {
+  val name: String
+  val size: Int
+  fun getInputStream(): InputStream
+}
+
+internal class ByteArrayResource(override val name: String, val data: ByteArray) : Resource {
+  override val size: Int = data.size
+  override fun getInputStream(): InputStream = ByteArrayInputStream(data)
 }

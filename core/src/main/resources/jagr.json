@@ -1,0 +1,5 @@
+{
+  "moduleFactories": [
+    "org.sourcegrade.jagr.core.CommonModule$Factory"
+  ]
+}

@@ -21,6 +21,8 @@ package org.sourcegrade.jagr.core.testing
 
 import kotlinx.serialization.Serializable
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
 
 /**
  * Represents the contents of a submission-info.json file
@@ -32,6 +34,21 @@ data class SubmissionInfoImpl(
   private val firstName: String,
   private val lastName: String,
 ) : SubmissionInfo {
+  companion object Factory : SerializerFactory<SubmissionInfoImpl> {
+    override fun read(scope: SerializationScope.Input) = SubmissionInfoImpl(
+      scope.input.readUTF(),
+      scope.input.readUTF(),
+      scope.input.readUTF(),
+      scope.input.readUTF(),
+    )
+
+    override fun write(obj: SubmissionInfoImpl, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.assignmentId)
+      scope.output.writeUTF(obj.studentId)
+      scope.output.writeUTF(obj.firstName)
+      scope.output.writeUTF(obj.lastName)
+    }
+  }
 
   override fun getAssignmentId(): String = assignmentId
   override fun getStudentId(): String = studentId

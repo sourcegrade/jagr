@@ -27,13 +27,13 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.core.ensure
+import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
-import org.sourcegrade.jagr.core.testing.TestJar
-import org.sourcegrade.jagr.core.usePrintWriterSafe
-import org.sourcegrade.jagr.core.writeStream
-import org.sourcegrade.jagr.core.writeTextSafe
+import org.sourcegrade.jagr.launcher.ensure
+import org.sourcegrade.jagr.launcher.usePrintWriterSafe
+import org.sourcegrade.jagr.launcher.writeStream
+import org.sourcegrade.jagr.launcher.writeTextSafe
 import java.io.File
 import java.util.jar.Attributes
 import java.util.jar.JarEntry
@@ -90,7 +90,7 @@ class GradleSubmissionExporter @Inject constructor(
     writeGradleResource(classLoader, resource = "gradle-wrapper.properties", targetDir = "gradle/wrapper/")
   }
 
-  override fun initialize(directory: File, testJar: TestJar?) {
+  override fun initialize(directory: File, testJar: GraderJarImpl?) {
     directory.writeSkeleton()
   }
 
@@ -103,11 +103,11 @@ class GradleSubmissionExporter @Inject constructor(
     }
   }
 
-  override fun finalize(directory: File, testJar: TestJar?) {
+  override fun finalize(directory: File, testJar: GraderJarImpl?) {
     writeSettings(directory, testJar?.name)
   }
 
-  override fun export(submission: Submission, directory: File, testJar: TestJar?) {
+  override fun export(submission: Submission, directory: File, testJar: GraderJarImpl?) {
     if (submission !is JavaSubmission) return
     val submissionName = submission.info.toString()
     val file = directory.resolve(submissionName).ensure(logger, false) ?: return
@@ -118,10 +118,10 @@ class GradleSubmissionExporter @Inject constructor(
       mainResources.resolve("submission-info.json").writeText(Json.encodeToString(it))
     }
     // sourceFile.name starts with a / and needs to be converted to a relative path
-    submission.sourceFiles.forEach { (_, sourceFile) ->
+    submission.compileResult.sourceFiles.forEach { (_, sourceFile) ->
       mainSource.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
     }
-    testJar?.sourceFiles?.forEach { (_, sourceFile) ->
+    testJar?.compileResult?.sourceFiles?.forEach { (_, sourceFile) ->
       testSource.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
     }
     submissionMap.computeIfAbsent(testJar?.name) { mutableListOf() }.add(submissionName)
