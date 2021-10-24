@@ -22,34 +22,50 @@ package org.sourcegrade.jagr.core.export.submission
 import com.google.inject.Inject
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.launcher.ensure
-import org.sourcegrade.jagr.launcher.executor.GradingRequest
+import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.SubmissionExporter
-import org.sourcegrade.jagr.launcher.writeTextSafe
-import java.io.File
+import org.sourcegrade.jagr.launcher.io.addResource
+import org.sourcegrade.jagr.launcher.io.buildResourceContainer
+import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import java.io.PrintWriter
 
 class EclipseSubmissionExporter @Inject constructor(
   private val logger: Logger,
 ) : SubmissionExporter.Eclipse {
-  override fun export(request: GradingRequest): List<ResourceContainer> {
-    val submission = request.submission as JavaSubmission
-    return listOf()
-//    val file = directory.resolve(submission.info.toString()).ensure(logger, false) ?: return
-//    val src = file.resolve("src").ensure(logger, false) ?: return
-//    writeProjectFile(submission, file.resolve(".project"))
-//    writeClasspathFile(submission, file.resolve(".classpath"))
-//    // sourceFile.name starts with a / and needs to be converted to a relative path
-//    for ((_, sourceFile) in submission.compileResult.sourceFiles) {
-//      src.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
-//    }
+  companion object {
+    const val DEFAULT_EXPORT_NAME = "default"
   }
 
-  private fun writeProjectFile(submission: JavaSubmission, file: File) {
-    val writer = PrintWriter(file, "UTF-8")
+  override fun export(graders: List<GraderJar>, submissions: List<Submission>): List<ResourceContainer> {
+    return submissions.map { export(it) }
+  }
+
+  private fun export(submission: Submission) = buildResourceContainer {
+    submission as JavaSubmission
+    info = buildResourceContainerInfo {
+      name = DEFAULT_EXPORT_NAME
+    }
+    writeProjectFile(submission)
+    writeClasspathFile()
+    for ((fileName, sourceFile) in submission.compileResult.sourceFiles) {
+      addResource {
+        name = "src$fileName"
+        outputStream.writer().write(sourceFile.content)
+      }
+    }
+    for ((fileName, resource) in submission.compileResult.runtimeResources.resources) {
+      addResource {
+        name = "res$fileName"
+        outputStream.writeBytes(resource)
+      }
+    }
+  }
+
+  private fun ResourceContainer.Builder.writeProjectFile(submission: JavaSubmission) = addResource {
+    name = ".project"
+    val writer = PrintWriter(outputStream, false, Charsets.UTF_8)
     writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
     writer.println("<projectDescription>")
     writer.println("\t<name>${submission.info}</name>")
@@ -65,8 +81,9 @@ class EclipseSubmissionExporter @Inject constructor(
     writer.flush()
   }
 
-  private fun writeClasspathFile(submission: JavaSubmission, file: File) {
-    val writer = PrintWriter(file, "UTF-8")
+  private fun ResourceContainer.Builder.writeClasspathFile() = addResource {
+    name = ".classpath"
+    val writer = PrintWriter(outputStream, false, Charsets.UTF_8)
     writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
     writer.println("<classpath>")
     writer.println("\t<classpathentry kind=\"src\" path=\"src\"/>")

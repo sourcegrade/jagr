@@ -22,6 +22,15 @@ tasks {
     enabled = false
   }
   shadowJar {
+    from("gradlew") {
+      into("org/gradle")
+    }
+    from("gradlew.bat") {
+      into("org/gradle")
+    }
+    from("gradle/wrapper/gradle-wrapper.properties") {
+      into("org/gradle")
+    }
     archiveFileName.set("Jagr-${project.version}.jar")
   }
 }

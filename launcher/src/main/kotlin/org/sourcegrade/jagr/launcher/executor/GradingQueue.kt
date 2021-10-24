@@ -19,6 +19,8 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
+import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -26,6 +28,10 @@ import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicBoolean
 
 interface GradingQueue {
+
+  val graders: List<GraderJar>
+
+  val submissions: List<Submission>
 
   /**
    * The total number of submissions in this queue.
@@ -54,6 +60,8 @@ interface GradingQueue {
 fun GradingRequest.toGradingQueue(): GradingQueue = SingletonGradingQueue(this)
 
 private class SingletonGradingQueue(private val job: GradingRequest) : GradingQueue {
+  override val graders: List<GraderJar> = job.graders
+  override val submissions: List<Submission> = listOf(job.submission)
   override val total: Int = 1
   override val remaining: Int
     get() = if (wasRead.get()) 0 else 1

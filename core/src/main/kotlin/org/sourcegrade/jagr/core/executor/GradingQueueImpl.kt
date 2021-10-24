@@ -61,13 +61,13 @@ class GradingQueueImpl(
     println("Graders: " + batch.graders.joinToString())
   }
 
-  private val graders: List<GraderJar> = batch.graders.compile(
+  override val graders: List<GraderJar> = batch.graders.compile(
     logger, transformerManager, runtimeJarLoader, graderRuntimeLibraries, "grader",
   ) {
     if (errors == 0) GraderJarImpl(logger, this, graderRuntimeLibraries) else null
   }
 
-  private val submissions: List<Submission> = batch.submissions.compile(
+  override val submissions: List<Submission> = batch.submissions.compile(
     logger, transformerManager, runtimeJarLoader, baseRuntimeLibraries, "submission"
   ) {
     if (submissionInfo == null) {

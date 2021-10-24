@@ -2,7 +2,6 @@ plugins {
   application
   kotlin("jvm")
   kotlin("plugin.serialization")
-  id("com.github.johnrengelman.shadow")
 }
 repositories {
   mavenCentral()
@@ -37,18 +36,6 @@ application {
   mainClass.set("org.sourcegrade.jagr.core.MainKt")
 }
 tasks {
-  shadowJar {
-    from("../gradlew") {
-      into("org/gradle")
-    }
-    from("../gradlew.bat") {
-      into("org/gradle")
-    }
-    from("../gradle/wrapper/gradle-wrapper.properties") {
-      into("org/gradle")
-    }
-    archiveFileName.set("Jagr-${project.version}.jar")
-  }
   test {
     useJUnitPlatform()
   }

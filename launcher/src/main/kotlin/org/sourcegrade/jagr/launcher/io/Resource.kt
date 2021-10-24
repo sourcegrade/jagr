@@ -19,6 +19,7 @@
 
 package org.sourcegrade.jagr.launcher.io
 
+import org.sourcegrade.jagr.launcher.ensure
 import org.sourcegrade.jagr.launcher.writeStream
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -40,7 +41,9 @@ inline fun buildResource(configure: Resource.Builder.() -> Unit): Resource = cre
 
 fun createResourceBuilder(): Resource.Builder = ResourceBuilderImpl()
 
-fun Resource.writeToDir(dir: File, name: String? = null) = dir.resolve(name ?: this.name).writeStream { getInputStream() }
+fun Resource.writeIn(dir: File, name: String? = null): File {
+  return dir.resolve(name ?: this.name).ensure()!!.writeStream { getInputStream() }
+}
 
 private class ResourceBuilderImpl : Resource.Builder {
   override lateinit var name: String

@@ -33,7 +33,7 @@ import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class GradingRequestImpl(
   override val submission: Submission,
-  override val graderJars: List<GraderJar>,
+  override val graders: List<GraderJar>,
   val baseRuntimeLibraries: RuntimeResources,
   val graderRuntimeLibraries: RuntimeResources,
 ) : GradingRequest {
@@ -49,7 +49,7 @@ data class GradingRequestImpl(
 
     override fun write(obj: GradingRequestImpl, scope: SerializationScope.Output) {
       scope.writeScoped(obj.submission)
-      scope.writeList(obj.graderJars)
+      scope.writeList(obj.graders)
     }
 
     override fun readScoped(scope: SerializationScope.Input): GradingRequestImpl {

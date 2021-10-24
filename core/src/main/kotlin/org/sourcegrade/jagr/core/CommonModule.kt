@@ -26,6 +26,8 @@ import org.sourcegrade.jagr.api.rubric.*
 import org.sourcegrade.jagr.api.testing.extension.*
 import org.sourcegrade.jagr.core.executor.*
 import org.sourcegrade.jagr.core.export.rubric.*
+import org.sourcegrade.jagr.core.export.submission.EclipseSubmissionExporter
+import org.sourcegrade.jagr.core.export.submission.GradleSubmissionExporter
 import org.sourcegrade.jagr.core.io.*
 import org.sourcegrade.jagr.core.rubric.*
 import org.sourcegrade.jagr.core.rubric.grader.*
@@ -58,6 +60,8 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
 
     bind(GradedRubricExporter.CSV::class.java).to(GermanCSVExporter::class.java)
     bind(GradedRubricExporter.HTML::class.java).to(MoodleJSONExporter::class.java)
+    bind(SubmissionExporter.Gradle::class.java).to(GradleSubmissionExporter::class.java)
+    bind(SubmissionExporter.Eclipse::class.java).to(EclipseSubmissionExporter::class.java)
     with(Multibinder.newSetBinder(binder(), RuntimeTester::class.java)) {
       addBinding().to(JavaRuntimeTester::class.java)
     }

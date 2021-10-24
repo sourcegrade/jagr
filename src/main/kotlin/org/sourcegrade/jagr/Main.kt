@@ -45,11 +45,14 @@ import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.executor.toGradingQueue
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.SubmissionExporter
 import org.sourcegrade.jagr.launcher.io.buildGradingBatch
+import org.sourcegrade.jagr.launcher.io.export
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
-import org.sourcegrade.jagr.launcher.io.writeToDir
+import org.sourcegrade.jagr.launcher.io.writeAsDirIn
+import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -120,6 +123,10 @@ fun standardGrading() {
     executor.schedule(queue)
     executor.start(collector)
     export(collector)
+    val submissionExportFile = File("submissions-export").ensure(Jagr.logger)!!
+    for (resourceContainer in Jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
+      resourceContainer.writeAsDirIn(submissionExportFile)
+    }
     println("Time taken: ${System.currentTimeMillis() - startTime}")
   }
 }
@@ -149,7 +156,7 @@ fun export(collector: RubricCollector) {
     .map { it.rubrics }
     .reduce { acc, map -> acc + map }) {
     gradedRubric.log()
-    csvExporter.export(gradedRubric).writeToDir(csvFile)
-    htmlExporter.export(gradedRubric).writeToDir(htmlFile)
+    csvExporter.export(gradedRubric).writeIn(csvFile)
+    htmlExporter.export(gradedRubric).writeIn(htmlFile)
   }
 }

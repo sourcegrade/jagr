@@ -37,9 +37,18 @@ internal class ZipResourceContainer(
 
 private class ZipResourceIterator(private val zip: ZipInputStream) : Iterator<Resource> {
   private var next: ZipEntry? = null
+
+  private fun calculateNext(): ZipEntry? {
+    // skip directory entries
+    do {
+      next = zip.nextEntry
+    } while (next?.isDirectory == true)
+    return next
+  }
+
   override fun hasNext(): Boolean {
     if (next == null) {
-      next = zip.nextEntry
+      calculateNext()
       return next != null
     }
     return true
@@ -50,6 +59,6 @@ private class ZipResourceIterator(private val zip: ZipInputStream) : Iterator<Re
       // return cached next from hasNext() and reset it
       ByteArrayResource(it.name, zip.readBytes()).also { next = null }
     } // no cached next, calculate and return
-      ?: ByteArrayResource(requireNotNull(zip.nextEntry) { "No next entry!" }.name, zip.readBytes())
+      ?: ByteArrayResource(requireNotNull(calculateNext()) { "No next entry!" }.name, zip.readBytes())
   }
 }

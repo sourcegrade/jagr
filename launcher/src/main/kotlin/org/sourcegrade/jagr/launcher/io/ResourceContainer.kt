@@ -61,6 +61,11 @@ inline fun ResourceContainer.Builder.addResource(configure: Resource.Builder.() 
 
 fun createResourceContainerBuilder(): ResourceContainer.Builder = ResourceContainerBuilderImpl()
 
+inline fun buildResourceContainerInfo(configure: ResourceContainerInfo.Builder.() -> Unit): ResourceContainerInfo =
+  createResourceContainerInfoBuilder().apply(configure).build()
+
+fun createResourceContainerInfoBuilder(): ResourceContainerInfo.Builder = ResourceContainerInfoBuilderImpl()
+
 fun createResourceContainer(name: String, inputStream: InputStream): ResourceContainer {
   // we assume inputStream is in ZIP format
   return ZipResourceContainer(name, inputStream)
@@ -73,6 +78,14 @@ fun createResourceContainer(file: File): ResourceContainer = when (file.extensio
   else -> throw IllegalArgumentException("Could not an appropriate resource container for $file")
 }
 
+fun ResourceContainer.writeAsDirIn(dir: File) {
+  val root = dir.resolve(info.name)
+  for (resource in this) {
+    println("Writing ${root.resolve(resource.name).absolutePath}")
+    resource.writeIn(root)
+  }
+}
+
 private class ResourceContainerBuilderImpl : ResourceContainer.Builder {
   private val resources = mutableListOf<Resource>()
   override lateinit var info: ResourceContainerInfo
@@ -81,6 +94,11 @@ private class ResourceContainerBuilderImpl : ResourceContainer.Builder {
   }
 
   override fun build(): ResourceContainer = ListResourceContainer(info, resources)
+}
+
+private class ResourceContainerInfoBuilderImpl : ResourceContainerInfo.Builder {
+  override lateinit var name: String
+  override fun build(): ResourceContainerInfo = ResourceContainerInfoImpl(name)
 }
 
 private class ListResourceContainer(
