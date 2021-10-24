@@ -35,9 +35,9 @@ import javax.tools.SimpleJavaFileObject
 sealed class CompiledClass(val className: String) : SimpleJavaFileObject(URI(className), JavaFileObject.Kind.CLASS) {
 
   abstract val byteArray: ByteArray
-
   val reader: ClassReader by lazy { ClassReader(byteArray) }
   var source: JavaSourceFile? = null
+
   class Runtime(className: String) : CompiledClass(className) {
     private val outputStream = ByteArrayOutputStream()
     override val byteArray: ByteArray get() = outputStream.toByteArray()
@@ -49,7 +49,7 @@ sealed class CompiledClass(val className: String) : SimpleJavaFileObject(URI(cla
   }
 
   companion object Factory : SerializerFactory<CompiledClass> {
-    override fun read(scope: SerializationScope.Input): CompiledClass = Existing(scope.input.readUTF(), scope.input.readByteArray())
+    override fun read(scope: SerializationScope.Input) = Existing(scope.input.readUTF(), scope.input.readByteArray())
 
     override fun write(obj: CompiledClass, scope: SerializationScope.Output) {
       scope.output.writeUTF(obj.className)
