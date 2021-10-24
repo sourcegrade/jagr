@@ -144,6 +144,7 @@ class GradleSubmissionExporter @Inject constructor(
         outputStream.writeBytes(resource)
       }
     }
+    val mainResources = "$submissionName/src/main/resources"
     val sourceFiles = if (graderJar == null) {
       submission.compileResult.sourceFiles
     } else {
@@ -151,7 +152,7 @@ class GradleSubmissionExporter @Inject constructor(
     }
     for ((fileName, sourceFile) in sourceFiles) {
       addResource {
-        name = mainSource + fileName
+        name = mainResources + fileName
         outputStream.writer().write(sourceFile.content)
       }
     }
