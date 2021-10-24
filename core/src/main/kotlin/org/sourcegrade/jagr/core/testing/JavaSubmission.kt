@@ -36,6 +36,11 @@ data class JavaSubmission(
   private val compileResult: JavaCompileResult,
   val runtimeLibraries: RuntimeResources,
 ) : Submission {
+  override fun getInfo(): SubmissionInfo = info
+  override fun getCompileResult(): JavaCompileResult = compileResult
+  override fun getSourceFile(fileName: String): SourceFile? = compileResult.sourceFiles[fileName]
+  override fun toString(): String = "$info(${compileResult.container.name})"
+
   companion object Factory : SerializerFactory<JavaSubmission> {
     override fun read(scope: SerializationScope.Input): JavaSubmission =
       JavaSubmission(scope.readScoped(), scope.read(), scope[RuntimeResources.base])
@@ -45,9 +50,4 @@ data class JavaSubmission(
       scope.write(obj.compileResult)
     }
   }
-
-  override fun getInfo(): SubmissionInfo = info
-  override fun getCompileResult(): JavaCompileResult = compileResult
-  override fun getSourceFile(fileName: String): SourceFile? = compileResult.sourceFiles[fileName]
-  override fun toString(): String = "$info(${compileResult.container.name})"
 }

@@ -52,28 +52,6 @@ class CriterionImpl(
   private val childCriteria: List<CriterionImpl>,
 ) : Criterion {
 
-  companion object Factory : SerializerFactory<CriterionImpl> {
-    override fun read(scope: SerializationScope.Input) = CriterionImpl(
-      scope.input.readUTF(),
-      scope.readNullable(),
-      // The next line is *technically* incorrect, but it won't be used anyways so this is ok.
-      // Serializing a grader would require cooperation from the implementer. This doesn't really make any
-      // sense though, as it won't be used after serialization (which happens after rubrics have been graded).
-      null,
-      CriterionHolderPointCalculator.fixed(scope.input.readInt()),
-      CriterionHolderPointCalculator.fixed(scope.input.readInt()),
-      scope.readList(),
-    )
-
-    override fun write(obj: CriterionImpl, scope: SerializationScope.Output) {
-      scope.output.writeUTF(obj.shortDescription)
-      scope.writeNullable(obj.hiddenNotes)
-      scope.output.writeInt(obj.maxPointsKt)
-      scope.output.writeInt(obj.minPointsKt)
-      scope.writeList(obj.childCriteria)
-    }
-  }
-
   init {
     for (criterion in childCriteria) {
       criterion.setParent(this)
@@ -128,4 +106,26 @@ class CriterionImpl(
   }
 
   override fun toString(): String = stringRep
+
+  companion object Factory : SerializerFactory<CriterionImpl> {
+    override fun read(scope: SerializationScope.Input) = CriterionImpl(
+      scope.input.readUTF(),
+      scope.readNullable(),
+      // The next line is *technically* incorrect, but it won't be used anyways so this is ok.
+      // Serializing a grader would require cooperation from the implementer. This doesn't really make any
+      // sense though, as it won't be used after serialization (which happens after rubrics have been graded).
+      null,
+      CriterionHolderPointCalculator.fixed(scope.input.readInt()),
+      CriterionHolderPointCalculator.fixed(scope.input.readInt()),
+      scope.readList(),
+    )
+
+    override fun write(obj: CriterionImpl, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.shortDescription)
+      scope.writeNullable(obj.hiddenNotes)
+      scope.output.writeInt(obj.maxPointsKt)
+      scope.output.writeInt(obj.minPointsKt)
+      scope.writeList(obj.childCriteria)
+    }
+  }
 }

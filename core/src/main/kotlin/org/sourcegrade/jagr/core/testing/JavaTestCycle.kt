@@ -37,6 +37,15 @@ data class JavaTestCycle(
   private val submission: JavaSubmission,
   private val classLoader: RuntimeClassLoader,
 ) : TestCycle {
+  private var jUnitResult: TestCycle.JUnitResult? = null
+  override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
+  override fun getClassLoader(): ClassLoader = classLoader
+  override fun getSubmission(): JavaSubmission = submission
+  override fun getJUnitResult(): TestCycle.JUnitResult? = jUnitResult
+  fun setJUnitResult(jUnitResult: TestCycle.JUnitResult?) {
+    this.jUnitResult = jUnitResult
+  }
+
   companion object Factory : SerializerFactory<JavaTestCycle> {
     override fun read(scope: SerializationScope.Input) = JavaTestCycle(
       scope.readList(),
@@ -50,14 +59,5 @@ data class JavaTestCycle(
     override fun write(obj: JavaTestCycle, scope: SerializationScope.Output) {
       scope.writeList(obj.rubricProviderClassNames)
     }
-  }
-
-  private var jUnitResult: TestCycle.JUnitResult? = null
-  override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
-  override fun getClassLoader(): ClassLoader = classLoader
-  override fun getSubmission(): JavaSubmission = submission
-  override fun getJUnitResult(): TestCycle.JUnitResult? = jUnitResult
-  fun setJUnitResult(jUnitResult: TestCycle.JUnitResult?) {
-    this.jUnitResult = jUnitResult
   }
 }

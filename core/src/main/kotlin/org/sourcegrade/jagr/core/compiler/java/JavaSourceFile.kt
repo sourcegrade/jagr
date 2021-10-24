@@ -31,6 +31,11 @@ class JavaSourceFile(
   private val fileName: String,
   private val content: String,
 ) : SimpleJavaFileObject(URI.create("string:///$fileName"), Kind.SOURCE), SourceFile {
+  override fun getFileName(): String = fileName
+  override fun getContent(): String = content
+  override fun getClassName(): String = className
+  override fun getCharContent(ignoreEncodingErrors: Boolean): CharSequence = content
+
   companion object Factory : SerializerFactory<JavaSourceFile> {
     override fun read(scope: SerializationScope.Input): JavaSourceFile =
       JavaSourceFile(scope.input.readUTF(), scope.input.readUTF(), scope.input.readUTF())
@@ -41,9 +46,4 @@ class JavaSourceFile(
       scope.output.writeUTF(obj.content)
     }
   }
-
-  override fun getFileName(): String = fileName
-  override fun getContent(): String = content
-  override fun getClassName(): String = className
-  override fun getCharContent(ignoreEncodingErrors: Boolean): CharSequence = content
 }

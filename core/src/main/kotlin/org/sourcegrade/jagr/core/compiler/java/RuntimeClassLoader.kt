@@ -29,13 +29,6 @@ class RuntimeClassLoader(
   parent: ClassLoader = getSystemClassLoader(),
 ) : ClassLoader(parent) {
 
-  companion object Factory : SerializerFactory<RuntimeClassLoader> {
-    override fun read(scope: SerializationScope.Input) = RuntimeClassLoader(scope[RuntimeResources::class])
-
-    override fun write(obj: RuntimeClassLoader, scope: SerializationScope.Output) {
-    }
-  }
-
   @Throws(ClassNotFoundException::class, ClassFormatError::class)
   override fun findClass(name: String): Class<*> {
     val compiledClass = runtimeResources.classes[name] ?: return super.findClass(name)
@@ -45,5 +38,12 @@ class RuntimeClassLoader(
 
   override fun getResourceAsStream(name: String): InputStream? {
     return runtimeResources.resources[name]?.inputStream() ?: super.getResourceAsStream(name)
+  }
+
+  companion object Factory : SerializerFactory<RuntimeClassLoader> {
+    override fun read(scope: SerializationScope.Input) = RuntimeClassLoader(scope[RuntimeResources::class])
+
+    override fun write(obj: RuntimeClassLoader, scope: SerializationScope.Output) {
+    }
   }
 }

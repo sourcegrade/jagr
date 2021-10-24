@@ -44,6 +44,24 @@ data class JavaCompileResult(
   val errors: Int = 0,
   val other: Int = 0,
 ) : CompileResult {
+  override fun getMessages(): List<String> = messages
+  override fun getWarningCount(): Int = warnings
+  override fun getErrorCount(): Int = errors
+  override fun getOtherCount(): Int = other
+
+  fun printMessages(logger: Logger, lazyError: () -> String, lazyWarning: () -> String) {
+    when {
+      errors > 0 -> with(logger) {
+        error(lazyError())
+        messages.forEach(::error)
+      }
+      warnings > 0 -> with(logger) {
+        warn(lazyWarning())
+        messages.forEach(::warn)
+      }
+    }
+  }
+
   companion object Factory : SerializerFactory<JavaCompileResult> {
     override fun read(scope: SerializationScope.Input): JavaCompileResult = JavaCompileResult(
       scope.read(),
@@ -65,24 +83,6 @@ data class JavaCompileResult(
       scope.output.writeInt(obj.warnings)
       scope.output.writeInt(obj.errors)
       scope.output.writeInt(obj.other)
-    }
-  }
-
-  override fun getMessages(): List<String> = messages
-  override fun getWarningCount(): Int = warnings
-  override fun getErrorCount(): Int = errors
-  override fun getOtherCount(): Int = other
-
-  fun printMessages(logger: Logger, lazyError: () -> String, lazyWarning: () -> String) {
-    when {
-      errors > 0 -> with(logger) {
-        error(lazyError())
-        messages.forEach(::error)
-      }
-      warnings > 0 -> with(logger) {
-        warn(lazyWarning())
-        messages.forEach(::warn)
-      }
     }
   }
 }

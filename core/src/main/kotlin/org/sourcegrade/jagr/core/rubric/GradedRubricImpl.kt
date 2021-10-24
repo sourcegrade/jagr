@@ -39,6 +39,11 @@ data class GradedRubricImpl(
   private val rubric: Rubric,
   private val childCriteria: List<GradedCriterion>,
 ) : GradedRubric {
+  override fun getTestCycle(): TestCycle = testCycle
+  override fun getGrade(): GradeResult = grade
+  override fun getChildCriteria(): List<GradedCriterion> = childCriteria
+  override fun getRubric(): Rubric = rubric
+
   companion object Factory : SerializerFactory<GradedRubricImpl> {
     override fun read(scope: SerializationScope.Input) = GradedRubricImpl(
       scope.readScoped(),
@@ -54,9 +59,4 @@ data class GradedRubricImpl(
       scope.writeList(obj.childCriteria)
     }
   }
-
-  override fun getTestCycle(): TestCycle = testCycle
-  override fun getGrade(): GradeResult = grade
-  override fun getChildCriteria(): List<GradedCriterion> = childCriteria
-  override fun getRubric(): Rubric = rubric
 }

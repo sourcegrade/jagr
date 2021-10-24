@@ -36,15 +36,6 @@ class RubricImpl(
   private val criteria: List<CriterionImpl>,
 ) : Rubric {
 
-  companion object Factory : SerializerFactory<RubricImpl> {
-    override fun read(scope: SerializationScope.Input) = RubricImpl(scope.input.readUTF(), scope.readList())
-
-    override fun write(obj: RubricImpl, scope: SerializationScope.Output) {
-      scope.output.writeUTF(obj.title)
-      scope.writeList(obj.criteria)
-    }
-  }
-
   init {
     for (criterion in criteria) {
       criterion.setParent(this)
@@ -85,4 +76,13 @@ class RubricImpl(
   }
 
   override fun toString(): String = stringRep
+
+  companion object Factory : SerializerFactory<RubricImpl> {
+    override fun read(scope: SerializationScope.Input) = RubricImpl(scope.input.readUTF(), scope.readList())
+
+    override fun write(obj: RubricImpl, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.title)
+      scope.writeList(obj.criteria)
+    }
+  }
 }

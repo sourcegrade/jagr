@@ -30,6 +30,10 @@ data class GradeResultImpl(
   private val incorrectPoints: Int,
   private val comments: List<String> = listOf(),
 ) : GradeResult {
+  override fun getCorrectPoints(): Int = correctPoints
+  override fun getIncorrectPoints(): Int = incorrectPoints
+  override fun getComments(): List<String> = comments
+
   companion object Factory : SerializerFactory<GradeResultImpl> {
     override fun read(scope: SerializationScope.Input): GradeResultImpl = GradeResultImpl(
       scope.input.readInt(),
@@ -43,8 +47,4 @@ data class GradeResultImpl(
       scope.writeList(obj.comments)
     }
   }
-
-  override fun getCorrectPoints(): Int = correctPoints
-  override fun getIncorrectPoints(): Int = incorrectPoints
-  override fun getComments(): List<String> = comments
 }

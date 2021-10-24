@@ -37,6 +37,11 @@ data class SubmissionInfoImpl(
   private val lastName: String,
   val sourceSets: List<SourceSetInfo>,
 ) : SubmissionInfo {
+  override fun getAssignmentId(): String = assignmentId
+  override fun getStudentId(): String = studentId
+  override fun getFirstName(): String = firstName
+  override fun getLastName(): String = lastName
+  override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
   companion object Factory : SerializerFactory<SubmissionInfoImpl> {
     override fun read(scope: SerializationScope.Input) = SubmissionInfoImpl(
       scope.input.readUTF(),
@@ -54,12 +59,6 @@ data class SubmissionInfoImpl(
       scope.writeList(obj.sourceSets)
     }
   }
-
-  override fun getAssignmentId(): String = assignmentId
-  override fun getStudentId(): String = studentId
-  override fun getFirstName(): String = firstName
-  override fun getLastName(): String = lastName
-  override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
 }
 
 @Serializable

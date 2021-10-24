@@ -42,15 +42,6 @@ class GraderJarImpl(
   runtimeLibraries: RuntimeResources,
 ) : GraderJar {
 
-  companion object Factory : SerializerFactory<GraderJarImpl> {
-    override fun read(scope: SerializationScope.Input): GraderJarImpl =
-      GraderJarImpl(scope.get(), scope.read(), scope[RuntimeResources.grader])
-
-    override fun write(obj: GraderJarImpl, scope: SerializationScope.Output) {
-      scope.write(obj.compileResult)
-    }
-  }
-
   private val container = compileResult.container
 
   override val name: String = container.nameWithoutExtension
@@ -113,4 +104,13 @@ class GraderJarImpl(
   }
 
   override fun toString(): String = stringRep
+
+  companion object Factory : SerializerFactory<GraderJarImpl> {
+    override fun read(scope: SerializationScope.Input): GraderJarImpl =
+      GraderJarImpl(scope.get(), scope.read(), scope[RuntimeResources.grader])
+
+    override fun write(obj: GraderJarImpl, scope: SerializationScope.Output) {
+      scope.write(obj.compileResult)
+    }
+  }
 }
