@@ -130,21 +130,9 @@ class GradleSubmissionExporter @Inject constructor(
     val submissionName = submission.info.toString()
     addResource {
       name = "$submissionName/src/main/resources/submission-info.json"
-      outputStream.writer().write(Json.encodeToString(submission.info as SubmissionInfoImpl))
+      outputStream.writer().use { it.write(Json.encodeToString(submission.info as SubmissionInfoImpl)) }
     }
     val mainSource = "$submissionName/src/main/java/"
-    val resources = if (graderJar == null) {
-      submission.compileResult.runtimeResources.resources
-    } else {
-      submission.compileResult.runtimeResources.resources + graderJar.compileResult.runtimeResources.resources
-    }
-    for ((fileName, resource) in resources) {
-      addResource {
-        name = mainSource + fileName
-        outputStream.writeBytes(resource)
-      }
-    }
-    val mainResources = "$submissionName/src/main/resources"
     val sourceFiles = if (graderJar == null) {
       submission.compileResult.sourceFiles
     } else {
@@ -152,8 +140,20 @@ class GradleSubmissionExporter @Inject constructor(
     }
     for ((fileName, sourceFile) in sourceFiles) {
       addResource {
+        name = mainSource + fileName
+        outputStream.writer().use { it.write(sourceFile.content) }
+      }
+    }
+    val mainResources = "$submissionName/src/main/resources/"
+    val resources = if (graderJar == null) {
+      submission.compileResult.runtimeResources.resources
+    } else {
+      submission.compileResult.runtimeResources.resources + graderJar.compileResult.runtimeResources.resources
+    }
+    for ((fileName, resource) in resources) {
+      addResource {
         name = mainResources + fileName
-        outputStream.writer().write(sourceFile.content)
+        outputStream.writeBytes(resource)
       }
     }
   }
