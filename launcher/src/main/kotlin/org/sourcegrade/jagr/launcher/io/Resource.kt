@@ -42,7 +42,7 @@ inline fun buildResource(configure: Resource.Builder.() -> Unit): Resource = cre
 fun createResourceBuilder(): Resource.Builder = ResourceBuilderImpl()
 
 fun Resource.writeIn(dir: File, name: String? = null): File {
-  return dir.resolve(name ?: this.name).ensure()!!.writeStream { getInputStream() }
+  return dir.resolve(name ?: this.name).apply { parentFile.ensure() }.writeStream { getInputStream() }
 }
 
 private class ResourceBuilderImpl : Resource.Builder {
