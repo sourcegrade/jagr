@@ -51,13 +51,13 @@ class EclipseSubmissionExporter @Inject constructor(
     writeClasspathFile()
     for ((fileName, sourceFile) in submission.compileResult.sourceFiles) {
       addResource {
-        name = "src$fileName"
-        outputStream.writer().write(sourceFile.content)
+        name = "src/$fileName"
+        outputStream.writer().use { it.write(sourceFile.content) }
       }
     }
     for ((fileName, resource) in submission.compileResult.runtimeResources.resources) {
       addResource {
-        name = "res$fileName"
+        name = "res/$fileName"
         outputStream.writeBytes(resource)
       }
     }
