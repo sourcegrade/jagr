@@ -146,7 +146,11 @@ fun export(collector: RubricCollector, jagr: Jagr) {
   val rubricsFile = File("rubrics").ensure(jagr.logger)!!
   val csvFile = rubricsFile.resolve("csv").ensure(jagr.logger)!!
   val htmlFile = rubricsFile.resolve("moodle").ensure(jagr.logger)!!
-  for ((gradedRubric, _) in collector.gradingFinished.toList()
+  if (collector.gradingFinished.isEmpty()) {
+    jagr.logger.warn("No rubrics!")
+    return
+  }
+  for ((gradedRubric, _) in collector.gradingFinished
     .asSequence()
     .map { it.rubrics }
     .reduce { acc, map -> acc + map }) {
