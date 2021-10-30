@@ -34,7 +34,6 @@ import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.IOException
 
 class ProcessWorker(
   private val jagr: Jagr,
