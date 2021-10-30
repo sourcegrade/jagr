@@ -57,10 +57,6 @@ class GradingQueueImpl(
    */
   private val graderRuntimeLibraries = baseRuntimeLibraries + runtimeJarLoader.loadCompiled(batch.graderLibraries)
 
-  init {
-    println("Graders: " + batch.graders.joinToString())
-  }
-
   override val graders: List<GraderJar> = batch.graders.compile(
     logger, transformerManager, runtimeJarLoader, graderRuntimeLibraries, "grader",
   ) {

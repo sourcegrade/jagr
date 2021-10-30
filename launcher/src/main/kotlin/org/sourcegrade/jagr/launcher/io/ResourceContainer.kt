@@ -81,7 +81,6 @@ fun createResourceContainer(file: File): ResourceContainer = when (file.extensio
 fun ResourceContainer.writeAsDirIn(dir: File) {
   val root = dir.resolve(info.name)
   for (resource in this) {
-    println("Writing ${root.resolve(resource.name).absolutePath}")
     resource.writeIn(root)
   }
 }

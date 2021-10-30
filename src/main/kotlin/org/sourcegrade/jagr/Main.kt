@@ -108,6 +108,7 @@ class MainCommand : CliktCommand() {
 
 fun standardGrading() {
   runBlocking {
+    val jagr = Jagr
     val startTime = System.currentTimeMillis()
     val batch = buildGradingBatch {
       discoverSubmissions("submissions") { _, n -> n.endsWith("jar") }
@@ -115,13 +116,13 @@ fun standardGrading() {
       discoverGraders("graders") { _, n -> n.endsWith("jar") }
       discoverGraderLibraries("solutions") { _, n -> n.endsWith("jar") }
     }
-    val queue = Jagr.gradingQueueFactory.create(batch)
-    Jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
+    val queue = jagr.gradingQueueFactory.create(batch)
+    jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
     val executor = MultiWorkerExecutor.Factory {
       workerPoolFactory = ProcessWorkerPool.Factory {
-        concurrency = Jagr.injector.getInstance(Config::class.java).grading.concurrentThreads
+        concurrency = jagr.injector.getInstance(Config::class.java).grading.concurrentThreads
       }
-    }.create(Jagr)
+    }.create(jagr)
     val collector = emptyCollector()
     val progress = ProgressBar(collector)
     collector.setListener {
@@ -130,16 +131,32 @@ fun standardGrading() {
     collector.allocate(queue)
     executor.schedule(queue)
     executor.start(collector)
-    export(collector)
-    val submissionExportFile = File("submissions-export").ensure(Jagr.logger)!!
-    for (resourceContainer in Jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
+    export(collector, jagr)
+    val submissionExportFile = File("submissions-export").ensure(jagr.logger)!!
+    for (resourceContainer in jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
       resourceContainer.writeAsDirIn(submissionExportFile)
     }
-    println("Time taken: ${System.currentTimeMillis() - startTime}")
+    jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
   }
 }
 
-fun GradedRubric.log() {
+fun export(collector: RubricCollector, jagr: Jagr) {
+  val csvExporter = jagr.injector.getInstance(GradedRubricExporter.CSV::class.java)
+  val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
+  val rubricsFile = File("rubrics").ensure(jagr.logger)!!
+  val csvFile = rubricsFile.resolve("csv").ensure(jagr.logger)!!
+  val htmlFile = rubricsFile.resolve("moodle").ensure(jagr.logger)!!
+  for ((gradedRubric, _) in collector.gradingFinished.toList()
+    .asSequence()
+    .map { it.rubrics }
+    .reduce { acc, map -> acc + map }) {
+    gradedRubric.log(jagr)
+    csvExporter.export(gradedRubric).writeIn(csvFile)
+    htmlExporter.export(gradedRubric).writeIn(htmlFile)
+  }
+}
+
+fun GradedRubric.log(jagr: Jagr) {
   val listener = testCycle.jUnitResult?.summaryListener
   val succeeded = listener?.summary?.testsSucceededCount
   val total = listener?.summary?.testsStartedCount
@@ -150,21 +167,5 @@ fun GradedRubric.log() {
       " points=${grade.correctPoints} -points=${grade.incorrectPoints} maxPoints=${rubric.maxPoints}" +
       " from '${rubric.title}'"
   }
-  Jagr.logger.info("${testCycle.submission} :: $info")
-}
-
-fun export(collector: RubricCollector) {
-  val csvExporter = Jagr.injector.getInstance(GradedRubricExporter.CSV::class.java)
-  val htmlExporter = Jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
-  val rubricsFile = File("rubrics").ensure(Jagr.logger)!!
-  val csvFile = rubricsFile.resolve("csv").ensure(Jagr.logger)!!
-  val htmlFile = rubricsFile.resolve("moodle").ensure(Jagr.logger)!!
-  for ((gradedRubric, _) in collector.gradingFinished.toList()
-    .asSequence()
-    .map { it.rubrics }
-    .reduce { acc, map -> acc + map }) {
-    gradedRubric.log()
-    csvExporter.export(gradedRubric).writeIn(csvFile)
-    htmlExporter.export(gradedRubric).writeIn(htmlFile)
-  }
+  jagr.logger.info("${testCycle.submission} :: $info")
 }
