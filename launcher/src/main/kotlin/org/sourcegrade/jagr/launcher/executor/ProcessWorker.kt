@@ -98,7 +98,7 @@ class ProcessWorker(
         stdOut.write(next)
       }
     }
-    val bytes: ByteArray = runCatching { System.`in`.readAllBytes() }.getOrElse {
+    val bytes: ByteArray = runCatching { process.inputStream.readAllBytes() }.getOrElse {
       throw IllegalStateException("Encountered an unrecoverable exception receiving bytes from child process", it)
     }
     return openScope(ByteStreams.newDataInput(bytes), jagr) {
