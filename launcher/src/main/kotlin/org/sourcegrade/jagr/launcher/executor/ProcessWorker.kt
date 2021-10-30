@@ -34,6 +34,8 @@ import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class ProcessWorker(
   private val jagr: Jagr,
@@ -84,6 +86,7 @@ class ProcessWorker(
   }
 
   private fun receiveResult(job: GradingJob): GradingResult {
+    val startedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
     val childProcessIn = process.inputStream
     val stdOut = System.out
     while (true) {
@@ -91,13 +94,15 @@ class ProcessWorker(
       if (next == MARK_RESULT_BYTE) {
         break
       } else if (next == -1) {
-        error("${job.request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
+        jagr.logger.error("${job.request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
+        return GradingResult(startedUtc, OffsetDateTime.now(ZoneOffset.UTC).toInstant(), job.request, emptyMap())
       } else {
         stdOut.write(next)
       }
     }
     val bytes: ByteArray = runCatching { process.inputStream.readAllBytes() }.getOrElse {
-      throw IllegalStateException("Encountered an unrecoverable exception receiving bytes from child process", it)
+      jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
+      return GradingResult(startedUtc, OffsetDateTime.now(ZoneOffset.UTC).toInstant(), job.request, emptyMap())
     }
     return openScope(ByteStreams.newDataInput(bytes), jagr) {
       SerializerFactory.getScoped<GradingRequest>(jagr).putInScope(job.request, this)
