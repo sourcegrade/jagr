@@ -17,26 +17,8 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.extra
+package org.sourcegrade.jagr.launcher.io
 
-import com.google.inject.Inject
-import org.slf4j.Logger
-import org.sourcegrade.jagr.launcher.env.Config
-
-class ExtrasManager @Inject constructor(
-  private val config: Config,
-  private val logger: Logger,
-  private val moodleUnpack: MoodleUnpack,
-) {
-
-  private fun tryRunExtra(condition: Boolean, extra: Extra) {
-    if (condition) {
-      logger.info("Running extra ${extra.name}")
-      extra.run()
-    }
-  }
-
-  fun runExtras() {
-    tryRunExtra(config.extras.moodleUnpack.enabled, moodleUnpack)
-  }
+interface ExtrasManager {
+  fun runExtras()
 }

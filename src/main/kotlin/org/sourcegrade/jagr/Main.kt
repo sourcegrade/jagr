@@ -28,10 +28,10 @@ import com.google.common.io.ByteStreams
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.ensure
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.config
+import org.sourcegrade.jagr.launcher.env.extrasManager
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
@@ -111,6 +111,7 @@ fun standardGrading() = runBlocking {
   val jagr = Jagr
   val startTime = System.currentTimeMillis()
   val config = jagr.config
+  jagr.extrasManager.runExtras()
   val batch = buildGradingBatch {
     discoverSubmissions(config.dir.submissions) { _, n -> n.endsWith("jar") }
     discoverSubmissionLibraries(config.dir.libs) { _, n -> n.endsWith("jar") }
