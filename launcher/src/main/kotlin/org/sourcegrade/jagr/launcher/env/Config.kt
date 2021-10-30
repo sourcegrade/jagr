@@ -28,9 +28,9 @@ class Config {
   @Comment("The locations of the following directories may be configured here")
   val dir: Dir = Dir()
 
-  val extras: Extras = Extras()
-
   val executor = Executor()
+
+  val extras: Extras = Extras()
 
   val transformers = Transformers()
 }
@@ -55,6 +55,64 @@ class Dir {
 
   @Comment("Grader jar ingest directory")
   var graders: String = "graders"
+}
+
+@ConfigSerializable
+class Executor {
+
+  @Comment(
+    """
+The maximum amount of concurrency to use for grading.
+For a given concurrency n, Jagr will ensure that a maximum of n threads or processes are used concurrently that actively run
+submission code.
+"""
+  )
+  val concurrency: Int = 4
+
+  @Comment(
+    """
+The executor mode to use. The following options are available:
+- "single" ::
+  Runs every TestCycle consecutively in the main thread. This mode does not create any extra processes or threads for grading.
+
+- "thread" ::
+  Creates a separate thread for every TestCycle. This mode greatly speeds up the grading process, especially with a large
+  amount of submissions. The overhead of creating, managing and synchronizing threads is minimal compared to the performance
+  benefits. However, this mode has the danger of creating "unkillable" threads (e.g. from certain kinds of infinite loops)
+  which dramatically slow down the grading process through resource starvation of the host machine.
+
+  The maximum number of concurrent threads used for grading is defined by the option "concurrency".
+
+- "process" ::
+  Creates a separate process for every TestCycle. This mode has the most overhead, but is also the most defensive against
+  "badly behaving" code. A certain amount of sandboxing can be achieved in this mode, which is not possible in the other modes
+  such as "thread" or "single".
+
+  The maximum number of concurrent child process used for grading is defined by the option "concurrency".
+"""
+  )
+  val mode: String = "process"
+
+  @Comment(
+    """
+The grading thread's maximum permitted elapsed userTime in milliseconds since the last timeout before an
+AssertionFailedError is thrown. If a thread's userTime satisfies
+(userTime - lastTimeout) > individualTimeout,
+the current userTime is stored for comparison later, and an AssertionFailedError is thrown to be caught by JUnit.
+"""
+  )
+  val timeoutIndividual = 10_000L
+
+  @Comment(
+    """
+The grading thread's maximum permitted elapsed userTime in milliseconds (from thread start) before an
+AssertionFailedError is thrown. If a thread's userTime satisfies
+((userTime - lastTimeout) > individualTimeout) && (userTime > totalTimeout),
+an AssertionFailedError is thrown to be caught by JUnit. Note that lastTimeout is not reset in this case, and all further
+invocations of checkTimeout() will result in an AssertionFailedError
+"""
+  )
+  val timeoutTotal = 150_000L
 }
 
 @ConfigSerializable
@@ -84,62 +142,4 @@ class Transformers {
   }
 
   val timeout = TimeoutTransformer()
-}
-
-@ConfigSerializable
-class Executor {
-
-  @Comment(
-    """
-The grading thread's maximum permitted elapsed userTime in milliseconds since the last timeout before an
-AssertionFailedError is thrown. If a thread's userTime satisfies
-(userTime - lastTimeout) > individualTimeout,
-the current userTime is stored for comparison later, and an AssertionFailedError is thrown to be caught by JUnit.
-"""
-  )
-  val individualTimeout = 10_000L
-
-  @Comment(
-    """
-The grading thread's maximum permitted elapsed userTime in milliseconds (from thread start) before an
-AssertionFailedError is thrown. If a thread's userTime satisfies
-((userTime - lastTimeout) > individualTimeout) && (userTime > totalTimeout),
-an AssertionFailedError is thrown to be caught by JUnit. Note that lastTimeout is not reset in this case, and all further
-invocations of checkTimeout() will result in an AssertionFailedError
-"""
-  )
-  val totalTimeout = 150_000L
-
-  @Comment(
-    """
-The executor mode to use. The following options are available:
-- "single" ::
-  Runs every TestCycle consecutively in the main thread. This mode does not create any extra processes or threads for grading.
-
-- "thread" ::
-  Creates a separate thread for every TestCycle. This mode greatly speeds up the grading process, especially with a large
-  amount of submissions. The overhead of creating, managing and synchronizing threads is minimal compared to the performance
-  benefits. However, this mode has the danger of creating "unkillable" threads (e.g. from certain kinds of infinite loops)
-  which dramatically slow down the grading process through resource starvation of the host machine.
-
-  The maximum number of concurrent threads used for grading is defined by the option "concurrency".
-
-- "process" ::
-  Creates a separate process for every TestCycle. This mode has the most overhead, but is also the most defensive against
-  "badly behaving" code. A certain amount of sandboxing can be achieved in this mode, which is not possible in the other modes
-  such as "thread" or "single".
-
-  The maximum number of concurrent child process used for grading is defined by the option "concurrency".
-"""
-  )
-  val mode: String = "process"
-
-  @Comment(
-    """
-The maximum amount of concurrency to use for grading.
-For a given concurrency n, Jagr will ensure that a maximum of n threads or processes are used concurrently that actively run
-submission code.
-"""
-  )
-  val concurrency: Int = 4
 }

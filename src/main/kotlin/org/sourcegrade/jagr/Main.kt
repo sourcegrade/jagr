@@ -30,7 +30,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.ensure
-import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
