@@ -36,14 +36,21 @@ data class JavaTestCycle(
   private val rubricProviderClassNames: List<String>,
   private val submission: JavaSubmission,
   private val classLoader: RuntimeClassLoader,
+  private var testsSucceededCount: Int = -1,
+  private var testsStartedCount: Int = -1,
 ) : TestCycle {
   private var jUnitResult: TestCycle.JUnitResult? = null
   override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
   override fun getClassLoader(): ClassLoader = classLoader
   override fun getSubmission(): JavaSubmission = submission
+  override fun getTestsSucceededCount(): Int = testsSucceededCount
+  override fun getTestsStartedCount(): Int = testsStartedCount
   override fun getJUnitResult(): TestCycle.JUnitResult? = jUnitResult
   fun setJUnitResult(jUnitResult: TestCycle.JUnitResult?) {
+    if (jUnitResult == null) return
     this.jUnitResult = jUnitResult
+    testsSucceededCount = jUnitResult.summaryListener.summary.testsSucceededCount.toInt()
+    testsStartedCount = jUnitResult.summaryListener.summary.testsStartedCount.toInt()
   }
 
   companion object Factory : SerializerFactory<JavaTestCycle> {
@@ -54,10 +61,14 @@ data class JavaTestCycle(
         proxy(keyOf(RuntimeResources::class), RuntimeResources.base)
         read()
       },
+      scope.input.readInt(),
+      scope.input.readInt(),
     )
 
     override fun write(obj: JavaTestCycle, scope: SerializationScope.Output) {
       scope.writeList(obj.rubricProviderClassNames)
+      scope.output.writeInt(obj.testsSucceededCount)
+      scope.output.writeInt(obj.testsStartedCount)
     }
   }
 }

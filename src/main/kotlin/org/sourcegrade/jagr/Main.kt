@@ -171,10 +171,9 @@ fun export(collector: RubricCollector, jagr: Jagr) {
 }
 
 fun GradedRubric.log(jagr: Jagr) {
-  val listener = testCycle.jUnitResult?.summaryListener
-  val succeeded = listener?.summary?.testsSucceededCount
-  val total = listener?.summary?.testsStartedCount
-  val info = if (listener == null && grade.correctPoints == 0 && grade.incorrectPoints == 0) {
+  val succeeded = testCycle.testsSucceededCount
+  val total = testCycle.testsStartedCount
+  val info = if (total == 0) {
     " (no tests found)"
   } else {
     " ($succeeded/$total tests)" +
