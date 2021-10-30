@@ -22,6 +22,7 @@ package org.sourcegrade.jagr.launcher.executor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 
@@ -51,12 +52,27 @@ internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollec
     gradingRunning += job
     scope.launch {
       try {
-        gradingFinished.add(job.result.await())
+        val result = job.result.await()
+        result.rubrics.keys.forEach { it.log() }
+        gradingFinished.add(result)
       } catch (e: Exception) {
         jagr.logger.error("An error occurred receiving result for grading job", e)
       }
       listener()
     }
     return job
+  }
+
+  private fun GradedRubric.log() {
+    val succeeded = testCycle.testsSucceededCount
+    val total = testCycle.testsStartedCount
+    val info = if (total == 0) {
+      " (no tests found)"
+    } else {
+      " ($succeeded/$total tests)" +
+        " points=${grade.correctPoints} -points=${grade.incorrectPoints} maxPoints=${rubric.maxPoints}" +
+        " from '${rubric.title}'"
+    }
+    jagr.logger.info("${testCycle.submission} :: $info")
   }
 }
