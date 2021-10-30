@@ -53,8 +53,8 @@ public final class TimeoutHandler {
    * Nested class for lazy initialization.
    */
   private static final class Lazy {
-    private static final long INDIVIDUAL_TIMEOUT = config.getTransformers().getTimeout().getIndividualTimeout();
-    private static final long TOTAL_TIMEOUT = config.getTransformers().getTimeout().getTotalTimeout();
+    private static final long INDIVIDUAL_TIMEOUT = config.getExecutor().getIndividualTimeout();
+    private static final long TOTAL_TIMEOUT = config.getExecutor().getTotalTimeout();
   }
 
   public static void disableTimeout() {

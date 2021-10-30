@@ -81,26 +81,6 @@ class Transformers {
 
   @ConfigSerializable
   class TimeoutTransformer : Transformer() {
-    @Comment(
-      """
-The grading thread's maximum permitted elapsed userTime in milliseconds since the last timeout before an
-AssertionFailedError is thrown. If a thread's userTime satisfies
-(userTime - lastTimeout) > individualTimeout,
-the current userTime is stored for comparison later, and an AssertionFailedError is thrown to be caught by JUnit.
-"""
-    )
-    val individualTimeout = 10_000L
-
-    @Comment(
-      """
-The grading thread's maximum permitted elapsed userTime in milliseconds (from thread start) before an
-AssertionFailedError is thrown. If a thread's userTime satisfies
-((userTime - lastTimeout) > individualTimeout) && (userTime > totalTimeout),
-an AssertionFailedError is thrown to be caught by JUnit. Note that lastTimeout is not reset in this case, and all further
-invocations of checkTimeout() will result in an AssertionFailedError
-"""
-    )
-    val totalTimeout = 150_000L
   }
 
   val timeout = TimeoutTransformer()
@@ -108,6 +88,27 @@ invocations of checkTimeout() will result in an AssertionFailedError
 
 @ConfigSerializable
 class Executor {
+
+  @Comment(
+    """
+The grading thread's maximum permitted elapsed userTime in milliseconds since the last timeout before an
+AssertionFailedError is thrown. If a thread's userTime satisfies
+(userTime - lastTimeout) > individualTimeout,
+the current userTime is stored for comparison later, and an AssertionFailedError is thrown to be caught by JUnit.
+"""
+  )
+  val individualTimeout = 10_000L
+
+  @Comment(
+    """
+The grading thread's maximum permitted elapsed userTime in milliseconds (from thread start) before an
+AssertionFailedError is thrown. If a thread's userTime satisfies
+((userTime - lastTimeout) > individualTimeout) && (userTime > totalTimeout),
+an AssertionFailedError is thrown to be caught by JUnit. Note that lastTimeout is not reset in this case, and all further
+invocations of checkTimeout() will result in an AssertionFailedError
+"""
+  )
+  val totalTimeout = 150_000L
 
   @Comment(
     """
