@@ -17,6 +17,8 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("UnstableApiUsage")
+
 package org.sourcegrade.jagr
 
 import com.github.ajalt.clikt.core.CliktCommand
@@ -55,6 +57,7 @@ import org.sourcegrade.jagr.launcher.io.writeAsDirIn
 import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 
 fun main(vararg args: String) = MainCommand().main(args)
 
@@ -69,7 +72,10 @@ class MainCommand : CliktCommand() {
     }
     runBlocking {
       val jagr = Jagr
-      val queue = next(jagr)
+      val queue = runCatching { next(jagr) }.getOrElse {
+        jagr.logger.error("Could not get next GradingQueue", it)
+        return@runBlocking
+      }
       val collector = emptyCollector()
       collector.allocate(queue)
       val executor = SyncExecutor(jagr)
@@ -79,8 +85,12 @@ class MainCommand : CliktCommand() {
     }
   }
 
+  @Throws(IOException::class)
   private suspend fun next(jagr: Jagr): GradingQueue = withContext(Dispatchers.IO) {
-    openScope(ByteStreams.newDataInput(System.`in`.readAllBytes()), jagr) {
+    val bytes: ByteArray = runCatching { System.`in`.readAllBytes() }.getOrElse {
+      throw IllegalStateException("Encountered an unrecoverable exception receiving bytes from parent process", it)
+    }
+    openScope(ByteStreams.newDataInput(bytes), jagr) {
       SerializerFactory.getScoped<GradingRequest>(jagr).readScoped(this)
     }.toGradingQueue()
   }

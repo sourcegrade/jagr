@@ -34,6 +34,7 @@ import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 
 class ProcessWorker(
   private val jagr: Jagr,
@@ -62,14 +63,14 @@ class ProcessWorker(
       try {
         job.result.complete(receiveResult(job))
       } catch (e: Exception) {
-        Jagr.logger.error("An error occurred receiving result for grading job", e)
+        jagr.logger.error("An error occurred receiving result for grading job", e)
         job.result.completeExceptionally(e)
       }
       removeActive(this@ProcessWorker)
     }
     coroutineScope.launch {
       process.errorStream.reader().forEachLine {
-        Jagr.logger.error(it)
+        jagr.logger.error(it)
       }
     }
   }
@@ -97,7 +98,10 @@ class ProcessWorker(
         stdOut.write(next)
       }
     }
-    return openScope(ByteStreams.newDataInput(process.inputStream.readAllBytes()), jagr) {
+    val bytes: ByteArray = runCatching { System.`in`.readAllBytes() }.getOrElse {
+      throw IllegalStateException("Encountered an unrecoverable exception receiving bytes from child process", it)
+    }
+    return openScope(ByteStreams.newDataInput(bytes), jagr) {
       SerializerFactory.getScoped<GradingRequest>(jagr).putInScope(job.request, this)
       SerializerFactory.get<GradingResult>(jagr).read(this)
     }
