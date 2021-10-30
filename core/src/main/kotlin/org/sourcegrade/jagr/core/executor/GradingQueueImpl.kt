@@ -76,7 +76,7 @@ class GradingQueueImpl(
   private val submissionIterator: Iterator<Submission> = submissions.iterator()
   private val mutex = Mutex()
 
-  override val total: Int = batch.expectedSubmissions
+  override val total: Int = submissions.size
 
   private val _remaining = AtomicInteger(total)
 
