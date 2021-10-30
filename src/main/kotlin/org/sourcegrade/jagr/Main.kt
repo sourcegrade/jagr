@@ -111,15 +111,15 @@ fun standardGrading() {
   runBlocking {
     val jagr = Jagr
     val startTime = System.currentTimeMillis()
+    val config = jagr.injector.getInstance(Config::class.java)
     val batch = buildGradingBatch {
-      discoverSubmissions("submissions") { _, n -> n.endsWith("jar") }
-      discoverSubmissionLibraries("libs") { _, n -> n.endsWith("jar") }
-      discoverGraders("graders") { _, n -> n.endsWith("jar") }
-      discoverGraderLibraries("solutions") { _, n -> n.endsWith("jar") }
+      discoverSubmissions(config.dir.submissions) { _, n -> n.endsWith("jar") }
+      discoverSubmissionLibraries(config.dir.libs) { _, n -> n.endsWith("jar") }
+      discoverGraders(config.dir.graders) { _, n -> n.endsWith("jar") }
+      discoverGraderLibraries(config.dir.solutions) { _, n -> n.endsWith("jar") }
     }
     val queue = jagr.gradingQueueFactory.create(batch)
     jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
-    val config = jagr.injector.getInstance(Config::class.java)
     val mode = config.executor.mode
     val executor = if (mode == "single") {
       SyncExecutor(jagr)
@@ -141,7 +141,7 @@ fun standardGrading() {
     executor.schedule(queue)
     executor.start(collector)
     export(collector, jagr)
-    val submissionExportFile = File("submissions-export").ensure(jagr.logger)!!
+    val submissionExportFile = File(config.dir.submissionsExport).ensure(jagr.logger)!!
     for (resourceContainer in jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
       resourceContainer.writeAsDirIn(submissionExportFile)
     }
@@ -152,7 +152,8 @@ fun standardGrading() {
 fun export(collector: RubricCollector, jagr: Jagr) {
   val csvExporter = jagr.injector.getInstance(GradedRubricExporter.CSV::class.java)
   val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
-  val rubricsFile = File("rubrics").ensure(jagr.logger)!!
+  val config = jagr.injector.getInstance(Config::class.java)
+  val rubricsFile = File(config.dir.rubrics).ensure(jagr.logger)!!
   val csvFile = rubricsFile.resolve("csv").ensure(jagr.logger)!!
   val htmlFile = rubricsFile.resolve("moodle").ensure(jagr.logger)!!
   if (collector.gradingFinished.isEmpty()) {
