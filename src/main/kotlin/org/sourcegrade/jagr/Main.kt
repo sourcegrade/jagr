@@ -43,6 +43,7 @@ import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
 import org.sourcegrade.jagr.launcher.executor.ProgressBar
 import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
+import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.executor.toGradingQueue
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
@@ -118,11 +119,19 @@ fun standardGrading() {
     }
     val queue = jagr.gradingQueueFactory.create(batch)
     jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
-    val executor = MultiWorkerExecutor.Factory {
-      workerPoolFactory = ProcessWorkerPool.Factory {
-        concurrency = jagr.injector.getInstance(Config::class.java).grading.concurrentThreads
-      }
-    }.create(jagr)
+    val config = jagr.injector.getInstance(Config::class.java)
+    val mode = config.executor.mode
+    val executor = if (mode == "single") {
+      SyncExecutor(jagr)
+    } else {
+      MultiWorkerExecutor.Factory {
+        workerPoolFactory = when (mode) {
+          "process" -> ProcessWorkerPool.Factory { concurrency = config.executor.concurrency }
+          "thread" -> ThreadWorkerPool.Factory { concurrency = config.executor.concurrency }
+          else -> error("Invalid executor mode $mode. Must be one of \"single\", \"thread\" or \"process\".")
+        }
+      }.create(jagr)
+    }
     val collector = emptyCollector()
     val progress = ProgressBar(collector)
     collector.setListener {

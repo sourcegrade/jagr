@@ -30,7 +30,7 @@ class Config {
 
   val extras: Extras = Extras()
 
-  val grading: Grading = Grading()
+  val executor = Executor()
 
   val transformers = Transformers()
 }
@@ -107,8 +107,38 @@ invocations of checkTimeout() will result in an AssertionFailedError
 }
 
 @ConfigSerializable
-class Grading {
+class Executor {
 
-  @Comment("The maximum amount of concurrent threads to use for grading")
-  val concurrentThreads: Int = 4
+  @Comment(
+    """
+The executor mode to use. The following options are available:
+- "single" ::
+  Runs every TestCycle consecutively in the main thread. This mode does not create any extra processes or threads for grading.
+
+- "thread" ::
+  Creates a separate thread for every TestCycle. This mode greatly speeds up the grading process, especially with a large
+  amount of submissions. The overhead of creating, managing and synchronizing threads is minimal compared to the performance
+  benefits. However, this mode has the danger of creating "unkillable" threads (e.g. from certain kinds of infinite loops)
+  which dramatically slow down the grading process through resource starvation of the host machine.
+
+  The maximum number of concurrent threads used for grading is defined by the option "concurrency".
+
+- "process" ::
+  Creates a separate process for every TestCycle. This mode has the most overhead, but is also the most defensive against
+  "badly behaving" code. A certain amount of sandboxing can be achieved in this mode, which is not possible in the other modes
+  such as "thread" or "single".
+
+  The maximum number of concurrent child process used for grading is defined by the option "concurrency".
+"""
+  )
+  val mode: String = "process"
+
+  @Comment(
+    """
+The maximum amount of concurrency to use for grading.
+For a given concurrency n, Jagr will ensure that a maximum of n threads or processes are used concurrently that actively run
+submission code.
+"""
+  )
+  val concurrency: Int = 4
 }
