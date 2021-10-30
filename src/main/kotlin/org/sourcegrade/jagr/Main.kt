@@ -107,46 +107,44 @@ class MainCommand : CliktCommand() {
   }
 }
 
-fun standardGrading() {
-  runBlocking {
-    val jagr = Jagr
-    val startTime = System.currentTimeMillis()
-    val config = jagr.config
-    val batch = buildGradingBatch {
-      discoverSubmissions(config.dir.submissions) { _, n -> n.endsWith("jar") }
-      discoverSubmissionLibraries(config.dir.libs) { _, n -> n.endsWith("jar") }
-      discoverGraders(config.dir.graders) { _, n -> n.endsWith("jar") }
-      discoverGraderLibraries(config.dir.solutions) { _, n -> n.endsWith("jar") }
-    }
-    val queue = jagr.gradingQueueFactory.create(batch)
-    jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
-    val mode = config.executor.mode
-    val executor = if (mode == "single") {
-      SyncExecutor(jagr)
-    } else {
-      MultiWorkerExecutor.Factory {
-        workerPoolFactory = when (mode) {
-          "process" -> ProcessWorkerPool.Factory { concurrency = config.executor.concurrency }
-          "thread" -> ThreadWorkerPool.Factory { concurrency = config.executor.concurrency }
-          else -> error("Invalid executor mode $mode. Must be one of \"single\", \"thread\" or \"process\".")
-        }
-      }.create(jagr)
-    }
-    val collector = emptyCollector(jagr)
-    val progress = ProgressBar(collector)
-    collector.setListener {
-      progress.print()
-    }
-    collector.allocate(queue)
-    executor.schedule(queue)
-    executor.start(collector)
-    export(collector, jagr)
-    val submissionExportFile = File(config.dir.submissionsExport).ensure(jagr.logger)!!
-    for (resourceContainer in jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
-      resourceContainer.writeAsDirIn(submissionExportFile)
-    }
-    jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
+fun standardGrading() = runBlocking {
+  val jagr = Jagr
+  val startTime = System.currentTimeMillis()
+  val config = jagr.config
+  val batch = buildGradingBatch {
+    discoverSubmissions(config.dir.submissions) { _, n -> n.endsWith("jar") }
+    discoverSubmissionLibraries(config.dir.libs) { _, n -> n.endsWith("jar") }
+    discoverGraders(config.dir.graders) { _, n -> n.endsWith("jar") }
+    discoverGraderLibraries(config.dir.solutions) { _, n -> n.endsWith("jar") }
   }
+  val queue = jagr.gradingQueueFactory.create(batch)
+  jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
+  val mode = config.executor.mode
+  val executor = if (mode == "single") {
+    SyncExecutor(jagr)
+  } else {
+    MultiWorkerExecutor.Factory {
+      workerPoolFactory = when (mode) {
+        "process" -> ProcessWorkerPool.Factory { concurrency = config.executor.concurrency }
+        "thread" -> ThreadWorkerPool.Factory { concurrency = config.executor.concurrency }
+        else -> error("Invalid executor mode $mode. Must be one of \"single\", \"thread\" or \"process\".")
+      }
+    }.create(jagr)
+  }
+  val collector = emptyCollector(jagr)
+  val progress = ProgressBar(collector)
+  collector.setListener {
+    progress.print()
+  }
+  collector.allocate(queue)
+  executor.schedule(queue)
+  executor.start(collector)
+  export(collector, jagr)
+  val submissionExportFile = File(config.dir.submissionsExport).ensure(jagr.logger)!!
+  for (resourceContainer in jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
+    resourceContainer.writeAsDirIn(submissionExportFile)
+  }
+  jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
 }
 
 fun export(collector: RubricCollector, jagr: Jagr) {
