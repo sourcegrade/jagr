@@ -57,7 +57,6 @@ import org.sourcegrade.jagr.launcher.io.writeAsDirIn
 import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.IOException
 
 fun main(vararg args: String) = MainCommand().main(args)
 
@@ -85,7 +84,6 @@ class MainCommand : CliktCommand() {
     }
   }
 
-  @Throws(IOException::class)
   private suspend fun next(jagr: Jagr): GradingQueue = withContext(Dispatchers.IO) {
     val bytes: ByteArray = runCatching { System.`in`.readAllBytes() }.getOrElse {
       throw IllegalStateException("Encountered an unrecoverable exception receiving bytes from parent process", it)
