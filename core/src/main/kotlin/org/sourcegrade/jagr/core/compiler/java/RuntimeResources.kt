@@ -36,8 +36,7 @@ data class RuntimeResources(
   companion object Factory : SerializerFactory<RuntimeResources> {
     val base = keyOf<RuntimeResources>("base")
     val grader = keyOf<RuntimeResources>("grader")
-    override fun read(scope: SerializationScope.Input): RuntimeResources =
-      RuntimeResources(scope.readMap(), scope.readMap())
+    override fun read(scope: SerializationScope.Input) = RuntimeResources(scope.readMap(), scope.readMap())
 
     override fun write(obj: RuntimeResources, scope: SerializationScope.Output) {
       scope.writeMap(obj.classes)
@@ -46,11 +45,8 @@ data class RuntimeResources(
   }
 }
 
-infix fun Map<String, CompiledClass>.rr(resources: Map<String, ByteArray>): RuntimeResources =
-  RuntimeResources(this, resources)
-
-operator fun RuntimeResources.plus(other: RuntimeResources): RuntimeResources =
-  classes + other.classes rr resources + other.resources
+infix fun Map<String, CompiledClass>.rr(resources: Map<String, ByteArray>) = RuntimeResources(this, resources)
+operator fun RuntimeResources.plus(other: RuntimeResources) = classes + other.classes rr resources + other.resources
 
 fun RuntimeJarLoader.loadCompiled(containers: Sequence<ResourceContainer>): RuntimeResources {
   return containers
