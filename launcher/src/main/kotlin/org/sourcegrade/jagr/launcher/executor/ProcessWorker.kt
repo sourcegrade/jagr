@@ -62,7 +62,6 @@ class ProcessWorker(
       try {
         job.result.complete(receiveResult(job))
       } catch (e: Exception) {
-        jagr.logger.error("An error occurred receiving result for grading job", e)
         job.result.completeExceptionally(e)
       }
       removeActive(this@ProcessWorker)

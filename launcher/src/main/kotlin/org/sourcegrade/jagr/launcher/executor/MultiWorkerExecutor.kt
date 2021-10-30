@@ -22,7 +22,6 @@ package org.sourcegrade.jagr.launcher.executor
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Jagr
-import org.sourcegrade.jagr.launcher.env.logger
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -82,7 +81,7 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
       police.setContinuation(continuation)
       for (request in requests) {
         val job = rubricCollector.start(request.second)
-        job.result.invokeOnCompletion(police::notifyContinuation)
+        job.result.invokeOnCompletion { police.notifyContinuation() }
         request.first.assignJob(job)
       }
       police.handleBetween()
@@ -110,10 +109,7 @@ private class ThreadPolice {
     this.exitDirectly.set(exitDirectly)
   }
 
-  fun notifyContinuation(throwable: Throwable? = null) = lock.withLock {
-    if (throwable != null) {
-      Jagr.logger.error("Encountered error in worker", throwable)
-    }
+  fun notifyContinuation() = lock.withLock {
     if (finishedBetweenContinuation.get()) {
       if (exitDirectly.get()) {
         resume()

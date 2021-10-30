@@ -77,7 +77,7 @@ class MainCommand : CliktCommand() {
         jagr.logger.error("Could not get next GradingQueue", it)
         return@runBlocking
       }
-      val collector = emptyCollector()
+      val collector = emptyCollector(jagr)
       collector.allocate(queue)
       val executor = SyncExecutor(jagr)
       executor.schedule(queue)
@@ -133,7 +133,7 @@ fun standardGrading() {
         }
       }.create(jagr)
     }
-    val collector = emptyCollector()
+    val collector = emptyCollector(jagr)
     val progress = ProgressBar(collector)
     collector.setListener {
       progress.print()

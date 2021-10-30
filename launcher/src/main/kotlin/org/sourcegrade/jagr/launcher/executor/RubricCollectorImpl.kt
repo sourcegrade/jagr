@@ -19,7 +19,13 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-internal class RubricCollectorImpl : MutableRubricCollector {
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.env.logger
+
+internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollector {
   private val queued = mutableListOf<GradingQueue>()
   override val gradingScheduled = mutableListOf<GradingJob>()
   override val gradingRunning = mutableListOf<GradingJob>()
@@ -30,6 +36,7 @@ internal class RubricCollectorImpl : MutableRubricCollector {
     get() = queued.sumOf { it.remaining }
 
   private var listener: () -> Unit = {}
+  private val scope = CoroutineScope(Dispatchers.Unconfined)
 
   override fun allocate(queue: GradingQueue) {
     queued += queue
@@ -40,14 +47,16 @@ internal class RubricCollectorImpl : MutableRubricCollector {
   }
 
   override fun start(request: GradingRequest): GradingJob {
-    return GradingJob(request)
-      .also(gradingRunning::add)
-      .also { job -> job.result.invokeOnCompletion { endGrading(job) } }
-  }
-
-  private fun endGrading(job: GradingJob) {
-    check(job.result.isCompleted) { "$job is not finished grading" }
-    gradingRunning.remove(job) && gradingFinished.add(job.result.getCompleted())
-    listener()
+    val job = GradingJob(request)
+    gradingRunning += job
+    scope.launch {
+      try {
+        gradingFinished.add(job.result.await())
+      } catch (e: Exception) {
+        jagr.logger.error("An error occurred receiving result for grading job", e)
+      }
+      listener()
+    }
+    return job
   }
 }
