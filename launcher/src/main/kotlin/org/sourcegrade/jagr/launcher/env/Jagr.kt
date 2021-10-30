@@ -37,6 +37,7 @@ interface Jagr {
   }
 }
 
+val Jagr.config: Config by injected()
 val Jagr.gradingQueueFactory: GradingQueue.Factory by injected()
 val Jagr.logger: Logger by injected()
 val Jagr.runtimeGrader: RuntimeGrader by injected()

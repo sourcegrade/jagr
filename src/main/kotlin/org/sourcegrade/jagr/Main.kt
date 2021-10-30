@@ -32,6 +32,7 @@ import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.ensure
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
@@ -111,7 +112,7 @@ fun standardGrading() {
   runBlocking {
     val jagr = Jagr
     val startTime = System.currentTimeMillis()
-    val config = jagr.injector.getInstance(Config::class.java)
+    val config = jagr.config
     val batch = buildGradingBatch {
       discoverSubmissions(config.dir.submissions) { _, n -> n.endsWith("jar") }
       discoverSubmissionLibraries(config.dir.libs) { _, n -> n.endsWith("jar") }
@@ -152,7 +153,7 @@ fun standardGrading() {
 fun export(collector: RubricCollector, jagr: Jagr) {
   val csvExporter = jagr.injector.getInstance(GradedRubricExporter.CSV::class.java)
   val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
-  val config = jagr.injector.getInstance(Config::class.java)
+  val config = jagr.config
   val rubricsFile = File(config.dir.rubrics).ensure(jagr.logger)!!
   val csvFile = rubricsFile.resolve("csv").ensure(jagr.logger)!!
   val htmlFile = rubricsFile.resolve("moodle").ensure(jagr.logger)!!
