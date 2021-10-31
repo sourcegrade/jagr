@@ -22,31 +22,9 @@ package org.sourcegrade.jagr.launcher.executor
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Jagr
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPool) : Executor {
-
-  open class Factory internal constructor(val workerPoolFactory: WorkerPool.Factory) : Executor.Factory {
-    companion object Default : Factory(ThreadWorkerPool.Factory)
-
-    override fun create(jagr: Jagr): Executor = MultiWorkerExecutor(workerPoolFactory.create(jagr))
-  }
-
-  companion object {
-    fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
-      FactoryBuilder(from).also(builderAction).factory()
-  }
-
-  class FactoryBuilder internal constructor(factory: Factory) {
-    var workerPoolFactory: WorkerPool.Factory = factory.workerPoolFactory
-    fun factory() = Factory(workerPoolFactory)
-  }
-
   private val mutex = Mutex()
   private val scheduled = mutableListOf<GradingQueue>()
 
@@ -54,7 +32,7 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
     scheduled += queue
   }
 
-  private suspend fun checkWorkers(police: ThreadPolice, rubricCollector: MutableRubricCollector) {
+  private suspend fun checkWorkers(synchronizer: WorkerSynchronizer, rubricCollector: MutableRubricCollector) {
     val requests = mutex.withLock {
       workerPool.createWorkers(scheduled.sumOf { it.remaining })
         .mapNotNull { worker -> scheduled.next()?.let { request -> worker to request } }
@@ -70,7 +48,7 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
         // there are no new requests, but workers are still handling submissions
         // wait here until at least one is finished
         suspendCoroutine<Unit> {
-          police.setContinuation(it, exitDirectly = true)
+          synchronizer.setContinuation(it, exitDirectly = true)
         }
       }
       if (workerPool.withActiveWorkers { it.isEmpty() }) {
@@ -78,62 +56,38 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
       }
     }
     suspendCoroutine<Unit> { continuation ->
-      police.setContinuation(continuation)
+      synchronizer.setContinuation(continuation)
       for (request in requests) {
         val job = rubricCollector.start(request.second)
-        job.result.invokeOnCompletion { police.notifyContinuation() }
+        job.result.invokeOnCompletion { synchronizer.notifyContinuation() }
         request.first.assignJob(job)
       }
-      police.handleBetween()
+      synchronizer.handleBetween()
     }
   }
 
   override suspend fun start(rubricCollector: MutableRubricCollector) {
-    val police = ThreadPolice()
+    val synchronizer = WorkerSynchronizer()
     workerPool.use {
       while (scheduled.isNotEmpty() || workerPool.withActiveWorkers { it.isNotEmpty() }) {
-        checkWorkers(police, rubricCollector)
+        checkWorkers(synchronizer, rubricCollector)
       }
     }
   }
-}
 
-private class ThreadPolice {
-  private val finishedBetweenContinuation = AtomicBoolean()
-  private val exitDirectly = AtomicBoolean()
-  private val lock = ReentrantLock()
-  private var continuation: Continuation<Unit>? = null
+  open class Factory internal constructor(val workerPoolFactory: WorkerPool.Factory) : Executor.Factory {
+    companion object Default : Factory(ThreadWorkerPool.Factory)
 
-  fun setContinuation(continuation: Continuation<Unit>, exitDirectly: Boolean = false) = lock.withLock {
-    this.continuation = continuation
-    this.exitDirectly.set(exitDirectly)
+    override fun create(jagr: Jagr): Executor = MultiWorkerExecutor(workerPoolFactory.create(jagr))
   }
 
-  fun notifyContinuation() = lock.withLock {
-    if (finishedBetweenContinuation.get()) {
-      if (exitDirectly.get()) {
-        resume()
-      } else {
-        return
-      }
-    }
-    val cont = continuation
-    if (cont == null) {
-      finishedBetweenContinuation.set(true)
-    } else {
-      resume()
-    }
+  class FactoryBuilder internal constructor(factory: Factory) {
+    var workerPoolFactory: WorkerPool.Factory = factory.workerPoolFactory
+    fun factory() = Factory(workerPoolFactory)
   }
 
-  fun handleBetween() = lock.withLock {
-    if (finishedBetweenContinuation.get()) {
-      finishedBetweenContinuation.set(false)
-      resume()
-    }
-  }
-
-  private fun resume() {
-    continuation?.resume(Unit)
-    continuation = null
+  companion object {
+    fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
+      FactoryBuilder(from).also(builderAction).factory()
   }
 }
