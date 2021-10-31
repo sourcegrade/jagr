@@ -29,6 +29,12 @@ import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.Grader
 import org.sourcegrade.jagr.api.rubric.Rubric
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.readNullable
+import org.sourcegrade.jagr.launcher.io.writeList
+import org.sourcegrade.jagr.launcher.io.writeNullable
 
 /**
  * This implementation relies on the fact that its internal state is not modified after a call to any of the methods
@@ -86,8 +92,7 @@ class CriterionImpl(
       return GradedCriterionImpl(testCycle, graderResult, this)
     }
     val childGraded = childCriteria.map { it.grade(testCycle) }
-    val gradeResult = GradeResult.of(graderResult, childGraded.map(
-      Graded::getGrade))
+    val gradeResult = GradeResult.of(graderResult, childGraded.map(Graded::getGrade))
     return GradedCriterionImpl(testCycle, gradeResult, this, childGraded)
   }
 
@@ -101,4 +106,26 @@ class CriterionImpl(
   }
 
   override fun toString(): String = stringRep
+
+  companion object Factory : SerializerFactory<CriterionImpl> {
+    override fun read(scope: SerializationScope.Input) = CriterionImpl(
+      scope.input.readUTF(),
+      scope.readNullable(),
+      // The next line is *technically* incorrect, but it won't be used anyways so this is ok.
+      // Serializing a grader would require cooperation from the implementer. This doesn't really make any
+      // sense though, as it won't be used after serialization (which happens after rubrics have been graded).
+      null,
+      CriterionHolderPointCalculator.fixed(scope.input.readInt()),
+      CriterionHolderPointCalculator.fixed(scope.input.readInt()),
+      scope.readList(),
+    )
+
+    override fun write(obj: CriterionImpl, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.shortDescription)
+      scope.writeNullable(obj.hiddenNotes)
+      scope.output.writeInt(obj.maxPointsKt)
+      scope.output.writeInt(obj.minPointsKt)
+      scope.writeList(obj.childCriteria)
+    }
+  }
 }

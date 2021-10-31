@@ -22,8 +22,8 @@ package org.sourcegrade.jagr.core.executor;
 import com.google.inject.Inject;
 import org.opentest4j.AssertionFailedError;
 import org.slf4j.Logger;
-import org.sourcegrade.jagr.core.Config;
 import org.sourcegrade.jagr.core.transformer.CommonTransformer;
+import org.sourcegrade.jagr.launcher.env.Config;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -53,8 +53,8 @@ public final class TimeoutHandler {
    * Nested class for lazy initialization.
    */
   private static final class Lazy {
-    private static final long INDIVIDUAL_TIMEOUT = config.getTransformers().getTimeout().getIndividualTimeout();
-    private static final long TOTAL_TIMEOUT = config.getTransformers().getTimeout().getTotalTimeout();
+    private static final long INDIVIDUAL_TIMEOUT = config.getExecutor().getTimeoutIndividual();
+    private static final long TOTAL_TIMEOUT = config.getExecutor().getTimeoutTotal();
   }
 
   public static void disableTimeout() {

@@ -23,7 +23,7 @@ import org.sourcegrade.jagr.api.rubric.Criterion
 import org.sourcegrade.jagr.api.rubric.GradeResult
 
 class GradeResultFactoryImpl : GradeResult.Factory {
-  private val none = GradeResultImpl(0, 0);
+  private val none = GradeResultImpl(0, 0)
   override fun ofCorrect(points: Int): GradeResult = GradeResultImpl(points, 0)
   override fun ofIncorrect(points: Int): GradeResult = GradeResultImpl(0, points)
   override fun ofNone(): GradeResult = none

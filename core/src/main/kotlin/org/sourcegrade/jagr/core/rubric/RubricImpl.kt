@@ -26,6 +26,10 @@ import org.sourcegrade.jagr.api.rubric.Graded
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.rubric.Rubric
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.writeList
 
 class RubricImpl(
   private val title: String,
@@ -49,7 +53,7 @@ class RubricImpl(
   override fun grade(testCycle: TestCycle): GradedRubric {
     val childGraded = childCriteria.map { it.grade(testCycle) }
     val gradeResult = with(testCycle.submission.compileResult) {
-      val comments = mutableListOf<String>()
+      val comments = testCycle.notes.toMutableList()
       when {
         errorCount > 0 -> "Your submission did not compile. There were $errorCount errors and $warningCount warnings."
         warningCount > 0 -> "Your submission compiled, but there were $warningCount warnings."
@@ -72,4 +76,13 @@ class RubricImpl(
   }
 
   override fun toString(): String = stringRep
+
+  companion object Factory : SerializerFactory<RubricImpl> {
+    override fun read(scope: SerializationScope.Input) = RubricImpl(scope.input.readUTF(), scope.readList())
+
+    override fun write(obj: RubricImpl, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.title)
+      scope.writeList(obj.criteria)
+    }
+  }
 }

@@ -22,55 +22,73 @@ package org.sourcegrade.jagr.core.export.submission
 import com.google.common.collect.FluentIterable
 import com.google.common.reflect.ClassPath
 import com.google.inject.Inject
-import com.google.inject.Singleton
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.core.ensure
+import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
-import org.sourcegrade.jagr.core.testing.TestJar
-import org.sourcegrade.jagr.core.usePrintWriterSafe
-import org.sourcegrade.jagr.core.writeStream
-import org.sourcegrade.jagr.core.writeTextSafe
-import java.io.File
+import org.sourcegrade.jagr.launcher.io.GraderJar
+import org.sourcegrade.jagr.launcher.io.ResourceContainer
+import org.sourcegrade.jagr.launcher.io.SubmissionExporter
+import org.sourcegrade.jagr.launcher.io.addResource
+import org.sourcegrade.jagr.launcher.io.buildResourceContainer
+import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
+import org.sourcegrade.jagr.launcher.io.createResourceBuilder
+import java.io.PrintWriter
 import java.util.jar.Attributes
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 import java.util.jar.Manifest
 
-@Singleton // stateful because of submissionMap
 class GradleSubmissionExporter @Inject constructor(
   private val logger: Logger,
-) : SubmissionExporter {
-  override val name: String = "gradle"
+) : SubmissionExporter.Gradle {
+  override fun export(graders: List<GraderJar>, submissions: List<Submission>): List<ResourceContainer> {
+    val result = ArrayList<ResourceContainer>(graders.size + 1)
+    graders.mapTo(result) { export(it, submissions) }
+    result += export(null, submissions)
+    return result
+  }
 
-  private val submissionMap: MutableMap<String?, MutableList<String>> = mutableMapOf()
+  private fun export(graderJar: GraderJar?, submissions: List<Submission>) = buildResourceContainer {
+    graderJar as GraderJarImpl?
+    info = buildResourceContainerInfo {
+      name = graderJar?.name ?: DEFAULT_EXPORT_NAME
+    }
+    writeSkeleton()
+    for (submission in submissions) {
+      writeSubmission(submission, graderJar)
+    }
+    writeSettings(info.name, submissions)
+  }
 
-  private fun File.writeGradleResource(
+  private fun ResourceContainer.Builder.writeGradleResource(
     classLoader: ClassLoader = ClassLoader.getSystemClassLoader(),
     resource: String,
     targetDir: String = "",
     targetName: String = resource
-  ) {
+  ) = addResource {
+    name = targetDir + targetName
     classLoader.getResourceAsStream("org/gradle/$resource")?.also {
-      resolve(targetDir + targetName).writeStream { it }
+      it.copyTo(outputStream)
     } ?: logger.error("Could not read gradle resource: $resource")
   }
 
   @Suppress("UnstableApiUsage")
-  private fun File.writeSkeleton() {
+  private fun ResourceContainer.Builder.writeSkeleton() {
     val classLoader = ClassLoader.getSystemClassLoader()
     val wrapperClasses: Set<ClassPath.ClassInfo> = FluentIterable.from(ClassPath.from(classLoader).resources)
       .filter(ClassPath.ClassInfo::class.java)
       .filter { it!!.packageName.startsWith("org.gradle") }
       .toSet()
-    val wrapperDir = resolve("gradle/wrapper").ensure(logger, false) ?: return
+    val wrapperBuilder = createResourceBuilder()
+    wrapperBuilder.name = "gradle/wrapper/gradle-wrapper.jar"
     val manifest = Manifest()
     manifest.mainAttributes[Attributes.Name.MANIFEST_VERSION] = "1.0"
     manifest.mainAttributes[Attributes.Name.IMPLEMENTATION_TITLE] = "Gradle Wrapper"
-    JarOutputStream(wrapperDir.resolve("gradle-wrapper.jar").outputStream(), manifest).use { jar ->
+    JarOutputStream(wrapperBuilder.outputStream, manifest).use { jar ->
       for (wrapperClass in wrapperClasses) {
         val className = "${wrapperClass.name.replace('.', '/')}.class"
         val classStream = classLoader.getResourceAsStream(className)
@@ -84,46 +102,59 @@ class GradleSubmissionExporter @Inject constructor(
         jar.closeEntry()
       }
     }
+    addResource(wrapperBuilder.build())
     writeGradleResource(classLoader, resource = "gradlew")
     writeGradleResource(classLoader, resource = "gradlew.bat")
     writeGradleResource(classLoader, resource = "build.gradle.kts_", targetName = "build.gradle.kts")
     writeGradleResource(classLoader, resource = "gradle-wrapper.properties", targetDir = "gradle/wrapper/")
   }
 
-  override fun initialize(directory: File, testJar: TestJar?) {
-    directory.writeSkeleton()
+  private fun ResourceContainer.Builder.writeSettings(graderName: String, submissions: List<Submission>) = addResource {
+    name = "settings.gradle.kts"
+    PrintWriter(outputStream, false, Charsets.UTF_8).use {
+      it.appendLine("rootProject.name = \"$graderName\"")
+      submissions.forEach { submission ->
+        it.appendLine("include(\"${submission.info}\")")
+      }
+      it.appendLine()
+      it.flush()
+    }
   }
 
-  private fun writeSettings(directory: File, name: String?) {
-    directory.resolve("settings.gradle.kts").usePrintWriterSafe(logger) {
-      appendLine("rootProject.name = \"${directory.name}\"")
-      submissionMap[name]?.forEach { submissionName ->
-        appendLine("include(\"$submissionName\")")
+  private fun ResourceContainer.Builder.writeSubmission(submission: Submission, graderJar: GraderJarImpl?) {
+    if (submission !is JavaSubmission) return
+    val submissionName = submission.info.toString()
+    addResource {
+      name = "$submissionName/src/main/resources/submission-info.json"
+      outputStream.writer().use { it.write(Json.encodeToString(submission.info as SubmissionInfoImpl)) }
+    }
+    val mainSource = "$submissionName/src/main/java/"
+    val sourceFiles = if (graderJar == null) {
+      submission.compileResult.sourceFiles
+    } else {
+      submission.compileResult.sourceFiles + graderJar.compileResult.sourceFiles
+    }
+    for ((fileName, sourceFile) in sourceFiles) {
+      addResource {
+        name = mainSource + fileName
+        outputStream.writer().use { it.write(sourceFile.content) }
+      }
+    }
+    val mainResources = "$submissionName/src/main/resources/"
+    val resources = if (graderJar == null) {
+      submission.compileResult.runtimeResources.resources
+    } else {
+      submission.compileResult.runtimeResources.resources + graderJar.compileResult.runtimeResources.resources
+    }
+    for ((fileName, resource) in resources) {
+      addResource {
+        name = mainResources + fileName
+        outputStream.writeBytes(resource)
       }
     }
   }
 
-  override fun finalize(directory: File, testJar: TestJar?) {
-    writeSettings(directory, testJar?.name)
-  }
-
-  override fun export(submission: Submission, directory: File, testJar: TestJar?) {
-    if (submission !is JavaSubmission) return
-    val submissionName = submission.info.toString()
-    val file = directory.resolve(submissionName).ensure(logger, false) ?: return
-    val mainResources = file.resolve("src/main/resources").ensure(logger, false) ?: return
-    val mainSource = file.resolve("src/main/java").ensure(logger, false) ?: return
-    val testSource = file.resolve("src/test/java").ensure(logger, false) ?: return
-    (submission.info as? SubmissionInfoImpl)?.also {
-      mainResources.resolve("submission-info.json").writeText(Json.encodeToString(it))
-    }
-    // sourceFile.name starts with a / and needs to be converted to a relative path
-    submission.sourceFiles.forEach { (_, sourceFile) ->
-      mainSource.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
-    }
-    testJar?.sourceFiles?.forEach { (_, sourceFile) ->
-      testSource.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
-    }
-    submissionMap.computeIfAbsent(testJar?.name) { mutableListOf() }.add(submissionName)
+  companion object {
+    const val DEFAULT_EXPORT_NAME = "default"
   }
 }

@@ -41,6 +41,12 @@ public interface TestCycle {
 
   Submission getSubmission();
 
+  int getTestsSucceededCount();
+
+  int getTestsStartedCount();
+
+  List<String> getNotes();
+
   @Nullable JUnitResult getJUnitResult();
 
   @ApiStatus.NonExtendable

@@ -2,7 +2,6 @@ plugins {
   application
   kotlin("jvm")
   kotlin("plugin.serialization")
-  id("com.github.johnrengelman.shadow")
 }
 repositories {
   mavenCentral()
@@ -19,6 +18,7 @@ val log4jVersion: String by project
 
 dependencies {
   api(project(":jagr-grader-api"))
+  api(project(":jagr-launcher"))
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")
@@ -36,18 +36,6 @@ application {
   mainClass.set("org.sourcegrade.jagr.core.MainKt")
 }
 tasks {
-  shadowJar {
-    from("../gradlew") {
-      into("org/gradle")
-    }
-    from("../gradlew.bat") {
-      into("org/gradle")
-    }
-    from("../gradle/wrapper/gradle-wrapper.properties") {
-      into("org/gradle")
-    }
-    archiveFileName.set("Jagr-${project.version}.jar")
-  }
   test {
     useJUnitPlatform()
   }

@@ -34,7 +34,9 @@ class TransformerManager @Inject constructor(
     return this
   }
 
-  fun transform(result: JavaCompileResult): JavaCompileResult {
-    return result.copy(compiledClasses = result.compiledClasses.toMutableMap().transform())
-  }
+  fun transform(result: JavaCompileResult): JavaCompileResult = result.copy(
+    runtimeResources = result.runtimeResources.copy(
+      classes = result.runtimeResources.classes.toMutableMap().transform(),
+    ),
+  )
 }

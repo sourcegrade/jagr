@@ -27,23 +27,23 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
-import org.sourcegrade.jagr.core.usePrintWriterSafe
-import java.io.File
+import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
+import org.sourcegrade.jagr.launcher.io.Resource
+import org.sourcegrade.jagr.launcher.io.buildResource
 
 class MoodleJSONExporter @Inject constructor(
   private val logger: Logger,
-) : GradedRubricExporter {
-  override val name: String = "moodle-json"
-  override fun export(gradedRubric: GradedRubric, directory: File, fileName: String) {
+) : GradedRubricExporter.HTML {
+  override fun export(gradedRubric: GradedRubric): Resource {
     val json = MoodleJSON(
       gradedRubric.testCycle.submission.info as SubmissionInfoImpl,
       gradedRubric.grade.correctPoints,
       StringBuilder().writeTable(gradedRubric).toString(),
     )
     val jsonString = Json.encodeToString(json)
-    directory.resolve("$fileName.json").usePrintWriterSafe(logger) {
-      println(jsonString)
-      flush()
+    return buildResource {
+      name = "${gradedRubric.rubric.title}_${gradedRubric.testCycle.submission.info}.json"
+      outputStream.bufferedWriter().use { it.write(jsonString) }
     }
   }
 
