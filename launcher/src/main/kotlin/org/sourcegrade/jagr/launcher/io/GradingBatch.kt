@@ -39,29 +39,29 @@ class GradingBatchBuilder internal constructor() {
   private val submissionLibraries = mutableListOf<ResourceContainer>()
   private var totalExpectedCount: Int = 0
 
-  private fun discover(file: File, filter: FilenameFilter?, list: MutableList<ResourceContainer>) {
-    check(file.mkdirs()) { "Unable to create directory $file" }
-    for (candidate in checkNotNull(file.listFiles(filter)) { "Could not find $file" }) {
+  private fun discover(dir: File, filter: FilenameFilter?, list: MutableList<ResourceContainer>) {
+    check(dir.exists() || dir.mkdirs()) { "Unable to create directory $dir" }
+    for (candidate in checkNotNull(dir.listFiles(filter)) { "Could not find $dir" }) {
       list += createResourceContainer(candidate)
     }
   }
 
-  fun discoverGraders(file: File, filter: FilenameFilter? = null) = discover(file, filter, graders)
-  fun discoverGraders(file: String, filter: FilenameFilter? = null) = discoverGraders(File(file), filter)
+  fun discoverGraders(dir: File, filter: FilenameFilter? = null) = discover(dir, filter, graders)
+  fun discoverGraders(dir: String, filter: FilenameFilter? = null) = discoverGraders(File(dir), filter)
 
-  fun discoverSubmissions(file: File, filter: FilenameFilter? = null) {
-    check(file.mkdirs()) { "Unable to create directory $file" }
-    for (candidate in checkNotNull(file.listFiles(filter)) { "Could not find $file" }) {
+  fun discoverSubmissions(dir: File, filter: FilenameFilter? = null) {
+    check(dir.exists() || dir.mkdirs()) { "Unable to create directory $dir" }
+    for (candidate in checkNotNull(dir.listFiles(filter)) { "Could not find $dir" }) {
       submissions += createResourceContainer(candidate)
       ++totalExpectedCount
     }
   }
 
-  fun discoverSubmissions(file: String, filter: FilenameFilter? = null) = discoverSubmissions(File(file), filter)
-  fun discoverGraderLibraries(file: File, filter: FilenameFilter? = null) = discover(file, filter, graderLibraries)
-  fun discoverGraderLibraries(file: String, filter: FilenameFilter? = null) = discoverGraderLibraries(File(file), filter)
-  fun discoverSubmissionLibraries(file: File, filter: FilenameFilter? = null) = discover(file, filter, submissionLibraries)
-  fun discoverSubmissionLibraries(file: String, filter: FilenameFilter? = null) = discoverSubmissionLibraries(File(file), filter)
+  fun discoverSubmissions(dir: String, filter: FilenameFilter? = null) = discoverSubmissions(File(dir), filter)
+  fun discoverGraderLibraries(dir: File, filter: FilenameFilter? = null) = discover(dir, filter, graderLibraries)
+  fun discoverGraderLibraries(dir: String, filter: FilenameFilter? = null) = discoverGraderLibraries(File(dir), filter)
+  fun discoverSubmissionLibraries(dir: File, filter: FilenameFilter? = null) = discover(dir, filter, submissionLibraries)
+  fun discoverSubmissionLibraries(dir: String, filter: FilenameFilter? = null) = discoverSubmissionLibraries(File(dir), filter)
 
   fun addGrader(container: ResourceContainer): Boolean = graders.add(container)
 

@@ -40,7 +40,7 @@ inline fun buildResource(configure: Resource.Builder.() -> Unit): Resource = cre
 fun createResourceBuilder(): Resource.Builder = ResourceBuilderImpl()
 
 fun Resource.writeIn(dir: File, name: String? = null): File {
-  check(dir.mkdirs()) { "Unable to create directory $dir" }
+  check(dir.exists() || dir.mkdirs()) { "Unable to create directory $dir" }
   val file = dir.resolve(name ?: this.name)
   file.outputStream().buffered().use { getInputStream().copyTo(it) }
   return file
