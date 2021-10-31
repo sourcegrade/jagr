@@ -23,18 +23,6 @@ import com.google.common.io.ByteArrayDataInput
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.serializerFactoryLocator
 
-private class InputSerializationScopeImpl(
-  override val input: ByteArrayDataInput,
-  override val jagr: Jagr,
-  override val parent: SerializationScope?,
-) : AbstractSerializationScope(), SerializationScope.Input {
-  override fun <T : Any> readScoped(key: SerializationScope.Key<T>): T {
-    val obj = SerializerFactory[key.type, jagr.serializerFactoryLocator].read(this)
-    backing[key] = obj
-    return obj
-  }
-}
-
 fun createScope(input: ByteArrayDataInput, jagr: Jagr, parent: SerializationScope.Input? = null): SerializationScope.Input {
   return InputSerializationScopeImpl(input, jagr, parent)
 }
@@ -45,4 +33,16 @@ inline fun <T> openScope(input: ByteArrayDataInput, jagr: Jagr, block: Serializa
 
 inline fun <T> SerializationScope.Input.openScope(block: SerializationScope.Input.() -> T): T {
   return createScope(input, jagr, this).block()
+}
+
+private class InputSerializationScopeImpl(
+  override val input: ByteArrayDataInput,
+  override val jagr: Jagr,
+  override val parent: SerializationScope?,
+) : AbstractSerializationScope(), SerializationScope.Input {
+  override fun <T : Any> readScoped(key: SerializationScope.Key<T>): T {
+    val obj = SerializerFactory[key.type, jagr.serializerFactoryLocator].read(this)
+    backing[key] = obj
+    return obj
+  }
 }
