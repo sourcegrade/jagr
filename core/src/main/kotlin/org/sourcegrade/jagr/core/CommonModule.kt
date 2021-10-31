@@ -48,28 +48,26 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
   }
 
   override fun configure() {
-    bind(GradingQueue.Factory::class.java).to(GradingQueueFactoryImpl::class.java)
-    bind(RuntimeGrader::class.java).to(RuntimeGraderImpl::class.java)
-    bind(SerializerFactory.Locator::class.java).to(SerializationFactoryLocatorImpl::class.java)
-    bind(ExtrasManager::class.java).to(ExtrasManagerImpl::class.java)
-
     bind(Criterion.Factory::class.java).to(CriterionFactoryImpl::class.java)
     bind(CriterionHolderPointCalculator.Factory::class.java).to(CriterionHolderPointCalculatorFactoryImpl::class.java)
-    bind(Grader.Factory::class.java).to(GraderFactoryImpl::class.java)
-    bind(GradeResult.Factory::class.java).to(GradeResultFactoryImpl::class.java)
-    bind(JUnitTestRef.Factory::class.java).to(JUnitTestRefFactoryImpl::class.java)
-    bind(Rubric.Factory::class.java).to(RubricFactoryImpl::class.java)
-    bind(TestCycleResolver.Internal::class.java).to(TestCycleParameterResolver::class.java)
-
+    bind(ExtrasManager::class.java).to(ExtrasManagerImpl::class.java)
     bind(GradedRubricExporter.CSV::class.java).to(GermanCSVExporter::class.java)
     bind(GradedRubricExporter.HTML::class.java).to(MoodleJSONExporter::class.java)
-    bind(SubmissionExporter.Gradle::class.java).to(GradleSubmissionExporter::class.java)
-    bind(SubmissionExporter.Eclipse::class.java).to(EclipseSubmissionExporter::class.java)
+    bind(Grader.Factory::class.java).to(GraderFactoryImpl::class.java)
+    bind(GradeResult.Factory::class.java).to(GradeResultFactoryImpl::class.java)
+    bind(GradingQueue.Factory::class.java).to(GradingQueueFactoryImpl::class.java)
+    bind(JUnitTestRef.Factory::class.java).to(JUnitTestRefFactoryImpl::class.java)
+    bind(Logger::class.java).toInstance(configuration.logger)
+    bind(Rubric.Factory::class.java).to(RubricFactoryImpl::class.java)
+    bind(RuntimeGrader::class.java).to(RuntimeGraderImpl::class.java)
     with(Multibinder.newSetBinder(binder(), RuntimeTester::class.java)) {
       addBinding().to(JavaRuntimeTester::class.java)
     }
+    bind(SerializerFactory.Locator::class.java).to(SerializationFactoryLocatorImpl::class.java)
+    bind(SubmissionExporter.Eclipse::class.java).to(EclipseSubmissionExporter::class.java)
+    bind(SubmissionExporter.Gradle::class.java).to(GradleSubmissionExporter::class.java)
+    bind(TestCycleResolver.Internal::class.java).to(TestCycleParameterResolver::class.java)
 
-    bind(Logger::class.java).toInstance(configuration.logger)
     with(configuration.configurationLoader) {
       load().let { root ->
         if (root.empty()) Config().also { root.set(it).also(::save) }
