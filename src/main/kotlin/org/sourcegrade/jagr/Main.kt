@@ -139,48 +139,13 @@ fun standardGrading() = runBlocking {
   collector.allocate(queue)
   executor.schedule(queue)
   executor.start(collector)
-  histogram(collector, jagr)
+  printHistogram(collector, jagr)
   export(collector, jagr)
   val submissionExportFile = File(config.dir.submissionsExport).ensure(jagr.logger)!!
   for (resourceContainer in jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
     resourceContainer.writeAsDirIn(submissionExportFile)
   }
   jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
-}
-
-fun histogram(collector: RubricCollector, jagr: Jagr) {
-  val histogram = mutableMapOf<Int, Int>()
-  var correctPoints = 0
-  var incorrectPoints = 0
-  var maxPoints = 0
-  val allRubrics = collector.gradingFinished.flatMap { it.rubrics.keys }
-  for (rubric in allRubrics) {
-    val prev = histogram.computeIfAbsent(rubric.grade.correctPoints) { 0 }
-    histogram[rubric.grade.correctPoints] = prev + 1
-    correctPoints += rubric.grade.correctPoints
-    incorrectPoints += rubric.grade.incorrectPoints
-    maxPoints += rubric.rubric.maxPoints
-  }
-  if (allRubrics.isNotEmpty()) {
-    jagr.logger.info(
-      "Result: Correct: $correctPoints, Incorrect: $incorrectPoints, Max: $maxPoints, Average: " +
-        "${correctPoints.toDouble() / allRubrics.size.toDouble()}, Rubrics: ${allRubrics.size}"
-    )
-    for ((points, count) in histogram.toSortedMap()) {
-      StringBuilder().apply {
-        append("Points: ")
-        append(points.toString().padStart(length = 3))
-        append(" Nr: ")
-        append(count.toString().padStart(length = 3))
-        append(" |")
-        for (i in 0 until count) {
-          append('-')
-        }
-      }.also { println(it) }
-    }
-  } else {
-    jagr.logger.info("Zero rubrics")
-  }
 }
 
 fun export(collector: RubricCollector, jagr: Jagr) {
