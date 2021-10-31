@@ -45,6 +45,7 @@ object StandardGrading {
     val jagr = Jagr
     val startTime = System.currentTimeMillis()
     val config = jagr.config
+    File(config.dir.submissions).ensure(jagr.logger)
     jagr.extrasManager.runExtras()
     val batch = buildGradingBatch {
       discoverSubmissions(config.dir.submissions) { _, n -> n.endsWith("jar") }
