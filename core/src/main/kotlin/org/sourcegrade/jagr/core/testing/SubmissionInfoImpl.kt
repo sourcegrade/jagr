@@ -42,6 +42,7 @@ data class SubmissionInfoImpl(
   override fun getFirstName(): String = firstName
   override fun getLastName(): String = lastName
   override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
+
   companion object Factory : SerializerFactory<SubmissionInfoImpl> {
     override fun read(scope: SerializationScope.Input) = SubmissionInfoImpl(
       scope.input.readUTF(),

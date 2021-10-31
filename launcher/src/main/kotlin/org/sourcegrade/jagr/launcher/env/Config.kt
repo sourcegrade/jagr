@@ -138,8 +138,7 @@ class Transformers {
   }
 
   @ConfigSerializable
-  class TimeoutTransformer : Transformer() {
-  }
+  class TimeoutTransformer : Transformer()
 
   val timeout = TimeoutTransformer()
 }

@@ -21,8 +21,6 @@ package org.sourcegrade.jagr
 
 import org.slf4j.Logger
 import java.io.File
-import java.io.InputStream
-import java.io.PrintWriter
 
 fun File.ensure(logger: Logger? = null, logInfo: Boolean = true): File? {
   if (!exists()) {
