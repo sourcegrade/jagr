@@ -39,25 +39,3 @@ interface Worker {
    */
   fun kill()
 }
-
-enum class WorkerStatus {
-  /**
-   * Not ready to receive job
-   */
-  PREPARING,
-
-  /**
-   * Ready to receive job
-   */
-  READY,
-
-  /**
-   * Processing a job
-   */
-  RUNNING,
-
-  /**
-   * Finished processing a job
-   */
-  FINISHED,
-}

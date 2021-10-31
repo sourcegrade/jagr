@@ -45,10 +45,6 @@ import java.util.jar.Manifest
 class GradleSubmissionExporter @Inject constructor(
   private val logger: Logger,
 ) : SubmissionExporter.Gradle {
-  companion object {
-    const val DEFAULT_EXPORT_NAME = "default"
-  }
-
   override fun export(graders: List<GraderJar>, submissions: List<Submission>): List<ResourceContainer> {
     val result = ArrayList<ResourceContainer>(graders.size + 1)
     graders.mapTo(result) { export(it, submissions) }
@@ -156,5 +152,9 @@ class GradleSubmissionExporter @Inject constructor(
         outputStream.writeBytes(resource)
       }
     }
+  }
+
+  companion object {
+    const val DEFAULT_EXPORT_NAME = "default"
   }
 }

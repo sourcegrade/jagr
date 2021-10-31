@@ -19,8 +19,6 @@
 
 package org.sourcegrade.jagr.core.export.submission
 
-import com.google.inject.Inject
-import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.testing.JavaSubmission
 import org.sourcegrade.jagr.launcher.io.GraderJar
@@ -31,13 +29,7 @@ import org.sourcegrade.jagr.launcher.io.buildResourceContainer
 import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import java.io.PrintWriter
 
-class EclipseSubmissionExporter @Inject constructor(
-  private val logger: Logger,
-) : SubmissionExporter.Eclipse {
-  companion object {
-    const val DEFAULT_EXPORT_NAME = "default"
-  }
-
+class EclipseSubmissionExporter : SubmissionExporter.Eclipse {
   override fun export(graders: List<GraderJar>, submissions: List<Submission>): List<ResourceContainer> {
     return submissions.map { export(it) }
   }
@@ -96,5 +88,9 @@ class EclipseSubmissionExporter @Inject constructor(
     writer.println("\t<classpathentry kind=\"output\" path=\"bin\"/>")
     writer.println("</classpath>")
     writer.flush()
+  }
+
+  companion object {
+    const val DEFAULT_EXPORT_NAME = "default"
   }
 }

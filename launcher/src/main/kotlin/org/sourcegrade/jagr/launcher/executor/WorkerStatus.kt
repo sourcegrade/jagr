@@ -19,27 +19,24 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-import org.sourcegrade.jagr.launcher.env.Jagr
-import java.io.Closeable
-
-/**
- * A resource which may, or may not give you another [Worker] depending on available resources.
- */
-interface WorkerPool : Closeable {
-
-  suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T): T
+enum class WorkerStatus {
+  /**
+   * Not ready to receive job
+   */
+  PREPARING,
 
   /**
-   * Creates up to [maxCount] workers depending on availability.
+   * Ready to receive job
    */
-  fun createWorkers(maxCount: Int): List<Worker>
+  READY,
 
   /**
-   * Closes this [WorkerPool] and any resources associated with it. (e.g. Extra monitor/IO threads)
+   * Processing a job
    */
-  override fun close()
+  RUNNING,
 
-  interface Factory {
-    fun create(jagr: Jagr): WorkerPool
-  }
+  /**
+   * Finished processing a job
+   */
+  FINISHED,
 }

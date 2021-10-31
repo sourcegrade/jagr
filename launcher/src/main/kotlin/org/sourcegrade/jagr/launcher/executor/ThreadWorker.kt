@@ -34,6 +34,7 @@ class ThreadWorker(
 
   override fun assignJob(job: GradingJob) {
     check(this.job == null) { "Worker already has a job!" }
+    status = WorkerStatus.RUNNING
     this.job = job
     thread(
       isDaemon = true,
@@ -43,6 +44,7 @@ class ThreadWorker(
       runBlocking {
         runtimeGrader.grade(job)
       }
+      status = WorkerStatus.FINISHED
       removeActive(this)
     }
   }

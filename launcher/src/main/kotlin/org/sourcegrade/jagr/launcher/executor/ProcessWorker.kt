@@ -54,7 +54,13 @@ class ProcessWorker(
 
   private val coroutineScope = CoroutineScope(processIODispatcher)
 
+  init {
+    status = WorkerStatus.READY
+  }
+
   override fun assignJob(job: GradingJob) {
+    check(this.job == null) { "Worker already has a job!" }
+    status = WorkerStatus.RUNNING
     coroutineScope.launch {
       sendRequest(job.request)
       try {
@@ -62,6 +68,7 @@ class ProcessWorker(
       } catch (e: Exception) {
         job.result.completeExceptionally(e)
       }
+      status = WorkerStatus.FINISHED
       removeActive(this@ProcessWorker)
     }
     coroutineScope.launch {
