@@ -35,11 +35,6 @@ interface Executor {
   }
 }
 
-fun executorForBatch(batch: GradingBatch): Executor.Factory = when (batch.expectedSubmissions) {
-  0, 1 -> SyncExecutor.Factory
-  else -> MultiWorkerExecutor.Factory
-}
-
 fun interface RuntimeGrader {
   fun grade(tests: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
 }

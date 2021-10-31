@@ -27,11 +27,6 @@ import org.sourcegrade.jagr.launcher.env.runtimeGrader
 class SyncExecutor constructor(
   jagr: Jagr,
 ) : Executor {
-
-  object Factory : Executor.Factory {
-    override fun create(jagr: Jagr): Executor = SyncExecutor(jagr)
-  }
-
   private val mutex = Mutex()
   private val runtimeGrader = jagr.runtimeGrader
   private val scheduled = mutableListOf<GradingQueue>()
@@ -46,5 +41,9 @@ class SyncExecutor constructor(
       runtimeGrader.grade(rubricCollector.start(next))
     }
     scheduled.clear()
+  }
+
+  object Factory : Executor.Factory {
+    override fun create(jagr: Jagr): Executor = SyncExecutor(jagr)
   }
 }

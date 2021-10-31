@@ -31,23 +31,6 @@ class ThreadWorkerPool(
   private val runtimeGrader: RuntimeGrader,
   private val concurrency: Int,
 ) : WorkerPool {
-
-  open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
-    companion object Default : Factory(concurrency = 4)
-
-    override fun create(jagr: Jagr): WorkerPool = ThreadWorkerPool(jagr.runtimeGrader, concurrency)
-  }
-
-  companion object {
-    fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
-      FactoryBuilder(from).also(builderAction).factory()
-  }
-
-  class FactoryBuilder internal constructor(factory: Factory) {
-    var concurrency: Int = factory.concurrency
-    fun factory() = Factory(concurrency)
-  }
-
   private val activeWorkers: MutableList<Worker> = mutableListOf()
   private val activeWorkersLock = ReentrantLock()
   private fun removeActiveWorker(worker: Worker) = activeWorkersLock.withLock { activeWorkers -= worker }
@@ -69,5 +52,21 @@ class ThreadWorkerPool(
   }
 
   override fun close() {
+  }
+
+  open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
+    companion object Default : Factory(concurrency = 4)
+
+    override fun create(jagr: Jagr): WorkerPool = ThreadWorkerPool(jagr.runtimeGrader, concurrency)
+  }
+
+  class FactoryBuilder internal constructor(factory: Factory) {
+    var concurrency: Int = factory.concurrency
+    fun factory() = Factory(concurrency)
+  }
+
+  companion object {
+    fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
+      FactoryBuilder(from).also(builderAction).factory()
   }
 }

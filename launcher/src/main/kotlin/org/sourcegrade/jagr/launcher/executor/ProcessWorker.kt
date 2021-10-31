@@ -42,10 +42,6 @@ class ProcessWorker(
   processIODispatcher: CoroutineDispatcher,
   private val removeActive: (Worker) -> Unit,
 ) : Worker {
-  companion object {
-    const val MARK_RESULT_BYTE = 7
-  }
-
   override var job: GradingJob? = null
   override var status: WorkerStatus = WorkerStatus.PREPARING
   override var userTime: Long = 0
@@ -113,5 +109,9 @@ class ProcessWorker(
   override fun kill() {
     process.destroy()
     coroutineScope.cancel("Killed by ProcessWorker")
+  }
+
+  companion object {
+    const val MARK_RESULT_BYTE = 7
   }
 }
