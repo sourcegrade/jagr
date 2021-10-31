@@ -91,7 +91,7 @@ fun <T> Sequence<ResourceContainer>.compile(
 
 fun JavaCompileResult.exportCompilationResult(name: String) {
   val file = File("compilation/$name")
-  file.parentFile.ensure()
+  file.parentFile.mkdirs()
   JarOutputStream(file.outputStream().buffered()).use { jar ->
     for ((className, compiledClass) in runtimeResources.classes) {
       val entry = JarEntry("${className.replace(".", "/")}.class")
