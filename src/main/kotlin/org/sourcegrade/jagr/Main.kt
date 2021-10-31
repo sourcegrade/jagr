@@ -17,8 +17,6 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("UnstableApiUsage")
-
 package org.sourcegrade.jagr
 
 import com.github.ajalt.clikt.core.CliktCommand
