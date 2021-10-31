@@ -19,8 +19,6 @@
 
 package org.sourcegrade.jagr.launcher.io
 
-import org.sourcegrade.jagr.launcher.ensure
-import org.sourcegrade.jagr.launcher.writeStream
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -42,7 +40,10 @@ inline fun buildResource(configure: Resource.Builder.() -> Unit): Resource = cre
 fun createResourceBuilder(): Resource.Builder = ResourceBuilderImpl()
 
 fun Resource.writeIn(dir: File, name: String? = null): File {
-  return dir.resolve(name ?: this.name).apply { parentFile.ensure() }.writeStream { getInputStream() }
+  check(dir.mkdirs()) { "Unable to create directory $dir" }
+  val file = dir.resolve(name ?: this.name)
+  file.outputStream().buffered().use { getInputStream().copyTo(it) }
+  return file
 }
 
 private class ResourceBuilderImpl : Resource.Builder {

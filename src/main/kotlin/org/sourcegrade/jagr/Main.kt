@@ -28,7 +28,6 @@ import com.google.common.io.ByteStreams
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.sourcegrade.jagr.launcher.ensure
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.extrasManager

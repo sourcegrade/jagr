@@ -17,7 +17,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher
+package org.sourcegrade.jagr
 
 import org.slf4j.Logger
 import java.io.File
@@ -40,28 +40,4 @@ fun File.ensure(logger: Logger? = null, logInfo: Boolean = true): File? {
     }
   }
   return this
-}
-
-inline fun File.writeStream(stream: () -> InputStream): File {
-  outputStream().use { fileStream ->
-    stream().use { inputStream ->
-      inputStream.copyTo(fileStream)
-    }
-  }
-  return this
-}
-
-inline fun File.usePrintWriterSafe(logger: Logger? = null, block: PrintWriter.() -> Unit) {
-  parentFile.ensure(logger, logInfo = false) ?: return
-  try {
-    PrintWriter(this, "UTF-8").use(block)
-  } catch (e: Throwable) {
-    logger?.error("Unable to export to $this", e)
-    return
-  }
-}
-
-fun File.writeTextSafe(content: String, logger: Logger? = null) {
-  parentFile.ensure(logger, logInfo = false) ?: return
-  writeText(content)
 }

@@ -19,7 +19,6 @@
 
 package org.sourcegrade.jagr.launcher.io
 
-import org.sourcegrade.jagr.launcher.ensure
 import java.io.File
 import java.io.FilenameFilter
 
@@ -41,7 +40,7 @@ class GradingBatchBuilder internal constructor() {
   private var totalExpectedCount: Int = 0
 
   private fun discover(file: File, filter: FilenameFilter?, list: MutableList<ResourceContainer>) {
-    file.ensure()
+    check(file.mkdirs()) { "Unable to create directory $file" }
     for (candidate in checkNotNull(file.listFiles(filter)) { "Could not find $file" }) {
       list += createResourceContainer(candidate)
     }
@@ -51,7 +50,7 @@ class GradingBatchBuilder internal constructor() {
   fun discoverGraders(file: String, filter: FilenameFilter? = null) = discoverGraders(File(file), filter)
 
   fun discoverSubmissions(file: File, filter: FilenameFilter? = null) {
-    file.ensure()
+    check(file.mkdirs()) { "Unable to create directory $file" }
     for (candidate in checkNotNull(file.listFiles(filter)) { "Could not find $file" }) {
       submissions += createResourceContainer(candidate)
       ++totalExpectedCount

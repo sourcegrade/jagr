@@ -22,7 +22,6 @@ package org.sourcegrade.jagr.core.extra
 import com.google.inject.Inject
 import org.slf4j.Logger
 import org.sourcegrade.jagr.launcher.env.Config
-import org.sourcegrade.jagr.launcher.writeStream
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
@@ -72,7 +71,8 @@ class MoodleUnpack @Inject constructor(
     } else {
       logger.info("extra(moodle-unpack) :: Unpacking studentId $studentId in file $fileName")
     }
-    val file = directory.resolve(fileName).writeStream { getInputStream(entry) }
+    val file = directory.resolve(fileName)
+    file.outputStream().buffered().use { getInputStream(entry).copyTo(it) }
     return SubmissionInfoVerification(
       file,
       assignmentId = assignmentId,
