@@ -22,17 +22,12 @@ package org.sourcegrade.jagr.core.compiler.java
 import org.slf4j.Logger
 import org.sourcegrade.jagr.core.parallelMapNotNull
 import org.sourcegrade.jagr.core.transformer.TransformationApplier
-import org.sourcegrade.jagr.launcher.ensure
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.keyOf
-import org.sourcegrade.jagr.launcher.io.nameWithoutExtension
 import org.sourcegrade.jagr.launcher.io.readMap
 import org.sourcegrade.jagr.launcher.io.writeMap
-import java.io.File
-import java.util.jar.JarEntry
-import java.util.jar.JarOutputStream
 
 data class RuntimeResources(
   val classes: Map<String, CompiledClass> = mapOf(),
@@ -69,9 +64,12 @@ fun <T> Sequence<ResourceContainer>.compile(
   constructor: JavaCompileResult.() -> T?
 ): List<T> = toList().parallelMapNotNull {
   val original = runtimeJarLoader.loadSources(it, graderRuntimeLibraries)
-  val transformed = transformerApplier.transform(original)
-  original.exportCompilationResult("${it.info.nameWithoutExtension}-original.jar")
-  transformed.exportCompilationResult("${it.info.nameWithoutExtension}-transformed.jar")
+  val transformed = try {
+    transformerApplier.transform(original)
+  } catch (e: Exception) {
+    logger.error("Failed to apply transformations for ${original.submissionInfo} :: ${e.message}")
+    return@parallelMapNotNull null
+  }
   with(transformed) {
     printMessages(
       logger,
@@ -80,19 +78,5 @@ fun <T> Sequence<ResourceContainer>.compile(
     )
     constructor()?.apply { logger.info("Loaded $containerType $it") }
       ?: run { logger.error("Failed to load $containerType $it"); null }
-  }
-}
-
-fun JavaCompileResult.exportCompilationResult(name: String) {
-  val file = File("compilation/$name")
-  file.parentFile.ensure()
-  JarOutputStream(file.outputStream().buffered()).use { jar ->
-    for ((className, compiledClass) in runtimeResources.classes) {
-      val entry = JarEntry("${className.replace(".", "/")}.class")
-      entry.time = System.currentTimeMillis()
-      jar.putNextEntry(entry)
-      jar.write(compiledClass.byteArray)
-      jar.closeEntry()
-    }
   }
 }
