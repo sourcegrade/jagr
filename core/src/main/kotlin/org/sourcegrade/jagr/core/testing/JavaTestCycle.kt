@@ -45,6 +45,7 @@ data class JavaTestCycle(
   override fun getSubmission(): JavaSubmission = submission
   override fun getTestsSucceededCount(): Int = testsSucceededCount
   override fun getTestsStartedCount(): Int = testsStartedCount
+  override fun getNotes(): List<String> = emptyList()
   override fun getJUnitResult(): TestCycle.JUnitResult? = jUnitResult
   fun setJUnitResult(jUnitResult: TestCycle.JUnitResult?) {
     if (jUnitResult == null) return

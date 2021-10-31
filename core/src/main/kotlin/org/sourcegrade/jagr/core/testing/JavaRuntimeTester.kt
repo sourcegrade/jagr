@@ -36,17 +36,17 @@ class JavaRuntimeTester @Inject constructor(
   private val logger: Logger,
   private val testCycleParameterResolver: TestCycleParameterResolver,
 ) : RuntimeTester {
-  override fun createTestCycle(graderJar: GraderJarImpl, submission: Submission): TestCycle? {
+  override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
     if (submission !is JavaSubmission) return null
     val info = submission.info
-    val rubricProviders = graderJar.rubricProviders[info.assignmentId] ?: return null
+    val rubricProviders = grader.rubricProviders[info.assignmentId] ?: return null
     val classLoader = RuntimeClassLoader(
       submission.compileResult.runtimeResources
         + submission.runtimeLibraries
-        + graderJar.compileResult.runtimeResources
+        + grader.compileResult.runtimeResources
     )
     val testCycle = JavaTestCycle(rubricProviders, submission, classLoader)
-    graderJar.testProviders[info.assignmentId]
+    grader.testProviders[info.assignmentId]
       ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
       ?.runJUnit(testCycle)
       ?.also(testCycle::setJUnitResult)

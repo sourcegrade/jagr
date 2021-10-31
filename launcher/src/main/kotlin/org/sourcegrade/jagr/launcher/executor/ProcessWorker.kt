@@ -34,13 +34,15 @@ import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class ProcessWorker(
   private val jagr: Jagr,
-  processIODispatcher: CoroutineDispatcher,
+  private val runtimeGrader: RuntimeGrader,
   private val removeActive: (Worker) -> Unit,
+  processIODispatcher: CoroutineDispatcher,
 ) : Worker {
   override var job: GradingJob? = null
   override var status: WorkerStatus = WorkerStatus.PREPARING
@@ -78,6 +80,11 @@ class ProcessWorker(
     }
   }
 
+  override fun kill() {
+    process.destroy()
+    coroutineScope.cancel("Killed by ProcessWorker")
+  }
+
   private fun sendRequest(request: GradingRequest) {
     val outputStream = ByteArrayOutputStream(200_000)
     val output = ByteStreams.newDataOutput(outputStream)
@@ -98,14 +105,14 @@ class ProcessWorker(
         break
       } else if (next == -1) {
         jagr.logger.error("${job.request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
-        return GradingResult(startedUtc, OffsetDateTime.now(ZoneOffset.UTC).toInstant(), job.request, emptyMap())
+        return createFallbackResult(startedUtc, job.request)
       } else {
         stdOut.write(next)
       }
     }
     val bytes: ByteArray = runCatching { process.inputStream.readAllBytes() }.getOrElse {
       jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
-      return GradingResult(startedUtc, OffsetDateTime.now(ZoneOffset.UTC).toInstant(), job.request, emptyMap())
+      return createFallbackResult(startedUtc, job.request)
     }
     return openScope(ByteStreams.newDataInput(bytes), jagr) {
       SerializerFactory.getScoped<GradingRequest>(jagr).putInScope(job.request, this)
@@ -113,9 +120,10 @@ class ProcessWorker(
     }
   }
 
-  override fun kill() {
-    process.destroy()
-    coroutineScope.cancel("Killed by ProcessWorker")
+  private fun createFallbackResult(startedUtc: Instant, request: GradingRequest): GradingResult {
+    val finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+    val fallbackRubrics = runtimeGrader.gradeFallback(request.graders, request.submission)
+    return GradingResult(startedUtc, finishedUtc, request, fallbackRubrics)
   }
 
   companion object {

@@ -54,6 +54,8 @@ internal data class ResourceContainerInfoImpl(override val name: String) : Resou
 val ResourceContainerInfo.nameWithoutExtension: String
   get() = name.substringBeforeLast(".")
 
+fun Resource.toContainer(): ResourceContainer = createResourceContainer(name, getInputStream())
+
 inline fun buildResourceContainer(configure: ResourceContainer.Builder.() -> Unit): ResourceContainer =
   createResourceContainerBuilder().apply(configure).build()
 

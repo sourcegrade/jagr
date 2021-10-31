@@ -19,9 +19,18 @@
 
 package org.sourcegrade.jagr.core.testing
 
-import org.sourcegrade.jagr.api.testing.Submission
+import org.junit.platform.launcher.TestPlan
+import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
+import org.junit.platform.launcher.core.LauncherFactory
+import org.junit.platform.launcher.listeners.SummaryGeneratingListener
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.api.testing.TestStatusListener
 
-fun interface RuntimeTester {
-  fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle?
+class FallbackJUnitResult : TestCycle.JUnitResult {
+  private val testPlan = LauncherFactory.create().discover(LauncherDiscoveryRequestBuilder.request().build())
+  private val summaryListener = SummaryGeneratingListener()
+  private val statusListener = TestStatusListener { emptyMap() }
+  override fun getTestPlan(): TestPlan = testPlan
+  override fun getSummaryListener(): SummaryGeneratingListener = summaryListener
+  override fun getStatusListener(): TestStatusListener = statusListener
 }

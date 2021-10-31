@@ -21,7 +21,23 @@ package org.sourcegrade.jagr.core.testing
 
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.plus
 
-fun interface RuntimeTester {
-  fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle?
+class FallbackRuntimeTester : RuntimeTester {
+  override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
+    val info = submission.info
+    val rubricProviders = grader.rubricProviders[info.assignmentId] ?: return null
+    var resources = grader.compileResult.runtimeResources
+    if (submission is JavaSubmission) {
+      resources += submission.compileResult.runtimeResources + submission.runtimeLibraries
+    }
+    val classLoader = RuntimeClassLoader(resources)
+    val notes = listOf(
+      "The grading process was forcibly terminated.",
+      "Please check if you have an infinite loop or infinite recursion.",
+      "Contact your tutor if you have any questions.",
+    )
+    return FallbackTestCycle(rubricProviders, submission, classLoader, notes)
+  }
 }

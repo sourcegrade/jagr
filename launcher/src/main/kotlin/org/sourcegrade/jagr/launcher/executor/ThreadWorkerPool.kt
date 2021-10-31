@@ -28,7 +28,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class ThreadWorkerPool(
-  private val runtimeGrader: RuntimeGrader,
+  private val jagr: Jagr,
   private val concurrency: Int,
 ) : WorkerPool {
   private val activeWorkers: MutableList<Worker> = mutableListOf()
@@ -48,7 +48,9 @@ class ThreadWorkerPool(
   override fun createWorkers(maxCount: Int): List<Worker> = activeWorkersLock.withLock {
     if (maxCount == 0) return emptyList()
     val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
-    return List(workerCount) { ThreadWorker(runtimeGrader, this::removeActiveWorker).also(activeWorkers::add) }
+    return List(workerCount) {
+      ThreadWorker(jagr.runtimeGrader, this::removeActiveWorker).also(activeWorkers::add)
+    }
   }
 
   override fun close() {
@@ -57,7 +59,7 @@ class ThreadWorkerPool(
   open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
     companion object Default : Factory(concurrency = 4)
 
-    override fun create(jagr: Jagr): WorkerPool = ThreadWorkerPool(jagr.runtimeGrader, concurrency)
+    override fun create(jagr: Jagr): WorkerPool = ThreadWorkerPool(jagr, concurrency)
   }
 
   class FactoryBuilder internal constructor(factory: Factory) {
