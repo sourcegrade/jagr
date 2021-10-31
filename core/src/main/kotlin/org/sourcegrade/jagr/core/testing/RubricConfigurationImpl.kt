@@ -17,13 +17,18 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.core.testing
 
+import org.sourcegrade.jagr.api.testing.ClassTransformer
 import org.sourcegrade.jagr.api.testing.RubricConfiguration
+import java.util.Collections
 
-interface GraderJar {
-  val name: String
-  val configuration: RubricConfiguration
-  val rubricProviders: Map<String, List<String>>
-  val testProviders: Map<String, List<String>>
+class RubricConfigurationImpl : RubricConfiguration {
+  private val transformers = mutableListOf<ClassTransformer>()
+  override fun getTransformers(): List<ClassTransformer> = Collections.unmodifiableList(transformers)
+
+  override fun addTransformer(transformer: ClassTransformer): RubricConfiguration {
+    transformers += transformer
+    return this
+  }
 }

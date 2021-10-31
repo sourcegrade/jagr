@@ -22,6 +22,7 @@ package org.sourcegrade.jagr.core.executor
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.slf4j.Logger
+import org.sourcegrade.jagr.api.testing.ClassTransformer
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
 import org.sourcegrade.jagr.core.compiler.java.compile
@@ -29,7 +30,9 @@ import org.sourcegrade.jagr.core.compiler.java.loadCompiled
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.core.transformer.TransformerManager
+import org.sourcegrade.jagr.core.transformer.applierOf
+import org.sourcegrade.jagr.core.transformer.plus
+import org.sourcegrade.jagr.core.transformer.useWhen
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.GradingRequest
 import org.sourcegrade.jagr.launcher.io.GraderJar
@@ -42,7 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class GradingQueueImpl(
   logger: Logger,
   runtimeJarLoader: RuntimeJarLoader,
-  transformerManager: TransformerManager,
+  commonTransformer: ClassTransformer,
   batch: GradingBatch,
 ) : GradingQueue {
 
@@ -57,14 +60,26 @@ class GradingQueueImpl(
    */
   private val graderRuntimeLibraries = baseRuntimeLibraries + runtimeJarLoader.loadCompiled(batch.graderLibraries)
 
+  private val commonTransformerApplier = applierOf(commonTransformer)
+
   override val graders: List<GraderJar> = batch.graders.compile(
-    logger, transformerManager, runtimeJarLoader, graderRuntimeLibraries, "grader",
+    logger, commonTransformerApplier, runtimeJarLoader, graderRuntimeLibraries, "grader",
   ) {
     if (errors == 0) GraderJarImpl(logger, this, graderRuntimeLibraries) else null
   }
 
+  /**
+   * Create a transformer applier that selectively applies transformations to
+   * submissions only if the grader contains a rubric for it
+   */
+  private val submissionTransformerApplier = graders.map { graderJar ->
+    graderJar.configuration.transformers useWhen { result ->
+      result.submissionInfo?.assignmentId?.let(graderJar.rubricProviders::containsKey) == true
+    }
+  }.fold(applierOf()) { a, b -> a + b }
+
   override val submissions: List<Submission> = batch.submissions.compile(
-    logger, transformerManager, runtimeJarLoader, baseRuntimeLibraries, "submission"
+    logger, submissionTransformerApplier, runtimeJarLoader, baseRuntimeLibraries, "submission"
   ) {
     if (submissionInfo == null) {
       logger.error("${container.name} does not have a submission-info.json! Skipping...")

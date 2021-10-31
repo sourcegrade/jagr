@@ -20,6 +20,7 @@
 package org.sourcegrade.jagr.api.rubric;
 
 import org.jetbrains.annotations.Nullable;
+import org.sourcegrade.jagr.api.testing.RubricConfiguration;
 import org.sourcegrade.jagr.api.testing.Submission;
 
 public interface RubricProvider {
@@ -35,6 +36,9 @@ public interface RubricProvider {
    */
   default @Nullable String getOutputFileName(Submission submission) {
     return null;
+  }
+
+  default void configure(RubricConfiguration configuration) {
   }
 
   Rubric getRubric();

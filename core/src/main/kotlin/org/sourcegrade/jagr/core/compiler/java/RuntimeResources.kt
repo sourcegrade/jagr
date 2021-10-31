@@ -21,7 +21,7 @@ package org.sourcegrade.jagr.core.compiler.java
 
 import org.slf4j.Logger
 import org.sourcegrade.jagr.core.parallelMapNotNull
-import org.sourcegrade.jagr.core.transformer.TransformerManager
+import org.sourcegrade.jagr.core.transformer.TransformationApplier
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -57,13 +57,20 @@ fun RuntimeJarLoader.loadCompiled(containers: Sequence<ResourceContainer>): Runt
 
 fun <T> Sequence<ResourceContainer>.compile(
   logger: Logger,
-  transformerManager: TransformerManager,
+  transformerApplier: TransformationApplier,
   runtimeJarLoader: RuntimeJarLoader,
   graderRuntimeLibraries: RuntimeResources,
   containerType: String,
   constructor: JavaCompileResult.() -> T?
 ): List<T> = toList().parallelMapNotNull {
-  with(transformerManager.transform(runtimeJarLoader.loadSources(it, graderRuntimeLibraries))) {
+  val original = runtimeJarLoader.loadSources(it, graderRuntimeLibraries)
+  val transformed = try {
+    transformerApplier.transform(original)
+  } catch (e: Exception) {
+    logger.error("Failed to apply transformations for ${original.submissionInfo} :: ${e.message}")
+    return@parallelMapNotNull null
+  }
+  with(transformed) {
     printMessages(
       logger,
       { "$containerType ${container.name} has $warnings warnings and $errors errors!" },

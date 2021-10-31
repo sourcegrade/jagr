@@ -25,7 +25,6 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
   implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
   implementation("org.fusesource.jansi:jansi:$jansiVersion")
-  implementation("org.ow2.asm:asm:$asmVersion")
   implementation("com.github.albfernandez:juniversalchardet:$juniversalchardetVersion")
   implementation("org.spongepowered:configurate-hocon:$configurateVersion")
   implementation("org.spongepowered:configurate-extra-kotlin:$configurateVersion")
