@@ -67,7 +67,7 @@ class RuntimeJarLoader @Inject constructor(
           submissionInfo = try {
             Json.decodeFromString<SubmissionInfoImpl>(resource.getInputStream().reader().use { it.readText() })
           } catch (e: Throwable) {
-            logger.error("$resource has invalid submission-info.json", e)
+            logger.error("${container.info.name} has invalid submission-info.json", e)
             return JavaCompileResult(container.info)
           }
         }
