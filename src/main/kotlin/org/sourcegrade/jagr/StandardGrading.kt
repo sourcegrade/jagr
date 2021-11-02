@@ -40,9 +40,8 @@ import org.sourcegrade.jagr.launcher.io.writeAsDirIn
 import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
 
-object StandardGrading {
-  operator fun invoke() = runBlocking {
-    val jagr = Jagr
+class StandardGrading(private val jagr: Jagr = Jagr) {
+  fun grade() = runBlocking {
     val startTime = System.currentTimeMillis()
     val config = jagr.config
     File(config.dir.submissions).ensure(jagr.logger)
@@ -69,14 +68,15 @@ object StandardGrading {
     }
     val collector = emptyCollector(jagr)
     val progress = ProgressBar(collector)
-    collector.setListener {
+    collector.setListener { result ->
+      result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
       progress.print()
     }
     collector.allocate(queue)
     executor.schedule(queue)
     executor.start(collector)
-    printHistogram(collector, jagr)
-    export(collector, jagr)
+    collector.logHistogram(jagr)
+    export(collector)
     val submissionExportFile = File(config.dir.submissionsExport).ensure(jagr.logger)!!
     for (resourceContainer in jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
       resourceContainer.writeAsDirIn(submissionExportFile)
@@ -84,7 +84,7 @@ object StandardGrading {
     jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
   }
 
-  private fun export(collector: RubricCollector, jagr: Jagr) {
+  private fun export(collector: RubricCollector) {
     val csvExporter = jagr.injector.getInstance(GradedRubricExporter.CSV::class.java)
     val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
     val config = jagr.config

@@ -36,14 +36,14 @@ internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollec
   override val remaining: Int
     get() = queued.sumOf { it.remaining }
 
-  private var listener: () -> Unit = {}
+  private var listener: (GradingResult) -> Unit = {}
   private val scope = CoroutineScope(Dispatchers.Unconfined)
 
   override fun allocate(queue: GradingQueue) {
     queued += queue
   }
 
-  override fun setListener(listener: () -> Unit) {
+  override fun setListener(listener: (GradingResult) -> Unit) {
     this.listener = listener
   }
 
@@ -53,26 +53,12 @@ internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollec
     scope.launch {
       try {
         val result = job.result.await()
-        result.rubrics.keys.forEach { it.log() }
         gradingFinished.add(result)
+        listener(result)
       } catch (e: Exception) {
         jagr.logger.error("An error occurred receiving result for grading job", e)
       }
-      listener()
     }
     return job
-  }
-
-  private fun GradedRubric.log() {
-    val succeeded = testCycle.testsSucceededCount
-    val total = testCycle.testsStartedCount
-    val info = if (total == 0) {
-      " (no tests found)"
-    } else {
-      " ($succeeded/$total tests)" +
-        " points=${grade.correctPoints} -points=${grade.incorrectPoints} maxPoints=${rubric.maxPoints}" +
-        " from '${rubric.title}'"
-    }
-    jagr.logger.info("${testCycle.submission} :: $info")
   }
 }

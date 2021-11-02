@@ -19,16 +19,17 @@
 
 package org.sourcegrade.jagr
 
+import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.RubricCollector
 
-fun printHistogram(collector: RubricCollector, jagr: Jagr) {
+fun RubricCollector.logHistogram(jagr: Jagr) {
   val histogram = mutableMapOf<Int, Int>()
   var correctPoints = 0
   var incorrectPoints = 0
   var maxPoints = 0
-  val allRubrics = collector.gradingFinished.flatMap { it.rubrics.keys }
+  val allRubrics = gradingFinished.flatMap { it.rubrics.keys }
   for (rubric in allRubrics) {
     val prev = histogram.computeIfAbsent(rubric.grade.correctPoints) { 0 }
     histogram[rubric.grade.correctPoints] = prev + 1
@@ -55,4 +56,17 @@ fun printHistogram(collector: RubricCollector, jagr: Jagr) {
       }
     }.also { jagr.logger.info(it.toString()) }
   }
+}
+
+fun GradedRubric.logGradedRubric(jagr: Jagr) {
+  val succeeded = testCycle.testsSucceededCount
+  val total = testCycle.testsStartedCount
+  val info = if (total == 0) {
+    " (no tests found)"
+  } else {
+    " ($succeeded/$total tests)" +
+      " points=${grade.correctPoints} -points=${grade.incorrectPoints} maxPoints=${rubric.maxPoints}" +
+      " from '${rubric.title}'"
+  }
+  jagr.logger.info("${testCycle.submission} :: $info")
 }

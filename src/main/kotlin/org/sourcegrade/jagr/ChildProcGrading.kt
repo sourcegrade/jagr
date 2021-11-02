@@ -41,10 +41,9 @@ import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 
-object ChildProcGrading {
-  operator fun invoke() = runBlocking {
-    val jagr = Jagr
-    val queue = runCatching { next(jagr) }.getOrElse {
+class ChildProcGrading(private val jagr: Jagr = Jagr) {
+  fun grade() = runBlocking {
+    val queue = runCatching { next() }.getOrElse {
       jagr.logger.error("Could not get next GradingQueue", it)
       return@runBlocking
     }
@@ -56,7 +55,7 @@ object ChildProcGrading {
     notifyParent(collector)
   }
 
-  private suspend fun next(jagr: Jagr): GradingQueue = withContext(Dispatchers.IO) {
+  private suspend fun next(): GradingQueue = withContext(Dispatchers.IO) {
     val bytes: ByteArray = runCatching { System.`in`.readAllBytes() }.getOrElse {
       throw IllegalStateException("Encountered an unrecoverable exception receiving bytes from parent process", it)
     }

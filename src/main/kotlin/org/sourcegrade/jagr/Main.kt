@@ -30,5 +30,5 @@ class MainCommand : CliktCommand() {
    * Command line option to indicate that this process will listen to (via std in) to a grading request
    */
   private val child by option("--child", "-c").flag()
-  override fun run() = if (child) ChildProcGrading() else StandardGrading()
+  override fun run() = if (child) ChildProcGrading().grade() else StandardGrading().grade()
 }
