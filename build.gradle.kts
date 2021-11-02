@@ -18,6 +18,14 @@ application {
 }
 
 tasks {
+  named<JavaExec>("run") {
+    doFirst {
+      error("Use runShadow instead")
+    }
+  }
+  named<JavaExec>("runShadow") {
+    workingDir = File("build/run").also(File::mkdirs)
+  }
   jar {
     enabled = false
   }
