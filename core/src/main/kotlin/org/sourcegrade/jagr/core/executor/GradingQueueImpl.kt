@@ -69,7 +69,7 @@ class GradingQueueImpl(
     if (errors == 0) GraderJarImpl(logger, this, graderRuntimeLibraries) else null
   }
 
-  private val baseSubmissionTransformerApplier = applierOf(SubmissionVerificationTransformer())
+  private val baseSubmissionTransformerApplier = applierOf(SubmissionVerificationTransformer(), commonTransformer)
 
   /**
    * Create a transformer applier that selectively applies transformations to
