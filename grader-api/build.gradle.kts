@@ -6,6 +6,9 @@ repositories {
   mavenCentral()
 }
 
+val apiVersion: String by rootProject
+version = apiVersion
+
 val asmVersion: String by project
 val guiceVersion: String by project
 val jetbrainsAnnotationsVersion: String by project

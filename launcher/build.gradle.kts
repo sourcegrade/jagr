@@ -4,6 +4,9 @@ plugins {
   id("com.github.johnrengelman.shadow")
 }
 
+val apiVersion: String by rootProject
+version = apiVersion
+
 val configurateVersion: String by project
 val guiceVersion: String by project
 val jetbrainsAnnotationsVersion: String by project
