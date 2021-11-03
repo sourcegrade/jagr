@@ -30,10 +30,10 @@ class ExtrasManagerImpl @Inject constructor(
   private val moodleUnpack: MoodleUnpack,
 ) : ExtrasManager {
 
-  private fun tryRunExtra(condition: Boolean, extra: Extra) {
+  private fun tryRunExtra(condition: Boolean, unpacker: Unpacker) {
     if (condition) {
-      logger.info("Running extra ${extra.name}")
-      extra.run()
+      logger.info("Running extra ${unpacker.name}")
+      //unpacker.unpack()
     }
   }
 

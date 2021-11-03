@@ -19,31 +19,34 @@
 
 package org.sourcegrade.jagr.core.extra
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.Logger
+import org.sourcegrade.jagr.core.parallelMapNotNull
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.env.Config
+import org.sourcegrade.jagr.launcher.io.Resource
+import org.sourcegrade.jagr.launcher.io.ResourceContainer
+import org.sourcegrade.jagr.launcher.io.toContainer
 import java.io.File
 import java.nio.file.FileSystems
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.bufferedWriter
 
-abstract class Unpack : Extra {
+abstract class Unpack : Unpacker {
 
   protected abstract val config: Config
   protected abstract val logger: Logger
 
   @OptIn(ExperimentalPathApi::class)
-  private fun SubmissionInfoVerification.verify() {
-    if (assignmentId == null && studentId == null && firstName == null && lastName == null) return
-    FileSystems.newFileSystem(file.toPath(), null as ClassLoader?).use { fs ->
+  private fun SubmissionInfoVerification.verify(): ResourceContainer {
+    val container = resource.toContainer()
+    if (assignmentId == null && studentId == null && firstName == null && lastName == null) return container
+
+    FileSystems.newFileSystem(File("a").toPath(), null as ClassLoader?).use { fs ->
       val submissionInfoPath = fs.getPath("submission-info.json")
       val replacedSubmissionInfo = try {
         submissionInfoPath.bufferedReader()
@@ -77,7 +80,7 @@ abstract class Unpack : Extra {
             if (replaceLastName) lastName!! else submissionInfo.lastName,
             submissionInfo.sourceSets,
           )
-        } else return
+        } else return container
       } ?: SubmissionInfoImpl(
         assignmentId = assignmentId ?: "none",
         studentId = studentId ?: "none",
@@ -89,20 +92,15 @@ abstract class Unpack : Extra {
         writer.write(Json.encodeToString(replacedSubmissionInfo))
       }
     }
+    return container
   }
 
-  fun List<SubmissionInfoVerification>.verify() {
-    runBlocking {
-      with(GlobalScope) {
-        asSequence().map {
-          async { it.verify() }
-        }
-      }.forEach { it.await() }
-    }
+  fun List<SubmissionInfoVerification>.verify(): List<ResourceContainer> {
+    return parallelMapNotNull { it.verify() }
   }
 
   data class SubmissionInfoVerification(
-    val file: File,
+    val resource: Resource,
     val assignmentId: String? = null,
     val studentId: String? = null,
     val firstName: String? = null,

@@ -44,8 +44,7 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
   fun grade() = runBlocking {
     val startTime = System.currentTimeMillis()
     val config = jagr.config
-    File(config.dir.submissions).ensure(jagr.logger)
-    jagr.extrasManager.runExtras()
+    //jagr.extrasManager.runExtras()
     val batch = buildGradingBatch {
       discoverSubmissions(config.dir.submissions) { _, n -> n.endsWith("jar") }
       discoverSubmissionLibraries(config.dir.libs) { _, n -> n.endsWith("jar") }

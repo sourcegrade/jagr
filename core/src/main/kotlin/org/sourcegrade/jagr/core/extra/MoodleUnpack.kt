@@ -22,48 +22,34 @@ package org.sourcegrade.jagr.core.extra
 import com.google.inject.Inject
 import org.slf4j.Logger
 import org.sourcegrade.jagr.launcher.env.Config
-import java.io.File
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
+import org.sourcegrade.jagr.launcher.io.Resource
+import org.sourcegrade.jagr.launcher.io.ResourceContainer
 
 class MoodleUnpack @Inject constructor(
   override val config: Config,
   override val logger: Logger,
 ) : Unpack() {
   private val assignmentIdRegex = Regex(".*Abgabe zu Hausübung (?<assignmentId>[0-9]+) .*")
+  private val studentIdRegex = Regex(config.extras.moodleUnpack.studentIdRegex)
   override val name: String = "moodle-unpack"
-  override fun run() {
-    val submissions = File(config.dir.submissions)
-    val studentIdRegex = Regex(config.extras.moodleUnpack.studentIdRegex)
-    val unpackedFiles: MutableList<SubmissionInfoVerification> = mutableListOf()
-    for (candidate in submissions.listFiles { _, t -> t.endsWith(".zip") }!!) {
-      logger.info("extra($name) :: Discovered candidate zip $candidate")
-      val zipFile = ZipFile(candidate)
-      // TODO: Fix this hack
-      val assignmentId = assignmentIdRegex.matchEntire(candidate.name)
-        ?.run { groups["assignmentId"]?.value }
-        ?.padStart(length = 2, padChar = '0')
-        ?.let { "H$it" }
-        ?: "none"
-      for (entry in zipFile.entries()) {
-        if (!entry.name.endsWith(".jar")) continue
+  override fun unpack(container: ResourceContainer): List<ResourceContainer> {
+    logger.info("extra($name) :: Discovered candidate zip $container")
+    // TODO: Fix this hack
+    val assignmentId = container.extractAssignmentId()
+    return container.asSequence()
+      .mapNotNull {
+        if (!it.name.endsWith(".jar")) return@mapNotNull null
         try {
-          unpackedFiles += zipFile.unpackEntry(entry.name.split("/"), entry, submissions, studentIdRegex, assignmentId)
-        } catch (e: Throwable) {
-          logger.info("extra($name) :: Unable to unpack entry ${entry.name} in candidate $candidate", e)
+          it.toInfoVerification(assignmentId)
+        } catch (e: Exception) {
+          logger.info("extra($name) :: Unable to unpack entry $name in candidate ${container.info.name}", e)
+          null
         }
-      }
-    }
-    unpackedFiles.verify()
+      }.toList().verify()
   }
 
-  private fun ZipFile.unpackEntry(
-    path: List<String>,
-    entry: ZipEntry,
-    directory: File,
-    studentIdRegex: Regex,
-    assignmentId: String,
-  ): SubmissionInfoVerification {
+  private fun Resource.toInfoVerification(assignmentId: String): SubmissionInfoVerification {
+    val path = name.split("/")
     val studentId = path[0].split(" - ").run { this[size - 1] }.takeIf { studentIdRegex.matches(it) }
     val fileName = "$studentId-${path[path.size - 1]}"
     if (studentId == null) {
@@ -71,12 +57,14 @@ class MoodleUnpack @Inject constructor(
     } else {
       logger.info("extra(moodle-unpack) :: Unpacking studentId $studentId in file $fileName")
     }
-    val file = directory.resolve(fileName)
-    file.outputStream().buffered().use { getInputStream(entry).copyTo(it) }
-    return SubmissionInfoVerification(
-      file,
-      assignmentId = assignmentId,
-      studentId = studentId
-    )
+    return SubmissionInfoVerification(this, assignmentId = assignmentId, studentId = studentId)
+  }
+
+  private fun ResourceContainer.extractAssignmentId(): String {
+    return assignmentIdRegex.matchEntire(info.name)
+      ?.run { groups["assignmentId"]?.value }
+      ?.padStart(length = 2, padChar = '0')
+      ?.let { "h$it" }
+      ?: "none"
   }
 }

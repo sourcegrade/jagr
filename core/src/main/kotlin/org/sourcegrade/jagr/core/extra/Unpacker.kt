@@ -19,7 +19,9 @@
 
 package org.sourcegrade.jagr.core.extra
 
-interface Extra {
+import org.sourcegrade.jagr.launcher.io.ResourceContainer
+
+interface Unpacker {
   val name: String
-  fun run()
+  fun unpack(container: ResourceContainer): List<ResourceContainer>
 }
