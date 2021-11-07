@@ -22,8 +22,6 @@ package org.sourcegrade.jagr.core.compiler.java
 import org.slf4j.Logger
 import org.sourcegrade.jagr.core.parallelMapNotNull
 import org.sourcegrade.jagr.core.transformer.TransformationApplier
-import org.sourcegrade.jagr.launcher.ensure
-import org.sourcegrade.jagr.core.transformer.TransformationApplier
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
