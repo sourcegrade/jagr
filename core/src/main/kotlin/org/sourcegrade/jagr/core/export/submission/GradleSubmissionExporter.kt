@@ -25,6 +25,7 @@ import com.google.inject.Inject
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.Logger
+import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
@@ -128,27 +129,27 @@ class GradleSubmissionExporter @Inject constructor(
       name = "$submissionName/src/main/resources/submission-info.json"
       outputStream.writer().use { it.write(Json.encodeToString(submission.info as SubmissionInfoImpl)) }
     }
-    val mainSource = "$submissionName/src/main/java/"
-    val sourceFiles = if (graderJar == null) {
-      submission.compileResult.sourceFiles
-    } else {
-      submission.compileResult.sourceFiles + graderJar.compileResult.sourceFiles
+    writeSourceFiles("$submissionName/src/main/java/", submission.compileResult.sourceFiles)
+    writeResources("$submissionName/src/main/resources/", submission.compileResult.runtimeResources.resources)
+    if (graderJar != null) {
+      writeSourceFiles("$submissionName/src/test/java/", graderJar.compileResult.sourceFiles)
+      writeResources("$submissionName/src/test/resources/", graderJar.compileResult.runtimeResources.resources)
     }
+  }
+
+  private fun ResourceContainer.Builder.writeSourceFiles(prefix: String, sourceFiles: Map<String, SourceFile>) {
     for ((fileName, sourceFile) in sourceFiles) {
       addResource {
-        name = mainSource + fileName
+        name = prefix + fileName
         outputStream.writer().use { it.write(sourceFile.content) }
       }
     }
-    val mainResources = "$submissionName/src/main/resources/"
-    val resources = if (graderJar == null) {
-      submission.compileResult.runtimeResources.resources
-    } else {
-      submission.compileResult.runtimeResources.resources + graderJar.compileResult.runtimeResources.resources
-    }
+  }
+
+  private fun ResourceContainer.Builder.writeResources(prefix: String, resources: Map<String, ByteArray>) {
     for ((fileName, resource) in resources) {
       addResource {
-        name = mainResources + fileName
+        name = prefix + fileName
         outputStream.writeBytes(resource)
       }
     }
