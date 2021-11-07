@@ -99,8 +99,16 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
       .asSequence()
       .map { it.rubrics }
       .reduce { acc, map -> acc + map }) {
-      csvExporter.export(gradedRubric).writeIn(csvFile)
-      htmlExporter.export(gradedRubric).writeIn(htmlFile)
+      try {
+        csvExporter.export(gradedRubric).writeIn(csvFile)
+      } catch (e: Exception) {
+        jagr.logger.error("Could not export $csvFile", e)
+      }
+      try {
+        htmlExporter.export(gradedRubric).writeIn(htmlFile)
+      } catch (e: Exception) {
+        jagr.logger.error("Could not export $htmlFile")
+      }
     }
   }
 }
