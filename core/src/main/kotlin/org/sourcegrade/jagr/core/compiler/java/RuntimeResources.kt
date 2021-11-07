@@ -76,7 +76,7 @@ fun <T> Sequence<ResourceContainer>.compile(
       { "$containerType ${container.name} has $warnings warnings and $errors errors!" },
       { "$containerType ${container.name} has $warnings warnings!" },
     )
-    constructor()?.apply { logger.info("Loaded $containerType $it") }
-      ?: run { logger.error("Failed to load $containerType $it"); null }
+    constructor()?.apply { logger.info("Loaded $containerType ${it.info.name}") }
+      ?: run { logger.error("Failed to load $containerType ${it.info.name}"); null }
   }
 }
