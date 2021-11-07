@@ -43,7 +43,12 @@ abstract class Unpack : Extra {
   @OptIn(ExperimentalPathApi::class)
   private fun SubmissionInfoVerification.verify() {
     if (assignmentId == null && studentId == null && firstName == null && lastName == null) return
-    FileSystems.newFileSystem(file.toPath(), null as ClassLoader?).use { fs ->
+    try {
+      FileSystems.newFileSystem(file.toPath(), null as ClassLoader?)
+    } catch (e: Exception) {
+      logger.error("Could not open zip for $file :: ${e.message}")
+      return
+    }.use { fs ->
       val submissionInfoPath = fs.getPath("submission-info.json")
       val replacedSubmissionInfo = try {
         submissionInfoPath.bufferedReader()
