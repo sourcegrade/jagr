@@ -61,7 +61,7 @@ class GermanCSVExporter @Inject constructor(
       append(DEL)
       append(rubric.maxPoints.toString())
       append(DEL)
-      append(grade.correctPoints.toString())
+      append(grade.getInRange(rubric))
       append(DEL)
       append(grade.comments.firstOrNull() ?: "")
       appendLine()
@@ -79,15 +79,12 @@ class GermanCSVExporter @Inject constructor(
     val criterion = gradedCriterion.criterion
     val grade = gradedCriterion.grade
     val comments = grade.comments.joinToString("; ")
-    val receivedPoints = if (grade.correctPoints == 0) {
-      if (grade.incorrectPoints == 0) "" else (criterion.maxPoints - grade.incorrectPoints).toString()
-    } else (criterion.minPoints + grade.correctPoints).toString()
     if (gradedCriterion.childCriteria.isEmpty()) {
       append(criterion.shortDescription)
       append(DEL)
-      append(criterion.maxPoints.toString())
+      append(criterion.minMax)
       append(DEL)
-      append(receivedPoints)
+      append(grade.getInRange(criterion))
       append(DEL)
       append(comments)
       append(DEL)

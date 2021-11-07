@@ -30,6 +30,7 @@ import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.buildResource
+import kotlin.math.max
 
 class MoodleJSONExporter @Inject constructor(
   private val logger: Logger,
@@ -37,7 +38,7 @@ class MoodleJSONExporter @Inject constructor(
   override fun export(gradedRubric: GradedRubric): Resource {
     val json = MoodleJSON(
       gradedRubric.testCycle.submission.info as SubmissionInfoImpl,
-      gradedRubric.grade.correctPoints,
+      max(0, gradedRubric.rubric.minPoints + gradedRubric.grade.correctPoints),
       StringBuilder().writeTable(gradedRubric).toString(),
     )
     val jsonString = Json.encodeToString(json)
@@ -76,13 +77,14 @@ class MoodleJSONExporter @Inject constructor(
       appendEmptyHTMLTableRow()
     }
 
+    val rubric = gradedRubric.rubric
     val grade = gradedRubric.grade
     val comments = grade.comments
 
     append("<tr>")
     append("<td><strong>Gesamt:</strong></td>")
-    append("<td>${gradedRubric.rubric.maxPoints}</td>")
-    append("<td>${grade.correctPoints}</td>")
+    append("<td>${rubric.maxPoints}</td>")
+    append("<td>${grade.getInRange(rubric)}</td>")
     append("<td>${comments.firstOrNull() ?: ""}</td>")
     append("</tr>")
 
@@ -105,14 +107,11 @@ class MoodleJSONExporter @Inject constructor(
     val criterion = gradedCriterion.criterion
     val grade = gradedCriterion.grade
     val comments = grade.comments.joinToString("<br />")
-    val receivedPoints = if (grade.correctPoints == 0) {
-      if (grade.incorrectPoints == 0) "" else (criterion.maxPoints - grade.incorrectPoints).toString()
-    } else (criterion.minPoints + grade.correctPoints).toString()
     if (gradedCriterion.childCriteria.isEmpty()) {
       append("<tr>")
       append("<td>${criterion.shortDescription}</td>")
-      append("<td>${criterion.maxPoints}</td>")
-      append("<td>$receivedPoints</td>")
+      append("<td>${criterion.minMax}</td>")
+      append("<td>${grade.getInRange(criterion)}</td>")
       append("<td>$comments</td>")
       append("</tr>")
     } else {
