@@ -47,7 +47,7 @@ project.extra["apiVersion"] = "0.2-SNAPSHOT"
 
 allprojects {
   group = "org.sourcegrade"
-  version = "0.1.1"
+  version = "0.2.0-SNAPSHOT"
 
   project.findProperty("buildNumber")
     ?.takeIf { version.toString().contains("SNAPSHOT") }
