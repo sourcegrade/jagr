@@ -23,6 +23,7 @@ import com.google.inject.AbstractModule
 import com.google.inject.multibindings.Multibinder
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.*
+import org.sourcegrade.jagr.api.testing.ClassTransformer
 import org.sourcegrade.jagr.api.testing.extension.*
 import org.sourcegrade.jagr.core.executor.*
 import org.sourcegrade.jagr.core.export.rubric.*
@@ -33,6 +34,7 @@ import org.sourcegrade.jagr.core.io.*
 import org.sourcegrade.jagr.core.rubric.*
 import org.sourcegrade.jagr.core.rubric.grader.*
 import org.sourcegrade.jagr.core.testing.*
+import org.sourcegrade.jagr.core.transformer.ClassTransformerFactoryImpl
 import org.sourcegrade.jagr.launcher.io.ExtrasManager
 import org.sourcegrade.jagr.launcher.env.*
 import org.sourcegrade.jagr.launcher.executor.*
@@ -48,6 +50,7 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
   }
 
   override fun configure() {
+    bind(ClassTransformer.Factory::class.java).to(ClassTransformerFactoryImpl::class.java)
     bind(Criterion.Factory::class.java).to(CriterionFactoryImpl::class.java)
     bind(CriterionHolderPointCalculator.Factory::class.java).to(CriterionHolderPointCalculatorFactoryImpl::class.java)
     bind(ExtrasManager::class.java).to(ExtrasManagerImpl::class.java)
@@ -76,6 +79,7 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
     }
 
     requestStaticInjection(
+      ClassTransformer.FactoryProvider::class.java,
       Criterion.FactoryProvider::class.java,
       CriterionHolderPointCalculator.FactoryProvider::class.java,
       Grader.FactoryProvider::class.java,
