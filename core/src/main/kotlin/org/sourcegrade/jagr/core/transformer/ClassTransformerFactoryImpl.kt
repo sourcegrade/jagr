@@ -17,31 +17,12 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api.testing;
+package org.sourcegrade.jagr.core.transformer
 
-import com.google.inject.Inject;
-import org.jetbrains.annotations.ApiStatus;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
+import org.sourcegrade.jagr.api.testing.ClassTransformer
 
-public interface ClassTransformer {
-
-  static ClassTransformer replacement(Class<?> replacement, Class<?> original) {
-    return FactoryProvider.factory.replacement(replacement, original);
-  }
-
-  String getName();
-
-  void transform(ClassReader reader, ClassWriter writer);
-
-  @ApiStatus.Internal
-  final class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
-
-  @ApiStatus.Internal
-  interface Factory {
-    ClassTransformer replacement(Class<?> replacement, Class<?> original);
+class ClassTransformerFactoryImpl : ClassTransformer.Factory {
+  override fun replacement(replacement: Class<*>, original: Class<*>): ClassTransformer {
+    return ReplacementTransformer(replacement.kotlin, original.kotlin)
   }
 }
