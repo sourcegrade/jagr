@@ -1,5 +1,4 @@
 plugins {
-  application
   kotlin("jvm")
   kotlin("plugin.serialization")
 }
@@ -30,9 +29,6 @@ dependencies {
   implementation("org.spongepowered:configurate-extra-kotlin:$configurateVersion")
   implementation(kotlin("reflect"))
   implementation(files("../gradle/wrapper/gradle-wrapper.jar"))
-}
-application {
-  mainClass.set("org.sourcegrade.jagr.core.MainKt")
 }
 tasks {
   test {
