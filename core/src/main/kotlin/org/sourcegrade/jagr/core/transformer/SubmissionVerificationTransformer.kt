@@ -49,5 +49,6 @@ class SubmissionVerificationTransformer : ClassTransformer {
 fun verifyMethodInsn(opcode: Int, owner: String, name: String?, descriptor: String?) =
   owner.startsWith("java/lang/reflect")
     || owner.startsWith("org/sourcegrade")
+    || owner.startsWith("java/lang/Process")
     || (owner == "java/lang/System" && name == "exit")
     || owner == "java/lang/Runtime"
