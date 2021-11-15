@@ -111,6 +111,7 @@ The following directories should be created:
 ```java
 ./graders // input folder for grader jars (tests + rubric providers)
 ./libs // for libraries that are required on each submission's classpath
+./logs // saved log files
 ./rubrics // the output folder for graded rubrics
 ./submissions // input folder for submissions
 ./submissions-export // output folder for submissions
