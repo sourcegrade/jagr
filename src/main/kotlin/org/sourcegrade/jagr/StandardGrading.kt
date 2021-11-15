@@ -41,7 +41,7 @@ import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
 
 class StandardGrading(private val jagr: Jagr = Jagr) {
-  fun grade() = runBlocking {
+  fun grade(exportOnly: Boolean) = runBlocking {
     val startTime = System.currentTimeMillis()
     val config = jagr.config
     File(config.dir.submissions).ensure(jagr.logger)
@@ -53,6 +53,15 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
       discoverGraderLibraries(config.dir.solutions) { _, n -> n.endsWith("jar") }
     }
     val queue = jagr.gradingQueueFactory.create(batch)
+    jagr.logger.info("Beginning export")
+    val submissionExportFile = File(config.dir.submissionsExport).ensure(jagr.logger)!!
+    for (resourceContainer in jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
+      resourceContainer.writeAsDirIn(submissionExportFile)
+    }
+    if (exportOnly) {
+      jagr.logger.info("Only exporting, finished!")
+      return@runBlocking
+    }
     jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
     val mode = config.executor.mode
     val executor = if (mode == "single") {
@@ -77,10 +86,6 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
     executor.start(collector)
     collector.logHistogram(jagr)
     export(collector)
-    val submissionExportFile = File(config.dir.submissionsExport).ensure(jagr.logger)!!
-    for (resourceContainer in jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
-      resourceContainer.writeAsDirIn(submissionExportFile)
-    }
     jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
   }
 
