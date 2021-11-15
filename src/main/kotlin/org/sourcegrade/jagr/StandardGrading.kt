@@ -42,7 +42,6 @@ import java.io.File
 
 class StandardGrading(private val jagr: Jagr = Jagr) {
   fun grade(exportOnly: Boolean) = runBlocking {
-    val startTime = System.currentTimeMillis()
     val config = jagr.config
     File(config.dir.submissions).ensure(jagr.logger)
     jagr.extrasManager.runExtras()
@@ -86,7 +85,6 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
     executor.start(collector)
     collector.logHistogram(jagr)
     export(collector)
-    jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
   }
 
   private fun export(collector: RubricCollector) {

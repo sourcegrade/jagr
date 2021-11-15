@@ -22,6 +22,8 @@ package org.sourcegrade.jagr
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.env.logger
 
 fun main(vararg args: String) = MainCommand().main(args)
 
@@ -36,7 +38,9 @@ class MainCommand : CliktCommand() {
     if (child) {
       ChildProcGrading().grade()
     } else {
+      val startTime = System.currentTimeMillis()
       StandardGrading().grade(exportOnly)
+      Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
     }
   }
 }
