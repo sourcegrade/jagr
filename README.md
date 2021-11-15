@@ -109,11 +109,11 @@ java -jar Jagr-VERSION.jar
 
 The following directories should be created:
 ```java
+./graders // input folder for grader jars (tests + rubric providers)
 ./libs // for libraries that are required on each submission's classpath
 ./rubric // the output folder for graded rubrics
 ./submissions // input folder for submissions
 ./submissions-export // output folder for submissions
-./tests // input folder for grading jar (tests + rubric providers)
 ```
 
 Place your grading jar (tests + rubric providers) in `./tests` and the submission(s) you want to test in `./submissions` and
