@@ -22,13 +22,25 @@ package org.sourcegrade.jagr
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.env.logger
 
 fun main(vararg args: String) = MainCommand().main(args)
 
 class MainCommand : CliktCommand() {
+
   /**
    * Command line option to indicate that this process will listen to (via std in) to a grading request
    */
   private val child by option("--child", "-c").flag()
-  override fun run() = if (child) ChildProcGrading().grade() else StandardGrading().grade()
+  private val exportOnly by option("--export-only", "-e").flag()
+  override fun run() {
+    if (child) {
+      ChildProcGrading().grade()
+    } else {
+      val startTime = System.currentTimeMillis()
+      StandardGrading().grade(exportOnly)
+      Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
+    }
+  }
 }
