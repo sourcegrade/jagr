@@ -88,5 +88,5 @@ data class SourceSetInfo(
 private object TrimmingStringSerializer : KSerializer<String> {
   override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("TrimmingString", PrimitiveKind.STRING)
   override fun deserialize(decoder: Decoder): String = decoder.decodeString().trim()
-  override fun serialize(encoder: Encoder, value: String) = encoder.encodeString(value)
+  override fun serialize(encoder: Encoder, value: String) = encoder.encodeString(value.trim())
 }
