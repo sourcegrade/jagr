@@ -6,6 +6,10 @@
 .idea_modules/
 atlassian-ide-plugin.xml
 
+### VS-Code ###
+.vscode/
+.VSCodeCounter/
+
 ### Eclipse ###
 .metadata
 bin/
@@ -77,6 +81,3 @@ out/
 gradle-app.setting
 !gradle-wrapper.jar
 .gradletasknamecache
-
-.git/
-
