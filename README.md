@@ -117,5 +117,5 @@ The following directories should be created:
 ./submissions-export // output folder for submissions
 ```
 
-Place your grading jar (tests + rubric providers) in `./tests` and the submission(s) you want to test in `./submissions` and
+Place your grader jar(s) (tests + rubric providers) in `./graders` and the submission(s) you want to test in `./submissions` and
 rerun Jagr.
