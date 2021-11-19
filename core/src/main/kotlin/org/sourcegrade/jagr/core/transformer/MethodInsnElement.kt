@@ -21,6 +21,7 @@ package org.sourcegrade.jagr.core.transformer
 
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
+import org.objectweb.asm.util.Printer
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
@@ -34,11 +35,15 @@ internal data class MethodInsnElement(
   val descriptor: String,
   val isInterface: Boolean,
 ) : BytecodeElement {
+  private val stringRep: String by lazy { "MethodInsn(${Printer.OPCODES[opcode]} $owner.$name $descriptor)" }
+
   override fun withSurrogate(original: KClass<*>, surrogate: KClass<*>): MethodInsnElement {
     val surrogateOwner = Type.getInternalName(surrogate.java)
     val descriptor = descriptor.replace(owner, surrogateOwner)
     return copy(owner = surrogateOwner, descriptor = descriptor)
   }
+
+  override fun toString(): String = stringRep
 
   companion object Factory : BytecodeElement.Replacer.Factory<MethodInsnElement> {
     override fun create(original: KClass<*>, surrogate: KClass<*>): BytecodeElement.Replacer<MethodInsnElement> {

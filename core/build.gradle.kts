@@ -18,6 +18,7 @@ val log4jVersion: String by project
 dependencies {
   api(project(":jagr-grader-api"))
   api(project(":jagr-launcher"))
+  implementation("org.ow2.asm:asm-util:$asmVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")
