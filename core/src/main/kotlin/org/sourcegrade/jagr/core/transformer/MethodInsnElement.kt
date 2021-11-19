@@ -47,7 +47,7 @@ internal data class MethodInsnElement(
         .map { it.toMethodInsn(original) to it.toMethodInsn() }
         .toMap()
       return BytecodeElement.Replacer {
-        replacementInsns[it] ?: error("Could not find method in $original matching ${it.withSurrogate(original, surrogate)}")
+        replacementInsns[it] ?: error("Could not find method in $surrogate matching ${it.withSurrogate(original, surrogate)}")
       }
     }
   }
