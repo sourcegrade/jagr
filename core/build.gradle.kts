@@ -29,6 +29,7 @@ dependencies {
   implementation("org.spongepowered:configurate-extra-kotlin:$configurateVersion")
   implementation(kotlin("reflect"))
   implementation(files("../gradle/wrapper/gradle-wrapper.jar"))
+  runtimeOnly("org.apiguardian:apiguardian-api:1.1.2")
 }
 tasks {
   test {
