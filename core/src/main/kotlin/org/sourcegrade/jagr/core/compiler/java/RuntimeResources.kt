@@ -61,14 +61,18 @@ fun <T> Sequence<ResourceContainer>.compile(
   runtimeJarLoader: RuntimeJarLoader,
   graderRuntimeLibraries: RuntimeResources,
   containerType: String,
-  constructor: JavaCompileResult.() -> T?
+  constructor: JavaCompileResult.() -> T?,
 ): List<T> = toList().parallelMapNotNull {
   val original = runtimeJarLoader.loadSources(it, graderRuntimeLibraries)
   val transformed = try {
     transformerApplier.transform(original)
   } catch (e: Exception) {
-    logger.error("Failed to apply transformations for ${original.submissionInfo} :: ${e.message}")
-    return@parallelMapNotNull null
+    // create a copy of the original compile result but throw out runtime resources (compiled classes and resources)
+    original.copy(
+      runtimeResources = RuntimeResources(),
+      messages = listOf("Transformation failed :: ${e.message}") + original.messages,
+      errors = original.errors + 1,
+    )
   }
   with(transformed) {
     printMessages(
