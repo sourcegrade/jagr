@@ -86,12 +86,13 @@ public final class TimeoutHandler {
     if (lastTimeout == 0) {
       LAST_TIMEOUT.get().set(userTime);
     } else if (userTime - lastTimeout > Lazy.INDIVIDUAL_TIMEOUT) {
+      final Throwable timeoutLocation = getTimeoutLocation();
       if (userTime > Lazy.TOTAL_TIMEOUT) {
-        logger.error("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms @ " + currentThread.getName(), getTimeoutLocation());
+        logger.error("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms @ " + currentThread.getName(), timeoutLocation);
         // do not reset LAST_TIMEOUT
         throw new AssertionFailedError("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms");
       } else {
-        logger.error("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms @ " + currentThread.getName(), getTimeoutLocation());
+        logger.error("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms @ " + currentThread.getName(), timeoutLocation);
         // reset LAST_TIMEOUT so that the next JUnit test doesn't immediately fail
         LAST_TIMEOUT.get().set(userTime);
         throw new AssertionFailedError("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms");
@@ -108,7 +109,7 @@ public final class TimeoutHandler {
     int i = 1;
     for (final StackTraceElement element : trace) {
       if (TEST_CLASS_NAMES.get().contains(element.getClassName())) {
-        e.setStackTrace(Arrays.copyOfRange(trace, 1, i));
+        e.setStackTrace(Arrays.copyOfRange(trace, 2, i));
         return e;
       }
       i++;
