@@ -59,17 +59,22 @@ class GradleSubmissionExporter @Inject constructor(
       name = graderJar?.name ?: DEFAULT_EXPORT_NAME
     }
     writeSkeleton()
-    for (submission in submissions) {
+    val filteredSubmissions = if (graderJar == null) {
+      submissions
+    } else {
+      submissions.filter { graderJar.rubricProviders.containsKey(it.info.assignmentId) }
+    }
+    for (submission in filteredSubmissions) {
       writeSubmission(submission, graderJar)
     }
-    writeSettings(info.name, submissions)
+    writeSettings(info.name, filteredSubmissions)
   }
 
   private fun ResourceContainer.Builder.writeGradleResource(
     classLoader: ClassLoader = ClassLoader.getSystemClassLoader(),
     resource: String,
     targetDir: String = "",
-    targetName: String = resource
+    targetName: String = resource,
   ) = addResource {
     name = targetDir + targetName
     classLoader.getResourceAsStream("org/gradle/$resource")?.also {
