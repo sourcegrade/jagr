@@ -27,6 +27,7 @@ import org.sourcegrade.jagr.launcher.env.Config;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -85,13 +86,13 @@ public final class TimeoutHandler {
     if (lastTimeout == 0) {
       LAST_TIMEOUT.get().set(userTime);
     } else if (userTime - lastTimeout > Lazy.INDIVIDUAL_TIMEOUT) {
+      final Throwable timeoutLocation = getTimeoutLocation();
       if (userTime > Lazy.TOTAL_TIMEOUT) {
-        logger.error("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms @ " + currentThread.getName());
+        logger.error("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms @ " + currentThread.getName(), timeoutLocation);
         // do not reset LAST_TIMEOUT
         throw new AssertionFailedError("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms");
       } else {
-        logger.error("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms @ " + currentThread.getName() +
-          " in " + getTimeoutLocation(currentThread));
+        logger.error("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms @ " + currentThread.getName(), timeoutLocation);
         // reset LAST_TIMEOUT so that the next JUnit test doesn't immediately fail
         LAST_TIMEOUT.get().set(userTime);
         throw new AssertionFailedError("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms");
@@ -102,13 +103,18 @@ public final class TimeoutHandler {
   /**
    * @return The String representing the StackElement of the Test, that produced the timeout
    */
-  private static String getTimeoutLocation(final Thread currentThread) {
-    final StackTraceElement[] trace = currentThread.getStackTrace();
-    for (var element : trace) {
+  private static Throwable getTimeoutLocation() {
+    final Exception e = new Exception();
+    final StackTraceElement[] trace = e.getStackTrace();
+    int i = 1;
+    for (final StackTraceElement element : trace) {
       if (TEST_CLASS_NAMES.get().contains(element.getClassName())) {
-        return element.toString();
+        e.setStackTrace(Arrays.copyOfRange(trace, 2, i));
+        return e;
       }
+      i++;
     }
-    return "I don't know how you got here. But now that you're here... Let's play?";
+    logger.error("Unable to calculate timeout location");
+    return e;
   }
 }

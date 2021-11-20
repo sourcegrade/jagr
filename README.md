@@ -107,6 +107,9 @@ in a terminal of your choice (or write a batch/bash script that you can double-c
 java -jar Jagr-VERSION.jar
 ```
 
+Alternatively, you may run Jagr in-IDE via the Gradle `runShadow` task (the standard `run` task does not work).
+The working directory used is `build/run`.
+
 The following directories should be created:
 ```java
 ./graders // input folder for grader jars (tests + rubric providers)
@@ -117,5 +120,5 @@ The following directories should be created:
 ./submissions-export // output folder for submissions
 ```
 
-Place your grading jar (tests + rubric providers) in `./tests` and the submission(s) you want to test in `./submissions` and
+Place your grader jar(s) (tests + rubric providers) in `./graders` and the submission(s) you want to test in `./submissions` and
 rerun Jagr.

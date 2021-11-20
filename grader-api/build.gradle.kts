@@ -2,9 +2,6 @@ plugins {
   `java-library`
   kotlin("jvm")
 }
-repositories {
-  mavenCentral()
-}
 
 val apiVersion: String by rootProject
 version = apiVersion

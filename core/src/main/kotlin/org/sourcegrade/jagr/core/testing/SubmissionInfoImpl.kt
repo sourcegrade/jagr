@@ -16,10 +16,18 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:UseSerializers(serializerClasses = [TrimmingStringSerializer::class])
 
 package org.sourcegrade.jagr.core.testing
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -75,4 +83,10 @@ data class SourceSetInfo(
       scope.writeList(obj.files)
     }
   }
+}
+
+private object TrimmingStringSerializer : KSerializer<String> {
+  override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("TrimmingString", PrimitiveKind.STRING)
+  override fun deserialize(decoder: Decoder): String = decoder.decodeString().trim()
+  override fun serialize(encoder: Encoder, value: String) = encoder.encodeString(value.trim())
 }
