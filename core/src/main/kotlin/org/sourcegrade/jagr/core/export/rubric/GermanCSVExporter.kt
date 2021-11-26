@@ -28,7 +28,6 @@ import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.buildResource
-import java.io.BufferedWriter
 
 class GermanCSVExporter @Inject constructor(
   private val logger: Logger,
@@ -36,28 +35,27 @@ class GermanCSVExporter @Inject constructor(
   override fun export(gradedRubric: GradedRubric): Resource {
     val rubric = gradedRubric.rubric
     val grade = gradedRubric.grade
-    fun BufferedWriter.export() {
-      append('\ufeff') // UTF-8 Byte Order Mark
-      CSVPrinter(this, CSVFormat.EXCEL).use { csv ->
-        csv.printRecord(rubric.title)
-        csv.printRecord("Kriterium", "Möglich", "Erzielt", "Kommentar", "Extra")
-        for (gradedCriterion in gradedRubric.childCriteria) {
-          csv.printCriterion(gradedCriterion)
-        }
-        csv.printRecord(
-          "Gesamt",
-          rubric.maxPoints.toString(),
-          grade.getInRange(rubric),
-          grade.comments.firstOrNull()
-        )
-        grade.comments.asSequence().drop(1).forEach { comment ->
-          csv.printRecord(null, null, null, comment)
-        }
-      }
-    }
     return buildResource {
       name = "${gradedRubric.rubric.title}_${gradedRubric.testCycle.submission.info}.csv"
-      outputStream.bufferedWriter().use { it.export() }
+      outputStream.bufferedWriter().use {
+        it.append('\ufeff') // UTF-8 Byte Order Mark
+        CSVPrinter(it, CSVFormat.EXCEL).use { csv ->
+          csv.printRecord(rubric.title)
+          csv.printRecord("Kriterium", "Möglich", "Erzielt", "Kommentar", "Extra")
+          for (gradedCriterion in gradedRubric.childCriteria) {
+            csv.printCriterion(gradedCriterion)
+          }
+          csv.printRecord(
+            "Gesamt",
+            rubric.maxPoints.toString(),
+            grade.getInRange(rubric),
+            grade.comments.firstOrNull()
+          )
+          grade.comments.asSequence().drop(1).forEach { comment ->
+            csv.printRecord(null, null, null, comment)
+          }
+        }
+      }
     }
   }
 
@@ -72,7 +70,7 @@ class GermanCSVExporter @Inject constructor(
       for (childGradedCriterion in gradedCriterion.childCriteria) {
         printCriterion(childGradedCriterion)
       }
-      println()
+      this.println()
     }
   }
 }
