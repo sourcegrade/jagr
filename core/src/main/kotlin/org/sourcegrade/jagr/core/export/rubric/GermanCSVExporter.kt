@@ -49,7 +49,7 @@ class GermanCSVExporter @Inject constructor(
             "Gesamt",
             rubric.maxPoints.toString(),
             grade.getInRange(rubric),
-            grade.comments.firstOrNull()
+            grade.comments.firstOrNull(),
           )
           grade.comments.asSequence().drop(1).forEach { comment ->
             csv.printRecord(null, null, null, comment)
