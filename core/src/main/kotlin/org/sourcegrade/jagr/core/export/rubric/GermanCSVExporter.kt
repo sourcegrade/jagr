@@ -20,6 +20,8 @@
 package org.sourcegrade.jagr.core.export.rubric
 
 import com.google.inject.Inject
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
@@ -31,42 +33,26 @@ import java.io.BufferedWriter
 class GermanCSVExporter @Inject constructor(
   private val logger: Logger,
 ) : GradedRubricExporter.CSV {
-
-  companion object {
-    // delimiter
-    const val DEL = '\t'
-  }
-
   override fun export(gradedRubric: GradedRubric): Resource {
     val rubric = gradedRubric.rubric
     val grade = gradedRubric.grade
     fun BufferedWriter.export() {
-      appendLine("sep=$DEL")
-      appendLine(rubric.title)
-      append("Kriterium")
-      append(DEL)
-      append("Möglich")
-      append(DEL)
-      append("Erzielt")
-      append(DEL)
-      append("Kommentar")
-      append(DEL)
-      append("Extra")
-      appendLine()
-      for (gradedCriterion in gradedRubric.childCriteria) {
-        appendCriterion(gradedCriterion)
-        appendLine()
-      }
-      append("Gesamt")
-      append(DEL)
-      append(rubric.maxPoints.toString())
-      append(DEL)
-      append(grade.getInRange(rubric))
-      append(DEL)
-      append(grade.comments.firstOrNull() ?: "")
-      appendLine()
-      for (i in 1 until grade.comments.size) {
-        appendLine("$DEL$DEL$DEL${grade.comments[i]}")
+      append('\ufeff') // UTF-8 Byte Order Mark
+      CSVPrinter(this, CSVFormat.EXCEL).use { csv ->
+        csv.printRecord(rubric.title)
+        csv.printRecord("Kriterium", "Möglich", "Erzielt", "Kommentar", "Extra")
+        for (gradedCriterion in gradedRubric.childCriteria) {
+          csv.printCriterion(gradedCriterion)
+        }
+        csv.printRecord(
+          "Gesamt",
+          rubric.maxPoints.toString(),
+          grade.getInRange(rubric),
+          grade.comments.firstOrNull()
+        )
+        grade.comments.asSequence().drop(1).forEach { comment ->
+          csv.printRecord(null, null, null, comment)
+        }
       }
     }
     return buildResource {
@@ -75,34 +61,18 @@ class GermanCSVExporter @Inject constructor(
     }
   }
 
-  private fun BufferedWriter.appendCriterion(gradedCriterion: GradedCriterion): BufferedWriter {
+  private fun CSVPrinter.printCriterion(gradedCriterion: GradedCriterion) {
     val criterion = gradedCriterion.criterion
     val grade = gradedCriterion.grade
     val comments = grade.comments.joinToString("; ")
     if (gradedCriterion.childCriteria.isEmpty()) {
-      append(criterion.shortDescription)
-      append(DEL)
-      append(criterion.minMax)
-      append(DEL)
-      append(grade.getInRange(criterion))
-      append(DEL)
-      append(comments)
-      append(DEL)
-      append(criterion.hiddenNotes ?: "")
-      appendLine()
+      printRecord(criterion.shortDescription, criterion.minMax, grade.getInRange(criterion), comments, criterion.hiddenNotes)
     } else {
-      append(criterion.shortDescription)
-      append(DEL)
-      append(DEL)
-      append(DEL)
-      append(comments)
-      append(criterion.hiddenNotes ?: "")
-      appendLine()
+      printRecord(criterion.shortDescription, null, null, comments, criterion.hiddenNotes)
       for (childGradedCriterion in gradedCriterion.childCriteria) {
-        appendCriterion(childGradedCriterion)
+        printCriterion(childGradedCriterion)
       }
-      appendLine()
+      println()
     }
-    return this
   }
 }
