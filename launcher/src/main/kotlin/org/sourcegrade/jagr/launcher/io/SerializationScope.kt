@@ -23,6 +23,7 @@ import com.google.common.io.ByteArrayDataInput
 import com.google.common.io.ByteArrayDataOutput
 import org.sourcegrade.jagr.launcher.env.Jagr
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 /**
  * A serialization scope stores [SerializationScope.Key]-value pairs that are global in the context of a
@@ -113,6 +114,18 @@ inline fun <reified T : Any> SerializationScope.Output.write(
   obj: T,
   factory: SerializerFactory<T> = SerializerFactory.get(jagr)
 ) = factory.write(obj, this)
+
+fun SerializationScope.Input.readDynamic(): Pair<KClass<out Any>, Any> {
+  val type = input.readKClass<Any>()
+  return type to read(SerializerFactory[type, jagr])
+}
+
+@Suppress("UNCHECKED_CAST")
+fun SerializationScope.Output.writeDynamic(obj: Any, type: KClass<out Any> = obj::class) {
+  require(obj::class.isSubclassOf(type)) { "${obj::class} is not a subtype of $type" }
+  output.writeKClass(type)
+  write(obj, SerializerFactory[type, jagr] as SerializerFactory<Any>)
+}
 
 inline fun <reified T : Any> SerializationScope.Input.readNullable(
   factory: SerializerFactory<T> = SerializerFactory.get(jagr),
