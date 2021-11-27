@@ -137,7 +137,7 @@ fun SerializationScope.Output.writeDynamicMap(obj: Map<KClass<out Any>, Any>) = 
 
 /* === Base serializers === */
 
-object StringSerializerFactory : SerializerFactory<String> {
+internal object StringSerializerFactory : SerializerFactory<String> {
   override fun read(scope: SerializationScope.Input): String = scope.input.readUTF()
   override fun write(obj: String, scope: SerializationScope.Output) {
     scope.output.writeUTF(obj)
