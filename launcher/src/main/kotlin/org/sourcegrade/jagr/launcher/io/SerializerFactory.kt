@@ -192,7 +192,7 @@ class MapSerializerFactory<K : Any, V : Any>(
 
 /**
  * The dynamic list serializer stores the runtime type for each element in the list directly before the element itself, and
- * uses the serializer for this type to then serialize the following object.
+ * uses the serializer for this type to then deserialize the following object.
  */
 object DynamicListSerializerFactory : SerializerFactory<List<Any>> {
   override fun read(scope: SerializationScope.Input): List<Any> =
