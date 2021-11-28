@@ -16,18 +16,12 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-@file:UseSerializers(serializerClasses = [TrimmingStringSerializer::class])
+@file:UseSerializers(serializerClasses = [SafeStringSerializer::class])
 
 package org.sourcegrade.jagr.core.testing
 
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
 import org.sourcegrade.jagr.core.compiler.InfoJsonResourceExtractor
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
@@ -45,7 +39,7 @@ data class SubmissionInfoImpl(
   private val studentId: String,
   private val firstName: String,
   private val lastName: String,
-  val sourceSets: List<SourceSetInfo>,
+  val sourceSets: List<SourceSetInfoImpl>,
 ) : SubmissionInfo {
   override fun getAssignmentId(): String = assignmentId
   override fun getStudentId(): String = studentId
@@ -72,25 +66,4 @@ data class SubmissionInfoImpl(
   }
 
   object Extractor : ResourceExtractor by InfoJsonResourceExtractor<SubmissionInfoImpl>("submission-info.json")
-}
-
-@Serializable
-data class SourceSetInfo(
-  val name: String,
-  val files: List<String>,
-) {
-  companion object Factory : SerializerFactory<SourceSetInfo> {
-    override fun read(scope: SerializationScope.Input) = SourceSetInfo(scope.input.readUTF(), scope.readList())
-
-    override fun write(obj: SourceSetInfo, scope: SerializationScope.Output) {
-      scope.output.writeUTF(obj.name)
-      scope.writeList(obj.files)
-    }
-  }
-}
-
-private object TrimmingStringSerializer : KSerializer<String> {
-  override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("TrimmingString", PrimitiveKind.STRING)
-  override fun deserialize(decoder: Decoder): String = decoder.decodeString().trim()
-  override fun serialize(encoder: Encoder, value: String) = encoder.encodeString(value.trim())
 }
