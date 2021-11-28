@@ -32,12 +32,7 @@ import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
-import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
-import org.sourcegrade.jagr.launcher.io.SubmissionExporter
-import org.sourcegrade.jagr.launcher.io.buildGradingBatch
-import org.sourcegrade.jagr.launcher.io.export
-import org.sourcegrade.jagr.launcher.io.writeAsDirIn
-import org.sourcegrade.jagr.launcher.io.writeIn
+import org.sourcegrade.jagr.launcher.io.*
 import java.io.File
 
 class StandardGrading(private val jagr: Jagr = Jagr) {
@@ -76,9 +71,9 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
     }
     val collector = emptyCollector(jagr)
     val progress = ProgressBar(collector)
+    Progos.progressBar = progress
     collector.setListener { result ->
       result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
-      progress.print()
     }
     collector.allocate(queue)
     executor.schedule(queue)

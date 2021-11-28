@@ -19,6 +19,7 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
+import org.sourcegrade.jagr.launcher.env.Environment
 import java.text.DecimalFormat
 
 class ProgressBar(
@@ -61,10 +62,10 @@ class ProgressBar(
     }
     // pad with spaces
     sb.append(" ".repeat((120 - sb.length).coerceAtLeast(0)))
-    println(sb.toString())
+    Environment.stdOut.print(sb.toString() + '\r')
   }
 
   fun clear() {
-    print(" ".repeat(120) + '\r')
+    Environment.stdOut.print(" ".repeat(120) + '\r')
   }
 }

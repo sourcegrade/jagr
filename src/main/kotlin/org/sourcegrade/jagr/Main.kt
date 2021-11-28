@@ -22,6 +22,7 @@ package org.sourcegrade.jagr
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 
@@ -35,13 +36,11 @@ class MainCommand : CliktCommand() {
   private val child by option("--child", "-c").flag()
   private val exportOnly by option("--export-only", "-e").flag()
   override fun run() {
-    // dont touch this daaaa da da da
-    // Do not remove the following line. It is required to invoke the class initializer of Jagr, which
-    // calls System.setOut() and System.setErr() to ensure that students' output messages are not output.
-    Jagr
     if (child) {
+      Environment.initializeChild()
       ChildProcGrading().grade()
     } else {
+      Environment.initializeMain()
       val startTime = System.currentTimeMillis()
       StandardGrading().grade(exportOnly)
       Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
