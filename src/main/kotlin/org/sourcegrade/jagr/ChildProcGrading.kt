@@ -25,6 +25,7 @@ import com.google.common.io.ByteStreams
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
@@ -67,12 +68,12 @@ class ChildProcGrading(private val jagr: Jagr = Jagr) {
   private fun notifyParent(collector: RubricCollector) {
     val outputStream = ByteArrayOutputStream(8192)
     val output = ByteStreams.newDataOutput(outputStream)
-    System.out.write(ProcessWorker.MARK_RESULT_BYTE)
+    Environment.stdOut.write(ProcessWorker.MARK_RESULT_BYTE)
     val before = collector.gradingFinished[0]
     openScope(output, Jagr) {
       SerializerFactory.get<GradingResult>().write(before, this)
     }
-    outputStream.writeTo(System.out)
-    System.out.close()
+    outputStream.writeTo(Environment.stdOut)
+    Environment.stdOut.close()
   }
 }

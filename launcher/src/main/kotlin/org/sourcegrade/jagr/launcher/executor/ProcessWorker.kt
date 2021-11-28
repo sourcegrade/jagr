@@ -107,7 +107,8 @@ class ProcessWorker(
       } else if (next == -1) {
         jagr.logger.error("${job.request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
         return createFallbackResult(startedUtc, job.request)
-      } else {
+      } else if (next == MARK_LOG_MESSAGE_BYTE) {
+        val level = childProcessIn.read()
         val length = childProcessIn.read() shl 24 or childProcessIn.read() shl 16 or childProcessIn.read() shl 8 or childProcessIn.read()
         if (length < 0) {
           jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
@@ -117,9 +118,7 @@ class ProcessWorker(
           jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
           return createFallbackResult(startedUtc, job.request)
         }.toString(StandardCharsets.UTF_8)
-        System.err.println(next)
-        System.err.println(message)
-        when (next) {
+        when (level) {
           2 -> jagr.logger.error(message)
           3 -> jagr.logger.warn(message)
           4 -> jagr.logger.info(message)
@@ -128,7 +127,6 @@ class ProcessWorker(
           else -> {
             jagr.logger.info(message)
           }
-
         }
       }
     }
@@ -149,6 +147,7 @@ class ProcessWorker(
   }
 
   companion object {
+    const val MARK_LOG_MESSAGE_BYTE = 2
     const val MARK_RESULT_BYTE = 7
   }
 }

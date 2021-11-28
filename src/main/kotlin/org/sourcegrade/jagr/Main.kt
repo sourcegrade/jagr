@@ -36,12 +36,12 @@ class MainCommand : CliktCommand() {
   private val exportOnly by option("--export-only", "-e").flag()
   override fun run() {
     // dont touch this daaaa da da da
+    // Do not remove the following line. It is required to invoke the class initializer of Jagr, which
+    // calls System.setOut() and System.setErr() to ensure that students' output messages are not output.
     Jagr
     if (child) {
-      Jagr.logger.warn("CHILD")
       ChildProcGrading().grade()
     } else {
-      Jagr.logger.warn("PARENT")
       val startTime = System.currentTimeMillis()
       StandardGrading().grade(exportOnly)
       Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")

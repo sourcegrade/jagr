@@ -44,12 +44,14 @@ interface Jagr {
   }
 }
 
-internal object Environment {
+object Environment {
   val stdOut: PrintStream = System.out
   fun initialize() {
     // dont touch this daaaa da da da
     Jagr.logger
-    System.setOut(PrintStream(OutputStream.nullOutputStream()))
+    val wasteBasket = PrintStream(OutputStream.nullOutputStream())
+    System.setOut(wasteBasket)
+    System.setErr(wasteBasket)
   }
 }
 

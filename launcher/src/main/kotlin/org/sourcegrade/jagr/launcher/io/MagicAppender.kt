@@ -9,9 +9,7 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute
 import org.apache.logging.log4j.core.config.plugins.PluginElement
 import org.apache.logging.log4j.core.config.plugins.PluginFactory
 import org.apache.logging.log4j.core.layout.PatternLayout
-import org.sourcegrade.jagr.launcher.env.Environment
-import java.io.PrintStream
-import org.sourcegrade.jagr.launcher.io.MagicAppender
+import org.sourcegrade.jagr.launcher.executor.ProcessWorker
 import java.io.Serializable
 import java.nio.charset.StandardCharsets
 
@@ -31,14 +29,15 @@ class MagicAppender private constructor(
 
   override fun append(event: LogEvent) {
     val out = stdOut
+    out.write(ProcessWorker.MARK_LOG_MESSAGE_BYTE)
     out.write(event.level.intLevel() / 100)
-    System.err.println(event.level.intLevel().toString() + event.message.formattedMessage)
-    val l = event.message.formattedMessage.toByteArray(StandardCharsets.UTF_8).size
-    out.write(l shr 24)
-    out.write(l shr 16)
-    out.write(l shr 8)
-    out.write(l)
-    out.write(event.message.formattedMessage.toByteArray(StandardCharsets.UTF_8))
+    val msg = event.message.formattedMessage.toByteArray(StandardCharsets.UTF_8)
+    val msgLength = msg.size
+    out.write(msgLength shr 24)
+    out.write(msgLength shr 16)
+    out.write(msgLength shr 8)
+    out.write(msgLength)
+    out.write(msg)
   }
 
   companion object {
@@ -48,8 +47,7 @@ class MagicAppender private constructor(
       @PluginAttribute("name") name: String,
       @PluginElement("Layout") layout: Layout<out Serializable?>?,
       @PluginElement("Filter") filter: Filter?): MagicAppender {
-      System.err.println("INIT APPENDER")
-      return MagicAppender(name, filter, PatternLayout.createDefaultLayout(), true, null)
+      return MagicAppender(name, filter, layout ?: PatternLayout.createDefaultLayout(), true, null)
     }
   }
 }
