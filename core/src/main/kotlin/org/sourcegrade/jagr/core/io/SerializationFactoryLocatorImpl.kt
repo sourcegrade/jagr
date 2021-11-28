@@ -27,6 +27,8 @@ import org.sourcegrade.jagr.api.rubric.Rubric
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
 import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.core.compiler.ResourceCollector
+import org.sourcegrade.jagr.core.compiler.ResourceCollectorImpl
 import org.sourcegrade.jagr.core.executor.GradingRequestImpl
 import org.sourcegrade.jagr.core.rubric.CriterionImpl
 import org.sourcegrade.jagr.core.rubric.GradeResultImpl
@@ -51,6 +53,7 @@ class SerializationFactoryLocatorImpl : SerializerFactory.Locator {
     GradedRubric::class -> GradedRubricImpl
     GraderJar::class -> GraderJarImpl
     GradingRequest::class -> GradingRequestImpl
+    ResourceCollector::class -> ResourceCollectorImpl
     Submission::class -> JavaSubmission
     SubmissionInfo::class -> SubmissionInfoImpl
     TestCycle::class -> JavaTestCycle
