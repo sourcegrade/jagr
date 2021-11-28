@@ -20,7 +20,6 @@
 
 package org.sourcegrade.jagr.core.testing
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -29,20 +28,13 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
-import org.sourcegrade.jagr.core.compiler.MutableResourceCollector
+import org.sourcegrade.jagr.core.compiler.InfoJsonResourceExtractor
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
-import org.sourcegrade.jagr.launcher.env.Jagr
-import org.sourcegrade.jagr.launcher.env.logger
-import org.sourcegrade.jagr.launcher.io.Resource
-import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.readList
 import org.sourcegrade.jagr.launcher.io.writeList
-import java.io.ByteArrayInputStream
 
 /**
  * Represents the contents of a submission-info.json file
@@ -79,23 +71,7 @@ data class SubmissionInfoImpl(
     }
   }
 
-  object Extractor : ResourceExtractor {
-    @OptIn(ExperimentalSerializationApi::class)
-    override fun extract(
-      containerInfo: ResourceContainerInfo,
-      resource: Resource,
-      data: ByteArray,
-      collector: MutableResourceCollector,
-    ) {
-      if (resource.name == "submission-info.json") {
-        try {
-          collector.addResource(Json.decodeFromStream<SubmissionInfoImpl>(ByteArrayInputStream(data)))
-        } catch (e: Exception) {
-          Jagr.logger.error("${containerInfo.name} has invalid submission-info.json", e)
-        }
-      }
-    }
-  }
+  object Extractor : ResourceExtractor by InfoJsonResourceExtractor<SubmissionInfoImpl>("submission-info.json")
 }
 
 @Serializable
