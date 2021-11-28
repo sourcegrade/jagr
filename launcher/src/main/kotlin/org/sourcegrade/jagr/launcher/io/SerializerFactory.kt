@@ -37,6 +37,7 @@ interface SerializerFactory<T : Any> {
     @Suppress("UNCHECKED_CAST")
     operator fun <T : Any> get(type: KClass<T>, locator: Locator? = null): SerializerFactory<T> = when (type) {
       ByteArray::class -> ByteArraySerializerFactory
+      KClass::class -> KClassSerializerFactory
       String::class -> StringSerializerFactory
       else -> type.companionObjectInstance
     } as? SerializerFactory<T>
@@ -137,18 +138,19 @@ fun SerializationScope.Output.writeDynamicMap(obj: Map<KClass<out Any>, Any>) = 
 
 /* === Base serializers === */
 
-internal object StringSerializerFactory : SerializerFactory<String> {
-  override fun read(scope: SerializationScope.Input): String = scope.input.readUTF()
-  override fun write(obj: String, scope: SerializationScope.Output) {
-    scope.output.writeUTF(obj)
-  }
-}
-
 internal object ByteArraySerializerFactory : SerializerFactory<ByteArray> {
   override fun read(scope: SerializationScope.Input): ByteArray = scope.input.readByteArray()
-  override fun write(obj: ByteArray, scope: SerializationScope.Output) {
-    scope.output.writeByteArray(obj)
-  }
+  override fun write(obj: ByteArray, scope: SerializationScope.Output) = scope.output.writeByteArray(obj)
+}
+
+internal object KClassSerializerFactory : SerializerFactory<KClass<out Any>> {
+  override fun read(scope: SerializationScope.Input): KClass<out Any> = scope.input.readKClass()
+  override fun write(obj: KClass<out Any>, scope: SerializationScope.Output) = scope.output.writeKClass(obj)
+}
+
+internal object StringSerializerFactory : SerializerFactory<String> {
+  override fun read(scope: SerializationScope.Input): String = scope.input.readUTF()
+  override fun write(obj: String, scope: SerializationScope.Output) = scope.output.writeUTF(obj)
 }
 
 /* === Decomposing serializers === */
