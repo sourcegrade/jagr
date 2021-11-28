@@ -35,7 +35,7 @@ interface Jagr {
 
   companion object Default : Jagr by SystemResourceJagrFactory.create() {
     init {
-        Environment.initialize()
+      Environment.initialize()
     }
   }
 

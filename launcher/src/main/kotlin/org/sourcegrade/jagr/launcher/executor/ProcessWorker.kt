@@ -26,19 +26,21 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.apache.logging.log4j.core.LogEvent
-import org.slf4j.event.Level
-import org.sourcegrade.jagr.launcher.env.Environment
+import org.slf4j.Logger
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
-import org.sourcegrade.jagr.launcher.io.*
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.get
+import org.sourcegrade.jagr.launcher.io.getScoped
+import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlin.reflect.KFunction
+import kotlin.reflect.KFunction1
 
 class ProcessWorker(
   private val jagr: Jagr,
@@ -118,16 +120,16 @@ class ProcessWorker(
           jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
           return createFallbackResult(startedUtc, job.request)
         }.toString(StandardCharsets.UTF_8)
-        when (level) {
-          2 -> jagr.logger.error(message)
-          3 -> jagr.logger.warn(message)
-          4 -> jagr.logger.info(message)
-          5 -> jagr.logger.debug(message)
-          6 -> jagr.logger.trace(message)
-          else -> {
-            jagr.logger.info(message)
+        jagr.logger.let<Logger, KFunction1<String, Unit>> {
+          when (level) {
+            2 -> it::error
+            3 -> it::warn
+            4 -> it::info
+            5 -> it::debug
+            6 -> it::trace
+            else -> it::info
           }
-        }
+        }(message)
       }
     }
     val bytes: ByteArray = runCatching { process.inputStream.readAllBytes() }.getOrElse {
