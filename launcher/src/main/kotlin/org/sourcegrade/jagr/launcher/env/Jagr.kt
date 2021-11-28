@@ -25,16 +25,31 @@ import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
 import org.sourcegrade.jagr.launcher.io.ExtrasManager
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import java.io.OutputStream
+import java.io.PrintStream
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
 interface Jagr {
   val injector: Injector
 
-  companion object Default : Jagr by SystemResourceJagrFactory.create()
+  companion object Default : Jagr by SystemResourceJagrFactory.create() {
+    init {
+        Environment.initialize()
+    }
+  }
 
   interface Factory {
     fun create(configuration: LaunchConfiguration = LaunchConfiguration.Standard): Jagr
+  }
+}
+
+internal object Environment {
+  val stdOut: PrintStream = System.out
+  fun initialize() {
+    // dont touch this daaaa da da da
+    Jagr.logger
+    System.setOut(PrintStream(OutputStream.nullOutputStream()))
   }
 }
 

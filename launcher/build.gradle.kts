@@ -1,6 +1,7 @@
 plugins {
   kotlin("jvm")
   kotlin("plugin.serialization")
+  kotlin("kapt")
   id("com.github.johnrengelman.shadow")
 }
 
@@ -22,7 +23,9 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
-  implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.0")
+  implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.1")
+  implementation("org.apache.logging.log4j:log4j-core:2.14.1")
+  kapt("org.apache.logging.log4j:log4j-core:2.14.1")
   implementation("org.fusesource.jansi:jansi:2.3.1")
   implementation("com.github.albfernandez:juniversalchardet:2.4.0")
   implementation(kotlin("reflect"))

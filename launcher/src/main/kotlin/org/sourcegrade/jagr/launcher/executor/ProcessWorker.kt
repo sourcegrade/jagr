@@ -26,14 +26,16 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.apache.logging.log4j.core.LogEvent
+import org.slf4j.event.Level
+import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
-import org.sourcegrade.jagr.launcher.io.SerializerFactory
-import org.sourcegrade.jagr.launcher.io.get
-import org.sourcegrade.jagr.launcher.io.getScoped
-import org.sourcegrade.jagr.launcher.io.openScope
+import org.sourcegrade.jagr.launcher.io.*
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -98,7 +100,6 @@ class ProcessWorker(
   private fun receiveResult(job: GradingJob): GradingResult {
     val startedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
     val childProcessIn = process.inputStream
-    val stdOut = System.out
     while (true) {
       val next = childProcessIn.read()
       if (next == MARK_RESULT_BYTE) {
@@ -107,7 +108,28 @@ class ProcessWorker(
         jagr.logger.error("${job.request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
         return createFallbackResult(startedUtc, job.request)
       } else {
-        stdOut.write(next)
+        val length = childProcessIn.read() shl 24 or childProcessIn.read() shl 16 or childProcessIn.read() shl 8 or childProcessIn.read()
+        if (length < 0) {
+          jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
+          return createFallbackResult(startedUtc, job.request)
+        }
+        val message: String = runCatching { process.inputStream.readNBytes(length) }.getOrElse {
+          jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
+          return createFallbackResult(startedUtc, job.request)
+        }.toString(StandardCharsets.UTF_8)
+        System.err.println(next)
+        System.err.println(message)
+        when (next) {
+          2 -> jagr.logger.error(message)
+          3 -> jagr.logger.warn(message)
+          4 -> jagr.logger.info(message)
+          5 -> jagr.logger.debug(message)
+          6 -> jagr.logger.trace(message)
+          else -> {
+            jagr.logger.info(message)
+          }
+
+        }
       }
     }
     val bytes: ByteArray = runCatching { process.inputStream.readAllBytes() }.getOrElse {

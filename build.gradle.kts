@@ -30,6 +30,7 @@ tasks {
     enabled = false
   }
   shadowJar {
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer::class.java)
     from("gradlew") {
       into("org/gradle")
     }
