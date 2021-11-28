@@ -67,8 +67,8 @@ class RuntimeJarLoader @Inject constructor(
     resourceExtractor: ResourceExtractor = ResourceExtractor { _, _, _, _ -> },
   ): JavaCompileResult {
     val resourceCollector = ResourceCollectorImpl()
-    val sourceFiles: MutableMap<String, JavaSourceFile> = mutableMapOf()
-    val resources = runtimeResources.resources.toMutableMap()
+    val sourceFiles = mutableMapOf<String, JavaSourceFile>()
+    val resources = mutableMapOf<String, ByteArray>()
     for (resource in container) {
       when {
         resource.name.endsWith(".java") -> {
