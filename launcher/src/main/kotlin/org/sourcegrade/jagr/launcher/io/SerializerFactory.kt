@@ -65,6 +65,8 @@ interface SerializerFactory<T : Any> {
   }
 }
 
+operator fun <T : Any> SerializerFactory.Factory.get(type: KClass<T>, jagr: Jagr) = get(type, jagr.serializerFactoryLocator)
+
 /* === Reified helper functions === */
 
 inline fun <reified T : Any> SerializerFactory.Factory.get(): SerializerFactory<T> = get(T::class)
@@ -125,6 +127,14 @@ inline fun <reified K : Any, reified V : Any> SerializationScope.Output.writeMap
   valueSerializer: SerializerFactory<V> = SerializerFactory.get(jagr),
 ) = MapSerializerFactory(keySerializer, valueSerializer).write(obj, this)
 
+fun SerializationScope.Input.readDynamicList() = DynamicListSerializerFactory.read(this)
+
+fun SerializationScope.Output.writeDynamicList(obj: List<Any>) = DynamicListSerializerFactory.write(obj, this)
+
+fun SerializationScope.Input.readDynamicMap() = DynamicMapSerializerFactory.read(this)
+
+fun SerializationScope.Output.writeDynamicMap(obj: Map<KClass<out Any>, Any>) = DynamicMapSerializerFactory.write(obj, this)
+
 /* === Base serializers === */
 
 internal object StringSerializerFactory : SerializerFactory<String> {
@@ -170,6 +180,46 @@ class MapSerializerFactory<K : Any, V : Any>(
     for ((key, value) in obj) {
       keySerializer.write(key, scope)
       valueSerializer.write(value, scope)
+    }
+  }
+}
+
+/*
+ * === Dynamic decomposing serializers ===
+ *
+ * Dynamic decomposing serializers differ from the standard decomposing serializers in that they store their
+ * runtime type in the external medium (e.g. Input/Output Stream).
+ */
+
+/**
+ * The dynamic list serializer stores the runtime type for each element in the list directly before the element itself, and
+ * uses the serializer for this type to then deserialize the following object.
+ */
+object DynamicListSerializerFactory : SerializerFactory<List<Any>> {
+  override fun read(scope: SerializationScope.Input): List<Any> =
+    (0 until scope.input.readInt()).map { scope.readDynamic().second }
+
+  override fun write(obj: List<Any>, scope: SerializationScope.Output) {
+    scope.output.writeInt(obj.size)
+    for (element in obj) {
+      scope.writeDynamic(obj)
+    }
+  }
+}
+
+/**
+ * The dynamic map serializer is similar to the [DynamicListSerializerFactory] with the difference being which type is stored.
+ * The list serializer stores the runtime type of each element, whereas this map serializer stores the type in the
+ * corresponding entry's key. This stored type may be the same as the runtime type of the element, but may also be a supertype.
+ */
+object DynamicMapSerializerFactory : SerializerFactory<Map<KClass<out Any>, Any>> {
+  override fun read(scope: SerializationScope.Input): Map<KClass<out Any>, Any> =
+    (0 until scope.input.readInt()).associate { scope.readDynamic() }
+
+  override fun write(obj: Map<KClass<out Any>, Any>, scope: SerializationScope.Output) {
+    scope.output.writeInt(obj.size)
+    for ((key, value) in obj) {
+      scope.writeDynamic(value, key)
     }
   }
 }
