@@ -171,8 +171,9 @@ class MapSerializerFactory<K : Any, V : Any>(
   private val keySerializer: SerializerFactory<K>,
   private val valueSerializer: SerializerFactory<V>,
 ) : SerializerFactory<Map<K, V>> {
-  override fun read(scope: SerializationScope.Input): Map<K, V> =
-    (0 until scope.input.readInt()).associate { keySerializer.read(scope) to valueSerializer.read(scope) }
+  override fun read(scope: SerializationScope.Input): Map<K, V> {
+    return (0 until scope.input.readInt()).associate { keySerializer.read(scope) to valueSerializer.read(scope) }
+  }
 
   override fun write(obj: Map<K, V>, scope: SerializationScope.Output) {
     scope.output.writeInt(obj.size)
