@@ -24,12 +24,15 @@ import kotlinx.coroutines.sync.withLock
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.ClassTransformer
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.core.compiler.extractorOf
 import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
 import org.sourcegrade.jagr.core.compiler.java.compile
 import org.sourcegrade.jagr.core.compiler.java.loadCompiled
 import org.sourcegrade.jagr.core.compiler.java.plus
+import org.sourcegrade.jagr.core.compiler.submissionInfo
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
+import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.core.transformer.SubmissionVerificationTransformer
 import org.sourcegrade.jagr.core.transformer.applierOf
 import org.sourcegrade.jagr.core.transformer.plus
@@ -82,8 +85,10 @@ class GradingQueueImpl(
   }.fold(baseSubmissionTransformerApplier) { a, b -> a + b }
 
   override val submissions: List<Submission> = batch.submissions.compile(
-    logger, submissionTransformerApplier, runtimeJarLoader, baseRuntimeLibraries, "submission"
+    logger, submissionTransformerApplier, runtimeJarLoader, baseRuntimeLibraries, "submission",
+    extractorOf(SubmissionInfoImpl.Extractor),
   ) {
+    val submissionInfo = this.submissionInfo
     if (submissionInfo == null) {
       logger.error("${container.name} does not have a submission-info.json! Skipping...")
       return@compile null
