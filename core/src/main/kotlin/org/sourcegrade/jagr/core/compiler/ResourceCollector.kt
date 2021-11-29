@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.core.compiler
 
-import org.sourcegrade.jagr.core.compiler.java.JavaCompileResult
+import org.sourcegrade.jagr.core.testing.GraderInfoImpl
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -30,7 +30,9 @@ interface ResourceCollector {
 
 inline fun <reified T : Any> ResourceCollector.get() = get(T::class)
 
-val JavaCompileResult.submissionInfo: SubmissionInfoImpl? by collected()
+val ProcessedContainer.submissionInfo: SubmissionInfoImpl? by collected()
 
-private inline fun <reified T : Any> collected(): ReadOnlyProperty<JavaCompileResult, T?> =
+val ProcessedContainer.graderInfo: GraderInfoImpl? by collected()
+
+private inline fun <reified T : Any> collected(): ReadOnlyProperty<ProcessedContainer, T?> =
   ReadOnlyProperty { e, _ -> e.resourceCollector.get() }

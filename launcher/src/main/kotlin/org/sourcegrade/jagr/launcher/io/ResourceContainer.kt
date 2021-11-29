@@ -75,7 +75,7 @@ fun createResourceContainer(name: String, inputStream: InputStream): ResourceCon
 
 fun createResourceContainer(file: File): ResourceContainer = when (file.extension) {
   "zip",
-  "jar"
+  "jar",
   -> ZipResourceContainer(file)
   else -> throw IllegalArgumentException("Could not an appropriate resource container for $file")
 }
@@ -102,7 +102,7 @@ private class ResourceContainerInfoBuilderImpl : ResourceContainerInfo.Builder {
   override fun build(): ResourceContainerInfo = ResourceContainerInfoImpl(name)
 }
 
-private class ListResourceContainer(
+private data class ListResourceContainer(
   override val info: ResourceContainerInfo,
   private val resources: List<Resource>,
 ) : ResourceContainer {

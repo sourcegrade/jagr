@@ -31,8 +31,9 @@ fun RubricCollector.logHistogram(jagr: Jagr) {
   var maxPoints = 0
   val allRubrics = gradingFinished.flatMap { it.rubrics.keys }
   for (rubric in allRubrics) {
-    val prev = histogram.computeIfAbsent(rubric.grade.correctPoints) { 0 }
-    histogram[rubric.grade.correctPoints] = prev + 1
+    val actualPoints = rubric.grade.correctPoints + rubric.rubric.minPoints
+    val prev = histogram.computeIfAbsent(actualPoints) { 0 }
+    histogram[actualPoints] = prev + 1
     correctPoints += rubric.grade.correctPoints
     incorrectPoints += rubric.grade.incorrectPoints
     maxPoints += rubric.rubric.maxPoints

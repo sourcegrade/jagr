@@ -17,17 +17,8 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api.testing;
+package org.sourcegrade.jagr.core.compiler
 
-import java.util.List;
+interface SourceContainer : ProcessedContainer {
 
-public interface RubricConfiguration {
-
-  List<ClassTransformer> getTransformers();
-
-  List<String> getFileNameSolutionOverrides();
-
-  RubricConfiguration addTransformer(ClassTransformer transformer);
-
-  RubricConfiguration addFileNameSolutionOverride(String fileName);
 }

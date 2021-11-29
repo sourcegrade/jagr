@@ -17,17 +17,19 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api.testing;
+package org.sourcegrade.jagr.launcher.io
 
-import java.util.List;
-
-public interface RubricConfiguration {
-
-  List<ClassTransformer> getTransformers();
-
-  List<String> getFileNameSolutionOverrides();
-
-  RubricConfiguration addTransformer(ClassTransformer transformer);
-
-  RubricConfiguration addFileNameSolutionOverride(String fileName);
+/**
+ * Represents the contents of a grader-info.json file.
+ */
+interface GraderInfo {
+  val name: String
+  val assignmentIds: List<String>
+  val sourceSets: List<SourceSetInfo>
 }
+
+val GraderInfo.graderFiles: List<String>
+  get() = sourceSets.first { it.name == "grader" }.files
+
+val GraderInfo.solutionFiles: List<String>
+  get() = sourceSets.first { it.name == "solution" }.files

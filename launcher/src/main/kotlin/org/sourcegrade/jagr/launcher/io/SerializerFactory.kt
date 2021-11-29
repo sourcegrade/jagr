@@ -22,7 +22,10 @@ package org.sourcegrade.jagr.launcher.io
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.serializerFactoryLocator
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.companionObjectInstance
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.primaryConstructor
 
 /**
  * Write/Read from stream. Scoped elements are retrieved from scope and not read/written from/to stream.
@@ -221,6 +224,61 @@ object DynamicMapSerializerFactory : SerializerFactory<Map<KClass<out Any>, Any>
     scope.output.writeInt(obj.size)
     for ((key, value) in obj) {
       scope.writeDynamic(value, key)
+    }
+  }
+}
+
+internal class DataClassSerializerFactory<T : Any> private constructor(private val type: KClass<T>) : SerializerFactory<T> {
+
+  override fun read(scope: SerializationScope.Input): T {
+    /*
+    Unfortunately, the return type is always nullable and not only when the type it represents is nullable.
+    This should actually be:
+    fun <V, VNotNull> KProperty1<T, V>.readProperty(): V where VNotNull : V & Any {
+      val type = returnType.classifier!! as KClass<VNotNull>
+    see https://github.com/Kotlin/KEEP/blob/c72601cf35c1e95a541bb4b230edb474a6d1d1a8/proposals/definitely-non-nullable-types.md
+    */
+    fun <V : Any> KProperty1<T, V?>.readProperty(): V? {
+      @Suppress("UNCHECKED_CAST")
+      val type = returnType.classifier!! as KClass<V>
+      return SerializerFactory[type, scope.jagr].readNullable(scope)
+    }
+
+    val params = type.declaredMemberProperties.map { it.readProperty() }.toTypedArray()
+    return type.primaryConstructor!!.call(*params)
+  }
+
+  override fun write(obj: T, scope: SerializationScope.Output) {
+    @Suppress("UNCHECKED_CAST")
+    fun <V : Any> KProperty1<T, V?>.writeProperty() {
+      val serializer = SerializerFactory[returnType.classifier as KClass<V>, scope.jagr]
+      val value = get(obj)
+      if (returnType.isMarkedNullable) {
+        serializer.writeNullable(value, scope)
+      } else {
+        serializer.write(value!!, scope)
+      }
+    }
+
+    for (param in type.declaredMemberProperties) {
+      param.writeProperty()
+    }
+  }
+
+  companion object {
+    private fun checkCompatible(type: KClass<*>) {
+      require(type.isData) { "$type is not a data class" }
+      for (param in type.declaredMemberProperties) {
+        require(param.returnType.classifier is KClass<*>) {
+          "$type parameter ${param.name} type ${param.returnType}'s classifier is not convertible to KClass"
+        }
+      }
+    }
+
+    fun <T : Any> createIfCompatible(type: KClass<T>): DataClassSerializerFactory<T>? {
+      return if (runCatching { checkCompatible(type) }.isSuccess) {
+        DataClassSerializerFactory(type)
+      } else null
     }
   }
 }

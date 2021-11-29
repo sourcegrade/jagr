@@ -17,17 +17,16 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api.testing;
+package org.sourcegrade.jagr.core.compiler
 
-import java.util.List;
+import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 
-public interface RubricConfiguration {
+interface RuntimeContainer : ProcessedContainer {
 
-  List<ClassTransformer> getTransformers();
+  /**
+   * The [SourceContainer] from which this runtime container was built if present, otherwise null.
+   */
+  val source: SourceContainer?
 
-  List<String> getFileNameSolutionOverrides();
-
-  RubricConfiguration addTransformer(ClassTransformer transformer);
-
-  RubricConfiguration addFileNameSolutionOverride(String fileName);
+  val runtimeResources: RuntimeResources
 }

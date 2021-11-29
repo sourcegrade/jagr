@@ -19,34 +19,35 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
-import org.sourcegrade.jagr.launcher.io.ResourceContainer
+import org.sourcegrade.jagr.core.compiler.ResourceCollector
+import org.sourcegrade.jagr.core.compiler.SourceContainer
+import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
-import org.sourcegrade.jagr.launcher.io.keyOf
+import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.readMap
+import org.sourcegrade.jagr.launcher.io.write
 import org.sourcegrade.jagr.launcher.io.writeMap
 
-data class RuntimeResources(
-  val classes: Map<String, CompiledClass> = mapOf(),
-  val resources: Map<String, ByteArray> = mapOf(),
-) {
-  companion object Factory : SerializerFactory<RuntimeResources> {
-    val base = keyOf<RuntimeResources>("base")
-    override fun read(scope: SerializationScope.Input) = RuntimeResources(scope.readMap(), scope.readMap())
+data class JavaSourceContainer(
+  override val info: ResourceContainerInfo,
+  override val resourceCollector: ResourceCollector,
+  val sourceFiles: Map<String, JavaSourceFile>,
+  val resources: Map<String, ByteArray>,
+) : SourceContainer {
+  companion object Factory : SerializerFactory<JavaSourceContainer> {
+    override fun read(scope: SerializationScope.Input) = JavaSourceContainer(
+      scope.read(),
+      scope.read(),
+      scope.readMap(),
+      scope.readMap(),
+    )
 
-    override fun write(obj: RuntimeResources, scope: SerializationScope.Output) {
-      scope.writeMap(obj.classes)
+    override fun write(obj: JavaSourceContainer, scope: SerializationScope.Output) {
+      scope.write(obj.info)
+      scope.write(obj.resourceCollector)
+      scope.writeMap(obj.sourceFiles)
       scope.writeMap(obj.resources)
     }
   }
-}
-
-operator fun RuntimeResources.plus(other: RuntimeResources) =
-  RuntimeResources(classes + other.classes, resources + other.resources)
-
-fun RuntimeJarLoader.loadCompiled(containers: Sequence<ResourceContainer>): RuntimeResources {
-  return containers
-    .map { loadCompiled(it).runtimeResources }
-    .ifEmpty { sequenceOf(RuntimeResources()) }
-    .reduce { a, b -> a + b }
 }

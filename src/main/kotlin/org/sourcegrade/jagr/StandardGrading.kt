@@ -46,10 +46,9 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
     File(config.dir.submissions).ensure(jagr.logger)
     jagr.extrasManager.runExtras()
     val batch = buildGradingBatch {
-      discoverSubmissions(config.dir.submissions) { _, n -> n.endsWith("jar") }
-      discoverSubmissionLibraries(config.dir.libs) { _, n -> n.endsWith("jar") }
       discoverGraders(config.dir.graders) { _, n -> n.endsWith("jar") }
-      discoverGraderLibraries(config.dir.solutions) { _, n -> n.endsWith("jar") }
+      discoverSubmissions(config.dir.submissions) { _, n -> n.endsWith("jar") }
+      discoverLibraries(config.dir.libs) { _, n -> n.endsWith("jar") }
     }
     val queue = jagr.gradingQueueFactory.create(batch)
     jagr.logger.info("Beginning export")
