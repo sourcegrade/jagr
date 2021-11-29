@@ -16,26 +16,24 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:UseSerializers(serializerClasses = [SafeStringSerializer::class])
 
 package org.sourcegrade.jagr.core.testing
 
-import org.sourcegrade.jagr.api.testing.ClassTransformer
-import org.sourcegrade.jagr.api.testing.RubricConfiguration
-import java.util.Collections
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-class RubricConfigurationImpl : RubricConfiguration {
-  private val transformers = mutableListOf<ClassTransformer>()
-  private val fileNameSolutionOverrides = mutableListOf<String>()
-  override fun getTransformers(): List<ClassTransformer> = Collections.unmodifiableList(transformers)
-  override fun getFileNameSolutionOverrides(): MutableList<String> = Collections.unmodifiableList(fileNameSolutionOverrides)
+object SafeStringSerializer : KSerializer<String> {
+  override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("SafeString", PrimitiveKind.STRING)
+  override fun deserialize(decoder: Decoder): String = decoder.decodeString().normalized()
+  override fun serialize(encoder: Encoder, value: String) = encoder.encodeString(value.normalized())
 
-  override fun addTransformer(transformer: ClassTransformer): RubricConfiguration {
-    transformers += transformer
-    return this
-  }
-
-  override fun addFileNameSolutionOverride(fileName: String): RubricConfiguration {
-    fileNameSolutionOverrides += fileName
-    return this
-  }
+  private fun String.normalized() = this
+    .trim()
+    .replace('\\', '/')
 }

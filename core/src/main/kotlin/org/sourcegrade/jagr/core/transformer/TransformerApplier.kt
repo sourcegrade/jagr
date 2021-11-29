@@ -25,12 +25,12 @@ import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Type
 import org.sourcegrade.jagr.api.testing.ClassTransformer
 import org.sourcegrade.jagr.core.compiler.java.CompiledClass
-import org.sourcegrade.jagr.core.compiler.java.JavaCompileResult
+import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaMethod
 
 fun interface TransformationApplier {
-  fun transform(result: JavaCompileResult): JavaCompileResult
+  fun transform(result: JavaCompiledContainer): JavaCompiledContainer
 }
 
 operator fun TransformationApplier.plus(other: TransformationApplier): TransformationApplier {
@@ -40,17 +40,17 @@ operator fun TransformationApplier.plus(other: TransformationApplier): Transform
 }
 
 private object NoOpTransformerAppliedImpl : TransformationApplier {
-  override fun transform(result: JavaCompileResult): JavaCompileResult = result
+  override fun transform(result: JavaCompiledContainer): JavaCompiledContainer = result
 }
 
 private class TransformerApplierImpl(private val transformer: ClassTransformer) : TransformationApplier {
-  override fun transform(result: JavaCompileResult): JavaCompileResult = result.copy(
+  override fun transform(result: JavaCompiledContainer): JavaCompiledContainer = result.copy(
     runtimeResources = result.runtimeResources.copy(classes = result.runtimeResources.classes.transform(transformer))
   )
 }
 
 private class MultiTransformerApplierImpl(private vararg val transformers: ClassTransformer) : TransformationApplier {
-  override fun transform(result: JavaCompileResult): JavaCompileResult {
+  override fun transform(result: JavaCompiledContainer): JavaCompiledContainer {
     var classes = result.runtimeResources.classes
     for (transformer in transformers) {
       classes = classes.transform(transformer)
@@ -67,14 +67,14 @@ fun applierOf(vararg transformers: ClassTransformer): TransformationApplier {
   }
 }
 
-infix fun List<ClassTransformer>.useWhen(predicate: (JavaCompileResult) -> Boolean): TransformationApplier {
+infix fun List<ClassTransformer>.useWhen(predicate: (JavaCompiledContainer) -> Boolean): TransformationApplier {
   val backing = MultiTransformerApplierImpl(*toTypedArray())
   return TransformationApplier { if (predicate(it)) backing.transform(it) else it }
 }
 
 fun Map<String, CompiledClass>.transform(transformer: ClassTransformer): Map<String, CompiledClass> {
-  return mapValues { (className, compiledClass) ->
-    CompiledClass.Existing(className, transformer.transform(compiledClass.byteArray))
+  return mapValues { (_, compiledClass) ->
+    compiledClass.transformed(transformer.transform(compiledClass.bytecode))
   }
 }
 

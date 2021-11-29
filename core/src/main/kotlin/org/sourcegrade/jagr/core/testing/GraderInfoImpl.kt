@@ -16,54 +16,38 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-@file:UseSerializers(serializerClasses = [SafeStringSerializer::class])
 
 package org.sourcegrade.jagr.core.testing
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
-import org.sourcegrade.jagr.api.testing.SubmissionInfo
 import org.sourcegrade.jagr.core.compiler.InfoJsonResourceExtractor
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
+import org.sourcegrade.jagr.launcher.io.GraderInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.readList
 import org.sourcegrade.jagr.launcher.io.writeList
 
-/**
- * Represents the contents of a submission-info.json file
- */
 @Serializable
-data class SubmissionInfoImpl(
-  private val assignmentId: String,
-  private val studentId: String,
-  private val firstName: String,
-  private val lastName: String,
-  val sourceSets: List<SourceSetInfoImpl>,
-) : SubmissionInfo {
-  override fun getAssignmentId(): String = assignmentId
-  override fun getStudentId(): String = studentId
-  override fun getFirstName(): String = firstName
-  override fun getLastName(): String = lastName
-  override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
+data class GraderInfoImpl(
+  override val name: String,
+  override val assignmentIds: List<String>,
+  override val sourceSets: List<SourceSetInfoImpl>,
+) : GraderInfo {
 
-  companion object Factory : SerializerFactory<SubmissionInfoImpl> {
-    override fun read(scope: SerializationScope.Input) = SubmissionInfoImpl(
+  companion object Factory : SerializerFactory<GraderInfoImpl> {
+    override fun read(scope: SerializationScope.Input) = GraderInfoImpl(
       scope.input.readUTF(),
-      scope.input.readUTF(),
-      scope.input.readUTF(),
-      scope.input.readUTF(),
+      scope.readList(),
       scope.readList(),
     )
 
-    override fun write(obj: SubmissionInfoImpl, scope: SerializationScope.Output) {
-      scope.output.writeUTF(obj.assignmentId)
-      scope.output.writeUTF(obj.studentId)
-      scope.output.writeUTF(obj.firstName)
-      scope.output.writeUTF(obj.lastName)
+    override fun write(obj: GraderInfoImpl, scope: SerializationScope.Output) {
+      scope.output.writeUTF(obj.name)
+      scope.writeList(obj.assignmentIds)
       scope.writeList(obj.sourceSets)
     }
   }
 
-  object Extractor : ResourceExtractor by InfoJsonResourceExtractor<SubmissionInfoImpl>("submission-info.json")
+  object Extractor : ResourceExtractor by InfoJsonResourceExtractor<GraderInfoImpl>("grader-info.json")
 }

@@ -41,7 +41,7 @@ class EclipseSubmissionExporter : SubmissionExporter.Eclipse {
     }
     writeProjectFile(submission)
     writeClasspathFile()
-    for ((fileName, sourceFile) in submission.compileResult.sourceFiles) {
+    for ((fileName, sourceFile) in submission.compileResult.source.sourceFiles) {
       addResource {
         name = "src/$fileName"
         outputStream.writer().use { it.write(sourceFile.content) }

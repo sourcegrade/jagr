@@ -17,13 +17,11 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.core.compiler
 
-import org.sourcegrade.jagr.api.testing.RubricConfiguration
+import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 
-interface GraderJar {
-  val info: GraderInfo
-  val configuration: RubricConfiguration
-  val rubricProviders: Map<String, List<String>>
-  val testProviders: Map<String, List<String>>
+interface ProcessedContainer {
+  val info: ResourceContainerInfo
+  val resourceCollector: ResourceCollector
 }
