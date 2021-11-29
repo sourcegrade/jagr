@@ -28,6 +28,7 @@ import org.sourcegrade.jagr.core.compiler.ResourceCollectorImpl
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.RuntimeContainer
 import org.sourcegrade.jagr.core.compiler.readEncoded
+import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import java.nio.charset.StandardCharsets
 import java.util.Locale
@@ -69,7 +70,7 @@ class RuntimeJarLoader @Inject constructor(
     val resourceCollector = ResourceCollectorImpl()
     val sourceFiles = mutableMapOf<String, JavaSourceFile>()
     val resources = mutableMapOf<String, ByteArray>()
-    for (resource in container) {
+    fun loadResource(resource: Resource) {
       when {
         resource.name.endsWith(".java") -> {
           val className = resource.name.replace('/', '.').substring(0, resource.name.length - 5)
@@ -83,7 +84,16 @@ class RuntimeJarLoader @Inject constructor(
           .also { data -> resourceExtractor.extract(container.info, resource, data, resourceCollector) }
       }
     }
-    return JavaSourceContainer(container.info, resourceCollector, sourceFiles, resources)
+    val messages = mutableListOf<String>()
+    for (resource in container) {
+      try {
+        loadResource(resource)
+      } catch (e: Exception) {
+        logger.error("An error occurred loading ${container.info.name} :: ${e.message}")
+        e.message?.also(messages::add)
+      }
+    }
+    return JavaSourceContainer(container.info, resourceCollector, sourceFiles, resources, messages)
   }
 
   fun compileSources(
@@ -92,7 +102,7 @@ class RuntimeJarLoader @Inject constructor(
   ): JavaCompiledContainer {
     if (source.sourceFiles.isEmpty()) {
       // no source files, skip compilation task
-      return JavaCompiledContainer(source)
+      return JavaCompiledContainer(source, messages = source.messages)
     }
     val compiledClasses: MutableMap<String, CompiledClass> = mutableMapOf()
     val collector = DiagnosticCollector<JavaFileObject>()
@@ -106,7 +116,7 @@ class RuntimeJarLoader @Inject constructor(
     compiledClasses.linkSource(source.sourceFiles)
     val newRuntimeResources = RuntimeResources(compiledClasses, source.resources)
     if (!result || collector.diagnostics.isNotEmpty()) {
-      val messages = mutableListOf<String>()
+      val messages = source.messages.toMutableList()
       var warnings = 0
       var errors = 0
       var other = 0

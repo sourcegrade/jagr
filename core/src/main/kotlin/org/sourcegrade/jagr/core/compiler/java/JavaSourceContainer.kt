@@ -25,8 +25,10 @@ import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.read
+import org.sourcegrade.jagr.launcher.io.readList
 import org.sourcegrade.jagr.launcher.io.readMap
 import org.sourcegrade.jagr.launcher.io.write
+import org.sourcegrade.jagr.launcher.io.writeList
 import org.sourcegrade.jagr.launcher.io.writeMap
 
 data class JavaSourceContainer(
@@ -34,6 +36,7 @@ data class JavaSourceContainer(
   override val resourceCollector: ResourceCollector,
   val sourceFiles: Map<String, JavaSourceFile>,
   val resources: Map<String, ByteArray>,
+  val messages: List<String> = listOf(),
 ) : ProcessedContainer {
   companion object Factory : SerializerFactory<JavaSourceContainer> {
     override fun read(scope: SerializationScope.Input) = JavaSourceContainer(
@@ -41,6 +44,7 @@ data class JavaSourceContainer(
       scope.read(),
       scope.readMap(),
       scope.readMap(),
+      scope.readList(),
     )
 
     override fun write(obj: JavaSourceContainer, scope: SerializationScope.Output) {
@@ -48,6 +52,7 @@ data class JavaSourceContainer(
       scope.write(obj.resourceCollector)
       scope.writeMap(obj.sourceFiles)
       scope.writeMap(obj.resources)
+      scope.writeList(obj.messages)
     }
   }
 }
