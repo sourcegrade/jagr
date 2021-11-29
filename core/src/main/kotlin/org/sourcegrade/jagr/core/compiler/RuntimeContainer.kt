@@ -24,9 +24,9 @@ import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 interface RuntimeContainer : ProcessedContainer {
 
   /**
-   * The [SourceContainer] from which this runtime container was built if present, otherwise null.
+   * The source container from which this runtime container was built if present, otherwise null.
    */
-  val source: SourceContainer?
+  val source: ProcessedContainer?
 
   val runtimeResources: RuntimeResources
 }

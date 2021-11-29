@@ -19,8 +19,8 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
+import org.sourcegrade.jagr.core.compiler.ProcessedContainer
 import org.sourcegrade.jagr.core.compiler.ResourceCollector
-import org.sourcegrade.jagr.core.compiler.SourceContainer
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -34,7 +34,7 @@ data class JavaSourceContainer(
   override val resourceCollector: ResourceCollector,
   val sourceFiles: Map<String, JavaSourceFile>,
   val resources: Map<String, ByteArray>,
-) : SourceContainer {
+) : ProcessedContainer {
   companion object Factory : SerializerFactory<JavaSourceContainer> {
     override fun read(scope: SerializationScope.Input) = JavaSourceContainer(
       scope.read(),

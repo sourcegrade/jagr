@@ -19,9 +19,9 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
+import org.sourcegrade.jagr.core.compiler.ProcessedContainer
 import org.sourcegrade.jagr.core.compiler.ResourceCollector
 import org.sourcegrade.jagr.core.compiler.RuntimeContainer
-import org.sourcegrade.jagr.core.compiler.SourceContainer
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 
 data class JavaRuntimeContainer(
@@ -29,5 +29,5 @@ data class JavaRuntimeContainer(
   override val resourceCollector: ResourceCollector,
   override val runtimeResources: RuntimeResources,
 ) : RuntimeContainer {
-  override val source: SourceContainer? = null
+  override val source: ProcessedContainer? = null
 }
