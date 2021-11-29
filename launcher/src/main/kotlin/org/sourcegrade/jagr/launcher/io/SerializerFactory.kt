@@ -22,10 +22,7 @@ package org.sourcegrade.jagr.launcher.io
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.serializerFactoryLocator
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty1
 import kotlin.reflect.full.companionObjectInstance
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.primaryConstructor
 
 /**
  * Write/Read from stream. Scoped elements are retrieved from scope and not read/written from/to stream.
