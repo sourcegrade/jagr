@@ -28,6 +28,7 @@ import org.objectweb.asm.Opcodes
 import org.slf4j.Logger
 import org.sourcegrade.jagr.core.compiler.readEncoded
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
+import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import java.nio.charset.StandardCharsets
 import java.util.Locale
@@ -61,14 +62,13 @@ class RuntimeJarLoader @Inject constructor(
     val sourceFiles: MutableMap<String, JavaSourceFile> = mutableMapOf()
     val mutableResources = runtimeResources.resources.toMutableMap()
     var submissionInfo: SubmissionInfoImpl? = null
-    for (resource in container) {
+    fun loadResource(resource: Resource) {
       when {
         resource.name == "submission-info.json" -> {
-          submissionInfo = try {
-            Json.decodeFromString<SubmissionInfoImpl>(resource.getInputStream().reader().use { it.readText() })
+          try {
+            submissionInfo = Json.decodeFromString<SubmissionInfoImpl>(resource.getInputStream().reader().use { it.readText() })
           } catch (e: Throwable) {
             logger.error("${container.info.name} has invalid submission-info.json", e)
-            return JavaCompileResult(container.info)
           }
         }
         resource.name.endsWith(".java") -> {
@@ -80,6 +80,15 @@ class RuntimeJarLoader @Inject constructor(
         resource.name.endsWith("MANIFEST.MF") -> { // ignore
         }
         else -> mutableResources[resource.name] = resource.getInputStream().use { it.readAllBytes() }
+      }
+    }
+    val messages = mutableListOf<String>()
+    for (resource in container) {
+      try {
+        loadResource(resource)
+      } catch (e: Exception) {
+        logger.error("An error occurred loading ${container.info.name} :: ${e.message}")
+        e.message?.also(messages::add)
       }
     }
     if (sourceFiles.isEmpty()) {
@@ -98,7 +107,6 @@ class RuntimeJarLoader @Inject constructor(
     compiledClasses.linkSource(sourceFiles)
     val newRuntimeResources = compiledClasses rr mutableResources
     if (!result || collector.diagnostics.isNotEmpty()) {
-      val messages = mutableListOf<String>()
       var warnings = 0
       var errors = 0
       var other = 0
