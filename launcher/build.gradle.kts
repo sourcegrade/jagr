@@ -1,7 +1,7 @@
 plugins {
   kotlin("jvm")
-  kotlin("plugin.serialization")
   kotlin("kapt")
+  kotlin("plugin.serialization")
   id("com.github.johnrengelman.shadow")
 }
 
