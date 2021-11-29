@@ -36,19 +36,23 @@ class SubmissionVerificationTransformer : ClassTransformer {
     ) = SVMethodVisitor(super.visitMethod(access, name, descriptor, signature, exceptions))
 
     private inner class SVMethodVisitor(methodVisitor: MethodVisitor?) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
-      override fun visitMethodInsn(opcode: Int, owner: String, name: String?, descriptor: String?, isInterface: Boolean) {
-        if (verifyMethodInsn(opcode, owner, name, descriptor)) {
+      override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
+        val methodInsnElement = MethodInsnElement(opcode, owner, name, descriptor, isInterface)
+        if (methodInsnElement.let { baseRules.any { rule -> rule(it) } }) {
           error("Used illegal instruction $owner.$name$descriptor")
         }
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
       }
     }
   }
-}
 
-fun verifyMethodInsn(opcode: Int, owner: String, name: String?, descriptor: String?) =
-  owner.startsWith("java/lang/reflect")
-    || owner.startsWith("org/sourcegrade")
-    || owner.startsWith("java/lang/Process")
-    || (owner == "java/lang/System" && name == "exit")
-    || owner == "java/lang/Runtime"
+  companion object {
+    val baseRules = listOf<MethodInsnElement.() -> Boolean>(
+      { owner.startsWith("java/lang/reflect") },
+      { owner.startsWith("org/sourcegrade") },
+      { owner.startsWith("java/lang/Process") },
+      { owner == "java/lang/System" && name == "exit" },
+      { owner == "java/lang/Runtime" },
+    )
+  }
+}
