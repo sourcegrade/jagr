@@ -19,8 +19,12 @@
 
 package org.sourcegrade.jagr.api.testing;
 
+import org.jetbrains.annotations.ApiStatus;
+import org.objectweb.asm.Type;
+
 import java.util.List;
 
+@ApiStatus.NonExtendable
 public interface RubricConfiguration {
 
   List<ClassTransformer> getTransformers();
@@ -30,4 +34,8 @@ public interface RubricConfiguration {
   RubricConfiguration addTransformer(ClassTransformer transformer);
 
   RubricConfiguration addFileNameSolutionOverride(String fileName);
+
+  default RubricConfiguration addFileNameSolutionOverride(Class<?> clazz) {
+    return addFileNameSolutionOverride(Type.getInternalName(clazz) + ".java");
+  }
 }
