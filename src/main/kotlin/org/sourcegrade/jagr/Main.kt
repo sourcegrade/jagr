@@ -26,7 +26,14 @@ import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 
-fun main(vararg args: String) = MainCommand().main(args)
+fun main(vararg args: String) {
+  try {
+    MainCommand().main(args)
+  } catch (e: Throwable) {
+    Jagr.logger.error("A fatal error occurred", e)
+    throw e
+  }
+}
 
 class MainCommand : CliktCommand() {
 
