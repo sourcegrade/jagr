@@ -8,7 +8,6 @@ import kotlin.concurrent.withLock
 
 class ProgressAwareOutputStream(private val delegate: PrintStream) : OutputStream() {
 
-  private var justPrinted = false
   private val lock = ReentrantLock()
 
   override fun write(b: Int) = lock.withLock {
@@ -16,14 +15,9 @@ class ProgressAwareOutputStream(private val delegate: PrintStream) : OutputStrea
   }
 
   private fun writeWithProgress(progressBar: ProgressBar, b: Int) {
-    if (justPrinted) {
-      progressBar.clear(delegate)
-      justPrinted = false
-    }
     delegate.write(b)
     if (b == newLine) {
       progressBar.print(delegate)
-      justPrinted = true
     }
   }
 
