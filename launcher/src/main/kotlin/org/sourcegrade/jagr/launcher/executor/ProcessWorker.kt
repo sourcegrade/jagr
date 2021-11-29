@@ -39,7 +39,6 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import kotlin.reflect.KFunction
 import kotlin.reflect.KFunction1
 
 class ProcessWorker(
@@ -111,7 +110,10 @@ class ProcessWorker(
         return createFallbackResult(startedUtc, job.request)
       } else if (next == MARK_LOG_MESSAGE_BYTE) {
         val level = childProcessIn.read()
-        val length = childProcessIn.read() shl 24 or childProcessIn.read() shl 16 or childProcessIn.read() shl 8 or childProcessIn.read()
+        val length = childProcessIn.read() shl 24 or
+          childProcessIn.read() shl 16 or
+          childProcessIn.read() shl 8 or
+          childProcessIn.read()
         if (length < 0) {
           jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
           return createFallbackResult(startedUtc, job.request)
