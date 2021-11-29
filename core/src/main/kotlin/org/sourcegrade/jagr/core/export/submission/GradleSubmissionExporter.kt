@@ -56,7 +56,7 @@ class GradleSubmissionExporter @Inject constructor(
   private fun export(graderJar: GraderJar?, submissions: List<Submission>) = buildResourceContainer {
     graderJar as GraderJarImpl?
     info = buildResourceContainerInfo {
-      name = graderJar?.name ?: DEFAULT_EXPORT_NAME
+      name = graderJar?.info?.name ?: DEFAULT_EXPORT_NAME
     }
     writeSkeleton()
     val filteredSubmissions = if (graderJar == null) {
@@ -134,11 +134,11 @@ class GradleSubmissionExporter @Inject constructor(
       name = "$submissionName/src/main/resources/submission-info.json"
       outputStream.writer().use { it.write(Json.encodeToString(submission.info as SubmissionInfoImpl)) }
     }
-    writeSourceFiles("$submissionName/src/main/java/", submission.compileResult.sourceFiles)
+    writeSourceFiles("$submissionName/src/main/java/", submission.compileResult.source.sourceFiles)
     writeResources("$submissionName/src/main/resources/", submission.compileResult.runtimeResources.resources)
     if (graderJar != null) {
-      writeSourceFiles("$submissionName/src/test/java/", graderJar.compileResult.sourceFiles)
-      writeResources("$submissionName/src/test/resources/", graderJar.compileResult.runtimeResources.resources)
+      writeSourceFiles("$submissionName/src/test/java/", graderJar.containerWithoutSolution.source.sourceFiles)
+      writeResources("$submissionName/src/test/resources/", graderJar.containerWithoutSolution.runtimeResources.resources)
     }
   }
 

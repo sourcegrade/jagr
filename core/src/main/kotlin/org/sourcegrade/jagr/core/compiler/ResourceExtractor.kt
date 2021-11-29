@@ -17,13 +17,25 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.core.compiler
 
-import org.sourcegrade.jagr.api.testing.RubricConfiguration
+import org.sourcegrade.jagr.launcher.io.Resource
+import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 
-interface GraderJar {
-  val info: GraderInfo
-  val configuration: RubricConfiguration
-  val rubricProviders: Map<String, List<String>>
-  val testProviders: Map<String, List<String>>
+fun interface ResourceExtractor {
+  /**
+   * Attempts to extract a special kind of resource from [resource].
+   */
+  fun extract(
+    containerInfo: ResourceContainerInfo,
+    resource: Resource,
+    data: ByteArray,
+    collector: MutableResourceCollector,
+  )
+}
+
+fun extractorOf(vararg extractors: ResourceExtractor) = ResourceExtractor { containerInfo, resource, data, collector ->
+  for (extractor in extractors) {
+    extractor.extract(containerInfo, resource, data, collector)
+  }
 }

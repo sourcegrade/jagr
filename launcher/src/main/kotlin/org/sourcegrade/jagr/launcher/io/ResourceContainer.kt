@@ -75,7 +75,7 @@ fun createResourceContainer(name: String, inputStream: InputStream): ResourceCon
 
 fun createResourceContainer(file: File): ResourceContainer = when (file.extension) {
   "zip",
-  "jar"
+  "jar",
   -> ZipResourceContainer(file)
   else -> throw IllegalArgumentException("Could not an appropriate resource container for $file")
 }

@@ -21,29 +21,26 @@ package org.sourcegrade.jagr.core.compiler.java
 
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.CompileResult
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
+import org.sourcegrade.jagr.core.compiler.ResourceCollector
+import org.sourcegrade.jagr.core.compiler.RuntimeContainer
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.readList
-import org.sourcegrade.jagr.launcher.io.readMap
-import org.sourcegrade.jagr.launcher.io.readNullable
 import org.sourcegrade.jagr.launcher.io.write
 import org.sourcegrade.jagr.launcher.io.writeList
-import org.sourcegrade.jagr.launcher.io.writeMap
-import org.sourcegrade.jagr.launcher.io.writeNullable
 
-data class JavaCompileResult(
-  val container: ResourceContainerInfo,
-  val runtimeResources: RuntimeResources = RuntimeResources(),
-  val submissionInfo: SubmissionInfoImpl? = null,
-  val sourceFiles: Map<String, JavaSourceFile> = mapOf(),
+data class JavaCompiledContainer(
+  override val source: JavaSourceContainer,
+  override val runtimeResources: RuntimeResources = RuntimeResources(),
   private val messages: List<String> = listOf(),
   val warnings: Int = 0,
   val errors: Int = 0,
   val other: Int = 0,
-) : CompileResult {
+) : CompileResult, RuntimeContainer {
+  override val info: ResourceContainerInfo get() = source.info
+  override val resourceCollector: ResourceCollector get() = source.resourceCollector
   override fun getMessages(): List<String> = messages
   override fun getWarningCount(): Int = warnings
   override fun getErrorCount(): Int = errors
@@ -62,23 +59,19 @@ data class JavaCompileResult(
     }
   }
 
-  companion object Factory : SerializerFactory<JavaCompileResult> {
-    override fun read(scope: SerializationScope.Input): JavaCompileResult = JavaCompileResult(
+  companion object Factory : SerializerFactory<JavaCompiledContainer> {
+    override fun read(scope: SerializationScope.Input): JavaCompiledContainer = JavaCompiledContainer(
       scope.read(),
       scope.read(),
-      scope.readNullable(),
-      scope.readMap(),
       scope.readList(),
       scope.input.readInt(),
       scope.input.readInt(),
       scope.input.readInt(),
     )
 
-    override fun write(obj: JavaCompileResult, scope: SerializationScope.Output) {
-      scope.write(obj.container)
+    override fun write(obj: JavaCompiledContainer, scope: SerializationScope.Output) {
+      scope.write(obj.source)
       scope.write(obj.runtimeResources)
-      scope.writeNullable(obj.submissionInfo)
-      scope.writeMap(obj.sourceFiles)
       scope.writeList(obj.messages)
       scope.output.writeInt(obj.warnings)
       scope.output.writeInt(obj.errors)

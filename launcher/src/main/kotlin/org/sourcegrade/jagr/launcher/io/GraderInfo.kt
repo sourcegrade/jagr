@@ -19,11 +19,17 @@
 
 package org.sourcegrade.jagr.launcher.io
 
-import org.sourcegrade.jagr.api.testing.RubricConfiguration
-
-interface GraderJar {
-  val info: GraderInfo
-  val configuration: RubricConfiguration
-  val rubricProviders: Map<String, List<String>>
-  val testProviders: Map<String, List<String>>
+/**
+ * Represents the contents of a grader-info.json file.
+ */
+interface GraderInfo {
+  val name: String
+  val assignmentIds: List<String>
+  val sourceSets: List<SourceSetInfo>
 }
+
+val GraderInfo.graderFiles: List<String>
+  get() = sourceSets.first { it.name == "grader" }.files
+
+val GraderInfo.solutionFiles: List<String>
+  get() = sourceSets.first { it.name == "solution" }.files

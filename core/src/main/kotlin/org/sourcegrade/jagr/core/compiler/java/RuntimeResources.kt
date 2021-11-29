@@ -19,19 +19,12 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
-import org.slf4j.Logger
-import org.sourcegrade.jagr.core.parallelMapNotNull
-import org.sourcegrade.jagr.core.transformer.TransformationApplier
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.keyOf
-import org.sourcegrade.jagr.launcher.io.nameWithoutExtension
 import org.sourcegrade.jagr.launcher.io.readMap
 import org.sourcegrade.jagr.launcher.io.writeMap
-import java.io.File
-import java.util.jar.JarEntry
-import java.util.jar.JarOutputStream
 
 data class RuntimeResources(
   val classes: Map<String, CompiledClass> = mapOf(),
@@ -39,7 +32,6 @@ data class RuntimeResources(
 ) {
   companion object Factory : SerializerFactory<RuntimeResources> {
     val base = keyOf<RuntimeResources>("base")
-    val grader = keyOf<RuntimeResources>("grader")
     override fun read(scope: SerializationScope.Input) = RuntimeResources(scope.readMap(), scope.readMap())
 
     override fun write(obj: RuntimeResources, scope: SerializationScope.Output) {
@@ -49,58 +41,12 @@ data class RuntimeResources(
   }
 }
 
-infix fun Map<String, CompiledClass>.rr(resources: Map<String, ByteArray>) = RuntimeResources(this, resources)
-operator fun RuntimeResources.plus(other: RuntimeResources) = classes + other.classes rr resources + other.resources
+operator fun RuntimeResources.plus(other: RuntimeResources) =
+  RuntimeResources(classes + other.classes, resources + other.resources)
 
 fun RuntimeJarLoader.loadCompiled(containers: Sequence<ResourceContainer>): RuntimeResources {
   return containers
     .map { loadCompiled(it).runtimeResources }
     .ifEmpty { sequenceOf(RuntimeResources()) }
     .reduce { a, b -> a + b }
-}
-
-fun <T> Sequence<ResourceContainer>.compile(
-  logger: Logger,
-  transformerApplier: TransformationApplier,
-  runtimeJarLoader: RuntimeJarLoader,
-  graderRuntimeLibraries: RuntimeResources,
-  containerType: String,
-  constructor: JavaCompileResult.() -> T?,
-): List<T> = toList().parallelMapNotNull {
-  val original = runtimeJarLoader.loadSources(it, graderRuntimeLibraries)
-  val transformed = try {
-    transformerApplier.transform(original)
-  } catch (e: Exception) {
-    // create a copy of the original compile result but throw out runtime resources (compiled classes and resources)
-    original.copy(
-      runtimeResources = RuntimeResources(),
-      messages = listOf("Transformation failed :: ${e.message}") + original.messages,
-      errors = original.errors + 1,
-    )
-  }
-  original.exportCompilationResult("${it.info.nameWithoutExtension}-original.jar")
-  transformed.exportCompilationResult("${it.info.nameWithoutExtension}-transformed.jar")
-  with(transformed) {
-    printMessages(
-      logger,
-      { "$containerType ${container.name} has $warnings warnings and $errors errors!" },
-      { "$containerType ${container.name} has $warnings warnings!" },
-    )
-    constructor()?.apply { logger.info("Loaded $containerType ${it.info.name}") }
-      ?: run { logger.error("Failed to load $containerType ${it.info.name}"); null }
-  }
-}
-
-fun JavaCompileResult.exportCompilationResult(name: String) {
-  val file = File("compilation/$name")
-  file.parentFile.mkdirs()
-  JarOutputStream(file.outputStream().buffered()).use { jar ->
-    for ((className, compiledClass) in runtimeResources.classes) {
-      val entry = JarEntry("${className.replace(".", "/")}.class")
-      entry.time = System.currentTimeMillis()
-      jar.putNextEntry(entry)
-      jar.write(compiledClass.byteArray)
-      jar.closeEntry()
-    }
-  }
 }

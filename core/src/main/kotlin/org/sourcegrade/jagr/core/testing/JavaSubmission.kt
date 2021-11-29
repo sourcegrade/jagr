@@ -22,7 +22,7 @@ package org.sourcegrade.jagr.core.testing
 import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
-import org.sourcegrade.jagr.core.compiler.java.JavaCompileResult
+import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -33,13 +33,13 @@ import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class JavaSubmission(
   private val info: SubmissionInfo,
-  private val compileResult: JavaCompileResult,
-  val runtimeLibraries: RuntimeResources,
+  private val compileResult: JavaCompiledContainer,
+  val libraries: RuntimeResources,
 ) : Submission {
   override fun getInfo(): SubmissionInfo = info
-  override fun getCompileResult(): JavaCompileResult = compileResult
-  override fun getSourceFile(fileName: String): SourceFile? = compileResult.sourceFiles[fileName]
-  override fun toString(): String = "$info(${compileResult.container.name})"
+  override fun getCompileResult(): JavaCompiledContainer = compileResult
+  override fun getSourceFile(fileName: String): SourceFile? = compileResult.source.sourceFiles[fileName]
+  override fun toString(): String = "$info(${compileResult.info.name})"
 
   companion object Factory : SerializerFactory<JavaSubmission> {
     override fun read(scope: SerializationScope.Input): JavaSubmission =

@@ -34,8 +34,7 @@ import org.sourcegrade.jagr.launcher.io.writeScoped
 data class GradingRequestImpl(
   override val submission: Submission,
   override val graders: List<GraderJar>,
-  val baseRuntimeLibraries: RuntimeResources,
-  val graderRuntimeLibraries: RuntimeResources,
+  val libraries: RuntimeResources,
 ) : GradingRequest {
   companion object Factory : SerializerFactory.Scoped<GradingRequestImpl> {
     override fun read(scope: SerializationScope.Input): GradingRequestImpl {
@@ -43,7 +42,6 @@ data class GradingRequestImpl(
         scope.readScoped(),
         scope.readList(),
         scope[RuntimeResources.base],
-        scope[RuntimeResources.grader]
       )
     }
 
@@ -54,21 +52,18 @@ data class GradingRequestImpl(
 
     override fun readScoped(scope: SerializationScope.Input): GradingRequestImpl {
       scope.readScoped(RuntimeResources.base)
-      scope.readScoped(RuntimeResources.grader)
       return read(scope)
     }
 
     override fun writeScoped(obj: GradingRequestImpl, scope: SerializationScope.Output) {
-      scope.writeScoped(obj.baseRuntimeLibraries, RuntimeResources.base)
-      scope.writeScoped(obj.graderRuntimeLibraries, RuntimeResources.grader)
+      scope.writeScoped(obj.libraries, RuntimeResources.base)
       write(obj, scope)
     }
 
     override fun putInScope(obj: GradingRequestImpl, scope: SerializationScope) {
       scope[keyOf(GradingRequest::class)] = obj
       scope[keyOf(Submission::class)] = obj.submission
-      scope[RuntimeResources.base] = obj.baseRuntimeLibraries
-      scope[RuntimeResources.grader] = obj.graderRuntimeLibraries
+      scope[RuntimeResources.base] = obj.libraries
     }
   }
 }

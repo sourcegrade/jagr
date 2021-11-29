@@ -17,13 +17,13 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.core.compiler
 
-import org.sourcegrade.jagr.api.testing.RubricConfiguration
-
-interface GraderJar {
-  val info: GraderInfo
-  val configuration: RubricConfiguration
-  val rubricProviders: Map<String, List<String>>
-  val testProviders: Map<String, List<String>>
+interface MutableResourceCollector : ResourceCollector {
+  /**
+   * Adds a resource to this collector. The provided value's runtime type is the key for the resource.
+   *
+   * The value is then accessible via [get].
+   */
+  fun addResource(value: Any)
 }
