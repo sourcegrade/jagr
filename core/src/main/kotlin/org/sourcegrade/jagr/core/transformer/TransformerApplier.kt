@@ -73,8 +73,8 @@ infix fun List<ClassTransformer>.useWhen(predicate: (JavaCompileResult) -> Boole
 }
 
 fun Map<String, CompiledClass>.transform(transformer: ClassTransformer): Map<String, CompiledClass> {
-  return mapValues { (className, compiledClass) ->
-    CompiledClass.Existing(className, transformer.transform(compiledClass.byteArray))
+  return mapValues { (_, compiledClass) ->
+    compiledClass.transformed(transformer.transform(compiledClass.bytecode))
   }
 }
 
