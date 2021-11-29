@@ -79,8 +79,8 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
     collector.allocate(queue)
     executor.schedule(queue)
     executor.start(collector)
-    collector.logHistogram(jagr)
     Environment.cleanupMainProcess()
+    collector.logHistogram(jagr)
     export(collector)
   }
 
