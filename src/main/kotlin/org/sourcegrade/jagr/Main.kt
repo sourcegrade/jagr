@@ -22,6 +22,7 @@ package org.sourcegrade.jagr
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 
@@ -36,8 +37,10 @@ class MainCommand : CliktCommand() {
   private val exportOnly by option("--export-only", "-e").flag()
   override fun run() {
     if (child) {
+      Environment.initializeChildProcess()
       ChildProcGrading().grade()
     } else {
+      Environment.initializeMainProcess()
       val startTime = System.currentTimeMillis()
       StandardGrading().grade(exportOnly)
       Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")

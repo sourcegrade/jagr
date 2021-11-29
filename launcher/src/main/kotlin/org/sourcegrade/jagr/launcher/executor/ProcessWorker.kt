@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.slf4j.Logger
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -34,9 +35,11 @@ import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlin.reflect.KFunction1
 
 class ProcessWorker(
   private val jagr: Jagr,
@@ -98,7 +101,6 @@ class ProcessWorker(
   private fun receiveResult(job: GradingJob): GradingResult {
     val startedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
     val childProcessIn = process.inputStream
-    val stdOut = System.out
     while (true) {
       val next = childProcessIn.read()
       if (next == MARK_RESULT_BYTE) {
@@ -106,8 +108,30 @@ class ProcessWorker(
       } else if (next == -1) {
         jagr.logger.error("${job.request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
         return createFallbackResult(startedUtc, job.request)
-      } else {
-        stdOut.write(next)
+      } else if (next == MARK_LOG_MESSAGE_BYTE) {
+        val level = childProcessIn.read()
+        val length = childProcessIn.read() shl 24 or
+          childProcessIn.read() shl 16 or
+          childProcessIn.read() shl 8 or
+          childProcessIn.read()
+        if (length < 0) {
+          jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
+          return createFallbackResult(startedUtc, job.request)
+        }
+        val message: String = runCatching { process.inputStream.readNBytes(length) }.getOrElse {
+          jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
+          return createFallbackResult(startedUtc, job.request)
+        }.toString(StandardCharsets.UTF_8)
+        jagr.logger.let<Logger, KFunction1<String, Unit>> {
+          when (level) {
+            2 -> it::error
+            3 -> it::warn
+            4 -> it::info
+            5 -> it::debug
+            6 -> it::trace
+            else -> it::info
+          }
+        }(message)
       }
     }
     val bytes: ByteArray = runCatching { process.inputStream.readAllBytes() }.getOrElse {
@@ -127,6 +151,7 @@ class ProcessWorker(
   }
 
   companion object {
+    const val MARK_LOG_MESSAGE_BYTE = 2
     const val MARK_RESULT_BYTE = 7
   }
 }
