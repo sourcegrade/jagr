@@ -28,9 +28,9 @@ class FallbackRuntimeTester : RuntimeTester {
   override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
     val info = submission.info
     val rubricProviders = grader.rubricProviders[info.assignmentId] ?: return null
-    var resources = grader.compileResult.runtimeResources
+    var resources = grader.container.runtimeResources
     if (submission is JavaSubmission) {
-      resources += submission.compileResult.runtimeResources + submission.runtimeLibraries
+      resources += submission.compileResult.runtimeResources + submission.libraries
     }
     val classLoader = RuntimeClassLoader(resources)
     val notes = listOf(

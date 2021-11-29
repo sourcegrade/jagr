@@ -17,13 +17,16 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.core.compiler
 
-import org.sourcegrade.jagr.api.testing.RubricConfiguration
+import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 
-interface GraderJar {
-  val info: GraderInfo
-  val configuration: RubricConfiguration
-  val rubricProviders: Map<String, List<String>>
-  val testProviders: Map<String, List<String>>
+interface RuntimeContainer : ProcessedContainer {
+
+  /**
+   * The source container from which this runtime container was built if present, otherwise null.
+   */
+  val source: ProcessedContainer?
+
+  val runtimeResources: RuntimeResources
 }

@@ -24,7 +24,8 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.RubricForSubmission
 import org.sourcegrade.jagr.api.rubric.RubricProvider
 import org.sourcegrade.jagr.api.rubric.TestForSubmission
-import org.sourcegrade.jagr.core.compiler.java.JavaCompileResult
+import org.sourcegrade.jagr.core.compiler.graderInfo
+import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.plus
@@ -32,19 +33,16 @@ import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get
-import org.sourcegrade.jagr.launcher.io.nameWithoutExtension
+import org.sourcegrade.jagr.launcher.io.graderFiles
 import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.write
 
 class GraderJarImpl(
   private val logger: Logger,
-  val compileResult: JavaCompileResult,
-  runtimeLibraries: RuntimeResources,
+  val container: JavaCompiledContainer,
+  libraries: RuntimeResources,
 ) : GraderJar {
-
-  private val container = compileResult.container
-
-  override val name: String = container.nameWithoutExtension
+  override val info = requireNotNull(container.graderInfo) { "Container ${container.info.name} is missing graderInfo" }
 
   override val configuration = RubricConfigurationImpl()
 
@@ -60,11 +58,21 @@ class GraderJarImpl(
    */
   override val testProviders: Map<String, List<String>>
 
+  private val graderFiles = info.graderFiles.toSet()
+
+  val containerWithoutSolution = container.copy(
+    runtimeResources = container.runtimeResources.copy(
+      // whitelist file from grader
+      classes = container.runtimeResources.classes.filter { graderFiles.contains(it.value.source?.fileName) },
+      resources = container.runtimeResources.resources.filterKeys { graderFiles.contains(it) },
+    )
+  )
+
   init {
     val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
     val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
-    val baseClassLoader = RuntimeClassLoader(compileResult.runtimeResources + runtimeLibraries)
-    for (className in compileResult.runtimeResources.classes.keys) {
+    val baseClassLoader = RuntimeClassLoader(container.runtimeResources + libraries)
+    for (className in container.runtimeResources.classes.keys) {
       val clazz = baseClassLoader.loadClass(className)
       rubricProviders.putIfRubric(clazz)
       testProviders.putIfTest(clazz)
@@ -81,16 +89,17 @@ class GraderJarImpl(
       logger.error("Class annotated with @RubricForSubmission does not implement RubricProvider! Ignoring...")
       return
     }
+
     val assignmentId = filter.value
     val className = clazz.name
     val rubricProvider = try {
       asRubricProvider.getConstructor().newInstance()!!
     } catch (e: NoSuchMethodException) {
-      logger.error("Rubric provider $className in grader ${container.name} must have a no-args public constructor!")
+      logger.error("Rubric provider $className in grader ${info.name} must have a no-args public constructor!")
       return
     }
     rubricProvider.configure(configuration)
-    logger.info("${container.name} Discovered rubric provider $className for assignment $assignmentId")
+    logger.info("${info.name} Discovered rubric provider $className for assignment $assignmentId")
     computeIfAbsent(filter.value) { mutableListOf() }.add(asRubricProvider.name)
   }
 
@@ -110,10 +119,10 @@ class GraderJarImpl(
 
   companion object Factory : SerializerFactory<GraderJarImpl> {
     override fun read(scope: SerializationScope.Input): GraderJarImpl =
-      GraderJarImpl(scope.get(), scope.read(), scope[RuntimeResources.grader])
+      GraderJarImpl(scope.get(), scope.read(), scope[RuntimeResources.base])
 
     override fun write(obj: GraderJarImpl, scope: SerializationScope.Output) {
-      scope.write(obj.compileResult)
+      scope.write(obj.container)
     }
   }
 }

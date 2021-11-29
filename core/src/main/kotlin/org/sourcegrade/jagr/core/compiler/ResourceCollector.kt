@@ -17,13 +17,22 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.core.compiler
 
-import org.sourcegrade.jagr.api.testing.RubricConfiguration
+import org.sourcegrade.jagr.core.testing.GraderInfoImpl
+import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KClass
 
-interface GraderJar {
-  val info: GraderInfo
-  val configuration: RubricConfiguration
-  val rubricProviders: Map<String, List<String>>
-  val testProviders: Map<String, List<String>>
+interface ResourceCollector {
+  operator fun <T : Any> get(type: KClass<T>): T?
 }
+
+inline fun <reified T : Any> ResourceCollector.get() = get(T::class)
+
+val ProcessedContainer.submissionInfo: SubmissionInfoImpl? by collected()
+
+val ProcessedContainer.graderInfo: GraderInfoImpl? by collected()
+
+private inline fun <reified T : Any> collected(): ReadOnlyProperty<ProcessedContainer, T?> =
+  ReadOnlyProperty { e, _ -> e.resourceCollector.get() }
