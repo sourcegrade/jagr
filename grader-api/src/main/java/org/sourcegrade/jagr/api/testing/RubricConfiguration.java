@@ -33,8 +33,20 @@ public interface RubricConfiguration {
 
   RubricConfiguration addTransformer(ClassTransformer transformer);
 
+  /**
+   * Adds a file that will be overridden in the submission from the solution.
+   *
+   * @param fileName The name of the file to override
+   */
   RubricConfiguration addFileNameSolutionOverride(String fileName);
 
+  /**
+   * Adds a class that will be overridden in the submission from the solution.
+   *
+   * <p><b>Only works with top level classes!</b></p>
+   *
+   * @param clazz The name of the file to override
+   */
   default RubricConfiguration addFileNameSolutionOverride(Class<?> clazz) {
     return addFileNameSolutionOverride(Type.getInternalName(clazz) + ".java");
   }
