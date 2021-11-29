@@ -22,13 +22,9 @@ package org.sourcegrade.jagr.launcher.env
 import com.google.inject.Injector
 import org.slf4j.Logger
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
-import org.sourcegrade.jagr.launcher.executor.ProgressBar
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
 import org.sourcegrade.jagr.launcher.io.ExtrasManager
-import org.sourcegrade.jagr.launcher.io.Progos
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
-import java.io.OutputStream
-import java.io.PrintStream
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
@@ -39,27 +35,6 @@ interface Jagr {
 
   interface Factory {
     fun create(configuration: LaunchConfiguration = LaunchConfiguration.Standard): Jagr
-  }
-}
-
-object Environment {
-  var stdOut: PrintStream = System.out
-  private set
-  fun initializeChild() {
-    // dont touch this daaaa da da da
-    Jagr.logger
-    val wasteBasket = PrintStream(OutputStream.nullOutputStream())
-    System.setOut(wasteBasket)
-    System.setErr(wasteBasket)
-  }
-
-  fun initializeMain() {
-    // dont touch this daaaa da da da
-    stdOut = PrintStream(Progos(stdOut))
-    Jagr.logger
-    val wasteBasket = PrintStream(OutputStream.nullOutputStream())
-    System.setOut(wasteBasket)
-    System.setErr(wasteBasket)
   }
 }
 

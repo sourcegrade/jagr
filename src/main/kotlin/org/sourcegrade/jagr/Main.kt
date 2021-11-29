@@ -37,10 +37,10 @@ class MainCommand : CliktCommand() {
   private val exportOnly by option("--export-only", "-e").flag()
   override fun run() {
     if (child) {
-      Environment.initializeChild()
+      Environment.initializeChildProcess()
       ChildProcGrading().grade()
     } else {
-      Environment.initializeMain()
+      Environment.initializeMainProcess()
       val startTime = System.currentTimeMillis()
       StandardGrading().grade(exportOnly)
       Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")

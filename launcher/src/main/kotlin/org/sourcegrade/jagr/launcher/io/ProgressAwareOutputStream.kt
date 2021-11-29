@@ -2,13 +2,15 @@ package org.sourcegrade.jagr.launcher.io
 
 import org.sourcegrade.jagr.launcher.executor.ProgressBar
 import java.io.OutputStream
+import java.io.PrintStream
 
-class Progos(private val delegate: OutputStream) : OutputStream() {
+class ProgressAwareOutputStream(private val delegate: PrintStream) : OutputStream() {
 
   override fun write(b: Int) {
-    delegate.write(b + 1)
+    delegate.write(b)
     if (b == newLine) {
-      progressBar?.print()
+//      Environment.stdOut.print("hello".repeat(30) + '\r')
+      progressBar?.print(delegate)
     }
   }
 

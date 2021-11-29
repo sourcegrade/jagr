@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-import org.sourcegrade.jagr.launcher.env.Environment
+import java.io.PrintStream
 import java.text.DecimalFormat
 
 class ProgressBar(
@@ -34,7 +34,7 @@ class ProgressBar(
   private val tipChar = '>'
   private val whitespaceChar = ' '
 
-  fun print() {
+  fun print(out: PrintStream) {
     val finished = rubricCollector.gradingFinished.size
     val total = rubricCollector.total
     val progressDecimal = finished.toDouble() / total.toDouble().coerceAtLeast(0.0)
@@ -62,10 +62,6 @@ class ProgressBar(
     }
     // pad with spaces
     sb.append(" ".repeat((120 - sb.length).coerceAtLeast(0)))
-    Environment.stdOut.print(sb.toString() + '\r')
-  }
-
-  fun clear() {
-    Environment.stdOut.print(" ".repeat(120) + '\r')
+    out.print(sb.toString() + '\r')
   }
 }

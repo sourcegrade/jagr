@@ -20,6 +20,7 @@
 package org.sourcegrade.jagr
 
 import kotlinx.coroutines.runBlocking
+import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.extrasManager
@@ -71,7 +72,7 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
     }
     val collector = emptyCollector(jagr)
     val progress = ProgressBar(collector)
-    Progos.progressBar = progress
+    ProgressAwareOutputStream.progressBar = progress
     collector.setListener { result ->
       result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
     }
@@ -79,6 +80,7 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
     executor.schedule(queue)
     executor.start(collector)
     collector.logHistogram(jagr)
+    Environment.cleanupMainProcess()
     export(collector)
   }
 
