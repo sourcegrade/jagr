@@ -102,7 +102,7 @@ private class ResourceContainerInfoBuilderImpl : ResourceContainerInfo.Builder {
   override fun build(): ResourceContainerInfo = ResourceContainerInfoImpl(name)
 }
 
-private data class ListResourceContainer(
+private class ListResourceContainer(
   override val info: ResourceContainerInfo,
   private val resources: List<Resource>,
 ) : ResourceContainer {

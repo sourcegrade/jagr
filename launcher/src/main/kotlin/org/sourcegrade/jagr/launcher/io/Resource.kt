@@ -69,5 +69,5 @@ private class BackedByStreamResource(
 
 internal class ByteArrayResource(override val name: String, val data: ByteArray) : Resource {
   override val size: Int = data.size
-  override fun getInputStream(): InputStream = ByteArrayInputStream(data).buffered()
+  override fun getInputStream(): InputStream = ByteArrayInputStream(data)
 }
