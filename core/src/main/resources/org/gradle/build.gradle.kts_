@@ -9,7 +9,7 @@ allprojects {
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
   }
   dependencies {
-    implementation("org.sourcegrade:jagr-grader-api:0.2")
+    implementation("org.sourcegrade:jagr-grader-api:0.3-SNAPSHOT")
     implementation("org.junit.jupiter:junit-jupiter:5.8.1")
   }
   java {
