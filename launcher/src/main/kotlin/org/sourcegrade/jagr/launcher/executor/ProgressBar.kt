@@ -36,6 +36,11 @@ class ProgressBar(
   private val width = 120
   private val clearText = " ".repeat(width) + '\r'
 
+  private val reset = "\u001b[0m"
+  // red, purple, blue, cyan, green, yellow
+  private val rainbowColors = arrayOf("\u001b[31m", "\u001B[35m", "\u001B[34m", "\u001B[36m", "\u001B[32m", "\u001B[33m")
+  private var startIndex = 0
+
   fun print(out: PrintStream) {
     val finished = rubricCollector.gradingFinished.size
     val total = rubricCollector.total
@@ -43,14 +48,18 @@ class ProgressBar(
     val formattedPercentage = decimalFormat.format(progressDecimal * 100.0)
     val barCount = barLengthFull * progressDecimal
     val sb = StringBuilder(30)
+    sb.append(rainbowColors[startIndex])
     sb.append(sideChar)
     val actualBarCount = barCount.toInt()
-    for (i in 0 until actualBarCount) {
+    for (i in 1 until actualBarCount + 1) {
+      sb.append(rainbowColors[(i + rainbowColors.size - startIndex) % rainbowColors.size])
       sb.append(barChar)
     }
     if (progressDecimal < 1.0) {
+      sb.append(rainbowColors[(actualBarCount + 1 + rainbowColors.size - startIndex) % rainbowColors.size])
       sb.append(tipChar)
     }
+    sb.append(reset)
     for (i in actualBarCount until barLengthFull) {
       sb.append(whitespaceChar)
     }
@@ -65,6 +74,7 @@ class ProgressBar(
     // pad with spaces
     sb.append(" ".repeat((width - sb.length).coerceAtLeast(0)))
     out.print(sb.toString() + '\r')
+    startIndex = (startIndex + 1) % rainbowColors.size
   }
 
   fun clear(out: PrintStream) = out.print(clearText)
