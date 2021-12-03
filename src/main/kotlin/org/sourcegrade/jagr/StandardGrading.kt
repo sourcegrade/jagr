@@ -76,7 +76,7 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
       }.create(jagr)
     }
     val collector = emptyCollector(jagr)
-    val progress = ProgressBar(collector)
+    val progress = ProgressBar(collector, Environment.rainbowProgressBar)
     ProgressAwareOutputStream.progressBar = progress
     collector.setListener { result ->
       result.rubrics.keys.forEach { it.logGradedRubric(jagr) }

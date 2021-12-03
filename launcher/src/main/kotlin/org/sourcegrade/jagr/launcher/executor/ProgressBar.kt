@@ -24,6 +24,7 @@ import java.text.DecimalFormat
 
 class ProgressBar(
   private val rubricCollector: RubricCollector,
+  private val rainbowProgressBar: Boolean,
   private val showElementsIfLessThan: Int = 3,
 ) {
 
@@ -47,19 +48,25 @@ class ProgressBar(
     val progressDecimal = finished.toDouble() / total.toDouble().coerceAtLeast(0.0)
     val formattedPercentage = decimalFormat.format(progressDecimal * 100.0)
     val barCount = barLengthFull * progressDecimal
-    val sb = StringBuilder(30)
-    sb.append(rainbowColors[startIndex])
+    var sb = StringBuilder(30)
     sb.append(sideChar)
     val actualBarCount = barCount.toInt()
     for (i in 1 until actualBarCount + 1) {
-      sb.append(rainbowColors[(i + rainbowColors.size - startIndex) % rainbowColors.size])
       sb.append(barChar)
     }
     if (progressDecimal < 1.0) {
-      sb.append(rainbowColors[(actualBarCount + 1 + rainbowColors.size - startIndex) % rainbowColors.size])
       sb.append(tipChar)
     }
-    sb.append(reset)
+
+    if (rainbowProgressBar) {
+      val tmp = StringBuilder(30)
+      for (i in sb.indices){
+        tmp.append(rainbowColors[(i + rainbowColors.size - startIndex) % rainbowColors.size])
+        tmp.append(sb[i])
+      }
+      tmp.append(reset)
+      sb = tmp
+    }
     for (i in actualBarCount until barLengthFull) {
       sb.append(whitespaceChar)
     }

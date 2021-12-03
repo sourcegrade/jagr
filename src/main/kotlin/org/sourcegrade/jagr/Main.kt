@@ -42,7 +42,11 @@ class MainCommand : CliktCommand() {
    */
   private val child by option("--child", "-c").flag()
   private val exportOnly by option("--export-only", "-e").flag()
+  private val rainbow by option("--rainbow", "-r").flag()
   override fun run() {
+    if (rainbow){
+      Environment.enableRainbowProgressBar()
+    }
     if (child) {
       Environment.initializeChildProcess()
       ChildProcGrading().grade()
