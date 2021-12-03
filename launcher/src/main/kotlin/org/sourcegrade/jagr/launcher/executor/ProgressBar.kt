@@ -24,6 +24,7 @@ import java.text.DecimalFormat
 
 class ProgressBar(
   private val rubricCollector: RubricCollector,
+  private val rainbowProgressBar: Boolean,
   private val showElementsIfLessThan: Int = 3,
 ) {
 
@@ -36,13 +37,18 @@ class ProgressBar(
   private val width = 120
   private val clearText = " ".repeat(width) + '\r'
 
+  private val reset = "\u001b[0m"
+  // red, purple, blue, cyan, green, yellow
+  private val rainbowColors = arrayOf("\u001b[31m", "\u001B[35m", "\u001B[34m", "\u001B[36m", "\u001B[32m", "\u001B[33m")
+  private var startIndex = 0
+
   fun print(out: PrintStream) {
     val finished = rubricCollector.gradingFinished.size
     val total = rubricCollector.total
     val progressDecimal = finished.toDouble() / total.toDouble().coerceAtLeast(0.0)
     val formattedPercentage = decimalFormat.format(progressDecimal * 100.0)
     val barCount = barLengthFull * progressDecimal
-    val sb = StringBuilder(30)
+    var sb = StringBuilder(30)
     sb.append(sideChar)
     val actualBarCount = barCount.toInt()
     for (i in 0 until actualBarCount) {
@@ -50,6 +56,16 @@ class ProgressBar(
     }
     if (progressDecimal < 1.0) {
       sb.append(tipChar)
+    }
+
+    if (rainbowProgressBar) {
+      val tmp = StringBuilder(6 * sb.length)
+      for (i in sb.indices){
+        tmp.append(rainbowColors[(i + rainbowColors.size - startIndex) % rainbowColors.size])
+        tmp.append(sb[i])
+      }
+      tmp.append(reset)
+      sb = tmp
     }
     for (i in actualBarCount until barLengthFull) {
       sb.append(whitespaceChar)
@@ -65,6 +81,7 @@ class ProgressBar(
     // pad with spaces
     sb.append(" ".repeat((width - sb.length).coerceAtLeast(0)))
     out.print(sb.toString() + '\r')
+    startIndex = (startIndex + 1) % rainbowColors.size
   }
 
   fun clear(out: PrintStream) = out.print(clearText)
