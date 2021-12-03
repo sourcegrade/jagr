@@ -21,7 +21,7 @@ package org.sourcegrade.jagr.core.transformer
 
 import kotlin.reflect.KClass
 
-internal data class BytecodeReplacement(
+data class BytecodeReplacement(
   val field: BytecodeElement.Replacer<FieldElement>,
   val fieldInsn: BytecodeElement.Replacer<FieldInsnElement>,
   val methodInsn: BytecodeElement.Replacer<MethodInsnElement>,
@@ -39,7 +39,7 @@ internal data class BytecodeReplacement(
   )
 }
 
-internal interface BytecodeElement {
+interface BytecodeElement {
   fun withSurrogate(original: KClass<*>, surrogate: KClass<*>): BytecodeElement
   fun interface Replacer<T : BytecodeElement> {
     fun replace(element: T): T?
@@ -49,10 +49,10 @@ internal interface BytecodeElement {
   }
 }
 
-internal infix fun KClass<*>.replaces(originalType: KClass<*>): BytecodeReplacement {
+infix fun KClass<*>.replaces(originalType: KClass<*>): BytecodeReplacement {
   return BytecodeReplacement(FieldElement, FieldInsnElement, MethodInsnElement, originalType, this)
 }
 
-internal inline fun <reified T : BytecodeElement, R> T.replace(replacement: BytecodeElement.Replacer<T>, block: (T) -> R): R {
+inline fun <reified T : BytecodeElement, R> T.replace(replacement: BytecodeElement.Replacer<T>, block: (T) -> R): R {
   return block(replacement.replace(this) ?: this)
 }

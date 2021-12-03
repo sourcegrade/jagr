@@ -28,7 +28,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.functions
 import kotlin.reflect.jvm.javaMethod
 
-internal data class MethodInsnElement(
+data class MethodInsnElement(
   val opcode: Int,
   val owner: String,
   val name: String,

@@ -22,7 +22,7 @@ package org.sourcegrade.jagr.core.transformer
 import org.objectweb.asm.Type
 import kotlin.reflect.KClass
 
-internal data class FieldInsnElement(
+data class FieldInsnElement(
   val opcode: Int,
   val owner: String,
   val name: String,
