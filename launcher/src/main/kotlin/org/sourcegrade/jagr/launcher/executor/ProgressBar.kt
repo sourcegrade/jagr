@@ -51,7 +51,7 @@ class ProgressBar(
     var sb = StringBuilder(30)
     sb.append(sideChar)
     val actualBarCount = barCount.toInt()
-    for (i in 1 until actualBarCount + 1) {
+    for (i in 0 until actualBarCount) {
       sb.append(barChar)
     }
     if (progressDecimal < 1.0) {
