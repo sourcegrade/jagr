@@ -29,8 +29,6 @@ object Environment {
   private val actualStdOut = System.out
   var stdOut: PrintStream = actualStdOut
     private set
-  var rainbowProgressBar: Boolean = false
-    private set
 
   fun initializeChildProcess() {
     Jagr.logger
@@ -42,10 +40,6 @@ object Environment {
     System.setOut(stdOut)
     Jagr.logger
     setWasteBasket()
-  }
-
-  fun enableRainbowProgressBar(){
-    rainbowProgressBar = true
   }
 
   private fun setWasteBasket() {

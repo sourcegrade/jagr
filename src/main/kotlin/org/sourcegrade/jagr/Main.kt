@@ -44,16 +44,13 @@ class MainCommand : CliktCommand() {
   private val exportOnly by option("--export-only", "-e").flag()
   private val rainbow by option("--rainbow", "-r").flag()
   override fun run() {
-    if (rainbow){
-      Environment.enableRainbowProgressBar()
-    }
     if (child) {
       Environment.initializeChildProcess()
       ChildProcGrading().grade()
     } else {
       Environment.initializeMainProcess()
       val startTime = System.currentTimeMillis()
-      StandardGrading().grade(exportOnly)
+      StandardGrading(rainbow).grade(exportOnly)
       Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
     }
   }

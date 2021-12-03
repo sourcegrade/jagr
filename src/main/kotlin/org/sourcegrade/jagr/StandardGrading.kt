@@ -42,7 +42,10 @@ import org.sourcegrade.jagr.launcher.io.writeAsDirIn
 import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
 
-class StandardGrading(private val jagr: Jagr = Jagr) {
+class StandardGrading(
+  private val rainbowProgressBar: Boolean,
+  private val jagr: Jagr = Jagr
+) {
   fun grade(exportOnly: Boolean) = runBlocking {
     val config = jagr.config
     File(config.dir.submissions).ensure(jagr.logger)
@@ -76,7 +79,7 @@ class StandardGrading(private val jagr: Jagr = Jagr) {
       }.create(jagr)
     }
     val collector = emptyCollector(jagr)
-    val progress = ProgressBar(collector, Environment.rainbowProgressBar)
+    val progress = ProgressBar(collector, rainbowProgressBar)
     ProgressAwareOutputStream.progressBar = progress
     collector.setListener { result ->
       result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
