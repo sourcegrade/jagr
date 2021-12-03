@@ -59,7 +59,7 @@ class ProgressBar(
     }
 
     if (rainbowProgressBar) {
-      val tmp = StringBuilder(30)
+      val tmp = StringBuilder(6 * sb.length)
       for (i in sb.indices){
         tmp.append(rainbowColors[(i + rainbowColors.size - startIndex) % rainbowColors.size])
         tmp.append(sb[i])

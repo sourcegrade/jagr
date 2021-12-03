@@ -44,7 +44,7 @@ import java.io.File
 
 class StandardGrading(
   private val rainbowProgressBar: Boolean,
-  private val jagr: Jagr = Jagr
+  private val jagr: Jagr = Jagr,
 ) {
   fun grade(exportOnly: Boolean) = runBlocking {
     val config = jagr.config
