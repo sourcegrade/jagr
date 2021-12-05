@@ -32,8 +32,8 @@ data class JavaRuntimeResources(
   val classes: Map<String, CompiledClass> = mapOf(),
   val resources: Map<String, ByteArray> = mapOf(),
 ) : RuntimeResources {
-  override fun getClassNames(): Set<String> = Collections.unmodifiableSet(HashSet(classes.keys))
-  override fun getResourceNames(): Set<String> = Collections.unmodifiableSet(HashSet(resources.keys))
+  override fun getClassNames(): Set<String> = Collections.unmodifiableSet(classes.keys)
+  override fun getResourceNames(): Set<String> = Collections.unmodifiableSet(resources.keys)
 
   companion object Factory : SerializerFactory<JavaRuntimeResources> {
     val base = keyOf<JavaRuntimeResources>("base")

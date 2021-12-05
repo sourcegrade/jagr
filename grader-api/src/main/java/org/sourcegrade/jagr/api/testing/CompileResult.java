@@ -34,5 +34,5 @@ public interface CompileResult {
 
   int getOtherCount();
 
-  RuntimeResources getResourceInfo();
+  RuntimeResources getRuntimeResources();
 }

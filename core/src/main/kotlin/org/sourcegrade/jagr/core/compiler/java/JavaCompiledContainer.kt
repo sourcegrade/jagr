@@ -46,7 +46,7 @@ data class JavaCompiledContainer(
   override fun getWarningCount(): Int = warnings
   override fun getErrorCount(): Int = errors
   override fun getOtherCount(): Int = other
-  override fun getResourceInfo(): RuntimeResources = runtimeResources
+  override fun getRuntimeResources(): RuntimeResources = runtimeResources
 
   fun printMessages(logger: Logger, lazyError: () -> String, lazyWarning: () -> String) {
     when {
