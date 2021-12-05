@@ -25,8 +25,8 @@ import org.sourcegrade.jagr.launcher.io.get
 import java.io.InputStream
 
 class RuntimeClassLoader(
-  private val runtimeResources: RuntimeResources,
-  parent: ClassLoader = getSystemClassLoader(),
+        private val runtimeResources: JavaRuntimeResources,
+        parent: ClassLoader = getSystemClassLoader(),
 ) : ClassLoader(parent) {
 
   @Throws(ClassNotFoundException::class, ClassFormatError::class)
@@ -41,7 +41,7 @@ class RuntimeClassLoader(
   }
 
   companion object Factory : SerializerFactory<RuntimeClassLoader> {
-    override fun read(scope: SerializationScope.Input) = RuntimeClassLoader(scope[RuntimeResources::class])
+    override fun read(scope: SerializationScope.Input) = RuntimeClassLoader(scope[JavaRuntimeResources::class])
 
     override fun write(obj: RuntimeClassLoader, scope: SerializationScope.Output) {
     }

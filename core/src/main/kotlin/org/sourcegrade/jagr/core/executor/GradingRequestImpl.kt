@@ -20,7 +20,7 @@
 package org.sourcegrade.jagr.core.executor
 
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.core.compiler.java.JavaRuntimeResources
 import org.sourcegrade.jagr.launcher.executor.GradingRequest
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.SerializationScope
@@ -32,16 +32,16 @@ import org.sourcegrade.jagr.launcher.io.writeList
 import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class GradingRequestImpl(
-  override val submission: Submission,
-  override val graders: List<GraderJar>,
-  val libraries: RuntimeResources,
+        override val submission: Submission,
+        override val graders: List<GraderJar>,
+        val libraries: JavaRuntimeResources,
 ) : GradingRequest {
   companion object Factory : SerializerFactory.Scoped<GradingRequestImpl> {
     override fun read(scope: SerializationScope.Input): GradingRequestImpl {
       return GradingRequestImpl(
         scope.readScoped(),
         scope.readList(),
-        scope[RuntimeResources.base],
+        scope[JavaRuntimeResources.base],
       )
     }
 
@@ -51,19 +51,19 @@ data class GradingRequestImpl(
     }
 
     override fun readScoped(scope: SerializationScope.Input): GradingRequestImpl {
-      scope.readScoped(RuntimeResources.base)
+      scope.readScoped(JavaRuntimeResources.base)
       return read(scope)
     }
 
     override fun writeScoped(obj: GradingRequestImpl, scope: SerializationScope.Output) {
-      scope.writeScoped(obj.libraries, RuntimeResources.base)
+      scope.writeScoped(obj.libraries, JavaRuntimeResources.base)
       write(obj, scope)
     }
 
     override fun putInScope(obj: GradingRequestImpl, scope: SerializationScope) {
       scope[keyOf(GradingRequest::class)] = obj
       scope[keyOf(Submission::class)] = obj.submission
-      scope[RuntimeResources.base] = obj.libraries
+      scope[JavaRuntimeResources.base] = obj.libraries
     }
   }
 }

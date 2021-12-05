@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.core.compiler
 
-import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.core.compiler.java.JavaRuntimeResources
 
 interface RuntimeContainer : ProcessedContainer {
 
@@ -28,5 +28,5 @@ interface RuntimeContainer : ProcessedContainer {
    */
   val source: ProcessedContainer?
 
-  val runtimeResources: RuntimeResources
+  val runtimeResources: JavaRuntimeResources
 }

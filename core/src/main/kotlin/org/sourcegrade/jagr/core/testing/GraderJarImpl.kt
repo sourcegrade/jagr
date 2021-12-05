@@ -27,7 +27,7 @@ import org.sourcegrade.jagr.api.rubric.TestForSubmission
 import org.sourcegrade.jagr.core.compiler.graderInfo
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
-import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.core.compiler.java.JavaRuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.SerializationScope
@@ -38,9 +38,9 @@ import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.write
 
 class GraderJarImpl(
-  private val logger: Logger,
-  val container: JavaCompiledContainer,
-  libraries: RuntimeResources,
+        private val logger: Logger,
+        val container: JavaCompiledContainer,
+        libraries: JavaRuntimeResources,
 ) : GraderJar {
   override val info = requireNotNull(container.graderInfo) { "Container ${container.info.name} is missing graderInfo" }
 
@@ -119,7 +119,7 @@ class GraderJarImpl(
 
   companion object Factory : SerializerFactory<GraderJarImpl> {
     override fun read(scope: SerializationScope.Input): GraderJarImpl =
-      GraderJarImpl(scope.get(), scope.read(), scope[RuntimeResources.base])
+      GraderJarImpl(scope.get(), scope.read(), scope[JavaRuntimeResources.base])
 
     override fun write(obj: GraderJarImpl, scope: SerializationScope.Output) {
       scope.write(obj.container)

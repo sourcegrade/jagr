@@ -26,7 +26,7 @@ import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
 import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
-import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.core.compiler.java.JavaRuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.loadCompiled
 import org.sourcegrade.jagr.core.compiler.submissionInfo
 import org.sourcegrade.jagr.core.parallelMapNotNull
@@ -48,7 +48,7 @@ data class CompiledBatch(
   val batch: GradingBatch,
   val graders: List<GraderJar>,
   val submissions: List<Submission>,
-  val libraries: RuntimeResources,
+  val libraries: JavaRuntimeResources,
 )
 
 class CompiledBatchFactoryImpl @Inject constructor(
@@ -118,7 +118,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
 
   private fun <T> Sequence<ResourceContainer>.compile(
     transformerApplier: TransformationApplier,
-    libraries: RuntimeResources,
+    libraries: JavaRuntimeResources,
     containerType: String,
     resourceExtractor: ResourceExtractor = ResourceExtractor { _, _, _, _ -> },
     replacements: Map<String, Map<String, JavaSourceFile>> = mapOf(),
@@ -142,7 +142,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
     } catch (e: Exception) {
       // create a copy of the original compile result but throw out runtime resources (compiled classes and resources)
       original.copy(
-        runtimeResources = RuntimeResources(),
+        runtimeResources = JavaRuntimeResources(),
         messages = listOf("Transformation failed :: ${e.message}") + original.messages,
         errors = original.errors + 1,
       )

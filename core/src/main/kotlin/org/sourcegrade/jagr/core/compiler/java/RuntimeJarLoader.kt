@@ -60,7 +60,7 @@ class RuntimeJarLoader @Inject constructor(
           .also { data -> resourceExtractor.extract(container.info, resource, data, resourceCollector) }
       }
     }
-    return JavaRuntimeContainer(container.info, resourceCollector, RuntimeResources(classStorage, resources))
+    return JavaRuntimeContainer(container.info, resourceCollector, JavaRuntimeResources(classStorage, resources))
   }
 
   fun loadSources(
@@ -98,7 +98,7 @@ class RuntimeJarLoader @Inject constructor(
 
   fun compileSources(
     source: JavaSourceContainer,
-    runtimeResources: RuntimeResources,
+    runtimeResources: JavaRuntimeResources,
   ): JavaCompiledContainer {
     if (source.sourceFiles.isEmpty()) {
       // no source files, skip compilation task
@@ -114,7 +114,7 @@ class RuntimeJarLoader @Inject constructor(
     )
     val result = compiler.getTask(null, fileManager, collector, null, null, source.sourceFiles.values).call()
     compiledClasses.linkSource(source.sourceFiles)
-    val newRuntimeResources = RuntimeResources(compiledClasses, source.resources)
+    val newRuntimeResources = JavaRuntimeResources(compiledClasses, source.resources)
     if (!result || collector.diagnostics.isNotEmpty()) {
       val messages = source.messages.toMutableList()
       var warnings = 0

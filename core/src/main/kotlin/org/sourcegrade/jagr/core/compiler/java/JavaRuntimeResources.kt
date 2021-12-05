@@ -19,40 +19,40 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
-import org.sourcegrade.jagr.api.testing.ResourceInfo
+import org.sourcegrade.jagr.api.testing.RuntimeResources
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.keyOf
 import org.sourcegrade.jagr.launcher.io.readMap
 import org.sourcegrade.jagr.launcher.io.writeMap
-import java.util.HashSet
+import java.util.*
 
-data class RuntimeResources(
+data class JavaRuntimeResources(
   val classes: Map<String, CompiledClass> = mapOf(),
   val resources: Map<String, ByteArray> = mapOf(),
-) : ResourceInfo {
-  companion object Factory : SerializerFactory<RuntimeResources> {
-    val base = keyOf<RuntimeResources>("base")
-    override fun read(scope: SerializationScope.Input) = RuntimeResources(scope.readMap(), scope.readMap())
+) : RuntimeResources {
+  companion object Factory : SerializerFactory<JavaRuntimeResources> {
+    val base = keyOf<JavaRuntimeResources>("base")
+    override fun read(scope: SerializationScope.Input) = JavaRuntimeResources(scope.readMap(), scope.readMap())
 
-    override fun write(obj: RuntimeResources, scope: SerializationScope.Output) {
+    override fun write(obj: JavaRuntimeResources, scope: SerializationScope.Output) {
       scope.writeMap(obj.classes)
       scope.writeMap(obj.resources)
     }
   }
 
-  override fun getClassNames(): MutableSet<String> = HashSet(classes.keys)
+  override fun getClassNames(): Set<String> = Collections.unmodifiableSet(HashSet(classes.keys))
 
-  override fun getResourceNames(): MutableSet<String> = HashSet(resources.keys)
+  override fun getResourceNames(): Set<String> = Collections.unmodifiableSet(HashSet(resources.keys))
 }
 
-operator fun RuntimeResources.plus(other: RuntimeResources) =
-  RuntimeResources(classes + other.classes, resources + other.resources)
+operator fun JavaRuntimeResources.plus(other: JavaRuntimeResources) =
+  JavaRuntimeResources(classes + other.classes, resources + other.resources)
 
-fun RuntimeJarLoader.loadCompiled(containers: Sequence<ResourceContainer>): RuntimeResources {
+fun RuntimeJarLoader.loadCompiled(containers: Sequence<ResourceContainer>): JavaRuntimeResources {
   return containers
     .map { loadCompiled(it).runtimeResources }
-    .ifEmpty { sequenceOf(RuntimeResources()) }
+    .ifEmpty { sequenceOf(JavaRuntimeResources()) }
     .reduce { a, b -> a + b }
 }

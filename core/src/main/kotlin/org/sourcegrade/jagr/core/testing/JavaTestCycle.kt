@@ -22,7 +22,7 @@ package org.sourcegrade.jagr.core.testing
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
-import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.core.compiler.java.JavaRuntimeResources
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get
@@ -59,7 +59,7 @@ data class JavaTestCycle(
       scope.readList(),
       scope[Submission::class] as JavaSubmission,
       scope.openScope {
-        proxy(keyOf(RuntimeResources::class), RuntimeResources.base)
+        proxy(keyOf(JavaRuntimeResources::class), JavaRuntimeResources.base)
         read()
       },
       scope.input.readInt(),

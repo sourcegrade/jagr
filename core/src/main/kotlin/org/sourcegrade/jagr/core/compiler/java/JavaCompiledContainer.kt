@@ -21,7 +21,7 @@ package org.sourcegrade.jagr.core.compiler.java
 
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.CompileResult
-import org.sourcegrade.jagr.api.testing.ResourceInfo
+import org.sourcegrade.jagr.api.testing.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.ResourceCollector
 import org.sourcegrade.jagr.core.compiler.RuntimeContainer
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
@@ -34,7 +34,7 @@ import org.sourcegrade.jagr.launcher.io.writeList
 
 data class JavaCompiledContainer(
   override val source: JavaSourceContainer,
-  override val runtimeResources: RuntimeResources = RuntimeResources(),
+  override val runtimeResources: JavaRuntimeResources = JavaRuntimeResources(),
   private val messages: List<String> = listOf(),
   val warnings: Int = 0,
   val errors: Int = 0,
@@ -46,7 +46,7 @@ data class JavaCompiledContainer(
   override fun getWarningCount(): Int = warnings
   override fun getErrorCount(): Int = errors
   override fun getOtherCount(): Int = other
-  override fun getResourceInfo(): ResourceInfo = runtimeResources
+  override fun getResourceInfo(): RuntimeResources = runtimeResources
 
   fun printMessages(logger: Logger, lazyError: () -> String, lazyWarning: () -> String) {
     when {

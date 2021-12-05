@@ -23,7 +23,7 @@ import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
-import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.core.compiler.java.JavaRuntimeResources
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.read
@@ -32,9 +32,9 @@ import org.sourcegrade.jagr.launcher.io.write
 import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class JavaSubmission(
-  private val info: SubmissionInfo,
-  private val compileResult: JavaCompiledContainer,
-  val libraries: RuntimeResources,
+        private val info: SubmissionInfo,
+        private val compileResult: JavaCompiledContainer,
+        val libraries: JavaRuntimeResources,
 ) : Submission {
   override fun getInfo(): SubmissionInfo = info
   override fun getCompileResult(): JavaCompiledContainer = compileResult
@@ -43,7 +43,7 @@ data class JavaSubmission(
 
   companion object Factory : SerializerFactory<JavaSubmission> {
     override fun read(scope: SerializationScope.Input): JavaSubmission =
-      JavaSubmission(scope.readScoped(), scope.read(), scope[RuntimeResources.base])
+      JavaSubmission(scope.readScoped(), scope.read(), scope[JavaRuntimeResources.base])
 
     override fun write(obj: JavaSubmission, scope: SerializationScope.Output) {
       scope.writeScoped(obj.info)
