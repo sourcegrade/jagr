@@ -21,6 +21,7 @@ package org.sourcegrade.jagr.core.compiler.java
 
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.CompileResult
+import org.sourcegrade.jagr.api.testing.ResourceInfo
 import org.sourcegrade.jagr.core.compiler.ResourceCollector
 import org.sourcegrade.jagr.core.compiler.RuntimeContainer
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
@@ -45,6 +46,7 @@ data class JavaCompiledContainer(
   override fun getWarningCount(): Int = warnings
   override fun getErrorCount(): Int = errors
   override fun getOtherCount(): Int = other
+  override fun getResourceInfo(): ResourceInfo = runtimeResources
 
   fun printMessages(logger: Logger, lazyError: () -> String, lazyWarning: () -> String) {
     when {

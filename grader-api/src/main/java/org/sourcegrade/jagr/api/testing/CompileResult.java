@@ -33,4 +33,6 @@ public interface CompileResult {
   int getErrorCount();
 
   int getOtherCount();
+
+  ResourceInfo getResourceInfo();
 }

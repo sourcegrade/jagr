@@ -19,17 +19,19 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
+import org.sourcegrade.jagr.api.testing.ResourceInfo
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.keyOf
 import org.sourcegrade.jagr.launcher.io.readMap
 import org.sourcegrade.jagr.launcher.io.writeMap
+import java.util.HashSet
 
 data class RuntimeResources(
   val classes: Map<String, CompiledClass> = mapOf(),
   val resources: Map<String, ByteArray> = mapOf(),
-) {
+) : ResourceInfo {
   companion object Factory : SerializerFactory<RuntimeResources> {
     val base = keyOf<RuntimeResources>("base")
     override fun read(scope: SerializationScope.Input) = RuntimeResources(scope.readMap(), scope.readMap())
@@ -39,6 +41,10 @@ data class RuntimeResources(
       scope.writeMap(obj.resources)
     }
   }
+
+  override fun getClasses(): MutableSet<String> = HashSet(classes.keys)
+
+  override fun getResources(): MutableSet<String> = HashSet(resources.keys)
 }
 
 operator fun RuntimeResources.plus(other: RuntimeResources) =
