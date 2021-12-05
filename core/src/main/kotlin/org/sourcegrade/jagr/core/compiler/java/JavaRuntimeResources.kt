@@ -32,6 +32,9 @@ data class JavaRuntimeResources(
   val classes: Map<String, CompiledClass> = mapOf(),
   val resources: Map<String, ByteArray> = mapOf(),
 ) : RuntimeResources {
+  override fun getClassNames(): Set<String> = Collections.unmodifiableSet(HashSet(classes.keys))
+  override fun getResourceNames(): Set<String> = Collections.unmodifiableSet(HashSet(resources.keys))
+
   companion object Factory : SerializerFactory<JavaRuntimeResources> {
     val base = keyOf<JavaRuntimeResources>("base")
     override fun read(scope: SerializationScope.Input) = JavaRuntimeResources(scope.readMap(), scope.readMap())
@@ -41,10 +44,6 @@ data class JavaRuntimeResources(
       scope.writeMap(obj.resources)
     }
   }
-
-  override fun getClassNames(): Set<String> = Collections.unmodifiableSet(HashSet(classes.keys))
-
-  override fun getResourceNames(): Set<String> = Collections.unmodifiableSet(HashSet(resources.keys))
 }
 
 operator fun JavaRuntimeResources.plus(other: JavaRuntimeResources) =
