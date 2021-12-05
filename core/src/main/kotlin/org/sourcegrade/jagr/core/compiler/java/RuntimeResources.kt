@@ -42,9 +42,9 @@ data class RuntimeResources(
     }
   }
 
-  override fun getClasses(): MutableSet<String> = HashSet(classes.keys)
+  override fun getClassNames(): MutableSet<String> = HashSet(classes.keys)
 
-  override fun getResources(): MutableSet<String> = HashSet(resources.keys)
+  override fun getResourceNames(): MutableSet<String> = HashSet(resources.keys)
 }
 
 operator fun RuntimeResources.plus(other: RuntimeResources) =
