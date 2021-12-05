@@ -38,9 +38,9 @@ import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.write
 
 class GraderJarImpl(
-        private val logger: Logger,
-        val container: JavaCompiledContainer,
-        libraries: JavaRuntimeResources,
+  private val logger: Logger,
+  val container: JavaCompiledContainer,
+  libraries: JavaRuntimeResources,
 ) : GraderJar {
   override val info = requireNotNull(container.graderInfo) { "Container ${container.info.name} is missing graderInfo" }
 

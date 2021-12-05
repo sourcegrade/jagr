@@ -32,9 +32,9 @@ import org.sourcegrade.jagr.launcher.io.writeList
 import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class GradingRequestImpl(
-        override val submission: Submission,
-        override val graders: List<GraderJar>,
-        val libraries: JavaRuntimeResources,
+  override val submission: Submission,
+  override val graders: List<GraderJar>,
+  val libraries: JavaRuntimeResources,
 ) : GradingRequest {
   companion object Factory : SerializerFactory.Scoped<GradingRequestImpl> {
     override fun read(scope: SerializationScope.Input): GradingRequestImpl {

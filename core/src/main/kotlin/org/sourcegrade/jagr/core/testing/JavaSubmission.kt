@@ -32,9 +32,9 @@ import org.sourcegrade.jagr.launcher.io.write
 import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class JavaSubmission(
-        private val info: SubmissionInfo,
-        private val compileResult: JavaCompiledContainer,
-        val libraries: JavaRuntimeResources,
+  private val info: SubmissionInfo,
+  private val compileResult: JavaCompiledContainer,
+  val libraries: JavaRuntimeResources,
 ) : Submission {
   override fun getInfo(): SubmissionInfo = info
   override fun getCompileResult(): JavaCompiledContainer = compileResult

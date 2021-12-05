@@ -25,8 +25,8 @@ import org.sourcegrade.jagr.launcher.io.get
 import java.io.InputStream
 
 class RuntimeClassLoader(
-        private val runtimeResources: JavaRuntimeResources,
-        parent: ClassLoader = getSystemClassLoader(),
+  private val runtimeResources: JavaRuntimeResources,
+  parent: ClassLoader = getSystemClassLoader(),
 ) : ClassLoader(parent) {
 
   @Throws(ClassNotFoundException::class, ClassFormatError::class)
