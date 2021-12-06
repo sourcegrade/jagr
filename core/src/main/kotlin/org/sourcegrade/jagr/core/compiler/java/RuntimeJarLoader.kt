@@ -20,9 +20,6 @@
 package org.sourcegrade.jagr.core.compiler.java
 
 import com.google.inject.Inject
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.Opcodes
 import org.slf4j.Logger
 import org.sourcegrade.jagr.core.compiler.ResourceCollectorImpl
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
@@ -142,27 +139,5 @@ class RuntimeJarLoader @Inject constructor(
       )
     }
     return JavaCompiledContainer(source, newRuntimeResources)
-  }
-
-  private fun Map<String, CompiledClass>.linkSource(sourceFiles: Map<String, JavaSourceFile>) {
-    for ((_, compiledClass) in this) {
-      with(compiledClass.reader) {
-        val packageName = with(className) {
-          lastIndexOf('/').let {
-            if (it == -1) null else substring(0, it)
-          }
-        }
-        accept(object : ClassVisitor(Opcodes.ASM9) {
-          override fun visitSource(source: String?, debug: String?) {
-            if (source == null) return
-            compiledClass.source = if (packageName == null) {
-              sourceFiles["$source"]
-            } else {
-              sourceFiles["$packageName/$source"]
-            }
-          }
-        }, ClassReader.SKIP_CODE)
-      }
-    }
   }
 }
