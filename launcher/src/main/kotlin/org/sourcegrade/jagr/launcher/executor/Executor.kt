@@ -20,11 +20,9 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import org.sourcegrade.jagr.api.rubric.GradedRubric
-import org.sourcegrade.jagr.api.rubric.Grader
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.io.GraderJar
-import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 

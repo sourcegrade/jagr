@@ -41,7 +41,7 @@ interface SerializerFactory<T : Any> {
       String::class -> StringSerializerFactory
       else -> type.companionObjectInstance
     } as? SerializerFactory<T>
-    // as a last resort, look in the provided factory locator (usually from Jagr.serializerFactoryLocator)
+      // as a last resort, look in the provided factory locator (usually from Jagr.serializerFactoryLocator)
       ?: locator?.get(type)
       ?: error("Could not find serializer factory for $type! (searched standard serializable types and companion object)")
 

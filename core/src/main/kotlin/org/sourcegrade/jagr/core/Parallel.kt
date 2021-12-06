@@ -62,7 +62,8 @@ fun <T, R> Sequence<T>.parallelMapNotNull(size: Int, scope: CoroutineScope = Glo
 }
 
 private fun <T, R, C> Sequence<T>.parallel(
-  size: Int, scope: CoroutineScope = GlobalScope,
+  size: Int,
+  scope: CoroutineScope = GlobalScope,
   mapper: suspend (Array<Deferred<R>>).() -> C,
   block: suspend (T) -> R,
 ): C {

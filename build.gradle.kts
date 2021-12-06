@@ -1,10 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.sourcegrade.jagr.script.JagrPublishPlugin
 
 plugins {
   application
   kotlin("jvm")
   id("com.github.johnrengelman.shadow")
+  id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
 }
 
 dependencies {
@@ -47,6 +49,8 @@ tasks {
 project.extra["apiVersion"] = "0.3-SNAPSHOT"
 
 allprojects {
+  apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
   group = "org.sourcegrade"
   version = "0.3.0-SNAPSHOT"
 
@@ -56,6 +60,10 @@ allprojects {
 
   repositories {
     mavenCentral()
+  }
+
+  configure<KtlintExtension> {
+    enableExperimentalRules.set(true)
   }
 
   tasks {

@@ -6,7 +6,6 @@ project(":jagr-core").projectDir = File("core")
 project(":jagr-grader-api").projectDir = File("grader-api")
 project(":jagr-launcher").projectDir = File("launcher")
 
-
 pluginManagement {
   plugins {
     val kotlinVersion: String by settings

@@ -55,9 +55,11 @@ class DescendingPriorityGrader(
     }
     if (correctPoints + incorrectPoints > maxPoints + minPoints) {
       logger.error(
-        "Descending priority grader for submission ${testCycle.submission.info} has surpassed point limits"
-          + " correctPoints: $correctPoints (max $maxPoints) and incorrectPoints: $incorrectPoints (max $minPoints)"
-          + " for criterion ${criterion.shortDescription}! This is caused by a misconfigured rubric provider!"
+        """
+Descending priority grader for submission ${testCycle.submission.info} has surpassed point limits
+correctPoints: $correctPoints (max $maxPoints) and incorrectPoints: $incorrectPoints (max $minPoints)
+for criterion ${criterion.shortDescription}! This is caused by a misconfigured rubric provider!
+""".trim().replace('\n', ' ')
       )
     }
     return GradeResultImpl(correctPoints, incorrectPoints, comments)

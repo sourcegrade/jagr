@@ -32,7 +32,11 @@ class SubmissionVerificationTransformer : ClassTransformer {
   override fun transform(reader: ClassReader, writer: ClassWriter) = reader.accept(SVVisitor(writer), 0)
   private inner class SVVisitor(classVisitor: ClassVisitor?) : ClassVisitor(Opcodes.ASM9, classVisitor) {
     override fun visitMethod(
-      access: Int, name: String?, descriptor: String?, signature: String?, exceptions: Array<out String>?
+      access: Int,
+      name: String?,
+      descriptor: String?,
+      signature: String?,
+      exceptions: Array<out String>?,
     ) = SVMethodVisitor(super.visitMethod(access, name, descriptor, signature, exceptions))
 
     private inner class SVMethodVisitor(methodVisitor: MethodVisitor?) : MethodVisitor(Opcodes.ASM9, methodVisitor) {

@@ -41,9 +41,9 @@ class JavaRuntimeTester @Inject constructor(
     val info = submission.info
     val rubricProviders = grader.rubricProviders[info.assignmentId] ?: return null
     val classLoader = RuntimeClassLoader(
-      submission.compileResult.runtimeResources
-        + submission.libraries
-        + grader.containerWithoutSolution.runtimeResources
+      submission.compileResult.runtimeResources +
+        submission.libraries +
+        grader.containerWithoutSolution.runtimeResources
     )
     val testCycle = JavaTestCycle(rubricProviders, submission, classLoader)
     grader.testProviders[info.assignmentId]
