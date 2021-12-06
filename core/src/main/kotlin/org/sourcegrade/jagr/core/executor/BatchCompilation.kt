@@ -116,8 +116,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
           assignmentId to solutionOverride
         }
       }.groupBy({ it.first }, { it.second })
-    }.reduceOrNull { acc, map -> acc + map }
-      ?: emptyMap()
+    }.fold(emptyMap()) { acc, map -> acc + map }
   }
 
   private fun <T> Sequence<ResourceContainer>.compile(
