@@ -52,11 +52,7 @@ class ExtendedStandardJavaFileManager(
     recurse: Boolean,
   ): Iterable<JavaFileObject> {
     val fromDelegate = super.list(location, packageName, kinds, recurse)
-    if (packageName != null
-      && kinds.contains(JavaFileObject.Kind.CLASS)
-      && location != null
-      && location.name == "CLASS_PATH"
-    ) {
+    if (packageName != null && kinds.contains(JavaFileObject.Kind.CLASS) && location != null && location.name == "CLASS_PATH") {
       return fromDelegate + getCompiledClassesFromClassPath(packageName)
     }
     return fromDelegate

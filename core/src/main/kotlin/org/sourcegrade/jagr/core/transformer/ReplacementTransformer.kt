@@ -46,7 +46,11 @@ class ReplacementTransformer(
     }
 
     override fun visitMethod(
-      access: Int, name: String, descriptor: String, signature: String?, exceptions: Array<String>?,
+      access: Int,
+      name: String,
+      descriptor: String,
+      signature: String?,
+      exceptions: Array<String>?,
     ) = ReplacementMethodVisitor(super.visitMethod(access, name, descriptor, signature, exceptions))
 
     private inner class ReplacementMethodVisitor(methodVisitor: MethodVisitor?) : MethodVisitor(Opcodes.ASM9, methodVisitor) {

@@ -61,7 +61,9 @@ class CompiledBatchFactoryImpl @Inject constructor(
     val libraries = runtimeJarLoader.loadCompiled(batch.libraries)
     val commonTransformerApplier = applierOf(commonClassTransformer)
     val graders: List<GraderJarImpl> = batch.graders.compile(
-      commonTransformerApplier, libraries, "grader",
+      commonTransformerApplier,
+      libraries,
+      "grader",
       GraderInfoImpl.Extractor,
     ) {
       if (errors == 0) GraderJarImpl(logger, this, libraries) else null
@@ -78,7 +80,9 @@ class CompiledBatchFactoryImpl @Inject constructor(
     }
 
     val submissions: List<Submission> = batch.submissions.compile(
-      submissionTransformerApplier, libraries, "submission",
+      submissionTransformerApplier,
+      libraries,
+      "submission",
       SubmissionInfoImpl.Extractor,
       replacements,
     ) submissionCompile@{
@@ -112,8 +116,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
           assignmentId to solutionOverride
         }
       }.groupBy({ it.first }, { it.second })
-    }.reduceOrNull { acc, map -> acc + map }
-      ?: emptyMap()
+    }.fold(emptyMap()) { acc, map -> acc + map }
   }
 
   private fun <T> Sequence<ResourceContainer>.compile(

@@ -104,10 +104,12 @@ class StandardGrading(
       jagr.logger.warn("No rubrics!")
       return
     }
-    for ((gradedRubric, _) in collector.gradingFinished
-      .asSequence()
-      .map { it.rubrics }
-      .reduce { acc, map -> acc + map }) {
+    for (
+      (gradedRubric, _) in collector.gradingFinished
+        .asSequence()
+        .map { it.rubrics }
+        .reduce { acc, map -> acc + map }
+    ) {
       try {
         csvExporter.export(gradedRubric).writeIn(csvFile)
       } catch (e: Exception) {

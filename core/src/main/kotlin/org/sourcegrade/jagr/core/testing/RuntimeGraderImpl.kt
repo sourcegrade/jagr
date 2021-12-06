@@ -31,7 +31,7 @@ import org.sourcegrade.jagr.launcher.io.GraderJar
 class RuntimeGraderImpl @Inject constructor(
   private val logger: Logger,
   private val testers: Set<RuntimeTester>,
-  private val fallbackRuntimeTester: FallbackRuntimeTester
+  private val fallbackRuntimeTester: FallbackRuntimeTester,
 ) : RuntimeGrader {
   override fun grade(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String> {
     val gradedRubrics: MutableMap<GradedRubric, String> = mutableMapOf()
@@ -47,7 +47,7 @@ class RuntimeGraderImpl @Inject constructor(
   override fun gradeFallback(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String> {
     return graders.asSequence()
       .mapNotNull { fallbackRuntimeTester.createTestCycle(it as GraderJarImpl, submission)?.collectResults() }
-      .reduce { a, b -> a + b }
+      .fold(emptyMap()) { a, b -> a + b }
   }
 
   private fun TestCycle.collectResults(): Map<GradedRubric, String> {

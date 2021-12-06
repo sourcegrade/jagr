@@ -52,6 +52,5 @@ operator fun JavaRuntimeResources.plus(other: JavaRuntimeResources) =
 fun RuntimeJarLoader.loadCompiled(containers: Sequence<ResourceContainer>): JavaRuntimeResources {
   return containers
     .map { loadCompiled(it).runtimeResources }
-    .ifEmpty { sequenceOf(JavaRuntimeResources()) }
-    .reduce { a, b -> a + b }
+    .fold(JavaRuntimeResources()) { a, b -> a + b }
 }
