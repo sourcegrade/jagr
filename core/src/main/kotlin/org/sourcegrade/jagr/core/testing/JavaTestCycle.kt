@@ -21,8 +21,8 @@ package org.sourcegrade.jagr.core.testing
 
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 import org.sourcegrade.jagr.core.compiler.java.JavaRuntimeResources
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get

@@ -24,9 +24,9 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
+import org.sourcegrade.jagr.core.compiler.java.JavaRuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
 import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
-import org.sourcegrade.jagr.core.compiler.java.JavaRuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.loadCompiled
 import org.sourcegrade.jagr.core.compiler.submissionInfo
 import org.sourcegrade.jagr.core.parallelMapNotNull

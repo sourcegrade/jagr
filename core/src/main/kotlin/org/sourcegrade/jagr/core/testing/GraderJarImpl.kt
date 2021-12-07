@@ -26,8 +26,8 @@ import org.sourcegrade.jagr.api.rubric.RubricProvider
 import org.sourcegrade.jagr.api.rubric.TestForSubmission
 import org.sourcegrade.jagr.core.compiler.graderInfo
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 import org.sourcegrade.jagr.core.compiler.java.JavaRuntimeResources
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.SerializationScope
