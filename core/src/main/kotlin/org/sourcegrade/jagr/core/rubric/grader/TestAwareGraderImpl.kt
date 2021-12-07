@@ -34,7 +34,7 @@ class TestAwareGraderImpl(
   private val graderFailed: Grader,
   private val requirePass: Map<JUnitTestRef, String?>,
   private val requireFail: Map<JUnitTestRef, String?>,
-  private val commentIfFailed: String?
+  private val commentIfFailed: String?,
 ) : Grader {
 
   override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult {

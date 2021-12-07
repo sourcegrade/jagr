@@ -81,6 +81,7 @@ class RuntimeJarLoader @Inject constructor(
           .also { data -> resourceExtractor.extract(container.info, resource, data, resourceCollector) }
       }
     }
+
     val messages = mutableListOf<String>()
     for (resource in container) {
       try {

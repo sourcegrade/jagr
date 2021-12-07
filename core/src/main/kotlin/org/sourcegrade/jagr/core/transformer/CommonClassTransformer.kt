@@ -50,7 +50,7 @@ private class CommonClassVisitor(
     name: String?,
     descriptor: String?,
     signature: String?,
-    exceptions: Array<out String>?
+    exceptions: Array<out String>?,
   ): MethodVisitor {
     return CommonMethodVisitor(config, super.visitMethod(access, name, descriptor, signature, exceptions))
   }

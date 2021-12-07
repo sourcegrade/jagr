@@ -112,7 +112,7 @@ inline fun <reified T : Any> SerializationScope.Input.read(factory: SerializerFa
 
 inline fun <reified T : Any> SerializationScope.Output.write(
   obj: T,
-  factory: SerializerFactory<T> = SerializerFactory.get(jagr)
+  factory: SerializerFactory<T> = SerializerFactory.get(jagr),
 ) = factory.write(obj, this)
 
 fun SerializationScope.Input.readDynamic(): Pair<KClass<out Any>, Any> {
