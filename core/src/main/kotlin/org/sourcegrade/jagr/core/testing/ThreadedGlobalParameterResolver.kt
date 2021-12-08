@@ -29,15 +29,15 @@ import kotlin.reflect.KClass
 
 sealed class ThreadedGlobalParameterResolver<T : Any>(private val type: KClass<T>) : ParameterResolver {
 
-  private val valueStorage: InheritableThreadLocal<T> = InheritableThreadLocal()
-  var value: T
-    get() = valueStorage.get()
-    set(value) = valueStorage.set(value)
+    private val valueStorage: InheritableThreadLocal<T> = InheritableThreadLocal()
+    var value: T
+        get() = valueStorage.get()
+        set(value) = valueStorage.set(value)
 
-  override fun supportsParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): Boolean =
-    parameterContext.parameter.type == type.java
+    override fun supportsParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): Boolean =
+        parameterContext.parameter.type == type.java
 
-  override fun resolveParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): T = value
+    override fun resolveParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): T = value
 }
 
 @Singleton

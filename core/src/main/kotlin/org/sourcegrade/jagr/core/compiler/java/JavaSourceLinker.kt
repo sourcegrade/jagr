@@ -22,19 +22,19 @@ package org.sourcegrade.jagr.core.compiler.java
 import org.objectweb.asm.ClassReader
 
 class JavaSourceLinker(private val sourceFiles: Map<String, JavaSourceFile>) {
-  fun link(compiledClass: CompiledClass) {
-    val reader = compiledClass.reader
-    val visitor = SourceLinkingClassVisitor(reader.className)
-    reader.accept(visitor, ClassReader.SKIP_CODE)
-    if (visitor.sourceFileName != null) {
-      compiledClass.source = sourceFiles[visitor.sourceFileName]
+    fun link(compiledClass: CompiledClass) {
+        val reader = compiledClass.reader
+        val visitor = SourceLinkingClassVisitor(reader.className)
+        reader.accept(visitor, ClassReader.SKIP_CODE)
+        if (visitor.sourceFileName != null) {
+            compiledClass.source = sourceFiles[visitor.sourceFileName]
+        }
     }
-  }
 }
 
 fun Map<String, CompiledClass>.linkSource(sourceFiles: Map<String, JavaSourceFile>) {
-  val linker = JavaSourceLinker(sourceFiles)
-  for ((_, compiledClass) in this) {
-    linker.link(compiledClass)
-  }
+    val linker = JavaSourceLinker(sourceFiles)
+    for ((_, compiledClass) in this) {
+        linker.link(compiledClass)
+    }
 }

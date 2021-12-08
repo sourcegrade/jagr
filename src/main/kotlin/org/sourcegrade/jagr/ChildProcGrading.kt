@@ -43,37 +43,37 @@ import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 
 class ChildProcGrading(private val jagr: Jagr = Jagr) {
-  fun grade() = runBlocking {
-    val queue = runCatching { next() }.getOrElse {
-      jagr.logger.error("Could not get next GradingQueue", it)
-      return@runBlocking
+    fun grade() = runBlocking {
+        val queue = runCatching { next() }.getOrElse {
+            jagr.logger.error("Could not get next GradingQueue", it)
+            return@runBlocking
+        }
+        val collector = emptyCollector(jagr)
+        collector.allocate(queue)
+        val executor = SyncExecutor(jagr)
+        executor.schedule(queue)
+        executor.start(collector)
+        notifyParent(collector)
     }
-    val collector = emptyCollector(jagr)
-    collector.allocate(queue)
-    val executor = SyncExecutor(jagr)
-    executor.schedule(queue)
-    executor.start(collector)
-    notifyParent(collector)
-  }
 
-  private suspend fun next(): GradingQueue = withContext(Dispatchers.IO) {
-    val bytes: ByteArray = runCatching { System.`in`.readAllBytes() }.getOrElse {
-      throw IllegalStateException("Encountered an unrecoverable exception receiving bytes from parent process", it)
+    private suspend fun next(): GradingQueue = withContext(Dispatchers.IO) {
+        val bytes: ByteArray = runCatching { System.`in`.readAllBytes() }.getOrElse {
+            throw IllegalStateException("Encountered an unrecoverable exception receiving bytes from parent process", it)
+        }
+        openScope(ByteStreams.newDataInput(bytes), jagr) {
+            SerializerFactory.getScoped<GradingRequest>(jagr).readScoped(this)
+        }.toGradingQueue()
     }
-    openScope(ByteStreams.newDataInput(bytes), jagr) {
-      SerializerFactory.getScoped<GradingRequest>(jagr).readScoped(this)
-    }.toGradingQueue()
-  }
 
-  private fun notifyParent(collector: RubricCollector) {
-    val outputStream = ByteArrayOutputStream(8192)
-    val output = ByteStreams.newDataOutput(outputStream)
-    Environment.stdOut.write(ProcessWorker.MARK_RESULT_BYTE)
-    val before = collector.gradingFinished[0]
-    openScope(output, Jagr) {
-      SerializerFactory.get<GradingResult>().write(before, this)
+    private fun notifyParent(collector: RubricCollector) {
+        val outputStream = ByteArrayOutputStream(8192)
+        val output = ByteStreams.newDataOutput(outputStream)
+        Environment.stdOut.write(ProcessWorker.MARK_RESULT_BYTE)
+        val before = collector.gradingFinished[0]
+        openScope(output, Jagr) {
+            SerializerFactory.get<GradingResult>().write(before, this)
+        }
+        outputStream.writeTo(Environment.stdOut)
+        Environment.stdOut.close()
     }
-    outputStream.writeTo(Environment.stdOut)
-    Environment.stdOut.close()
-  }
 }

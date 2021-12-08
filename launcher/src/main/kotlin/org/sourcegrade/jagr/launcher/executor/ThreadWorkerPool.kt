@@ -28,47 +28,47 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class ThreadWorkerPool(
-  private val jagr: Jagr,
-  private val concurrency: Int,
+    private val jagr: Jagr,
+    private val concurrency: Int,
 ) : WorkerPool {
-  private val activeWorkers: MutableList<Worker> = mutableListOf()
-  private val activeWorkersLock = ReentrantLock()
-  private fun removeActiveWorker(worker: Worker) = activeWorkersLock.withLock { activeWorkers -= worker }
+    private val activeWorkers: MutableList<Worker> = mutableListOf()
+    private val activeWorkersLock = ReentrantLock()
+    private fun removeActiveWorker(worker: Worker) = activeWorkersLock.withLock { activeWorkers -= worker }
 
-  override suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T) = suspendCoroutine<T> {
-    activeWorkersLock.withLock {
-      try {
-        it.resume(block(activeWorkers))
-      } catch (e: Exception) {
-        it.resumeWithException(e)
-      }
+    override suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T) = suspendCoroutine<T> {
+        activeWorkersLock.withLock {
+            try {
+                it.resume(block(activeWorkers))
+            } catch (e: Exception) {
+                it.resumeWithException(e)
+            }
+        }
     }
-  }
 
-  override fun createWorkers(maxCount: Int): List<Worker> = activeWorkersLock.withLock {
-    if (maxCount == 0) return emptyList()
-    val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
-    return List(workerCount) {
-      ThreadWorker(jagr.runtimeGrader, this::removeActiveWorker).also(activeWorkers::add)
+    override fun createWorkers(maxCount: Int): List<Worker> = activeWorkersLock.withLock {
+        if (maxCount == 0) return emptyList()
+        val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
+        return List(workerCount) {
+            ThreadWorker(jagr.runtimeGrader, this::removeActiveWorker).also(activeWorkers::add)
+        }
     }
-  }
 
-  override fun close() {
-  }
+    override fun close() {
+    }
 
-  open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
-    companion object Default : Factory(concurrency = 4)
+    open class Factory internal constructor(val concurrency: Int) : WorkerPool.Factory {
+        companion object Default : Factory(concurrency = 4)
 
-    override fun create(jagr: Jagr): WorkerPool = ThreadWorkerPool(jagr, concurrency)
-  }
+        override fun create(jagr: Jagr): WorkerPool = ThreadWorkerPool(jagr, concurrency)
+    }
 
-  class FactoryBuilder internal constructor(factory: Factory) {
-    var concurrency: Int = factory.concurrency
-    fun factory() = Factory(concurrency)
-  }
+    class FactoryBuilder internal constructor(factory: Factory) {
+        var concurrency: Int = factory.concurrency
+        fun factory() = Factory(concurrency)
+    }
 
-  companion object {
-    fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
-      FactoryBuilder(from).also(builderAction).factory()
-  }
+    companion object {
+        fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
+            FactoryBuilder(from).also(builderAction).factory()
+    }
 }

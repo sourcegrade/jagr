@@ -27,12 +27,12 @@ import org.spongepowered.configurate.loader.ConfigurationLoader
 import java.io.File
 
 interface LaunchConfiguration {
-  val configurationLoader: ConfigurationLoader<CommentedConfigurationNode>
-  val logger: Logger
+    val configurationLoader: ConfigurationLoader<CommentedConfigurationNode>
+    val logger: Logger
 
-  object Standard : LaunchConfiguration {
-    override val configurationLoader: ConfigurationLoader<CommentedConfigurationNode> =
-      HoconConfigurationLoader.builder().file(File("jagr.conf")).build()
-    override val logger: Logger = LoggerFactory.getLogger("Jagr")
-  }
+    object Standard : LaunchConfiguration {
+        override val configurationLoader: ConfigurationLoader<CommentedConfigurationNode> =
+            HoconConfigurationLoader.builder().file(File("jagr.conf")).build()
+        override val logger: Logger = LoggerFactory.getLogger("Jagr")
+    }
 }

@@ -30,72 +30,72 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaMethod
 
 fun interface TransformationApplier {
-  fun transform(result: JavaCompiledContainer): JavaCompiledContainer
+    fun transform(result: JavaCompiledContainer): JavaCompiledContainer
 }
 
 operator fun TransformationApplier.plus(other: TransformationApplier): TransformationApplier {
-  if (this is NoOpTransformerAppliedImpl) return other
-  if (other is NoOpTransformerAppliedImpl) return this
-  return TransformationApplier { other.transform(transform(it)) }
+    if (this is NoOpTransformerAppliedImpl) return other
+    if (other is NoOpTransformerAppliedImpl) return this
+    return TransformationApplier { other.transform(transform(it)) }
 }
 
 private object NoOpTransformerAppliedImpl : TransformationApplier {
-  override fun transform(result: JavaCompiledContainer): JavaCompiledContainer = result
+    override fun transform(result: JavaCompiledContainer): JavaCompiledContainer = result
 }
 
 private class TransformerApplierImpl(private val transformer: ClassTransformer) : TransformationApplier {
-  override fun transform(result: JavaCompiledContainer): JavaCompiledContainer = result.copy(
-    runtimeResources = result.runtimeResources.copy(classes = result.runtimeResources.classes.transform(transformer))
-  )
+    override fun transform(result: JavaCompiledContainer): JavaCompiledContainer = result.copy(
+        runtimeResources = result.runtimeResources.copy(classes = result.runtimeResources.classes.transform(transformer))
+    )
 }
 
 private class MultiTransformerApplierImpl(private vararg val transformers: ClassTransformer) : TransformationApplier {
-  override fun transform(result: JavaCompiledContainer): JavaCompiledContainer {
-    var classes = result.runtimeResources.classes
-    for (transformer in transformers) {
-      classes = classes.transform(transformer)
+    override fun transform(result: JavaCompiledContainer): JavaCompiledContainer {
+        var classes = result.runtimeResources.classes
+        for (transformer in transformers) {
+            classes = classes.transform(transformer)
+        }
+        return result.copy(runtimeResources = result.runtimeResources.copy(classes = classes))
     }
-    return result.copy(runtimeResources = result.runtimeResources.copy(classes = classes))
-  }
 }
 
 fun applierOf(vararg transformers: ClassTransformer): TransformationApplier {
-  return when (transformers.size) {
-    0 -> NoOpTransformerAppliedImpl
-    1 -> TransformerApplierImpl(transformers[0])
-    else -> MultiTransformerApplierImpl(*transformers)
-  }
+    return when (transformers.size) {
+        0 -> NoOpTransformerAppliedImpl
+        1 -> TransformerApplierImpl(transformers[0])
+        else -> MultiTransformerApplierImpl(*transformers)
+    }
 }
 
 infix fun List<ClassTransformer>.useWhen(predicate: (JavaCompiledContainer) -> Boolean): TransformationApplier {
-  val backing = MultiTransformerApplierImpl(*toTypedArray())
-  return TransformationApplier { if (predicate(it)) backing.transform(it) else it }
+    val backing = MultiTransformerApplierImpl(*toTypedArray())
+    return TransformationApplier { if (predicate(it)) backing.transform(it) else it }
 }
 
 fun Map<String, CompiledClass>.transform(transformer: ClassTransformer): Map<String, CompiledClass> {
-  return mapValues { (_, compiledClass) ->
-    compiledClass.transformed(transformer.transform(compiledClass.bytecode))
-  }
+    return mapValues { (_, compiledClass) ->
+        compiledClass.transformed(transformer.transform(compiledClass.bytecode))
+    }
 }
 
 fun ClassTransformer.transform(byteArray: ByteArray): ByteArray {
-  val reader = ClassReader(byteArray)
-  val writer = ClassWriter(reader, 0)
-  transform(reader, writer)
-  return writer.toByteArray()
+    val reader = ClassReader(byteArray)
+    val writer = ClassWriter(reader, 0)
+    transform(reader, writer)
+    return writer.toByteArray()
 }
 
 fun MethodVisitor.visitMethodInsn(
-  opcode: Int,
-  function: KFunction<*>,
-  isInterface: Boolean = false,
+    opcode: Int,
+    function: KFunction<*>,
+    isInterface: Boolean = false,
 ) {
-  val method = requireNotNull(function.javaMethod)
-  visitMethodInsn(
-    opcode,
-    Type.getInternalName(method.declaringClass),
-    method.name,
-    Type.getMethodDescriptor(method),
-    isInterface,
-  )
+    val method = requireNotNull(function.javaMethod)
+    visitMethodInsn(
+        opcode,
+        Type.getInternalName(method.declaringClass),
+        method.name,
+        Type.getMethodDescriptor(method),
+        isInterface,
+    )
 }

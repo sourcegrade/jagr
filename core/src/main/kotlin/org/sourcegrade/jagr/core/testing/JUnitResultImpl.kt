@@ -25,11 +25,11 @@ import org.sourcegrade.jagr.api.testing.TestCycle
 import org.sourcegrade.jagr.api.testing.TestStatusListener
 
 data class JUnitResultImpl(
-  private val testPlan: TestPlan,
-  private val summaryListener: SummaryGeneratingListener,
-  private val statusListener: TestStatusListener,
+    private val testPlan: TestPlan,
+    private val summaryListener: SummaryGeneratingListener,
+    private val statusListener: TestStatusListener,
 ) : TestCycle.JUnitResult {
-  override fun getTestPlan(): TestPlan = testPlan
-  override fun getSummaryListener(): SummaryGeneratingListener = summaryListener
-  override fun getStatusListener(): TestStatusListener = statusListener
+    override fun getTestPlan(): TestPlan = testPlan
+    override fun getSummaryListener(): SummaryGeneratingListener = summaryListener
+    override fun getStatusListener(): TestStatusListener = statusListener
 }

@@ -27,19 +27,19 @@ import java.io.Closeable
  */
 interface WorkerPool : Closeable {
 
-  suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T): T
+    suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T): T
 
-  /**
-   * Creates up to [maxCount] workers depending on availability.
-   */
-  fun createWorkers(maxCount: Int): List<Worker>
+    /**
+     * Creates up to [maxCount] workers depending on availability.
+     */
+    fun createWorkers(maxCount: Int): List<Worker>
 
-  /**
-   * Closes this [WorkerPool] and any resources associated with it. (e.g. Extra monitor/IO threads)
-   */
-  override fun close()
+    /**
+     * Closes this [WorkerPool] and any resources associated with it. (e.g. Extra monitor/IO threads)
+     */
+    override fun close()
 
-  interface Factory {
-    fun create(jagr: Jagr): WorkerPool
-  }
+    interface Factory {
+        fun create(jagr: Jagr): WorkerPool
+    }
 }

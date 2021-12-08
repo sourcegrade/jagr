@@ -25,69 +25,69 @@ import org.sourcegrade.jagr.launcher.env.Jagr
 import kotlin.coroutines.suspendCoroutine
 
 class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPool) : Executor {
-  private val mutex = Mutex()
-  private val scheduled = mutableListOf<GradingQueue>()
+    private val mutex = Mutex()
+    private val scheduled = mutableListOf<GradingQueue>()
 
-  override suspend fun schedule(queue: GradingQueue) = mutex.withLock {
-    scheduled += queue
-  }
-
-  private suspend fun checkWorkers(synchronizer: WorkerSynchronizer, rubricCollector: MutableRubricCollector) {
-    val requests = mutex.withLock {
-      workerPool.createWorkers(scheduled.sumOf { it.remaining })
-        .mapNotNull { worker -> scheduled.next()?.let { request -> worker to request } }
+    override suspend fun schedule(queue: GradingQueue) = mutex.withLock {
+        scheduled += queue
     }
-    // protect against requests being empty
-    // the only way out of this method is by a request completing
-    // no requests, no exit
-    if (requests.isEmpty()) {
-      mutex.withLock {
-        scheduled.removeIf { it.remaining == 0 }
-      }
-      if (workerPool.withActiveWorkers { it.isNotEmpty() }) {
-        // there are no new requests, but workers are still handling submissions
-        // wait here until at least one is finished
-        suspendCoroutine<Unit> {
-          synchronizer.setContinuation(it, exitDirectly = true)
+
+    private suspend fun checkWorkers(synchronizer: WorkerSynchronizer, rubricCollector: MutableRubricCollector) {
+        val requests = mutex.withLock {
+            workerPool.createWorkers(scheduled.sumOf { it.remaining })
+                .mapNotNull { worker -> scheduled.next()?.let { request -> worker to request } }
         }
-      }
-      if (workerPool.withActiveWorkers { it.isEmpty() }) {
-        return
-      }
+        // protect against requests being empty
+        // the only way out of this method is by a request completing
+        // no requests, no exit
+        if (requests.isEmpty()) {
+            mutex.withLock {
+                scheduled.removeIf { it.remaining == 0 }
+            }
+            if (workerPool.withActiveWorkers { it.isNotEmpty() }) {
+                // there are no new requests, but workers are still handling submissions
+                // wait here until at least one is finished
+                suspendCoroutine<Unit> {
+                    synchronizer.setContinuation(it, exitDirectly = true)
+                }
+            }
+            if (workerPool.withActiveWorkers { it.isEmpty() }) {
+                return
+            }
+        }
+        suspendCoroutine<Unit> { continuation ->
+            synchronizer.setContinuation(continuation)
+            for (request in requests) {
+                val job = rubricCollector.start(request.second)
+                job.result.invokeOnCompletion { synchronizer.notifyContinuation() }
+                request.first.assignJob(job)
+            }
+            synchronizer.handleBetween()
+        }
     }
-    suspendCoroutine<Unit> { continuation ->
-      synchronizer.setContinuation(continuation)
-      for (request in requests) {
-        val job = rubricCollector.start(request.second)
-        job.result.invokeOnCompletion { synchronizer.notifyContinuation() }
-        request.first.assignJob(job)
-      }
-      synchronizer.handleBetween()
+
+    override suspend fun start(rubricCollector: MutableRubricCollector) {
+        val synchronizer = WorkerSynchronizer()
+        workerPool.use {
+            while (scheduled.isNotEmpty() || workerPool.withActiveWorkers { it.isNotEmpty() }) {
+                checkWorkers(synchronizer, rubricCollector)
+            }
+        }
     }
-  }
 
-  override suspend fun start(rubricCollector: MutableRubricCollector) {
-    val synchronizer = WorkerSynchronizer()
-    workerPool.use {
-      while (scheduled.isNotEmpty() || workerPool.withActiveWorkers { it.isNotEmpty() }) {
-        checkWorkers(synchronizer, rubricCollector)
-      }
+    open class Factory internal constructor(val workerPoolFactory: WorkerPool.Factory) : Executor.Factory {
+        companion object Default : Factory(ThreadWorkerPool.Factory)
+
+        override fun create(jagr: Jagr): Executor = MultiWorkerExecutor(workerPoolFactory.create(jagr))
     }
-  }
 
-  open class Factory internal constructor(val workerPoolFactory: WorkerPool.Factory) : Executor.Factory {
-    companion object Default : Factory(ThreadWorkerPool.Factory)
+    class FactoryBuilder internal constructor(factory: Factory) {
+        var workerPoolFactory: WorkerPool.Factory = factory.workerPoolFactory
+        fun factory() = Factory(workerPoolFactory)
+    }
 
-    override fun create(jagr: Jagr): Executor = MultiWorkerExecutor(workerPoolFactory.create(jagr))
-  }
-
-  class FactoryBuilder internal constructor(factory: Factory) {
-    var workerPoolFactory: WorkerPool.Factory = factory.workerPoolFactory
-    fun factory() = Factory(workerPoolFactory)
-  }
-
-  companion object {
-    fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
-      FactoryBuilder(from).also(builderAction).factory()
-  }
+    companion object {
+        fun Factory(from: Factory = Factory.Default, builderAction: FactoryBuilder.() -> Unit): Factory =
+            FactoryBuilder(from).also(builderAction).factory()
+    }
 }

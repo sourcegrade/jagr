@@ -29,11 +29,11 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 object SafeStringSerializer : KSerializer<String> {
-  override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("SafeString", PrimitiveKind.STRING)
-  override fun deserialize(decoder: Decoder): String = decoder.decodeString().normalized()
-  override fun serialize(encoder: Encoder, value: String) = encoder.encodeString(value.normalized())
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("SafeString", PrimitiveKind.STRING)
+    override fun deserialize(decoder: Decoder): String = decoder.decodeString().normalized()
+    override fun serialize(encoder: Encoder, value: String) = encoder.encodeString(value.normalized())
 
-  private fun String.normalized() = this
-    .trim()
-    .replace('\\', '/')
+    private fun String.normalized() = this
+        .trim()
+        .replace('\\', '/')
 }

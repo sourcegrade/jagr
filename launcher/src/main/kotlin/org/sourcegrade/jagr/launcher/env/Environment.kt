@@ -26,29 +26,29 @@ import java.io.PrintStream
 
 @ApiStatus.Internal
 object Environment {
-  private val actualStdOut = System.out
-  var stdOut: PrintStream = actualStdOut
-    private set
+    private val actualStdOut = System.out
+    var stdOut: PrintStream = actualStdOut
+        private set
 
-  fun initializeChildProcess() {
-    Jagr.logger
-    setWasteBasket()
-  }
+    fun initializeChildProcess() {
+        Jagr.logger
+        setWasteBasket()
+    }
 
-  fun initializeMainProcess() {
-    stdOut = PrintStream(ProgressAwareOutputStream(stdOut))
-    System.setOut(stdOut)
-    Jagr.logger
-    setWasteBasket()
-  }
+    fun initializeMainProcess() {
+        stdOut = PrintStream(ProgressAwareOutputStream(stdOut))
+        System.setOut(stdOut)
+        Jagr.logger
+        setWasteBasket()
+    }
 
-  private fun setWasteBasket() {
-    val wasteBasket = PrintStream(OutputStream.nullOutputStream())
-    System.setOut(wasteBasket)
-    System.setErr(wasteBasket)
-  }
+    private fun setWasteBasket() {
+        val wasteBasket = PrintStream(OutputStream.nullOutputStream())
+        System.setOut(wasteBasket)
+        System.setErr(wasteBasket)
+    }
 
-  fun cleanupMainProcess() {
-    stdOut = actualStdOut
-  }
+    fun cleanupMainProcess() {
+        stdOut = actualStdOut
+    }
 }

@@ -20,9 +20,9 @@
 package org.sourcegrade.jagr.launcher.executor
 
 sealed interface RubricCollector {
-  val gradingScheduled: List<GradingJob>
-  val gradingRunning: List<GradingJob>
-  val gradingFinished: List<GradingResult>
-  val total: Int
-  val remaining: Int
+    val gradingScheduled: List<GradingJob>
+    val gradingRunning: List<GradingJob>
+    val gradingFinished: List<GradingResult>
+    val total: Int
+    val remaining: Int
 }

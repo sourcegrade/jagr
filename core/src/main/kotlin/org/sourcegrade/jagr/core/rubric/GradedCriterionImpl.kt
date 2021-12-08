@@ -32,28 +32,28 @@ import org.sourcegrade.jagr.launcher.io.write
 import org.sourcegrade.jagr.launcher.io.writeList
 
 data class GradedCriterionImpl(
-  private val testCycle: TestCycle,
-  private val grade: GradeResult,
-  private val criterion: Criterion,
-  private val childCriteria: List<GradedCriterion> = listOf(),
+    private val testCycle: TestCycle,
+    private val grade: GradeResult,
+    private val criterion: Criterion,
+    private val childCriteria: List<GradedCriterion> = listOf(),
 ) : GradedCriterion {
-  override fun getTestCycle(): TestCycle = testCycle
-  override fun getGrade(): GradeResult = grade
-  override fun getChildCriteria(): List<GradedCriterion> = childCriteria
-  override fun getCriterion(): Criterion = criterion
+    override fun getTestCycle(): TestCycle = testCycle
+    override fun getGrade(): GradeResult = grade
+    override fun getChildCriteria(): List<GradedCriterion> = childCriteria
+    override fun getCriterion(): Criterion = criterion
 
-  companion object Factory : SerializerFactory<GradedCriterionImpl> {
-    override fun read(scope: SerializationScope.Input) = GradedCriterionImpl(
-      scope[TestCycle::class],
-      scope.read(),
-      scope.read(),
-      scope.readList()
-    )
+    companion object Factory : SerializerFactory<GradedCriterionImpl> {
+        override fun read(scope: SerializationScope.Input) = GradedCriterionImpl(
+            scope[TestCycle::class],
+            scope.read(),
+            scope.read(),
+            scope.readList()
+        )
 
-    override fun write(obj: GradedCriterionImpl, scope: SerializationScope.Output) {
-      scope.write(obj.grade)
-      scope.write(obj.criterion)
-      scope.writeList(obj.childCriteria)
+        override fun write(obj: GradedCriterionImpl, scope: SerializationScope.Output) {
+            scope.write(obj.grade)
+            scope.write(obj.criterion)
+            scope.writeList(obj.childCriteria)
+        }
     }
-  }
 }

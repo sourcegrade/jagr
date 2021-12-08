@@ -30,67 +30,67 @@ import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import java.io.PrintWriter
 
 class EclipseSubmissionExporter : SubmissionExporter.Eclipse {
-  override fun export(graders: List<GraderJar>, submissions: List<Submission>): List<ResourceContainer> {
-    return submissions.map { export(it) }
-  }
-
-  private fun export(submission: Submission) = buildResourceContainer {
-    submission as JavaSubmission
-    info = buildResourceContainerInfo {
-      name = DEFAULT_EXPORT_NAME
+    override fun export(graders: List<GraderJar>, submissions: List<Submission>): List<ResourceContainer> {
+        return submissions.map { export(it) }
     }
-    writeProjectFile(submission)
-    writeClasspathFile()
-    for ((fileName, sourceFile) in submission.compileResult.source.sourceFiles) {
-      addResource {
-        name = "src/$fileName"
-        outputStream.writer().use { it.write(sourceFile.content) }
-      }
+
+    private fun export(submission: Submission) = buildResourceContainer {
+        submission as JavaSubmission
+        info = buildResourceContainerInfo {
+            name = DEFAULT_EXPORT_NAME
+        }
+        writeProjectFile(submission)
+        writeClasspathFile()
+        for ((fileName, sourceFile) in submission.compileResult.source.sourceFiles) {
+            addResource {
+                name = "src/$fileName"
+                outputStream.writer().use { it.write(sourceFile.content) }
+            }
+        }
+        for ((fileName, resource) in submission.compileResult.runtimeResources.resources) {
+            addResource {
+                name = "res/$fileName"
+                outputStream.writeBytes(resource)
+            }
+        }
     }
-    for ((fileName, resource) in submission.compileResult.runtimeResources.resources) {
-      addResource {
-        name = "res/$fileName"
-        outputStream.writeBytes(resource)
-      }
+
+    private fun ResourceContainer.Builder.writeProjectFile(submission: JavaSubmission) = addResource {
+        name = ".project"
+        val writer = PrintWriter(outputStream, false, Charsets.UTF_8)
+        writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+        writer.println("<projectDescription>")
+        writer.println("\t<name>${submission.info}</name>")
+        writer.println("<buildSpec>")
+        writer.println("\t\t<buildCommand>")
+        writer.println("\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>")
+        writer.println("\t\t</buildCommand>")
+        writer.println("\t</buildSpec>")
+        writer.println("\t<natures>")
+        writer.println("\t\t<nature>org.eclipse.jdt.core.javanature</nature>")
+        writer.println("\t</natures>")
+        writer.println("</projectDescription>")
+        writer.flush()
     }
-  }
 
-  private fun ResourceContainer.Builder.writeProjectFile(submission: JavaSubmission) = addResource {
-    name = ".project"
-    val writer = PrintWriter(outputStream, false, Charsets.UTF_8)
-    writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-    writer.println("<projectDescription>")
-    writer.println("\t<name>${submission.info}</name>")
-    writer.println("<buildSpec>")
-    writer.println("\t\t<buildCommand>")
-    writer.println("\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>")
-    writer.println("\t\t</buildCommand>")
-    writer.println("\t</buildSpec>")
-    writer.println("\t<natures>")
-    writer.println("\t\t<nature>org.eclipse.jdt.core.javanature</nature>")
-    writer.println("\t</natures>")
-    writer.println("</projectDescription>")
-    writer.flush()
-  }
+    private fun ResourceContainer.Builder.writeClasspathFile() = addResource {
+        name = ".classpath"
+        val writer = PrintWriter(outputStream, false, Charsets.UTF_8)
+        writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+        writer.println("<classpath>")
+        writer.println("\t<classpathentry kind=\"src\" path=\"src\"/>")
+        writer.println("\t<classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11\">\n")
+        writer.println("\t\t<attributes>\n")
+        writer.println("\t\t\t<attribute name=\"module\" value=\"true\"/>")
+        writer.println("\t\t</attributes>")
+        writer.println("\t</classpathentry>")
+        writer.println("\t<classpathentry kind=\"con\" path=\"org.eclipse.jdt.junit.JUNIT_CONTAINER/5\"/>")
+        writer.println("\t<classpathentry kind=\"output\" path=\"bin\"/>")
+        writer.println("</classpath>")
+        writer.flush()
+    }
 
-  private fun ResourceContainer.Builder.writeClasspathFile() = addResource {
-    name = ".classpath"
-    val writer = PrintWriter(outputStream, false, Charsets.UTF_8)
-    writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-    writer.println("<classpath>")
-    writer.println("\t<classpathentry kind=\"src\" path=\"src\"/>")
-    writer.println("\t<classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11\">\n")
-    writer.println("\t\t<attributes>\n")
-    writer.println("\t\t\t<attribute name=\"module\" value=\"true\"/>")
-    writer.println("\t\t</attributes>")
-    writer.println("\t</classpathentry>")
-    writer.println("\t<classpathentry kind=\"con\" path=\"org.eclipse.jdt.junit.JUNIT_CONTAINER/5\"/>")
-    writer.println("\t<classpathentry kind=\"output\" path=\"bin\"/>")
-    writer.println("</classpath>")
-    writer.flush()
-  }
-
-  companion object {
-    const val DEFAULT_EXPORT_NAME = "default"
-  }
+    companion object {
+        const val DEFAULT_EXPORT_NAME = "default"
+    }
 }

@@ -28,26 +28,26 @@ import org.sourcegrade.jagr.api.testing.TestStatusListener
 import java.util.Collections
 
 class TestStatusListenerImpl(
-  private val logger: Logger,
+    private val logger: Logger,
 ) : TestExecutionListener, TestStatusListener {
 
-  private val testResults: MutableMap<TestIdentifier, TestExecutionResult> = mutableMapOf()
-  private val linkageErrors: MutableSet<Pair<String?, String>> = LinkedHashSet()
+    private val testResults: MutableMap<TestIdentifier, TestExecutionResult> = mutableMapOf()
+    private val linkageErrors: MutableSet<Pair<String?, String>> = LinkedHashSet()
 
-  override fun executionFinished(testIdentifier: TestIdentifier, testExecutionResult: TestExecutionResult) {
-    testResults[testIdentifier] = testExecutionResult
-    testExecutionResult.throwable.orElse(null)?.also { throwable ->
-      if (throwable is LinkageError) {
-        linkageErrors.add(throwable::class.simpleName to throwable.message + " @ " + throwable.stackTrace.firstOrNull())
-      }
+    override fun executionFinished(testIdentifier: TestIdentifier, testExecutionResult: TestExecutionResult) {
+        testResults[testIdentifier] = testExecutionResult
+        testExecutionResult.throwable.orElse(null)?.also { throwable ->
+            if (throwable is LinkageError) {
+                linkageErrors.add(throwable::class.simpleName to throwable.message + " @ " + throwable.stackTrace.firstOrNull())
+            }
+        }
     }
-  }
 
-  fun logLinkageErrors(info: SubmissionInfo) {
-    for (errorMessage in linkageErrors) {
-      logger.error("Linkage error @ $info :: $errorMessage")
+    fun logLinkageErrors(info: SubmissionInfo) {
+        for (errorMessage in linkageErrors) {
+            logger.error("Linkage error @ $info :: $errorMessage")
+        }
     }
-  }
 
-  override fun getTestResults(): Map<TestIdentifier, TestExecutionResult> = Collections.unmodifiableMap(testResults)
+    override fun getTestResults(): Map<TestIdentifier, TestExecutionResult> = Collections.unmodifiableMap(testResults)
 }

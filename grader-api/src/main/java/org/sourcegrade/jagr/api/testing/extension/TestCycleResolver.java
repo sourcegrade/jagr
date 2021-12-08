@@ -45,5 +45,6 @@ public final class TestCycleResolver implements ParameterResolver {
   }
 
   @ApiStatus.Internal
-  public interface Internal extends ParameterResolver {}
+  public interface Internal extends ParameterResolver {
+  }
 }

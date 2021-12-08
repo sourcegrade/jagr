@@ -25,40 +25,40 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 internal class ZipResourceContainer(
-  override val info: ResourceContainerInfo,
-  private val input: InputStream,
+    override val info: ResourceContainerInfo,
+    private val input: InputStream,
 ) : ResourceContainer {
-  constructor(name: String, input: InputStream) : this(ResourceContainerInfoImpl(name), input)
-  constructor(file: File) : this(file.name, file.inputStream().buffered())
+    constructor(name: String, input: InputStream) : this(ResourceContainerInfoImpl(name), input)
+    constructor(file: File) : this(file.name, file.inputStream().buffered())
 
-  override fun iterator(): Iterator<Resource> = ZipResourceIterator(ZipInputStream(input))
-  override fun toString(): String = info.toString()
+    override fun iterator(): Iterator<Resource> = ZipResourceIterator(ZipInputStream(input))
+    override fun toString(): String = info.toString()
 }
 
 private class ZipResourceIterator(private val zip: ZipInputStream) : Iterator<Resource> {
-  private var next: ZipEntry? = null
+    private var next: ZipEntry? = null
 
-  private fun calculateNext(): ZipEntry? {
-    // skip directory entries
-    do {
-      next = zip.nextEntry
-    } while (next?.isDirectory == true)
-    return next
-  }
-
-  override fun hasNext(): Boolean {
-    if (next == null) {
-      calculateNext()
-      return next != null
+    private fun calculateNext(): ZipEntry? {
+        // skip directory entries
+        do {
+            next = zip.nextEntry
+        } while (next?.isDirectory == true)
+        return next
     }
-    return true
-  }
 
-  override fun next(): Resource {
-    return next?.let {
-      // return cached next from hasNext() and reset it
-      ByteArrayResource(it.name, zip.readBytes()).also { next = null }
-    } // no cached next, calculate and return
-      ?: ByteArrayResource(requireNotNull(calculateNext()) { "No next entry!" }.name, zip.readBytes())
-  }
+    override fun hasNext(): Boolean {
+        if (next == null) {
+            calculateNext()
+            return next != null
+        }
+        return true
+    }
+
+    override fun next(): Resource {
+        return next?.let {
+            // return cached next from hasNext() and reset it
+            ByteArrayResource(it.name, zip.readBytes()).also { next = null }
+        } // no cached next, calculate and return
+            ?: ByteArrayResource(requireNotNull(calculateNext()) { "No next entry!" }.name, zip.readBytes())
+    }
 }

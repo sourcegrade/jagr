@@ -32,57 +32,57 @@ import org.sourcegrade.jagr.launcher.io.readList
 import org.sourcegrade.jagr.launcher.io.writeList
 
 class RubricImpl(
-  private val title: String,
-  private val criteria: List<CriterionImpl>,
+    private val title: String,
+    private val criteria: List<CriterionImpl>,
 ) : Rubric {
 
-  init {
-    for (criterion in criteria) {
-      criterion.setParent(this)
+    init {
+        for (criterion in criteria) {
+            criterion.setParent(this)
+        }
     }
-  }
 
-  private val maxPointsKt: Int by lazy { CriterionHolderPointCalculator.maxOfChildren(0).getPoints(this) }
-  private val minPointsKt: Int by lazy { CriterionHolderPointCalculator.minOfChildren(0).getPoints(this) }
+    private val maxPointsKt: Int by lazy { CriterionHolderPointCalculator.maxOfChildren(0).getPoints(this) }
+    private val minPointsKt: Int by lazy { CriterionHolderPointCalculator.minOfChildren(0).getPoints(this) }
 
-  override fun getTitle(): String = title
-  override fun getMaxPoints(): Int = maxPointsKt
-  override fun getMinPoints(): Int = minPointsKt
-  override fun getChildCriteria(): List<CriterionImpl> = criteria
+    override fun getTitle(): String = title
+    override fun getMaxPoints(): Int = maxPointsKt
+    override fun getMinPoints(): Int = minPointsKt
+    override fun getChildCriteria(): List<CriterionImpl> = criteria
 
-  override fun grade(testCycle: TestCycle): GradedRubric {
-    val childGraded = childCriteria.map { it.grade(testCycle) }
-    val gradeResult = with(testCycle.submission.compileResult) {
-      val comments = testCycle.notes.toMutableList()
-      when {
-        errorCount > 0 -> "Your submission did not compile. There were $errorCount errors and $warningCount warnings."
-        warningCount > 0 -> "Your submission compiled, but there were $warningCount warnings."
-        otherCount > 0 || messages.isNotEmpty() -> "Your submission compiled, but there were some messages from the compiler."
-        else -> null
-      }?.also(comments::add)
-      comments += messages
-      GradeResult.withComments(GradeResult.of(GradeResult.ofNone(), childGraded.map(Graded::getGrade)), comments)
+    override fun grade(testCycle: TestCycle): GradedRubric {
+        val childGraded = childCriteria.map { it.grade(testCycle) }
+        val gradeResult = with(testCycle.submission.compileResult) {
+            val comments = testCycle.notes.toMutableList()
+            when {
+                errorCount > 0 -> "Your submission did not compile. There were $errorCount errors and $warningCount warnings."
+                warningCount > 0 -> "Your submission compiled, but there were $warningCount warnings."
+                otherCount > 0 || messages.isNotEmpty() -> "Your submission compiled, but there were some messages from the compiler."
+                else -> null
+            }?.also(comments::add)
+            comments += messages
+            GradeResult.withComments(GradeResult.of(GradeResult.ofNone(), childGraded.map(Graded::getGrade)), comments)
+        }
+        return GradedRubricImpl(testCycle, gradeResult, this, childGraded)
     }
-    return GradedRubricImpl(testCycle, gradeResult, this, childGraded)
-  }
 
-  private val stringRep: String by lazy {
-    MoreObjects.toStringHelper(this)
-      .add("title", title)
-      .add("maxPoints", maxPointsKt)
-      .add("minPoints", minPointsKt)
-      .add("childCriteria", "[" + criteria.joinToString(", ") + "]")
-      .toString()
-  }
-
-  override fun toString(): String = stringRep
-
-  companion object Factory : SerializerFactory<RubricImpl> {
-    override fun read(scope: SerializationScope.Input) = RubricImpl(scope.input.readUTF(), scope.readList())
-
-    override fun write(obj: RubricImpl, scope: SerializationScope.Output) {
-      scope.output.writeUTF(obj.title)
-      scope.writeList(obj.criteria)
+    private val stringRep: String by lazy {
+        MoreObjects.toStringHelper(this)
+            .add("title", title)
+            .add("maxPoints", maxPointsKt)
+            .add("minPoints", minPointsKt)
+            .add("childCriteria", "[" + criteria.joinToString(", ") + "]")
+            .toString()
     }
-  }
+
+    override fun toString(): String = stringRep
+
+    companion object Factory : SerializerFactory<RubricImpl> {
+        override fun read(scope: SerializationScope.Input) = RubricImpl(scope.input.readUTF(), scope.readList())
+
+        override fun write(obj: RubricImpl, scope: SerializationScope.Output) {
+            scope.output.writeUTF(obj.title)
+            scope.writeList(obj.criteria)
+        }
+    }
 }

@@ -30,15 +30,15 @@ import org.sourcegrade.jagr.launcher.io.writeList
 
 @Serializable
 data class SourceSetInfoImpl(
-  override val name: String,
-  override val files: List<String>,
+    override val name: String,
+    override val files: List<String>,
 ) : SourceSetInfo {
-  companion object Factory : SerializerFactory<SourceSetInfoImpl> {
-    override fun read(scope: SerializationScope.Input) = SourceSetInfoImpl(scope.input.readUTF(), scope.readList())
+    companion object Factory : SerializerFactory<SourceSetInfoImpl> {
+        override fun read(scope: SerializationScope.Input) = SourceSetInfoImpl(scope.input.readUTF(), scope.readList())
 
-    override fun write(obj: SourceSetInfoImpl, scope: SerializationScope.Output) {
-      scope.output.writeUTF(obj.name)
-      scope.writeList(obj.files)
+        override fun write(obj: SourceSetInfoImpl, scope: SerializationScope.Output) {
+            scope.output.writeUTF(obj.name)
+            scope.writeList(obj.files)
+        }
     }
-  }
 }

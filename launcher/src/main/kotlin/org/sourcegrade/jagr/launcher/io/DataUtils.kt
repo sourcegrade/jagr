@@ -26,29 +26,29 @@ import kotlin.reflect.KClass
 fun <T : Any> ByteArrayDataInput.readKClass(): KClass<T> = Class.forName(readUTF()).kotlin as KClass<T>
 
 fun ByteArrayDataOutput.writeKClass(type: KClass<*>) {
-  writeUTF(requireNotNull(type.qualifiedName) { "$type must have a qualified name" })
+    writeUTF(requireNotNull(type.qualifiedName) { "$type must have a qualified name" })
 }
 
 fun ByteArrayDataInput.readByteArray(): ByteArray = ByteArray(readInt()) { readByte() }
 
 fun ByteArrayDataOutput.writeByteArray(array: ByteArray) {
-  writeInt(array.size)
-  write(array)
+    writeInt(array.size)
+    write(array)
 }
 
 fun ByteArrayDataInput.readInstant(): Instant = Instant.ofEpochSecond(readLong(), readInt().toLong())
 
 fun ByteArrayDataOutput.writeInstant(instant: Instant) {
-  writeLong(instant.epochSecond)
-  writeInt(instant.nano)
+    writeLong(instant.epochSecond)
+    writeInt(instant.nano)
 }
 
 fun ByteArrayDataInput.readNull(): Boolean = readByte() == 0.toByte()
 
 fun ByteArrayDataOutput.writeNull() {
-  writeByte(0)
+    writeByte(0)
 }
 
 fun ByteArrayDataOutput.writeNotNull() {
-  writeByte(1)
+    writeByte(1)
 }

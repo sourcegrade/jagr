@@ -30,24 +30,24 @@ import org.sourcegrade.jagr.launcher.io.writeMap
 import java.time.Instant
 
 data class GradingResult(
-  val startedUtc: Instant,
-  val finishedUtc: Instant,
-  val request: GradingRequest,
-  val rubrics: Map<GradedRubric, String>,
+    val startedUtc: Instant,
+    val finishedUtc: Instant,
+    val request: GradingRequest,
+    val rubrics: Map<GradedRubric, String>,
 ) {
-  companion object Factory : SerializerFactory<GradingResult> {
-    override fun read(scope: SerializationScope.Input) = GradingResult(
-      scope.input.readInstant(),
-      scope.input.readInstant(),
-      scope[GradingRequest::class],
-      scope.readMap(),
-    )
+    companion object Factory : SerializerFactory<GradingResult> {
+        override fun read(scope: SerializationScope.Input) = GradingResult(
+            scope.input.readInstant(),
+            scope.input.readInstant(),
+            scope[GradingRequest::class],
+            scope.readMap(),
+        )
 
-    override fun write(obj: GradingResult, scope: SerializationScope.Output) {
-      scope.output.writeInstant(obj.startedUtc)
-      scope.output.writeInstant(obj.finishedUtc)
-      // skip request because parent process already has it
-      scope.writeMap(obj.rubrics)
+        override fun write(obj: GradingResult, scope: SerializationScope.Output) {
+            scope.output.writeInstant(obj.startedUtc)
+            scope.output.writeInstant(obj.finishedUtc)
+            // skip request because parent process already has it
+            scope.writeMap(obj.rubrics)
+        }
     }
-  }
 }

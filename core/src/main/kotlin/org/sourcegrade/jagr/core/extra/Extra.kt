@@ -20,6 +20,6 @@
 package org.sourcegrade.jagr.core.extra
 
 interface Extra {
-  val name: String
-  fun run()
+    val name: String
+    fun run()
 }

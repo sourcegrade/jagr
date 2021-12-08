@@ -24,16 +24,16 @@ import org.sourcegrade.jagr.api.testing.TestCycle
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 
 class FallbackTestCycle(
-  private val rubricProviderClassNames: List<String>,
-  private val submission: Submission,
-  private val classLoader: RuntimeClassLoader,
-  private val notes: List<String>,
+    private val rubricProviderClassNames: List<String>,
+    private val submission: Submission,
+    private val classLoader: RuntimeClassLoader,
+    private val notes: List<String>,
 ) : TestCycle {
-  override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
-  override fun getClassLoader(): ClassLoader = classLoader
-  override fun getSubmission(): Submission = submission
-  override fun getTestsSucceededCount(): Int = -1
-  override fun getTestsStartedCount(): Int = -1
-  override fun getNotes(): List<String> = notes
-  override fun getJUnitResult(): TestCycle.JUnitResult = FallbackJUnitResult()
+    override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
+    override fun getClassLoader(): ClassLoader = classLoader
+    override fun getSubmission(): Submission = submission
+    override fun getTestsSucceededCount(): Int = -1
+    override fun getTestsStartedCount(): Int = -1
+    override fun getNotes(): List<String> = notes
+    override fun getJUnitResult(): TestCycle.JUnitResult = FallbackJUnitResult()
 }

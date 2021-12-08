@@ -4,12 +4,13 @@
 
 ## Setup
 
-This project's compiled, source and javadoc jars are hosted on [sonatype](https://s01.oss.sonatype.org).
-Releases are available from `mavenCentral()` and snapshots from the maven repository in the following code block.
+This project's compiled, source and javadoc jars are hosted on [sonatype](https://s01.oss.sonatype.org). Releases are available
+from `mavenCentral()` and snapshots from the maven repository in the following code block.
 
 To depend on Jagr in your project, use the following lines in your gradle build script:
 
 **build.gradle (Groovy):**
+
 ```groovy
 repositories {
   mavenCentral()
@@ -21,6 +22,7 @@ dependencies {
 ```
 
 **build.gradle.kts (Kotlin DSL):**
+
 ```kotlin
 repositories {
   mavenCentral()
@@ -103,14 +105,16 @@ for an example.
 To run Jagr, download and place the desired compiled release of Jagr from
 [releases](https://github.com/SourceGrade/Jagr/releases) in a (preferably empty) directory. Then either run the following command
 in a terminal of your choice (or write a batch/bash script that you can double-click)
+
 ```bash
 java -jar Jagr-VERSION.jar
 ```
 
-Alternatively, you may run Jagr in-IDE via the Gradle `runShadow` task (the standard `run` task does not work).
-The working directory used is `build/run`.
+Alternatively, you may run Jagr in-IDE via the Gradle `runShadow` task (the standard `run` task does not work). The working
+directory used is `build/run`.
 
 The following directories should be created:
+
 ```java
 ./graders // input folder for grader jars (tests + rubric providers)
 ./libs // for libraries that are required on each submission's classpath

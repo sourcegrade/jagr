@@ -29,66 +29,66 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 interface GradingQueue {
 
-  val graders: List<GraderJar>
+    val graders: List<GraderJar>
 
-  val submissions: List<Submission>
+    val submissions: List<Submission>
 
-  /**
-   * The total number of submissions in this queue.
-   */
-  val total: Int
-
-  /**
-   * The number of submissions in this queue which have not started being graded.
-   */
-  val remaining: Int
-
-  val startedUtc: Instant
-
-  val finishedUtc: Instant?
-
-  suspend fun next(): GradingRequest?
-
-  interface Factory {
     /**
-     * Constructs a [GradingQueue] that may be asynchronously polled.
+     * The total number of submissions in this queue.
      */
-    fun create(batch: GradingBatch): GradingQueue
-  }
+    val total: Int
+
+    /**
+     * The number of submissions in this queue which have not started being graded.
+     */
+    val remaining: Int
+
+    val startedUtc: Instant
+
+    val finishedUtc: Instant?
+
+    suspend fun next(): GradingRequest?
+
+    interface Factory {
+        /**
+         * Constructs a [GradingQueue] that may be asynchronously polled.
+         */
+        fun create(batch: GradingBatch): GradingQueue
+    }
 }
 
 fun GradingRequest.toGradingQueue(): GradingQueue = SingletonGradingQueue(this)
 
 private class SingletonGradingQueue(private val job: GradingRequest) : GradingQueue {
-  override val graders: List<GraderJar> = job.graders
-  override val submissions: List<Submission> = listOf(job.submission)
-  override val total: Int = 1
-  override val remaining: Int
-    get() = if (wasRead.get()) 0 else 1
-  override val startedUtc: Instant = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
-  override val finishedUtc: Instant? = null
+    override val graders: List<GraderJar> = job.graders
+    override val submissions: List<Submission> = listOf(job.submission)
+    override val total: Int = 1
+    override val remaining: Int
+        get() = if (wasRead.get()) 0 else 1
+    override val startedUtc: Instant = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+    override val finishedUtc: Instant? = null
 
-  val wasRead = AtomicBoolean()
+    val wasRead = AtomicBoolean()
 
-  override suspend fun next(): GradingRequest? {
-    if (wasRead.get()) return null
-    wasRead.set(true)
-    return job
-  }
+    override suspend fun next(): GradingRequest? {
+        if (wasRead.get()) return null
+        wasRead.set(true)
+        return job
+    }
 }
 
 /**
  * Finds the next [GradingRequest] in a list of [GradingQueues][GradingQueue] and removes empty queues.
  */
 suspend fun MutableCollection<GradingQueue>.next(): GradingRequest? {
-  val iter = iterator()
-  while (iter.hasNext()) {
-    val request = iter.next().next()
-    if (request == null) {
-      iter.remove()
-    } else {
-      return request
+    val iter = iterator()
+    while (iter.hasNext()) {
+        val request = iter.next().next()
+        if (request == null) {
+            iter.remove()
+        } else {
+            return request
+        }
     }
-  }
-  return null
+    return null
 }

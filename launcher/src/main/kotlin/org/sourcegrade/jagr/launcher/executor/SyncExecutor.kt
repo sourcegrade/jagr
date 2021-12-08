@@ -25,25 +25,25 @@ import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.runtimeGrader
 
 class SyncExecutor constructor(
-  jagr: Jagr,
+    jagr: Jagr,
 ) : Executor {
-  private val mutex = Mutex()
-  private val runtimeGrader = jagr.runtimeGrader
-  private val scheduled = mutableListOf<GradingQueue>()
+    private val mutex = Mutex()
+    private val runtimeGrader = jagr.runtimeGrader
+    private val scheduled = mutableListOf<GradingQueue>()
 
-  override suspend fun schedule(queue: GradingQueue) = mutex.withLock {
-    scheduled += queue
-  }
-
-  override suspend fun start(rubricCollector: MutableRubricCollector) = mutex.withLock {
-    while (scheduled.isNotEmpty()) {
-      val next = scheduled.next() ?: break
-      runtimeGrader.grade(rubricCollector.start(next))
+    override suspend fun schedule(queue: GradingQueue) = mutex.withLock {
+        scheduled += queue
     }
-    scheduled.clear()
-  }
 
-  object Factory : Executor.Factory {
-    override fun create(jagr: Jagr): Executor = SyncExecutor(jagr)
-  }
+    override suspend fun start(rubricCollector: MutableRubricCollector) = mutex.withLock {
+        while (scheduled.isNotEmpty()) {
+            val next = scheduled.next() ?: break
+            runtimeGrader.grade(rubricCollector.start(next))
+        }
+        scheduled.clear()
+    }
+
+    object Factory : Executor.Factory {
+        override fun create(jagr: Jagr): Executor = SyncExecutor(jagr)
+    }
 }
