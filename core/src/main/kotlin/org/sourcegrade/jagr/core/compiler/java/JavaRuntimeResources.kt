@@ -26,7 +26,7 @@ import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.keyOf
 import org.sourcegrade.jagr.launcher.io.readMap
 import org.sourcegrade.jagr.launcher.io.writeMap
-import java.util.*
+import java.util.Collections
 
 data class JavaRuntimeResources(
   val classes: Map<String, CompiledClass> = mapOf(),
