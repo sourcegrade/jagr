@@ -27,80 +27,80 @@ import org.sourcegrade.jagr.api.testing.TestCycle;
 @FunctionalInterface
 public interface Grader {
 
-  static TestAwareBuilder testAwareBuilder() {
-    return FactoryProvider.factory.testAwareBuilder();
-  }
-
-  static Grader descendingPriority(Grader... graders) {
-    return FactoryProvider.factory.descendingPriority(graders);
-  }
-
-  GradeResult grade(TestCycle testCycle, Criterion criterion);
-
-  @ApiStatus.NonExtendable
-  interface Builder<B extends Builder<B>> {
-
-    default B pointsPassedMax() {
-      return pointsPassed((ignored, criterion) -> GradeResult.ofMax(criterion));
+    static TestAwareBuilder testAwareBuilder() {
+        return FactoryProvider.factory.testAwareBuilder();
     }
 
-    default B pointsPassedMin() {
-      return pointsPassed((ignored, criterion) -> GradeResult.ofMin(criterion));
+    static Grader descendingPriority(Grader... graders) {
+        return FactoryProvider.factory.descendingPriority(graders);
     }
 
-    B pointsPassed(@Nullable Grader grader);
+    GradeResult grade(TestCycle testCycle, Criterion criterion);
 
-    default B pointsFailedMax() {
-      return pointsFailed((ignored, criterion) -> GradeResult.ofMax(criterion));
+    @ApiStatus.NonExtendable
+    interface Builder<B extends Builder<B>> {
+
+        default B pointsPassedMax() {
+            return pointsPassed((ignored, criterion) -> GradeResult.ofMax(criterion));
+        }
+
+        default B pointsPassedMin() {
+            return pointsPassed((ignored, criterion) -> GradeResult.ofMin(criterion));
+        }
+
+        B pointsPassed(@Nullable Grader grader);
+
+        default B pointsFailedMax() {
+            return pointsFailed((ignored, criterion) -> GradeResult.ofMax(criterion));
+        }
+
+        default B pointsFailedMin() {
+            return pointsFailed((ignored, criterion) -> GradeResult.ofMin(criterion));
+        }
+
+        B pointsFailed(@Nullable Grader grader);
+
+        /**
+         * Sets (or unsets) the general "if failed" comment on this grader. This is added after comments set by other methods on
+         * this builder and can only be removed by invoking this method with {@code null}.
+         *
+         * @param comment The comment to write in the exported rubric if this grader fails. Passing {@code null} unsets the value.
+         * @return {@code this}
+         */
+        B commentIfFailed(@Nullable String comment);
+
+        Grader build();
     }
-
-    default B pointsFailedMin() {
-      return pointsFailed((ignored, criterion) -> GradeResult.ofMin(criterion));
-    }
-
-    B pointsFailed(@Nullable Grader grader);
 
     /**
-     * Sets (or unsets) the general "if failed" comment on this grader. This is added after comments set by other methods on
-     * this builder and can only be removed by invoking this method with {@code null}.
-     *
-     * @param comment The comment to write in the exported rubric if this grader fails. Passing {@code null} unsets the value.
-     * @return {@code this}
+     * Builds a grader that uses JUnit to determine a grade
      */
-    B commentIfFailed(@Nullable String comment);
+    @ApiStatus.NonExtendable
+    interface TestAwareBuilder extends Builder<TestAwareBuilder> {
 
-    Grader build();
-  }
+        default TestAwareBuilder requirePass(JUnitTestRef testRef) {
+            return requirePass(testRef, null);
+        }
 
-  /**
-   * Builds a grader that uses JUnit to determine a grade
-   */
-  @ApiStatus.NonExtendable
-  interface TestAwareBuilder extends Builder<TestAwareBuilder> {
+        TestAwareBuilder requirePass(JUnitTestRef testRef, @Nullable String comment);
 
-    default TestAwareBuilder requirePass(JUnitTestRef testRef) {
-      return requirePass(testRef, null);
+        default TestAwareBuilder requireFail(JUnitTestRef testRef) {
+            return requireFail(testRef, null);
+        }
+
+        TestAwareBuilder requireFail(JUnitTestRef testRef, @Nullable String comment);
     }
 
-    TestAwareBuilder requirePass(JUnitTestRef testRef, @Nullable String comment);
-
-    default TestAwareBuilder requireFail(JUnitTestRef testRef) {
-      return requireFail(testRef, null);
+    @ApiStatus.Internal
+    final class FactoryProvider {
+        @Inject
+        private static Factory factory;
     }
 
-    TestAwareBuilder requireFail(JUnitTestRef testRef, @Nullable String comment);
-  }
+    @ApiStatus.Internal
+    interface Factory {
+        TestAwareBuilder testAwareBuilder();
 
-  @ApiStatus.Internal
-  final class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
-
-  @ApiStatus.Internal
-  interface Factory {
-    TestAwareBuilder testAwareBuilder();
-
-    Grader descendingPriority(Grader... graders);
-  }
+        Grader descendingPriority(Grader... graders);
+    }
 }

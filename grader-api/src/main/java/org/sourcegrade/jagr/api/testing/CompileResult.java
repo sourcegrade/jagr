@@ -26,11 +26,11 @@ import java.util.List;
 @ApiStatus.NonExtendable
 public interface CompileResult {
 
-  List<String> getMessages();
+    List<String> getMessages();
 
-  int getWarningCount();
+    int getWarningCount();
 
-  int getErrorCount();
+    int getErrorCount();
 
-  int getOtherCount();
+    int getOtherCount();
 }

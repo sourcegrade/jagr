@@ -30,12 +30,12 @@ import org.sourcegrade.jagr.api.testing.TestCycle;
 @ApiStatus.NonExtendable
 public interface Gradable<G extends Graded> {
 
-  int getMaxPoints();
+    int getMaxPoints();
 
-  int getMinPoints();
+    int getMinPoints();
 
-  /**
-   * Grade the provided {@link TestCycle}
-   */
-  G grade(TestCycle testCycle);
+    /**
+     * Grade the provided {@link TestCycle}
+     */
+    G grade(TestCycle testCycle);
 }
