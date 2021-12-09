@@ -23,5 +23,5 @@ import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
 
 fun interface RuntimeTester {
-  fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle?
+    fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle?
 }

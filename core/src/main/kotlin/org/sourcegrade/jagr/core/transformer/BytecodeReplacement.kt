@@ -22,37 +22,37 @@ package org.sourcegrade.jagr.core.transformer
 import kotlin.reflect.KClass
 
 data class BytecodeReplacement(
-  val field: BytecodeElement.Replacer<FieldElement>,
-  val fieldInsn: BytecodeElement.Replacer<FieldInsnElement>,
-  val methodInsn: BytecodeElement.Replacer<MethodInsnElement>,
+    val field: BytecodeElement.Replacer<FieldElement>,
+    val fieldInsn: BytecodeElement.Replacer<FieldInsnElement>,
+    val methodInsn: BytecodeElement.Replacer<MethodInsnElement>,
 ) {
-  constructor(
-    fieldFactory: BytecodeElement.Replacer.Factory<FieldElement>,
-    fieldInsnFactory: BytecodeElement.Replacer.Factory<FieldInsnElement>,
-    methodFactory: BytecodeElement.Replacer.Factory<MethodInsnElement>,
-    original: KClass<*>,
-    surrogate: KClass<*>,
-  ) : this(
-    fieldFactory.create(original, surrogate),
-    fieldInsnFactory.create(original, surrogate),
-    methodFactory.create(original, surrogate),
-  )
+    constructor(
+        fieldFactory: BytecodeElement.Replacer.Factory<FieldElement>,
+        fieldInsnFactory: BytecodeElement.Replacer.Factory<FieldInsnElement>,
+        methodFactory: BytecodeElement.Replacer.Factory<MethodInsnElement>,
+        original: KClass<*>,
+        surrogate: KClass<*>,
+    ) : this(
+        fieldFactory.create(original, surrogate),
+        fieldInsnFactory.create(original, surrogate),
+        methodFactory.create(original, surrogate),
+    )
 }
 
 interface BytecodeElement {
-  fun withSurrogate(original: KClass<*>, surrogate: KClass<*>): BytecodeElement
-  fun interface Replacer<T : BytecodeElement> {
-    fun replace(element: T): T?
-    interface Factory<T : BytecodeElement> {
-      fun create(original: KClass<*>, surrogate: KClass<*>): Replacer<T>
+    fun withSurrogate(original: KClass<*>, surrogate: KClass<*>): BytecodeElement
+    fun interface Replacer<T : BytecodeElement> {
+        fun replace(element: T): T?
+        interface Factory<T : BytecodeElement> {
+            fun create(original: KClass<*>, surrogate: KClass<*>): Replacer<T>
+        }
     }
-  }
 }
 
 infix fun KClass<*>.replaces(originalType: KClass<*>): BytecodeReplacement {
-  return BytecodeReplacement(FieldElement, FieldInsnElement, MethodInsnElement, originalType, this)
+    return BytecodeReplacement(FieldElement, FieldInsnElement, MethodInsnElement, originalType, this)
 }
 
 inline fun <reified T : BytecodeElement, R> T.replace(replacement: BytecodeElement.Replacer<T>, block: (T) -> R): R {
-  return block(replacement.replace(this) ?: this)
+    return block(replacement.replace(this) ?: this)
 }

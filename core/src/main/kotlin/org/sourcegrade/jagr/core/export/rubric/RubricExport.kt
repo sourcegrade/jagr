@@ -26,18 +26,18 @@ import org.sourcegrade.jagr.api.rubric.Rubric
 import kotlin.math.max
 
 val Criterion.minMax: String
-  get() = "[$minPoints, $maxPoints]"
+    get() = "[$minPoints, $maxPoints]"
 
 fun GradeResult.getInRange(gradable: Gradable<*>): String {
-  val minReachedPoints = if (gradable is Rubric) {
-    max(0, gradable.minPoints + correctPoints)
-  } else {
-    gradable.minPoints + correctPoints
-  }
-  val maxReachedPoints = max(minReachedPoints, gradable.maxPoints - incorrectPoints)
-  return if (minReachedPoints == maxReachedPoints) {
-    minReachedPoints.toString()
-  } else {
-    "[$minReachedPoints, $maxReachedPoints]"
-  }
+    val minReachedPoints = if (gradable is Rubric) {
+        max(0, gradable.minPoints + correctPoints)
+    } else {
+        gradable.minPoints + correctPoints
+    }
+    val maxReachedPoints = max(minReachedPoints, gradable.maxPoints - incorrectPoints)
+    return if (minReachedPoints == maxReachedPoints) {
+        minReachedPoints.toString()
+    } else {
+        "[$minReachedPoints, $maxReachedPoints]"
+    }
 }

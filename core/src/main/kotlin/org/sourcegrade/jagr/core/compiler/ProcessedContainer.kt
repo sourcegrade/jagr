@@ -22,6 +22,6 @@ package org.sourcegrade.jagr.core.compiler
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 
 interface ProcessedContainer {
-  val info: ResourceContainerInfo
-  val resourceCollector: ResourceCollector
+    val info: ResourceContainerInfo
+    val resourceCollector: ResourceCollector
 }

@@ -24,5 +24,5 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.NonExtendable
 public interface GradedRubric extends Graded, CriterionHolder<GradedCriterion> {
 
-  Rubric getRubric();
+    Rubric getRubric();
 }

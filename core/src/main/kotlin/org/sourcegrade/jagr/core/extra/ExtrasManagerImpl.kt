@@ -25,19 +25,19 @@ import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.io.ExtrasManager
 
 class ExtrasManagerImpl @Inject constructor(
-  private val config: Config,
-  private val logger: Logger,
-  private val moodleUnpack: MoodleUnpack,
+    private val config: Config,
+    private val logger: Logger,
+    private val moodleUnpack: MoodleUnpack,
 ) : ExtrasManager {
 
-  private fun tryRunExtra(condition: Boolean, extra: Extra) {
-    if (condition) {
-      logger.info("Running extra ${extra.name}")
-      extra.run()
+    private fun tryRunExtra(condition: Boolean, extra: Extra) {
+        if (condition) {
+            logger.info("Running extra ${extra.name}")
+            extra.run()
+        }
     }
-  }
 
-  override fun runExtras() {
-    tryRunExtra(config.extras.moodleUnpack.enabled, moodleUnpack)
-  }
+    override fun runExtras() {
+        tryRunExtra(config.extras.moodleUnpack.enabled, moodleUnpack)
+    }
 }

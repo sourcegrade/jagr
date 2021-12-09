@@ -24,8 +24,8 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.Grader
 
 class GraderFactoryImpl @Inject constructor(
-  private val logger: Logger,
+    private val logger: Logger,
 ) : Grader.Factory {
-  override fun testAwareBuilder() = TestAwareGraderBuilderImpl()
-  override fun descendingPriority(vararg graders: Grader) = DescendingPriorityGrader(logger, *graders)
+    override fun testAwareBuilder() = TestAwareGraderBuilderImpl()
+    override fun descendingPriority(vararg graders: Grader) = DescendingPriorityGrader(logger, *graders)
 }

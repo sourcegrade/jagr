@@ -23,15 +23,15 @@ import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 
 interface SubmissionExporter {
-  /**
-   * Creates a list of [ResourceContainer] for every combination of [Submission] + [GraderJar].
-   *
-   * The resulting list has [GraderJar].size + 1 entries. (The first entry is the default export without
-   * a combined [GraderJar])
-   */
-  fun export(graders: List<GraderJar>, submissions: List<Submission>): List<ResourceContainer>
-  interface Gradle : SubmissionExporter
-  interface Eclipse : SubmissionExporter
+    /**
+     * Creates a list of [ResourceContainer] for every combination of [Submission] + [GraderJar].
+     *
+     * The resulting list has [GraderJar].size + 1 entries. (The first entry is the default export without
+     * a combined [GraderJar])
+     */
+    fun export(graders: List<GraderJar>, submissions: List<Submission>): List<ResourceContainer>
+    interface Gradle : SubmissionExporter
+    interface Eclipse : SubmissionExporter
 }
 
 fun SubmissionExporter.export(queue: GradingQueue) = export(queue.graders, queue.submissions)

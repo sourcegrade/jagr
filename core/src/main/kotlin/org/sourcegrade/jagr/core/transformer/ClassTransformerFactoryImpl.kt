@@ -22,7 +22,7 @@ package org.sourcegrade.jagr.core.transformer
 import org.sourcegrade.jagr.api.testing.ClassTransformer
 
 class ClassTransformerFactoryImpl : ClassTransformer.Factory {
-  override fun replacement(replacement: Class<*>, original: Class<*>): ClassTransformer {
-    return ReplacementTransformer(replacement.kotlin, original.kotlin)
-  }
+    override fun replacement(replacement: Class<*>, original: Class<*>): ClassTransformer {
+        return ReplacementTransformer(replacement.kotlin, original.kotlin)
+    }
 }

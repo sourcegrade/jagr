@@ -27,10 +27,10 @@ import org.sourcegrade.jagr.api.testing.TestCycle
 import org.sourcegrade.jagr.api.testing.TestStatusListener
 
 class FallbackJUnitResult : TestCycle.JUnitResult {
-  private val testPlan = LauncherFactory.create().discover(LauncherDiscoveryRequestBuilder.request().build())
-  private val summaryListener = SummaryGeneratingListener()
-  private val statusListener = TestStatusListener { emptyMap() }
-  override fun getTestPlan(): TestPlan = testPlan
-  override fun getSummaryListener(): SummaryGeneratingListener = summaryListener
-  override fun getStatusListener(): TestStatusListener = statusListener
+    private val testPlan = LauncherFactory.create().discover(LauncherDiscoveryRequestBuilder.request().build())
+    private val summaryListener = SummaryGeneratingListener()
+    private val statusListener = TestStatusListener { emptyMap() }
+    override fun getTestPlan(): TestPlan = testPlan
+    override fun getSummaryListener(): SummaryGeneratingListener = summaryListener
+    override fun getStatusListener(): TestStatusListener = statusListener
 }

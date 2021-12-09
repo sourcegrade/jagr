@@ -33,114 +33,114 @@ import org.sourcegrade.jagr.launcher.io.buildResource
 import kotlin.math.max
 
 class MoodleJSONExporter @Inject constructor(
-  private val logger: Logger,
+    private val logger: Logger,
 ) : GradedRubricExporter.HTML {
-  override fun export(gradedRubric: GradedRubric): Resource {
-    val json = MoodleJSON(
-      gradedRubric.testCycle.submission.info as SubmissionInfoImpl,
-      max(0, gradedRubric.rubric.minPoints + gradedRubric.grade.correctPoints),
-      StringBuilder().writeTable(gradedRubric).toString(),
+    override fun export(gradedRubric: GradedRubric): Resource {
+        val json = MoodleJSON(
+            gradedRubric.testCycle.submission.info as SubmissionInfoImpl,
+            max(0, gradedRubric.rubric.minPoints + gradedRubric.grade.correctPoints),
+            StringBuilder().writeTable(gradedRubric).toString(),
+        )
+        val jsonString = Json.encodeToString(json)
+        return buildResource {
+            name = "${gradedRubric.rubric.title}_${gradedRubric.testCycle.submission.info}.json"
+            outputStream.bufferedWriter().use { it.write(jsonString) }
+        }
+    }
+
+    private fun StringBuilder.writeTable(gradedRubric: GradedRubric): StringBuilder {
+        // Open table
+        append("<table border='1' cellpadding='5' cellspacing='0'>")
+        append("<tbody>")
+
+        // Title
+        append("<tr>")
+        append("<td><strong>${gradedRubric.rubric.title}</strong></td>")
+        append("<td></td>")
+        append("<td></td>")
+        append("<td></td>")
+        append("</tr>")
+        appendEmptyHTMLTableRow()
+
+        // Headings
+        append("<tr>")
+        append("<td><strong>Kriterium</strong></td>")
+        append("<td><strong>Möglich</strong></td>")
+        append("<td><strong>Erzielt</strong></td>")
+        append("<td><strong>Kommentar</strong></td>")
+        append("</tr>")
+        appendEmptyHTMLTableRow()
+
+        // Child criteria
+        for (gradedCriterion in gradedRubric.childCriteria) {
+            appendCriterion(gradedCriterion)
+            appendEmptyHTMLTableRow()
+        }
+
+        val rubric = gradedRubric.rubric
+        val grade = gradedRubric.grade
+        val comments = grade.comments
+
+        append("<tr>")
+        append("<td><strong>Gesamt:</strong></td>")
+        append("<td>${rubric.maxPoints}</td>")
+        append("<td>${grade.getInRange(rubric)}</td>")
+        append("<td>${comments.firstOrNull() ?: ""}</td>")
+        append("</tr>")
+
+        for (i in 1 until comments.size) {
+            append("<tr>")
+            append("<td></td>")
+            append("<td></td>")
+            append("<td></td>")
+            append("<td>${comments[i]}</td>")
+            append("</tr>")
+        }
+
+        // Close table
+        append("</tbody>")
+        append("</table>")
+        return this
+    }
+
+    private fun StringBuilder.appendCriterion(gradedCriterion: GradedCriterion): StringBuilder {
+        val criterion = gradedCriterion.criterion
+        val grade = gradedCriterion.grade
+        val comments = grade.comments.joinToString("<br />")
+        if (gradedCriterion.childCriteria.isEmpty()) {
+            append("<tr>")
+            append("<td>${criterion.shortDescription}</td>")
+            append("<td>${criterion.minMax}</td>")
+            append("<td>${grade.getInRange(criterion)}</td>")
+            append("<td>$comments</td>")
+            append("</tr>")
+        } else {
+            append("<tr>")
+            append("<td><strong>${criterion.shortDescription}</strong></td>")
+            append("<td></td>")
+            append("<td></td>")
+            append("<td>$comments</td>")
+            append("</tr>")
+            for (childGradedCriterion in gradedCriterion.childCriteria) {
+                appendCriterion(childGradedCriterion)
+            }
+            appendEmptyHTMLTableRow()
+        }
+        return this
+    }
+
+    private fun StringBuilder.appendEmptyHTMLTableRow() {
+        append("<tr>")
+        for (i in 0 until 4) {
+            append("<td></td>")
+        }
+        append("</tr>")
+    }
+
+    @Serializable
+    data class MoodleJSON(
+        val submissionInfo: SubmissionInfoImpl,
+        val totalPoints: Int,
+        val feedbackComment: String,
     )
-    val jsonString = Json.encodeToString(json)
-    return buildResource {
-      name = "${gradedRubric.rubric.title}_${gradedRubric.testCycle.submission.info}.json"
-      outputStream.bufferedWriter().use { it.write(jsonString) }
-    }
-  }
-
-  private fun StringBuilder.writeTable(gradedRubric: GradedRubric): StringBuilder {
-    // Open table
-    append("<table border='1' cellpadding='5' cellspacing='0'>")
-    append("<tbody>")
-
-    // Title
-    append("<tr>")
-    append("<td><strong>${gradedRubric.rubric.title}</strong></td>")
-    append("<td></td>")
-    append("<td></td>")
-    append("<td></td>")
-    append("</tr>")
-    appendEmptyHTMLTableRow()
-
-    // Headings
-    append("<tr>")
-    append("<td><strong>Kriterium</strong></td>")
-    append("<td><strong>Möglich</strong></td>")
-    append("<td><strong>Erzielt</strong></td>")
-    append("<td><strong>Kommentar</strong></td>")
-    append("</tr>")
-    appendEmptyHTMLTableRow()
-
-    // Child criteria
-    for (gradedCriterion in gradedRubric.childCriteria) {
-      appendCriterion(gradedCriterion)
-      appendEmptyHTMLTableRow()
-    }
-
-    val rubric = gradedRubric.rubric
-    val grade = gradedRubric.grade
-    val comments = grade.comments
-
-    append("<tr>")
-    append("<td><strong>Gesamt:</strong></td>")
-    append("<td>${rubric.maxPoints}</td>")
-    append("<td>${grade.getInRange(rubric)}</td>")
-    append("<td>${comments.firstOrNull() ?: ""}</td>")
-    append("</tr>")
-
-    for (i in 1 until comments.size) {
-      append("<tr>")
-      append("<td></td>")
-      append("<td></td>")
-      append("<td></td>")
-      append("<td>${comments[i]}</td>")
-      append("</tr>")
-    }
-
-    // Close table
-    append("</tbody>")
-    append("</table>")
-    return this
-  }
-
-  private fun StringBuilder.appendCriterion(gradedCriterion: GradedCriterion): StringBuilder {
-    val criterion = gradedCriterion.criterion
-    val grade = gradedCriterion.grade
-    val comments = grade.comments.joinToString("<br />")
-    if (gradedCriterion.childCriteria.isEmpty()) {
-      append("<tr>")
-      append("<td>${criterion.shortDescription}</td>")
-      append("<td>${criterion.minMax}</td>")
-      append("<td>${grade.getInRange(criterion)}</td>")
-      append("<td>$comments</td>")
-      append("</tr>")
-    } else {
-      append("<tr>")
-      append("<td><strong>${criterion.shortDescription}</strong></td>")
-      append("<td></td>")
-      append("<td></td>")
-      append("<td>$comments</td>")
-      append("</tr>")
-      for (childGradedCriterion in gradedCriterion.childCriteria) {
-        appendCriterion(childGradedCriterion)
-      }
-      appendEmptyHTMLTableRow()
-    }
-    return this
-  }
-
-  private fun StringBuilder.appendEmptyHTMLTableRow() {
-    append("<tr>")
-    for (i in 0 until 4) {
-      append("<td></td>")
-    }
-    append("</tr>")
-  }
-
-  @Serializable
-  data class MoodleJSON(
-    val submissionInfo: SubmissionInfoImpl,
-    val totalPoints: Int,
-    val feedbackComment: String,
-  )
 }

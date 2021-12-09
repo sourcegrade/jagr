@@ -26,51 +26,51 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 
 fun <T, R> Array<T>.parallelForEach(scope: CoroutineScope = GlobalScope, block: suspend (T) -> R) {
-  return asSequence().parallelForEach(size, scope, block)
+    return asSequence().parallelForEach(size, scope, block)
 }
 
 fun <T, R> List<T>.parallelForEach(scope: CoroutineScope = GlobalScope, block: suspend (T) -> R) {
-  return asSequence().parallelForEach(size, scope, block)
+    return asSequence().parallelForEach(size, scope, block)
 }
 
 fun <T, R> Sequence<T>.parallelForEach(size: Int, scope: CoroutineScope = GlobalScope, block: suspend (T) -> R) {
-  return parallel(size, scope, { forEach { it.await() } }, block)
+    return parallel(size, scope, { forEach { it.await() } }, block)
 }
 
 fun <T, R> Array<T>.parallelMap(scope: CoroutineScope = GlobalScope, block: suspend (T) -> R): List<R> {
-  return asSequence().parallelMap(size, scope, block)
+    return asSequence().parallelMap(size, scope, block)
 }
 
 fun <T, R> List<T>.parallelMap(scope: CoroutineScope = GlobalScope, block: suspend (T) -> R): List<R> {
-  return asSequence().parallelMap(size, scope, block)
+    return asSequence().parallelMap(size, scope, block)
 }
 
 fun <T, R> Sequence<T>.parallelMap(size: Int, scope: CoroutineScope = GlobalScope, block: suspend (T) -> R): List<R> {
-  return parallel(size, scope, { map { it.await() } }, block)
+    return parallel(size, scope, { map { it.await() } }, block)
 }
 
 fun <T, R> Array<T>.parallelMapNotNull(scope: CoroutineScope = GlobalScope, block: suspend (T) -> R?): List<R> {
-  return asSequence().parallelMapNotNull(size, scope, block)
+    return asSequence().parallelMapNotNull(size, scope, block)
 }
 
 fun <T, R> List<T>.parallelMapNotNull(scope: CoroutineScope = GlobalScope, block: suspend (T) -> R?): List<R> {
-  return asSequence().parallelMapNotNull(size, scope, block)
+    return asSequence().parallelMapNotNull(size, scope, block)
 }
 
 fun <T, R> Sequence<T>.parallelMapNotNull(size: Int, scope: CoroutineScope = GlobalScope, block: suspend (T) -> R?): List<R> {
-  return parallel(size, scope, { mapNotNull { it.await() } }, block)
+    return parallel(size, scope, { mapNotNull { it.await() } }, block)
 }
 
 private fun <T, R, C> Sequence<T>.parallel(
-  size: Int,
-  scope: CoroutineScope = GlobalScope,
-  mapper: suspend (Array<Deferred<R>>).() -> C,
-  block: suspend (T) -> R,
+    size: Int,
+    scope: CoroutineScope = GlobalScope,
+    mapper: suspend (Array<Deferred<R>>).() -> C,
+    block: suspend (T) -> R,
 ): C {
-  val iter = iterator()
-  val deferreds = Array(size) {
-    val next = iter.next()
-    scope.async { block(next) }
-  }
-  return runBlocking { deferreds.mapper() }
+    val iter = iterator()
+    val deferreds = Array(size) {
+        val next = iter.next()
+        scope.async { block(next) }
+    }
+    return runBlocking { deferreds.mapper() }
 }

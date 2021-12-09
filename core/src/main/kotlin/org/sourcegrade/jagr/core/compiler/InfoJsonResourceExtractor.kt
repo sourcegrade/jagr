@@ -33,28 +33,28 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.createType
 
 class InfoJsonResourceExtractor<T : Any>(
-  private val type: KClass<T>,
-  private val targetName: String,
+    private val type: KClass<T>,
+    private val targetName: String,
 ) : ResourceExtractor {
-  companion object {
-    inline operator fun <reified T : Any> invoke(targetName: String) = InfoJsonResourceExtractor(T::class, targetName)
-  }
-
-  override fun extract(
-    containerInfo: ResourceContainerInfo,
-    resource: Resource,
-    data: ByteArray,
-    collector: MutableResourceCollector,
-  ) {
-    if (resource.name == targetName) {
-      try {
-        @Suppress("UNCHECKED_CAST")
-        val serializer = Json.serializersModule.serializer(type.createType()) as KSerializer<T>
-        @OptIn(ExperimentalSerializationApi::class)
-        collector.addResource(Json.decodeFromStream(serializer, ByteArrayInputStream(data)))
-      } catch (e: Exception) {
-        Jagr.logger.error("${containerInfo.name} has invalid $targetName", e)
-      }
+    companion object {
+        inline operator fun <reified T : Any> invoke(targetName: String) = InfoJsonResourceExtractor(T::class, targetName)
     }
-  }
+
+    override fun extract(
+        containerInfo: ResourceContainerInfo,
+        resource: Resource,
+        data: ByteArray,
+        collector: MutableResourceCollector,
+    ) {
+        if (resource.name == targetName) {
+            try {
+                @Suppress("UNCHECKED_CAST")
+                val serializer = Json.serializersModule.serializer(type.createType()) as KSerializer<T>
+                @OptIn(ExperimentalSerializationApi::class)
+                collector.addResource(Json.decodeFromStream(serializer, ByteArrayInputStream(data)))
+            } catch (e: Exception) {
+                Jagr.logger.error("${containerInfo.name} has invalid $targetName", e)
+            }
+        }
+    }
 }

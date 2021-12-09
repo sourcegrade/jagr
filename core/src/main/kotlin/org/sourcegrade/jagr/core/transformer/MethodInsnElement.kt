@@ -29,50 +29,50 @@ import kotlin.reflect.full.functions
 import kotlin.reflect.jvm.javaMethod
 
 data class MethodInsnElement(
-  val opcode: Int,
-  val owner: String,
-  val name: String,
-  val descriptor: String,
-  val isInterface: Boolean,
+    val opcode: Int,
+    val owner: String,
+    val name: String,
+    val descriptor: String,
+    val isInterface: Boolean,
 ) : BytecodeElement {
-  private val stringRep: String by lazy { "MethodInsn(${Printer.OPCODES[opcode]} $owner.$name $descriptor)" }
+    private val stringRep: String by lazy { "MethodInsn(${Printer.OPCODES[opcode]} $owner.$name $descriptor)" }
 
-  override fun withSurrogate(original: KClass<*>, surrogate: KClass<*>): MethodInsnElement {
-    val surrogateOwner = Type.getInternalName(surrogate.java)
-    val descriptor = descriptor.replace(owner, surrogateOwner)
-    return copy(owner = surrogateOwner, descriptor = descriptor)
-  }
-
-  override fun toString(): String = stringRep
-
-  companion object Factory : BytecodeElement.Replacer.Factory<MethodInsnElement> {
-    override fun create(original: KClass<*>, surrogate: KClass<*>): BytecodeElement.Replacer<MethodInsnElement> {
-      val replacementInsns = surrogate.functions.asSequence()
-        .mapNotNull { it.javaMethod }
-        .map { it.toMethodInsn(original) to it.toMethodInsn() }
-        .toMap()
-      return BytecodeElement.Replacer {
-        replacementInsns[it] ?: error("Could not find method in $surrogate matching ${it.withSurrogate(original, surrogate)}")
-      }
+    override fun withSurrogate(original: KClass<*>, surrogate: KClass<*>): MethodInsnElement {
+        val surrogateOwner = Type.getInternalName(surrogate.java)
+        val descriptor = descriptor.replace(owner, surrogateOwner)
+        return copy(owner = surrogateOwner, descriptor = descriptor)
     }
-  }
+
+    override fun toString(): String = stringRep
+
+    companion object Factory : BytecodeElement.Replacer.Factory<MethodInsnElement> {
+        override fun create(original: KClass<*>, surrogate: KClass<*>): BytecodeElement.Replacer<MethodInsnElement> {
+            val replacementInsns = surrogate.functions.asSequence()
+                .mapNotNull { it.javaMethod }
+                .map { it.toMethodInsn(original) to it.toMethodInsn() }
+                .toMap()
+            return BytecodeElement.Replacer {
+                replacementInsns[it] ?: error("Could not find method in $surrogate matching ${it.withSurrogate(original, surrogate)}")
+            }
+        }
+    }
 }
 
 private fun Method.toMethodInsn(surrogate: KClass<*>? = null): MethodInsnElement {
-  // not 100% correct, but it will work in most cases
-  // e.g. INVOKESPECIAL via superclass method invocation from base class not covered here
-  val opcode = when {
-    Modifier.isStatic(modifiers) -> Opcodes.INVOKESTATIC
-    Modifier.isPrivate(modifiers) -> Opcodes.INVOKESPECIAL
-    declaringClass.isInterface -> Opcodes.INVOKEINTERFACE
-    else -> Opcodes.INVOKEVIRTUAL
-  }
-  var owner = Type.getInternalName(declaringClass)
-  var descriptor = Type.getMethodDescriptor(this)
-  if (surrogate != null) {
-    val surrogateOwner = Type.getInternalName(surrogate.java)
-    descriptor = descriptor.replace(owner, surrogateOwner)
-    owner = surrogateOwner
-  }
-  return MethodInsnElement(opcode, owner, name, descriptor, surrogate?.java?.isInterface ?: declaringClass.isInterface)
+    // not 100% correct, but it will work in most cases
+    // e.g. INVOKESPECIAL via superclass method invocation from base class not covered here
+    val opcode = when {
+        Modifier.isStatic(modifiers) -> Opcodes.INVOKESTATIC
+        Modifier.isPrivate(modifiers) -> Opcodes.INVOKESPECIAL
+        declaringClass.isInterface -> Opcodes.INVOKEINTERFACE
+        else -> Opcodes.INVOKEVIRTUAL
+    }
+    var owner = Type.getInternalName(declaringClass)
+    var descriptor = Type.getMethodDescriptor(this)
+    if (surrogate != null) {
+        val surrogateOwner = Type.getInternalName(surrogate.java)
+        descriptor = descriptor.replace(owner, surrogateOwner)
+        owner = surrogateOwner
+    }
+    return MethodInsnElement(opcode, owner, name, descriptor, surrogate?.java?.isInterface ?: declaringClass.isInterface)
 }

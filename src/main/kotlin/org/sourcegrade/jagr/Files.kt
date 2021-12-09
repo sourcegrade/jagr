@@ -23,19 +23,19 @@ import org.slf4j.Logger
 import java.io.File
 
 fun File.ensure(logger: Logger? = null, logInfo: Boolean = true): File? {
-  if (!exists()) {
-    if (logInfo) {
-      logger?.info("No $this dir! Creating...")
+    if (!exists()) {
+        if (logInfo) {
+            logger?.info("No $this dir! Creating...")
+        }
+        try {
+            if (!mkdirs()) {
+                logger?.error("Unable to create $absolutePath dir")
+                return null
+            }
+        } catch (e: SecurityException) {
+            logger?.error("Unable to create $absolutePath dir", e)
+            return null
+        }
     }
-    try {
-      if (!mkdirs()) {
-        logger?.error("Unable to create $absolutePath dir")
-        return null
-      }
-    } catch (e: SecurityException) {
-      logger?.error("Unable to create $absolutePath dir", e)
-      return null
-    }
-  }
-  return this
+    return this
 }

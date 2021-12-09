@@ -32,27 +32,27 @@ import org.sourcegrade.jagr.launcher.io.writeList
 import org.sourcegrade.jagr.launcher.io.writeMap
 
 data class JavaSourceContainer(
-  override val info: ResourceContainerInfo,
-  override val resourceCollector: ResourceCollector,
-  val sourceFiles: Map<String, JavaSourceFile>,
-  val resources: Map<String, ByteArray>,
-  val messages: List<String> = listOf(),
+    override val info: ResourceContainerInfo,
+    override val resourceCollector: ResourceCollector,
+    val sourceFiles: Map<String, JavaSourceFile>,
+    val resources: Map<String, ByteArray>,
+    val messages: List<String> = listOf(),
 ) : ProcessedContainer {
-  companion object Factory : SerializerFactory<JavaSourceContainer> {
-    override fun read(scope: SerializationScope.Input) = JavaSourceContainer(
-      scope.read(),
-      scope.read(),
-      scope.readMap(),
-      scope.readMap(),
-      scope.readList(),
-    )
+    companion object Factory : SerializerFactory<JavaSourceContainer> {
+        override fun read(scope: SerializationScope.Input) = JavaSourceContainer(
+            scope.read(),
+            scope.read(),
+            scope.readMap(),
+            scope.readMap(),
+            scope.readList(),
+        )
 
-    override fun write(obj: JavaSourceContainer, scope: SerializationScope.Output) {
-      scope.write(obj.info)
-      scope.write(obj.resourceCollector)
-      scope.writeMap(obj.sourceFiles)
-      scope.writeMap(obj.resources)
-      scope.writeList(obj.messages)
+        override fun write(obj: JavaSourceContainer, scope: SerializationScope.Output) {
+            scope.write(obj.info)
+            scope.write(obj.resourceCollector)
+            scope.writeMap(obj.sourceFiles)
+            scope.writeMap(obj.resources)
+            scope.writeList(obj.messages)
+        }
     }
-  }
 }

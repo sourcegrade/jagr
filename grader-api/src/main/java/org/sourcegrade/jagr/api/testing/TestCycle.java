@@ -29,32 +29,32 @@ import java.util.List;
 @ApiStatus.NonExtendable
 public interface TestCycle {
 
-  List<String> getRubricProviderClassNames();
+    List<String> getRubricProviderClassNames();
 
-  /**
-   * Every test cycle uses a unique {@link ClassLoader} that loads the grader jar's classes and the {@link Submission}'s
-   * classes if it is a java submission.
-   *
-   * @return The {@link ClassLoader} used in this test cycle
-   */
-  ClassLoader getClassLoader();
+    /**
+     * Every test cycle uses a unique {@link ClassLoader} that loads the grader jar's classes and the {@link Submission}'s
+     * classes if it is a java submission.
+     *
+     * @return The {@link ClassLoader} used in this test cycle
+     */
+    ClassLoader getClassLoader();
 
-  Submission getSubmission();
+    Submission getSubmission();
 
-  int getTestsSucceededCount();
+    int getTestsSucceededCount();
 
-  int getTestsStartedCount();
+    int getTestsStartedCount();
 
-  List<String> getNotes();
+    List<String> getNotes();
 
-  @Nullable JUnitResult getJUnitResult();
+    @Nullable JUnitResult getJUnitResult();
 
-  @ApiStatus.NonExtendable
-  interface JUnitResult {
-    TestPlan getTestPlan();
+    @ApiStatus.NonExtendable
+    interface JUnitResult {
+        TestPlan getTestPlan();
 
-    SummaryGeneratingListener getSummaryListener();
+        SummaryGeneratingListener getSummaryListener();
 
-    TestStatusListener getStatusListener();
-  }
+        TestStatusListener getStatusListener();
+    }
 }

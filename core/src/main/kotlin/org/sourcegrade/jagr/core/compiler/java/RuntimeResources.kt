@@ -27,25 +27,25 @@ import org.sourcegrade.jagr.launcher.io.readMap
 import org.sourcegrade.jagr.launcher.io.writeMap
 
 data class RuntimeResources(
-  val classes: Map<String, CompiledClass> = mapOf(),
-  val resources: Map<String, ByteArray> = mapOf(),
+    val classes: Map<String, CompiledClass> = mapOf(),
+    val resources: Map<String, ByteArray> = mapOf(),
 ) {
-  companion object Factory : SerializerFactory<RuntimeResources> {
-    val base = keyOf<RuntimeResources>("base")
-    override fun read(scope: SerializationScope.Input) = RuntimeResources(scope.readMap(), scope.readMap())
+    companion object Factory : SerializerFactory<RuntimeResources> {
+        val base = keyOf<RuntimeResources>("base")
+        override fun read(scope: SerializationScope.Input) = RuntimeResources(scope.readMap(), scope.readMap())
 
-    override fun write(obj: RuntimeResources, scope: SerializationScope.Output) {
-      scope.writeMap(obj.classes)
-      scope.writeMap(obj.resources)
+        override fun write(obj: RuntimeResources, scope: SerializationScope.Output) {
+            scope.writeMap(obj.classes)
+            scope.writeMap(obj.resources)
+        }
     }
-  }
 }
 
 operator fun RuntimeResources.plus(other: RuntimeResources) =
-  RuntimeResources(classes + other.classes, resources + other.resources)
+    RuntimeResources(classes + other.classes, resources + other.resources)
 
 fun RuntimeJarLoader.loadCompiled(containers: Sequence<ResourceContainer>): RuntimeResources {
-  return containers
-    .map { loadCompiled(it).runtimeResources }
-    .fold(RuntimeResources()) { a, b -> a + b }
+    return containers
+        .map { loadCompiled(it).runtimeResources }
+        .fold(RuntimeResources()) { a, b -> a + b }
 }

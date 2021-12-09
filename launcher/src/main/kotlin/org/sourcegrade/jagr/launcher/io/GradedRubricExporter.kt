@@ -22,7 +22,7 @@ package org.sourcegrade.jagr.launcher.io
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 
 interface GradedRubricExporter {
-  fun export(gradedRubric: GradedRubric): Resource
-  interface CSV : GradedRubricExporter
-  interface HTML : GradedRubricExporter
+    fun export(gradedRubric: GradedRubric): Resource
+    interface CSV : GradedRubricExporter
+    interface HTML : GradedRubricExporter
 }

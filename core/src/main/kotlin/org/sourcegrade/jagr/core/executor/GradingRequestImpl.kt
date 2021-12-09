@@ -32,38 +32,38 @@ import org.sourcegrade.jagr.launcher.io.writeList
 import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class GradingRequestImpl(
-  override val submission: Submission,
-  override val graders: List<GraderJar>,
-  val libraries: RuntimeResources,
+    override val submission: Submission,
+    override val graders: List<GraderJar>,
+    val libraries: RuntimeResources,
 ) : GradingRequest {
-  companion object Factory : SerializerFactory.Scoped<GradingRequestImpl> {
-    override fun read(scope: SerializationScope.Input): GradingRequestImpl {
-      return GradingRequestImpl(
-        scope.readScoped(),
-        scope.readList(),
-        scope[RuntimeResources.base],
-      )
-    }
+    companion object Factory : SerializerFactory.Scoped<GradingRequestImpl> {
+        override fun read(scope: SerializationScope.Input): GradingRequestImpl {
+            return GradingRequestImpl(
+                scope.readScoped(),
+                scope.readList(),
+                scope[RuntimeResources.base],
+            )
+        }
 
-    override fun write(obj: GradingRequestImpl, scope: SerializationScope.Output) {
-      scope.writeScoped(obj.submission)
-      scope.writeList(obj.graders)
-    }
+        override fun write(obj: GradingRequestImpl, scope: SerializationScope.Output) {
+            scope.writeScoped(obj.submission)
+            scope.writeList(obj.graders)
+        }
 
-    override fun readScoped(scope: SerializationScope.Input): GradingRequestImpl {
-      scope.readScoped(RuntimeResources.base)
-      return read(scope)
-    }
+        override fun readScoped(scope: SerializationScope.Input): GradingRequestImpl {
+            scope.readScoped(RuntimeResources.base)
+            return read(scope)
+        }
 
-    override fun writeScoped(obj: GradingRequestImpl, scope: SerializationScope.Output) {
-      scope.writeScoped(obj.libraries, RuntimeResources.base)
-      write(obj, scope)
-    }
+        override fun writeScoped(obj: GradingRequestImpl, scope: SerializationScope.Output) {
+            scope.writeScoped(obj.libraries, RuntimeResources.base)
+            write(obj, scope)
+        }
 
-    override fun putInScope(obj: GradingRequestImpl, scope: SerializationScope) {
-      scope[keyOf(GradingRequest::class)] = obj
-      scope[keyOf(Submission::class)] = obj.submission
-      scope[RuntimeResources.base] = obj.libraries
+        override fun putInScope(obj: GradingRequestImpl, scope: SerializationScope) {
+            scope[keyOf(GradingRequest::class)] = obj
+            scope[keyOf(Submission::class)] = obj.submission
+            scope[RuntimeResources.base] = obj.libraries
+        }
     }
-  }
 }

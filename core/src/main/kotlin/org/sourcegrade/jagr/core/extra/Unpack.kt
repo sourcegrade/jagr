@@ -37,80 +37,80 @@ import kotlin.io.path.bufferedWriter
 
 abstract class Unpack : Extra {
 
-  protected abstract val config: Config
-  protected abstract val logger: Logger
+    protected abstract val config: Config
+    protected abstract val logger: Logger
 
-  @OptIn(ExperimentalPathApi::class)
-  private fun SubmissionInfoVerification.verify() {
-    if (assignmentId == null && studentId == null && firstName == null && lastName == null) return
-    try {
-      FileSystems.newFileSystem(file.toPath(), null as ClassLoader?)
-    } catch (e: Exception) {
-      logger.error("Could not open zip for $file :: ${e.message}")
-      return
-    }.use { fs ->
-      val submissionInfoPath = fs.getPath("submission-info.json")
-      val replacedSubmissionInfo = try {
-        submissionInfoPath.bufferedReader()
-      } catch (e: Throwable) {
-        logger.error("Unable to read submission-info for $this")
-        null
-      }?.use useReader@{ reader ->
-        val submissionInfo = try {
-          Json.decodeFromString<SubmissionInfoImpl>(reader.readText())
-        } catch (e: SerializationException) {
-          return@useReader null
+    @OptIn(ExperimentalPathApi::class)
+    private fun SubmissionInfoVerification.verify() {
+        if (assignmentId == null && studentId == null && firstName == null && lastName == null) return
+        try {
+            FileSystems.newFileSystem(file.toPath(), null as ClassLoader?)
+        } catch (e: Exception) {
+            logger.error("Could not open zip for $file :: ${e.message}")
+            return
+        }.use { fs ->
+            val submissionInfoPath = fs.getPath("submission-info.json")
+            val replacedSubmissionInfo = try {
+                submissionInfoPath.bufferedReader()
+            } catch (e: Throwable) {
+                logger.error("Unable to read submission-info for $this")
+                null
+            }?.use useReader@{ reader ->
+                val submissionInfo = try {
+                    Json.decodeFromString<SubmissionInfoImpl>(reader.readText())
+                } catch (e: SerializationException) {
+                    return@useReader null
+                }
+                val replaceAssignmentId = assignmentId != null && assignmentId != submissionInfo.assignmentId
+                val replaceStudentId = studentId != null && studentId != submissionInfo.studentId
+                val replaceFirstName = firstName != null && firstName != submissionInfo.firstName
+                val replaceLastName = lastName != null && lastName != submissionInfo.lastName
+                if (replaceAssignmentId || replaceStudentId || replaceFirstName || replaceLastName) {
+                    logger.warn(
+                        StringBuilder().apply {
+                            append("$submissionInfo has incorrect submission-info! Replacing:")
+                            if (replaceAssignmentId) append(" assignmentId(${submissionInfo.assignmentId} -> $assignmentId)")
+                            if (replaceStudentId) append(" studentId(${submissionInfo.studentId} -> $studentId)")
+                            if (replaceFirstName) append(" firstName(${submissionInfo.firstName} -> $firstName)")
+                            if (replaceLastName) append(" lastName(${submissionInfo.lastName} -> $lastName)")
+                        }.toString()
+                    )
+                    SubmissionInfoImpl(
+                        if (replaceAssignmentId) assignmentId!! else submissionInfo.assignmentId,
+                        if (replaceStudentId) studentId!! else submissionInfo.studentId,
+                        if (replaceFirstName) firstName!! else submissionInfo.firstName,
+                        if (replaceLastName) lastName!! else submissionInfo.lastName,
+                        submissionInfo.sourceSets,
+                    )
+                } else return
+            } ?: SubmissionInfoImpl(
+                assignmentId = assignmentId ?: "none",
+                studentId = studentId ?: "none",
+                firstName = firstName ?: "none",
+                lastName = lastName ?: "none",
+                sourceSets = listOf(),
+            )
+            submissionInfoPath.bufferedWriter().use { writer ->
+                writer.write(Json.encodeToString(replacedSubmissionInfo))
+            }
         }
-        val replaceAssignmentId = assignmentId != null && assignmentId != submissionInfo.assignmentId
-        val replaceStudentId = studentId != null && studentId != submissionInfo.studentId
-        val replaceFirstName = firstName != null && firstName != submissionInfo.firstName
-        val replaceLastName = lastName != null && lastName != submissionInfo.lastName
-        if (replaceAssignmentId || replaceStudentId || replaceFirstName || replaceLastName) {
-          logger.warn(
-            StringBuilder().apply {
-              append("$submissionInfo has incorrect submission-info! Replacing:")
-              if (replaceAssignmentId) append(" assignmentId(${submissionInfo.assignmentId} -> $assignmentId)")
-              if (replaceStudentId) append(" studentId(${submissionInfo.studentId} -> $studentId)")
-              if (replaceFirstName) append(" firstName(${submissionInfo.firstName} -> $firstName)")
-              if (replaceLastName) append(" lastName(${submissionInfo.lastName} -> $lastName)")
-            }.toString()
-          )
-          SubmissionInfoImpl(
-            if (replaceAssignmentId) assignmentId!! else submissionInfo.assignmentId,
-            if (replaceStudentId) studentId!! else submissionInfo.studentId,
-            if (replaceFirstName) firstName!! else submissionInfo.firstName,
-            if (replaceLastName) lastName!! else submissionInfo.lastName,
-            submissionInfo.sourceSets,
-          )
-        } else return
-      } ?: SubmissionInfoImpl(
-        assignmentId = assignmentId ?: "none",
-        studentId = studentId ?: "none",
-        firstName = firstName ?: "none",
-        lastName = lastName ?: "none",
-        sourceSets = listOf(),
-      )
-      submissionInfoPath.bufferedWriter().use { writer ->
-        writer.write(Json.encodeToString(replacedSubmissionInfo))
-      }
     }
-  }
 
-  fun List<SubmissionInfoVerification>.verify() {
-    runBlocking {
-      with(GlobalScope) {
-        asSequence().map {
-          async { it.verify() }
+    fun List<SubmissionInfoVerification>.verify() {
+        runBlocking {
+            with(GlobalScope) {
+                asSequence().map {
+                    async { it.verify() }
+                }
+            }.forEach { it.await() }
         }
-      }.forEach { it.await() }
     }
-  }
 
-  data class SubmissionInfoVerification(
-    val file: File,
-    val assignmentId: String? = null,
-    val studentId: String? = null,
-    val firstName: String? = null,
-    val lastName: String? = null,
-  )
+    data class SubmissionInfoVerification(
+        val file: File,
+        val assignmentId: String? = null,
+        val studentId: String? = null,
+        val firstName: String? = null,
+        val lastName: String? = null,
+    )
 }
