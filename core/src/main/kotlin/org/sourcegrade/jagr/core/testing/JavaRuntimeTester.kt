@@ -61,10 +61,10 @@ class JavaRuntimeTester @Inject constructor(
         val testPlan = try {
             launcher.discover(LauncherDiscoveryRequestBuilder.request().selectors(this).build())
         } catch (e: JUnitException) {
-      /*
-       * If a LinkageError occurred in a JUnit test class, try again with the other test classes.
-       * This may occur if a student did not implement a class or method a test class depends on.
-       */
+            /*
+            * If a LinkageError occurred in a JUnit test class, try again with the other test classes.
+            * This may occur if a student did not implement a class or method a test class depends on.
+            */
             if (e.cause is JUnitException && e.cause?.cause is LinkageError) {
                 return partition { e.cause!!.message?.contains(it.className) == false }.let { (included, excluded) ->
                     val excludedClasses = excluded.joinToString { it.className }
