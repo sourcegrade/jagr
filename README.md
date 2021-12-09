@@ -21,7 +21,6 @@ dependencies {
 ```
 
 **build.gradle.kts (Kotlin DSL):**
-
 ```kotlin
 repositories {
     mavenCentral()
