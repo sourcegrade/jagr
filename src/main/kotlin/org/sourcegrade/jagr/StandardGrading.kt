@@ -26,7 +26,15 @@ import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.extrasManager
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
-import org.sourcegrade.jagr.launcher.executor.*
+import org.sourcegrade.jagr.launcher.executor.DefaultProgressBar
+import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
+import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
+import org.sourcegrade.jagr.launcher.executor.RainbowProgressBar
+import org.sourcegrade.jagr.launcher.executor.RubricCollector
+import org.sourcegrade.jagr.launcher.executor.SyncExecutor
+import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
+import org.sourcegrade.jagr.launcher.executor.XMasProgressBar
+import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
 import org.sourcegrade.jagr.launcher.io.SubmissionExporter
@@ -76,7 +84,7 @@ class StandardGrading(
     val collector = emptyCollector(jagr)
     val progress = if (rainbowProgressBar) {
       RainbowProgressBar(collector)
-    } else if (xMasProgressBar){
+    } else if (xMasProgressBar) {
       XMasProgressBar(collector)
     } else {
       DefaultProgressBar(collector)

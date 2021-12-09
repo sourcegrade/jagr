@@ -22,7 +22,7 @@ package org.sourcegrade.jagr.launcher.executor
 import java.io.PrintStream
 import java.text.DecimalFormat
 
-abstract class ProgressBarProvider (
+abstract class ProgressBarProvider(
   private val rubricCollector: RubricCollector,
   private val showElementsIfLessThan: Int = 3,
 ) {
