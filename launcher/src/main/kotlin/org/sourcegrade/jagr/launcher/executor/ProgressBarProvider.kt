@@ -55,7 +55,7 @@ abstract class ProgressBarProvider (
     val progressDecimal = finished.toDouble() / total.toDouble().coerceAtLeast(0.0)
     val formattedPercentage = decimalFormat.format(progressDecimal * 100.0)
     val barCount = barLengthFull * progressDecimal
-    var sb = StringBuilder(30)
+    val sb = StringBuilder(30)
     sb.append(sideChar)
     val actualBarCount = barCount.toInt()
     for (i in 0 until actualBarCount) {

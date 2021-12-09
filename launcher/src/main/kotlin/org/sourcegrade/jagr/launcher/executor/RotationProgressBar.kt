@@ -1,8 +1,8 @@
 package org.sourcegrade.jagr.launcher.executor
 
 abstract class RotationProgressBar(
-  private val rubricCollector: RubricCollector,
-  private val showElementsIfLessThan: Int = 3,
+  rubricCollector: RubricCollector,
+  showElementsIfLessThan: Int = 3,
 ): ProgressBarProvider(rubricCollector, showElementsIfLessThan) {
   private val reset = "\u001b[0m"
 
