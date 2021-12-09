@@ -1,0 +1,6 @@
+# Commits to be ignored for assigning blame
+#
+# Any bulk formatting commits should be listed here
+# Apply this to a local environment with: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+b3a89922e7ce24089044edb0e0d022858c493ff7 # 2 -> 4 spaces
