@@ -26,13 +26,7 @@ import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.extrasManager
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
-import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
-import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
-import org.sourcegrade.jagr.launcher.executor.ProgressBar
-import org.sourcegrade.jagr.launcher.executor.RubricCollector
-import org.sourcegrade.jagr.launcher.executor.SyncExecutor
-import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
-import org.sourcegrade.jagr.launcher.executor.emptyCollector
+import org.sourcegrade.jagr.launcher.executor.*
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
 import org.sourcegrade.jagr.launcher.io.SubmissionExporter
@@ -44,6 +38,7 @@ import java.io.File
 
 class StandardGrading(
   private val rainbowProgressBar: Boolean,
+  private val xMasProgressBar: Boolean,
   private val jagr: Jagr = Jagr,
 ) {
   fun grade(exportOnly: Boolean) = runBlocking {
@@ -79,15 +74,21 @@ class StandardGrading(
       }.create(jagr)
     }
     val collector = emptyCollector(jagr)
-    val progress = ProgressBar(collector, rainbowProgressBar)
-    ProgressAwareOutputStream.progressBar = progress
+    val progress = if (rainbowProgressBar) {
+      RainbowProgressBar(collector)
+    } else if (xMasProgressBar){
+      XMasProgressBar(collector)
+    } else {
+      DefaultProgressBar(collector)
+    }
+    ProgressAwareOutputStream.progressBarProvider = progress
     collector.setListener { result ->
       result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
     }
     collector.allocate(queue)
     executor.schedule(queue)
     executor.start(collector)
-    ProgressAwareOutputStream.progressBar = null
+    ProgressAwareOutputStream.progressBarProvider = null
     Environment.cleanupMainProcess()
     collector.logHistogram(jagr)
     export(collector)

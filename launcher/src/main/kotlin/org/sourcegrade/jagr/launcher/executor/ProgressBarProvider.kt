@@ -22,9 +22,8 @@ package org.sourcegrade.jagr.launcher.executor
 import java.io.PrintStream
 import java.text.DecimalFormat
 
-class ProgressBar(
+abstract class ProgressBarProvider (
   private val rubricCollector: RubricCollector,
-  private val rainbowProgressBar: Boolean,
   private val showElementsIfLessThan: Int = 3,
 ) {
 
@@ -44,6 +43,13 @@ class ProgressBar(
   private var startIndex = 0
 
   fun print(out: PrintStream) {
+    val sb = this.adjustProgressBar(createBasicProgressBar())
+    out.print(sb.toString() + '\r')
+  }
+
+  fun clear(out: PrintStream) = out.print(clearText)
+
+  private fun createBasicProgressBar(): StringBuilder {
     val finished = rubricCollector.gradingFinished.size
     val total = rubricCollector.total
     val progressDecimal = finished.toDouble() / total.toDouble().coerceAtLeast(0.0)
@@ -58,16 +64,6 @@ class ProgressBar(
     if (progressDecimal < 1.0) {
       sb.append(tipChar)
     }
-
-    if (rainbowProgressBar) {
-      val tmp = StringBuilder(6 * sb.length)
-      for (i in sb.indices) {
-        tmp.append(rainbowColors[(i + rainbowColors.size - startIndex) % rainbowColors.size])
-        tmp.append(sb[i])
-      }
-      tmp.append(reset)
-      sb = tmp
-    }
     for (i in actualBarCount until barLengthFull) {
       sb.append(whitespaceChar)
     }
@@ -81,9 +77,8 @@ class ProgressBar(
     }
     // pad with spaces
     sb.append(" ".repeat((width - sb.length).coerceAtLeast(0)))
-    out.print(sb.toString() + '\r')
-    startIndex = (startIndex + 1) % rainbowColors.size
+    return sb
   }
 
-  fun clear(out: PrintStream) = out.print(clearText)
+  abstract fun adjustProgressBar(sb: StringBuilder): StringBuilder
 }

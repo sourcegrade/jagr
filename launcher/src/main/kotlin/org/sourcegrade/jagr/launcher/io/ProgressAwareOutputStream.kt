@@ -1,6 +1,6 @@
 package org.sourcegrade.jagr.launcher.io
 
-import org.sourcegrade.jagr.launcher.executor.ProgressBar
+import org.sourcegrade.jagr.launcher.executor.ProgressBarProvider
 import java.io.OutputStream
 import java.io.PrintStream
 import java.util.concurrent.locks.ReentrantLock
@@ -11,10 +11,10 @@ class ProgressAwareOutputStream(private val delegate: PrintStream) : OutputStrea
   private val lock = ReentrantLock()
 
   override fun write(b: Int) = lock.withLock {
-    progressBar?.let { writeWithProgress(it, b) } ?: delegate.write(b)
+    progressBarProvider?.let { writeWithProgress(it, b) } ?: delegate.write(b)
   }
 
-  private fun writeWithProgress(progressBar: ProgressBar, b: Int) {
+  private fun writeWithProgress(progressBar: ProgressBarProvider, b: Int) {
     delegate.write(b)
     if (b == newLine) {
       progressBar.print(delegate)
@@ -23,6 +23,6 @@ class ProgressAwareOutputStream(private val delegate: PrintStream) : OutputStrea
 
   companion object {
     const val newLine = '\n'.code
-    var progressBar: ProgressBar? = null
+    var progressBarProvider: ProgressBarProvider? = null
   }
 }
