@@ -30,6 +30,7 @@ import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.readScoped
 import org.sourcegrade.jagr.launcher.io.write
 import org.sourcegrade.jagr.launcher.io.writeScoped
+import java.util.Collections
 
 data class JavaSubmission(
     private val info: SubmissionInfo,
@@ -39,6 +40,8 @@ data class JavaSubmission(
     override fun getInfo(): SubmissionInfo = info
     override fun getCompileResult(): JavaCompiledContainer = compileResult
     override fun getSourceFile(fileName: String): SourceFile? = compileResult.source.sourceFiles[fileName]
+    override fun getClassNames(): Set<String> = Collections.unmodifiableSet(compileResult.runtimeResources.resources.keys)
+
     override fun toString(): String = "$info(${compileResult.info.name})"
 
     companion object Factory : SerializerFactory<JavaSubmission> {
