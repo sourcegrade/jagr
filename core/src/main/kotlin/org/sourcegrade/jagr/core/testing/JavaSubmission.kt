@@ -32,22 +32,22 @@ import org.sourcegrade.jagr.launcher.io.write
 import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class JavaSubmission(
-  private val info: SubmissionInfo,
-  private val compileResult: JavaCompiledContainer,
-  val libraries: JavaRuntimeResources,
+    private val info: SubmissionInfo,
+    private val compileResult: JavaCompiledContainer,
+    val libraries: JavaRuntimeResources,
 ) : Submission {
-  override fun getInfo(): SubmissionInfo = info
-  override fun getCompileResult(): JavaCompiledContainer = compileResult
-  override fun getSourceFile(fileName: String): SourceFile? = compileResult.source.sourceFiles[fileName]
-  override fun toString(): String = "$info(${compileResult.info.name})"
+    override fun getInfo(): SubmissionInfo = info
+    override fun getCompileResult(): JavaCompiledContainer = compileResult
+    override fun getSourceFile(fileName: String): SourceFile? = compileResult.source.sourceFiles[fileName]
+    override fun toString(): String = "$info(${compileResult.info.name})"
 
-  companion object Factory : SerializerFactory<JavaSubmission> {
-    override fun read(scope: SerializationScope.Input): JavaSubmission =
-      JavaSubmission(scope.readScoped(), scope.read(), scope[JavaRuntimeResources.base])
+    companion object Factory : SerializerFactory<JavaSubmission> {
+        override fun read(scope: SerializationScope.Input): JavaSubmission =
+            JavaSubmission(scope.readScoped(), scope.read(), scope[JavaRuntimeResources.base])
 
-    override fun write(obj: JavaSubmission, scope: SerializationScope.Output) {
-      scope.writeScoped(obj.info)
-      scope.write(obj.compileResult)
+        override fun write(obj: JavaSubmission, scope: SerializationScope.Output) {
+            scope.writeScoped(obj.info)
+            scope.write(obj.compileResult)
+        }
     }
-  }
 }

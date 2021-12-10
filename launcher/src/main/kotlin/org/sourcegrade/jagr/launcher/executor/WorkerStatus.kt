@@ -20,23 +20,23 @@
 package org.sourcegrade.jagr.launcher.executor
 
 enum class WorkerStatus {
-  /**
-   * Not ready to receive job
-   */
-  PREPARING,
+    /**
+     * Not ready to receive job
+     */
+    PREPARING,
 
-  /**
-   * Ready to receive job
-   */
-  READY,
+    /**
+     * Ready to receive job
+     */
+    READY,
 
-  /**
-   * Processing a job
-   */
-  RUNNING,
+    /**
+     * Processing a job
+     */
+    RUNNING,
 
-  /**
-   * Finished processing a job
-   */
-  FINISHED,
+    /**
+     * Finished processing a job
+     */
+    FINISHED,
 }

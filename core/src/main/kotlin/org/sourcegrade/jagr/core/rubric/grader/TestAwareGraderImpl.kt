@@ -30,47 +30,47 @@ import org.sourcegrade.jagr.api.rubric.JUnitTestRef
 import org.sourcegrade.jagr.api.testing.TestCycle
 
 class TestAwareGraderImpl(
-  private val graderPassed: Grader,
-  private val graderFailed: Grader,
-  private val requirePass: Map<JUnitTestRef, String?>,
-  private val requireFail: Map<JUnitTestRef, String?>,
-  private val commentIfFailed: String?
+    private val graderPassed: Grader,
+    private val graderFailed: Grader,
+    private val requirePass: Map<JUnitTestRef, String?>,
+    private val requireFail: Map<JUnitTestRef, String?>,
+    private val commentIfFailed: String?,
 ) : Grader {
 
-  override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult {
-    val testResults = (testCycle.jUnitResult ?: return GradeResult.ofNone()).statusListener.testResults
-    fun Map<JUnitTestRef, String?>.must(predicate: (TestExecutionResult) -> Boolean): GradeResult? {
-      val comments: MutableList<String> = mutableListOf()
-      var failed = false
-      for ((testRef, comment) in this) {
-        val testExecutionResult = testRef[testResults]
-        if (testExecutionResult == null || !predicate(testExecutionResult)) {
-          failed = true
-          // a comment supplied to requirePass or requireFail overrides the default comment from the result's throwable
-          (comment ?: testExecutionResult?.message)?.also { comments += it }
+    override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult {
+        val testResults = (testCycle.jUnitResult ?: return GradeResult.ofNone()).statusListener.testResults
+        fun Map<JUnitTestRef, String?>.must(predicate: (TestExecutionResult) -> Boolean): GradeResult? {
+            val comments: MutableList<String> = mutableListOf()
+            var failed = false
+            for ((testRef, comment) in this) {
+                val testExecutionResult = testRef[testResults]
+                if (testExecutionResult == null || !predicate(testExecutionResult)) {
+                    failed = true
+                    // a comment supplied to requirePass or requireFail overrides the default comment from the result's throwable
+                    (comment ?: testExecutionResult?.message)?.also { comments += it }
+                }
+            }
+            return if (failed) {
+                // general comment goes after more specific test comments
+                commentIfFailed?.also { comments += it }
+                GradeResult.withComments(graderFailed.grade(testCycle, criterion), comments)
+            } else null
         }
-      }
-      return if (failed) {
-        // general comment goes after more specific test comments
-        commentIfFailed?.also { comments += it }
-        GradeResult.withComments(graderFailed.grade(testCycle, criterion), comments)
-      } else null
+        requirePass.must { it.status == SUCCESSFUL }?.also { return it }
+        requireFail.must { it.status == FAILED }?.also { return it }
+        return graderPassed.grade(testCycle, criterion)
     }
-    requirePass.must { it.status == SUCCESSFUL }?.also { return it }
-    requireFail.must { it.status == FAILED }?.also { return it }
-    return graderPassed.grade(testCycle, criterion)
-  }
 
-  private val TestExecutionResult.message
-    get() = throwable.orElse(null)?.run {
-      when (this) {
-        is AssertionFailedError,
-        -> message.toString()
-          .replace('>', ']')
-          .replace('<', '[')
-        is NullPointerException,
-        -> "${this::class.simpleName}: $message @ ${stackTrace.firstOrNull()}"
-        else -> "${this::class.simpleName}: $message"
-      }
-    }
+    private val TestExecutionResult.message
+        get() = throwable.orElse(null)?.run {
+            when (this) {
+                is AssertionFailedError,
+                -> message.toString()
+                    .replace('>', ']')
+                    .replace('<', '[')
+                is NullPointerException,
+                -> "${this::class.simpleName}: $message @ ${stackTrace.firstOrNull()}"
+                else -> "${this::class.simpleName}: $message"
+            }
+        }
 }

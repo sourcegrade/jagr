@@ -35,109 +35,110 @@ import javax.tools.JavaFileObject
 import javax.tools.ToolProvider
 
 class RuntimeJarLoader @Inject constructor(
-  private val logger: Logger,
+    private val logger: Logger,
 ) {
 
-  fun loadCompiled(
-    container: ResourceContainer,
-    resourceExtractor: ResourceExtractor = ResourceExtractor { _, _, _, _ -> },
-  ): RuntimeContainer {
-    val resourceCollector = ResourceCollectorImpl()
-    val classStorage: MutableMap<String, CompiledClass> = mutableMapOf()
-    val resources: MutableMap<String, ByteArray> = mutableMapOf()
-    for (resource in container) {
-      when {
-        resource.name.endsWith(".class") -> {
-          val className = resource.name.replace('/', '.').substring(0, resource.name.length - 6)
-          classStorage[className] = CompiledClass.Existing(className, resource.getInputStream().use { it.readBytes() })
+    fun loadCompiled(
+        container: ResourceContainer,
+        resourceExtractor: ResourceExtractor = ResourceExtractor { _, _, _, _ -> },
+    ): RuntimeContainer {
+        val resourceCollector = ResourceCollectorImpl()
+        val classStorage: MutableMap<String, CompiledClass> = mutableMapOf()
+        val resources: MutableMap<String, ByteArray> = mutableMapOf()
+        for (resource in container) {
+            when {
+                resource.name.endsWith(".class") -> {
+                    val className = resource.name.replace('/', '.').substring(0, resource.name.length - 6)
+                    classStorage[className] = CompiledClass.Existing(className, resource.getInputStream().use { it.readBytes() })
+                }
+                resource.name.endsWith("MANIFEST.MF") -> { // ignore
+                }
+                else -> resources[resource.name] = resource.getInputStream().use { it.readAllBytes() }
+                    .also { data -> resourceExtractor.extract(container.info, resource, data, resourceCollector) }
+            }
         }
-        resource.name.endsWith("MANIFEST.MF") -> { // ignore
-        }
-        else -> resources[resource.name] = resource.getInputStream().use { it.readAllBytes() }
-          .also { data -> resourceExtractor.extract(container.info, resource, data, resourceCollector) }
-      }
+        return JavaRuntimeContainer(container.info, resourceCollector, JavaRuntimeResources(classStorage, resources))
     }
-    return JavaRuntimeContainer(container.info, resourceCollector, JavaRuntimeResources(classStorage, resources))
-  }
 
-  fun loadSources(
-    container: ResourceContainer,
-    resourceExtractor: ResourceExtractor = ResourceExtractor { _, _, _, _ -> },
-  ): JavaSourceContainer {
-    val resourceCollector = ResourceCollectorImpl()
-    val sourceFiles = mutableMapOf<String, JavaSourceFile>()
-    val resources = mutableMapOf<String, ByteArray>()
-    fun loadResource(resource: Resource) {
-      when {
-        resource.name.endsWith(".java") -> {
-          val className = resource.name.replace('/', '.').substring(0, resource.name.length - 5)
-          val content = resource.getInputStream().use { it.readEncoded() }
-          val sourceFile = JavaSourceFile(className, resource.name, content)
-          sourceFiles[resource.name] = sourceFile
+    fun loadSources(
+        container: ResourceContainer,
+        resourceExtractor: ResourceExtractor = ResourceExtractor { _, _, _, _ -> },
+    ): JavaSourceContainer {
+        val resourceCollector = ResourceCollectorImpl()
+        val sourceFiles = mutableMapOf<String, JavaSourceFile>()
+        val resources = mutableMapOf<String, ByteArray>()
+        fun loadResource(resource: Resource) {
+            when {
+                resource.name.endsWith(".java") -> {
+                    val className = resource.name.replace('/', '.').substring(0, resource.name.length - 5)
+                    val content = resource.getInputStream().use { it.readEncoded() }
+                    val sourceFile = JavaSourceFile(className, resource.name, content)
+                    sourceFiles[resource.name] = sourceFile
+                }
+                resource.name.endsWith("MANIFEST.MF") -> { // ignore
+                }
+                else -> resources[resource.name] = resource.getInputStream().use { it.readAllBytes() }
+                    .also { data -> resourceExtractor.extract(container.info, resource, data, resourceCollector) }
+            }
         }
-        resource.name.endsWith("MANIFEST.MF") -> { // ignore
-        }
-        else -> resources[resource.name] = resource.getInputStream().use { it.readAllBytes() }
-          .also { data -> resourceExtractor.extract(container.info, resource, data, resourceCollector) }
-      }
-    }
-    val messages = mutableListOf<String>()
-    for (resource in container) {
-      try {
-        loadResource(resource)
-      } catch (e: Exception) {
-        logger.error("An error occurred loading ${container.info.name} :: ${e.message}")
-        e.message?.also(messages::add)
-      }
-    }
-    return JavaSourceContainer(container.info, resourceCollector, sourceFiles, resources, messages)
-  }
 
-  fun compileSources(
-    source: JavaSourceContainer,
-    runtimeResources: JavaRuntimeResources,
-  ): JavaCompiledContainer {
-    if (source.sourceFiles.isEmpty()) {
-      // no source files, skip compilation task
-      return JavaCompiledContainer(source, messages = source.messages)
-    }
-    val compiledClasses: MutableMap<String, CompiledClass> = mutableMapOf()
-    val collector = DiagnosticCollector<JavaFileObject>()
-    val compiler = ToolProvider.getSystemJavaCompiler()
-    val fileManager = ExtendedStandardJavaFileManager(
-      compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8),
-      runtimeResources.classes,
-      compiledClasses,
-    )
-    val result = compiler.getTask(null, fileManager, collector, null, null, source.sourceFiles.values).call()
-    compiledClasses.linkSource(source.sourceFiles)
-    val newRuntimeResources = JavaRuntimeResources(compiledClasses, source.resources)
-    if (!result || collector.diagnostics.isNotEmpty()) {
-      val messages = source.messages.toMutableList()
-      var warnings = 0
-      var errors = 0
-      var other = 0
-      for (diag in collector.diagnostics) {
-        when (diag.kind) {
-          Diagnostic.Kind.NOTE,
-          Diagnostic.Kind.MANDATORY_WARNING,
-          Diagnostic.Kind.WARNING,
-          -> ++warnings
-          Diagnostic.Kind.ERROR,
-          -> ++errors
-          else -> ++other
+        val messages = mutableListOf<String>()
+        for (resource in container) {
+            try {
+                loadResource(resource)
+            } catch (e: Exception) {
+                logger.error("An error occurred loading ${container.info.name} :: ${e.message}")
+                e.message?.also(messages::add)
+            }
         }
-        messages += "${diag.source?.name}:${diag.lineNumber} ${diag.kind} :: ${diag.getMessage(Locale.getDefault())}"
-      }
-      return JavaCompiledContainer(
-        source,
-        newRuntimeResources,
-        messages,
-        warnings,
-        errors,
-        other
-      )
+        return JavaSourceContainer(container.info, resourceCollector, sourceFiles, resources, messages)
     }
-    return JavaCompiledContainer(source, newRuntimeResources)
-  }
+
+    fun compileSources(
+        source: JavaSourceContainer,
+        runtimeResources: JavaRuntimeResources,
+    ): JavaCompiledContainer {
+        if (source.sourceFiles.isEmpty()) {
+            // no source files, skip compilation task
+            return JavaCompiledContainer(source, messages = source.messages)
+        }
+        val compiledClasses: MutableMap<String, CompiledClass> = mutableMapOf()
+        val collector = DiagnosticCollector<JavaFileObject>()
+        val compiler = ToolProvider.getSystemJavaCompiler()
+        val fileManager = ExtendedStandardJavaFileManager(
+            compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8),
+            runtimeResources.classes,
+            compiledClasses,
+        )
+        val result = compiler.getTask(null, fileManager, collector, null, null, source.sourceFiles.values).call()
+        compiledClasses.linkSource(source.sourceFiles)
+        val newRuntimeResources = JavaRuntimeResources(compiledClasses, source.resources)
+        if (!result || collector.diagnostics.isNotEmpty()) {
+            val messages = source.messages.toMutableList()
+            var warnings = 0
+            var errors = 0
+            var other = 0
+            for (diag in collector.diagnostics) {
+                when (diag.kind) {
+                    Diagnostic.Kind.NOTE,
+                    Diagnostic.Kind.MANDATORY_WARNING,
+                    Diagnostic.Kind.WARNING,
+                    -> ++warnings
+                    Diagnostic.Kind.ERROR,
+                    -> ++errors
+                    else -> ++other
+                }
+                messages += "${diag.source?.name}:${diag.lineNumber} ${diag.kind} :: ${diag.getMessage(Locale.getDefault())}"
+            }
+            return JavaCompiledContainer(
+                source,
+                newRuntimeResources,
+                messages,
+                warnings,
+                errors,
+                other
+            )
+        }
+        return JavaCompiledContainer(source, newRuntimeResources)
+    }
 }

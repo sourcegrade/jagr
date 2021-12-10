@@ -8,21 +8,21 @@ import kotlin.concurrent.withLock
 
 class ProgressAwareOutputStream(private val delegate: PrintStream) : OutputStream() {
 
-  private val lock = ReentrantLock()
+    private val lock = ReentrantLock()
 
-  override fun write(b: Int) = lock.withLock {
-    progressBar?.let { writeWithProgress(it, b) } ?: delegate.write(b)
-  }
-
-  private fun writeWithProgress(progressBar: ProgressBar, b: Int) {
-    delegate.write(b)
-    if (b == newLine) {
-      progressBar.print(delegate)
+    override fun write(b: Int) = lock.withLock {
+        progressBar?.let { writeWithProgress(it, b) } ?: delegate.write(b)
     }
-  }
 
-  companion object {
-    const val newLine = '\n'.code
-    var progressBar: ProgressBar? = null
-  }
+    private fun writeWithProgress(progressBar: ProgressBar, b: Int) {
+        delegate.write(b)
+        if (b == newLine) {
+            progressBar.print(delegate)
+        }
+    }
+
+    companion object {
+        const val newLine = '\n'.code
+        var progressBar: ProgressBar? = null
+    }
 }

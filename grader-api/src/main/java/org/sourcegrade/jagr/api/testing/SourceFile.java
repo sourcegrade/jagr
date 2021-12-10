@@ -25,9 +25,9 @@ import org.jetbrains.annotations.Nullable;
 @ApiStatus.NonExtendable
 public interface SourceFile {
 
-  String getFileName();
+    String getFileName();
 
-  String getContent();
+    String getContent();
 
-  @Nullable String getClassName();
+    @Nullable String getClassName();
 }

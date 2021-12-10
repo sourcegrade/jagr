@@ -25,14 +25,14 @@ import java.io.File
 import java.io.InputStream
 
 interface Resource {
-  val name: String
-  val size: Int
-  fun getInputStream(): InputStream
-  interface Builder {
-    var name: String
-    val outputStream: ByteArrayOutputStream
-    fun build(): Resource
-  }
+    val name: String
+    val size: Int
+    fun getInputStream(): InputStream
+    interface Builder {
+        var name: String
+        val outputStream: ByteArrayOutputStream
+        fun build(): Resource
+    }
 }
 
 inline fun buildResource(configure: Resource.Builder.() -> Unit): Resource = createResourceBuilder().apply(configure).build()
@@ -40,34 +40,34 @@ inline fun buildResource(configure: Resource.Builder.() -> Unit): Resource = cre
 fun createResourceBuilder(): Resource.Builder = ResourceBuilderImpl()
 
 fun Resource.writeIn(dir: File, name: String? = null): File {
-  val file = dir.resolve(name ?: this.name)
-  with(file.parentFile) {
-    check(exists() || mkdirs()) { "Unable to create directory $this" }
-  }
-  file.outputStream().buffered().use { getInputStream().copyTo(it) }
-  return file
+    val file = dir.resolve(name ?: this.name)
+    with(file.parentFile) {
+        check(exists() || mkdirs()) { "Unable to create directory $this" }
+    }
+    file.outputStream().buffered().use { getInputStream().copyTo(it) }
+    return file
 }
 
 private class ResourceBuilderImpl : Resource.Builder {
-  override lateinit var name: String
-  override val outputStream = ReadableByteArrayOutputStream()
-  override fun build(): Resource = outputStream.toResource(name)
+    override lateinit var name: String
+    override val outputStream = ReadableByteArrayOutputStream()
+    override fun build(): Resource = outputStream.toResource(name)
 }
 
 private class ReadableByteArrayOutputStream : ByteArrayOutputStream() {
-  fun toResource(name: String): Resource = BackedByStreamResource(name, buf, count)
+    fun toResource(name: String): Resource = BackedByStreamResource(name, buf, count)
 }
 
 private class BackedByStreamResource(
-  override val name: String,
-  private val buf: ByteArray,
-  count: Int,
+    override val name: String,
+    private val buf: ByteArray,
+    count: Int,
 ) : Resource {
-  override val size: Int = count
-  override fun getInputStream(): InputStream = ByteArrayInputStream(buf, 0, size)
+    override val size: Int = count
+    override fun getInputStream(): InputStream = ByteArrayInputStream(buf, 0, size)
 }
 
 internal class ByteArrayResource(override val name: String, val data: ByteArray) : Resource {
-  override val size: Int = data.size
-  override fun getInputStream(): InputStream = ByteArrayInputStream(data)
+    override val size: Int = data.size
+    override fun getInputStream(): InputStream = ByteArrayInputStream(data)
 }

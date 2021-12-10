@@ -22,5 +22,5 @@ package org.sourcegrade.jagr.core.rubric
 import org.sourcegrade.jagr.api.rubric.Criterion
 
 class CriterionFactoryImpl : Criterion.Factory {
-  override fun builder(): Criterion.Builder = CriterionBuilderImpl()
+    override fun builder(): Criterion.Builder = CriterionBuilderImpl()
 }

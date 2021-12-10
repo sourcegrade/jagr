@@ -38,91 +38,91 @@ import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.write
 
 class GraderJarImpl(
-  private val logger: Logger,
-  val container: JavaCompiledContainer,
-  libraries: JavaRuntimeResources,
+    private val logger: Logger,
+    val container: JavaCompiledContainer,
+    libraries: JavaRuntimeResources,
 ) : GraderJar {
-  override val info = requireNotNull(container.graderInfo) { "Container ${container.info.name} is missing graderInfo" }
+    override val info = requireNotNull(container.graderInfo) { "Container ${container.info.name} is missing graderInfo" }
 
-  override val configuration = RubricConfigurationImpl()
+    override val configuration = RubricConfigurationImpl()
 
-  /**
-   * A map of assignments ids to classes of rubric providers (in the base classloader).
-   *
-   * Classes in this map are guaranteed to have an accessible no-args constructor.
-   */
-  override val rubricProviders: Map<String, List<String>>
+    /**
+     * A map of assignments ids to classes of rubric providers (in the base classloader).
+     *
+     * Classes in this map are guaranteed to have an accessible no-args constructor.
+     */
+    override val rubricProviders: Map<String, List<String>>
 
-  /**
-   * A map of assignment ids to JUnit test classes
-   */
-  override val testProviders: Map<String, List<String>>
+    /**
+     * A map of assignment ids to JUnit test classes
+     */
+    override val testProviders: Map<String, List<String>>
 
-  private val graderFiles = info.graderFiles.toSet()
+    private val graderFiles = info.graderFiles.toSet()
 
-  val containerWithoutSolution = container.copy(
-    runtimeResources = container.runtimeResources.copy(
-      // whitelist file from grader
-      classes = container.runtimeResources.classes.filter { graderFiles.contains(it.value.source?.fileName) },
-      resources = container.runtimeResources.resources.filterKeys { graderFiles.contains(it) },
+    val containerWithoutSolution = container.copy(
+        runtimeResources = container.runtimeResources.copy(
+            // whitelist file from grader
+            classes = container.runtimeResources.classes.filter { graderFiles.contains(it.value.source?.fileName) },
+            resources = container.runtimeResources.resources.filterKeys { graderFiles.contains(it) },
+        )
     )
-  )
 
-  init {
-    val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
-    val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
-    val baseClassLoader = RuntimeClassLoader(container.runtimeResources + libraries)
-    for (className in container.runtimeResources.classes.keys) {
-      val clazz = baseClassLoader.loadClass(className)
-      rubricProviders.putIfRubric(clazz)
-      testProviders.putIfTest(clazz)
-    }
-    this.rubricProviders = rubricProviders
-    this.testProviders = testProviders
-  }
-
-  private fun MutableMap<String, MutableList<String>>.putIfRubric(clazz: Class<*>) {
-    val filter = clazz.getAnnotation(RubricForSubmission::class.java) ?: return
-    val asRubricProvider = try {
-      clazz.asSubclass(RubricProvider::class.java)
-    } catch (e: ClassCastException) {
-      logger.error("Class annotated with @RubricForSubmission does not implement RubricProvider! Ignoring...")
-      return
+    init {
+        val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
+        val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
+        val baseClassLoader = RuntimeClassLoader(container.runtimeResources + libraries)
+        for (className in container.runtimeResources.classes.keys) {
+            val clazz = baseClassLoader.loadClass(className)
+            rubricProviders.putIfRubric(clazz)
+            testProviders.putIfTest(clazz)
+        }
+        this.rubricProviders = rubricProviders
+        this.testProviders = testProviders
     }
 
-    val assignmentId = filter.value
-    val className = clazz.name
-    val rubricProvider = try {
-      asRubricProvider.getConstructor().newInstance()!!
-    } catch (e: NoSuchMethodException) {
-      logger.error("Rubric provider $className in grader ${info.name} must have a no-args public constructor!")
-      return
+    private fun MutableMap<String, MutableList<String>>.putIfRubric(clazz: Class<*>) {
+        val filter = clazz.getAnnotation(RubricForSubmission::class.java) ?: return
+        val asRubricProvider = try {
+            clazz.asSubclass(RubricProvider::class.java)
+        } catch (e: ClassCastException) {
+            logger.error("Class annotated with @RubricForSubmission does not implement RubricProvider! Ignoring...")
+            return
+        }
+
+        val assignmentId = filter.value
+        val className = clazz.name
+        val rubricProvider = try {
+            asRubricProvider.getConstructor().newInstance()!!
+        } catch (e: NoSuchMethodException) {
+            logger.error("Rubric provider $className in grader ${info.name} must have a no-args public constructor!")
+            return
+        }
+        rubricProvider.configure(configuration)
+        logger.info("${info.name} Discovered rubric provider $className for assignment $assignmentId")
+        computeIfAbsent(filter.value) { mutableListOf() }.add(asRubricProvider.name)
     }
-    rubricProvider.configure(configuration)
-    logger.info("${info.name} Discovered rubric provider $className for assignment $assignmentId")
-    computeIfAbsent(filter.value) { mutableListOf() }.add(asRubricProvider.name)
-  }
 
-  private fun MutableMap<String, MutableList<String>>.putIfTest(clazz: Class<*>) {
-    val filter = clazz.getAnnotation(TestForSubmission::class.java) ?: return
-    computeIfAbsent(filter.value) { mutableListOf() }.add(clazz.name)
-  }
-
-  private val stringRep: String by lazy {
-    MoreObjects.toStringHelper(this)
-      .add("container", container)
-      .add("applicableSubmissions", rubricProviders.keys.joinToString(", "))
-      .toString()
-  }
-
-  override fun toString(): String = stringRep
-
-  companion object Factory : SerializerFactory<GraderJarImpl> {
-    override fun read(scope: SerializationScope.Input): GraderJarImpl =
-      GraderJarImpl(scope.get(), scope.read(), scope[JavaRuntimeResources.base])
-
-    override fun write(obj: GraderJarImpl, scope: SerializationScope.Output) {
-      scope.write(obj.container)
+    private fun MutableMap<String, MutableList<String>>.putIfTest(clazz: Class<*>) {
+        val filter = clazz.getAnnotation(TestForSubmission::class.java) ?: return
+        computeIfAbsent(filter.value) { mutableListOf() }.add(clazz.name)
     }
-  }
+
+    private val stringRep: String by lazy {
+        MoreObjects.toStringHelper(this)
+            .add("container", container)
+            .add("applicableSubmissions", rubricProviders.keys.joinToString(", "))
+            .toString()
+    }
+
+    override fun toString(): String = stringRep
+
+    companion object Factory : SerializerFactory<GraderJarImpl> {
+        override fun read(scope: SerializationScope.Input): GraderJarImpl =
+            GraderJarImpl(scope.get(), scope.read(), scope[JavaRuntimeResources.base])
+
+        override fun write(obj: GraderJarImpl, scope: SerializationScope.Output) {
+            scope.write(obj.container)
+        }
+    }
 }

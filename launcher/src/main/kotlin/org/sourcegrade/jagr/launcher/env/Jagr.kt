@@ -29,13 +29,13 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
 interface Jagr {
-  val injector: Injector
+    val injector: Injector
 
-  companion object Default : Jagr by SystemResourceJagrFactory.create()
+    companion object Default : Jagr by SystemResourceJagrFactory.create()
 
-  interface Factory {
-    fun create(configuration: LaunchConfiguration = LaunchConfiguration.Standard): Jagr
-  }
+    interface Factory {
+        fun create(configuration: LaunchConfiguration = LaunchConfiguration.Standard): Jagr
+    }
 }
 
 val Jagr.config: Config by injected()

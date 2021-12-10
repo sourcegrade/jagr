@@ -25,7 +25,7 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
 interface ResourceCollector {
-  operator fun <T : Any> get(type: KClass<T>): T?
+    operator fun <T : Any> get(type: KClass<T>): T?
 }
 
 inline fun <reified T : Any> ResourceCollector.get() = get(T::class)
@@ -35,4 +35,4 @@ val ProcessedContainer.submissionInfo: SubmissionInfoImpl? by collected()
 val ProcessedContainer.graderInfo: GraderInfoImpl? by collected()
 
 private inline fun <reified T : Any> collected(): ReadOnlyProperty<ProcessedContainer, T?> =
-  ReadOnlyProperty { e, _ -> e.resourceCollector.get() }
+    ReadOnlyProperty { e, _ -> e.resourceCollector.get() }

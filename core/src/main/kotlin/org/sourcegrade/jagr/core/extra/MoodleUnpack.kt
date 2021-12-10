@@ -27,56 +27,56 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
 class MoodleUnpack @Inject constructor(
-  override val config: Config,
-  override val logger: Logger,
+    override val config: Config,
+    override val logger: Logger,
 ) : Unpack() {
-  private val assignmentIdRegex = Regex(".*Abgabe zu ((Hausübung)|(Übungsblatt)) (?<assignmentId>[0-9]+) .*")
-  override val name: String = "moodle-unpack"
-  override fun run() {
-    val submissions = File(config.dir.submissions)
-    val studentIdRegex = Regex(config.extras.moodleUnpack.studentIdRegex)
-    val unpackedFiles: MutableList<SubmissionInfoVerification> = mutableListOf()
-    for (candidate in submissions.listFiles { _, t -> t.endsWith(".zip") }!!) {
-      logger.info("extra($name) :: Discovered candidate zip $candidate")
-      val zipFile = ZipFile(candidate)
-      // TODO: Fix this hack
-      val assignmentId = assignmentIdRegex.matchEntire(candidate.name)
-        ?.run { groups["assignmentId"]?.value }
-        ?.padStart(length = 2, padChar = '0')
-        ?.let { "h$it" }
-        ?: "none"
-      for (entry in zipFile.entries()) {
-        if (!entry.name.endsWith(".jar")) continue
-        try {
-          unpackedFiles += zipFile.unpackEntry(entry.name.split("/"), entry, submissions, studentIdRegex, assignmentId)
-        } catch (e: Throwable) {
-          logger.info("extra($name) :: Unable to unpack entry ${entry.name} in candidate $candidate", e)
+    private val assignmentIdRegex = Regex(".*Abgabe zu ((Hausübung)|(Übungsblatt)) (?<assignmentId>[0-9]+) .*")
+    override val name: String = "moodle-unpack"
+    override fun run() {
+        val submissions = File(config.dir.submissions)
+        val studentIdRegex = Regex(config.extras.moodleUnpack.studentIdRegex)
+        val unpackedFiles: MutableList<SubmissionInfoVerification> = mutableListOf()
+        for (candidate in submissions.listFiles { _, t -> t.endsWith(".zip") }!!) {
+            logger.info("extra($name) :: Discovered candidate zip $candidate")
+            val zipFile = ZipFile(candidate)
+            // TODO: Fix this hack
+            val assignmentId = assignmentIdRegex.matchEntire(candidate.name)
+                ?.run { groups["assignmentId"]?.value }
+                ?.padStart(length = 2, padChar = '0')
+                ?.let { "h$it" }
+                ?: "none"
+            for (entry in zipFile.entries()) {
+                if (!entry.name.endsWith(".jar")) continue
+                try {
+                    unpackedFiles += zipFile.unpackEntry(entry.name.split("/"), entry, submissions, studentIdRegex, assignmentId)
+                } catch (e: Throwable) {
+                    logger.info("extra($name) :: Unable to unpack entry ${entry.name} in candidate $candidate", e)
+                }
+            }
         }
-      }
+        unpackedFiles.verify()
     }
-    unpackedFiles.verify()
-  }
 
-  private fun ZipFile.unpackEntry(
-    path: List<String>,
-    entry: ZipEntry,
-    directory: File,
-    studentIdRegex: Regex,
-    assignmentId: String,
-  ): SubmissionInfoVerification {
-    val studentId = path[0].split(" - ").run { this[size - 1] }.takeIf { studentIdRegex.matches(it) }
-    val fileName = "$studentId-${path[path.size - 1]}"
-    if (studentId == null) {
-      logger.warn("extra(moodle-unpack) :: Unpacking unknown studentId in file $fileName")
-    } else {
-      logger.info("extra(moodle-unpack) :: Unpacking studentId $studentId in file $fileName")
+    private fun ZipFile.unpackEntry(
+        path: List<String>,
+        entry: ZipEntry,
+        directory: File,
+        studentIdRegex: Regex,
+        assignmentId: String,
+    ): SubmissionInfoVerification {
+        val studentId = path[0].split(" - ").run { this[size - 1] }.takeIf { studentIdRegex.matches(it) }
+        val fileName = "$studentId-${path[path.size - 1]}"
+        if (studentId == null) {
+            logger.warn("extra(moodle-unpack) :: Unpacking unknown studentId in file $fileName")
+        } else {
+            logger.info("extra(moodle-unpack) :: Unpacking studentId $studentId in file $fileName")
+        }
+        val file = directory.resolve(fileName)
+        file.outputStream().buffered().use { getInputStream(entry).copyTo(it) }
+        return SubmissionInfoVerification(
+            file,
+            assignmentId = assignmentId,
+            studentId = studentId
+        )
     }
-    val file = directory.resolve(fileName)
-    file.outputStream().buffered().use { getInputStream(entry).copyTo(it) }
-    return SubmissionInfoVerification(
-      file,
-      assignmentId = assignmentId,
-      studentId = studentId
-    )
-  }
 }

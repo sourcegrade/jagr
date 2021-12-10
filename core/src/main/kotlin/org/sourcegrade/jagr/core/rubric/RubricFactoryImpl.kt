@@ -22,5 +22,5 @@ package org.sourcegrade.jagr.core.rubric
 import org.sourcegrade.jagr.api.rubric.Rubric
 
 class RubricFactoryImpl : Rubric.Factory {
-  override fun builder() = RubricBuilderImpl()
+    override fun builder() = RubricBuilderImpl()
 }

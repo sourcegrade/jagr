@@ -29,28 +29,28 @@ import org.sourcegrade.jagr.launcher.io.writeMap
 import java.util.Collections
 
 data class JavaRuntimeResources(
-  val classes: Map<String, CompiledClass> = mapOf(),
-  val resources: Map<String, ByteArray> = mapOf(),
+    val classes: Map<String, CompiledClass> = mapOf(),
+    val resources: Map<String, ByteArray> = mapOf(),
 ) : RuntimeResources {
-  override fun getClassNames(): Set<String> = Collections.unmodifiableSet(classes.keys)
-  override fun getResourceNames(): Set<String> = Collections.unmodifiableSet(resources.keys)
+    override fun getClassNames(): Set<String> = Collections.unmodifiableSet(classes.keys)
+    override fun getResourceNames(): Set<String> = Collections.unmodifiableSet(resources.keys)
 
-  companion object Factory : SerializerFactory<JavaRuntimeResources> {
-    val base = keyOf<JavaRuntimeResources>("base")
-    override fun read(scope: SerializationScope.Input) = JavaRuntimeResources(scope.readMap(), scope.readMap())
+    companion object Factory : SerializerFactory<JavaRuntimeResources> {
+        val base = keyOf<JavaRuntimeResources>("base")
+        override fun read(scope: SerializationScope.Input) = JavaRuntimeResources(scope.readMap(), scope.readMap())
 
-    override fun write(obj: JavaRuntimeResources, scope: SerializationScope.Output) {
-      scope.writeMap(obj.classes)
-      scope.writeMap(obj.resources)
+        override fun write(obj: JavaRuntimeResources, scope: SerializationScope.Output) {
+            scope.writeMap(obj.classes)
+            scope.writeMap(obj.resources)
+        }
     }
-  }
 }
 
 operator fun JavaRuntimeResources.plus(other: JavaRuntimeResources) =
-  JavaRuntimeResources(classes + other.classes, resources + other.resources)
+    JavaRuntimeResources(classes + other.classes, resources + other.resources)
 
 fun RuntimeJarLoader.loadCompiled(containers: Sequence<ResourceContainer>): JavaRuntimeResources {
-  return containers
-    .map { loadCompiled(it).runtimeResources }
-    .fold(JavaRuntimeResources()) { a, b -> a + b }
+    return containers
+        .map { loadCompiled(it).runtimeResources }
+        .fold(JavaRuntimeResources()) { a, b -> a + b }
 }

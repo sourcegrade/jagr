@@ -33,43 +33,43 @@ import org.sourcegrade.jagr.launcher.io.readList
 import org.sourcegrade.jagr.launcher.io.writeList
 
 data class JavaTestCycle(
-  private val rubricProviderClassNames: List<String>,
-  private val submission: JavaSubmission,
-  private val classLoader: RuntimeClassLoader,
-  private var testsSucceededCount: Int = -1,
-  private var testsStartedCount: Int = -1,
+    private val rubricProviderClassNames: List<String>,
+    private val submission: JavaSubmission,
+    private val classLoader: RuntimeClassLoader,
+    private var testsSucceededCount: Int = -1,
+    private var testsStartedCount: Int = -1,
 ) : TestCycle {
-  private var jUnitResult: TestCycle.JUnitResult? = null
-  override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
-  override fun getClassLoader(): ClassLoader = classLoader
-  override fun getSubmission(): JavaSubmission = submission
-  override fun getTestsSucceededCount(): Int = testsSucceededCount
-  override fun getTestsStartedCount(): Int = testsStartedCount
-  override fun getNotes(): List<String> = emptyList()
-  override fun getJUnitResult(): TestCycle.JUnitResult? = jUnitResult
-  fun setJUnitResult(jUnitResult: TestCycle.JUnitResult?) {
-    if (jUnitResult == null) return
-    this.jUnitResult = jUnitResult
-    testsSucceededCount = jUnitResult.summaryListener.summary.testsSucceededCount.toInt()
-    testsStartedCount = jUnitResult.summaryListener.summary.testsStartedCount.toInt()
-  }
-
-  companion object Factory : SerializerFactory<JavaTestCycle> {
-    override fun read(scope: SerializationScope.Input) = JavaTestCycle(
-      scope.readList(),
-      scope[Submission::class] as JavaSubmission,
-      scope.openScope {
-        proxy(keyOf(JavaRuntimeResources::class), JavaRuntimeResources.base)
-        read()
-      },
-      scope.input.readInt(),
-      scope.input.readInt(),
-    )
-
-    override fun write(obj: JavaTestCycle, scope: SerializationScope.Output) {
-      scope.writeList(obj.rubricProviderClassNames)
-      scope.output.writeInt(obj.testsSucceededCount)
-      scope.output.writeInt(obj.testsStartedCount)
+    private var jUnitResult: TestCycle.JUnitResult? = null
+    override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
+    override fun getClassLoader(): ClassLoader = classLoader
+    override fun getSubmission(): JavaSubmission = submission
+    override fun getTestsSucceededCount(): Int = testsSucceededCount
+    override fun getTestsStartedCount(): Int = testsStartedCount
+    override fun getNotes(): List<String> = emptyList()
+    override fun getJUnitResult(): TestCycle.JUnitResult? = jUnitResult
+    fun setJUnitResult(jUnitResult: TestCycle.JUnitResult?) {
+        if (jUnitResult == null) return
+        this.jUnitResult = jUnitResult
+        testsSucceededCount = jUnitResult.summaryListener.summary.testsSucceededCount.toInt()
+        testsStartedCount = jUnitResult.summaryListener.summary.testsStartedCount.toInt()
     }
-  }
+
+    companion object Factory : SerializerFactory<JavaTestCycle> {
+        override fun read(scope: SerializationScope.Input) = JavaTestCycle(
+            scope.readList(),
+            scope[Submission::class] as JavaSubmission,
+            scope.openScope {
+                proxy(keyOf(JavaRuntimeResources::class), JavaRuntimeResources.base)
+                read()
+            },
+            scope.input.readInt(),
+            scope.input.readInt(),
+        )
+
+        override fun write(obj: JavaTestCycle, scope: SerializationScope.Output) {
+            scope.writeList(obj.rubricProviderClassNames)
+            scope.output.writeInt(obj.testsSucceededCount)
+            scope.output.writeInt(obj.testsStartedCount)
+        }
+    }
 }

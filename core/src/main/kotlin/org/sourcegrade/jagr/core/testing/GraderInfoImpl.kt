@@ -30,24 +30,24 @@ import org.sourcegrade.jagr.launcher.io.writeList
 
 @Serializable
 data class GraderInfoImpl(
-  override val name: String,
-  override val assignmentIds: List<String>,
-  override val sourceSets: List<SourceSetInfoImpl>,
+    override val name: String,
+    override val assignmentIds: List<String>,
+    override val sourceSets: List<SourceSetInfoImpl>,
 ) : GraderInfo {
 
-  companion object Factory : SerializerFactory<GraderInfoImpl> {
-    override fun read(scope: SerializationScope.Input) = GraderInfoImpl(
-      scope.input.readUTF(),
-      scope.readList(),
-      scope.readList(),
-    )
+    companion object Factory : SerializerFactory<GraderInfoImpl> {
+        override fun read(scope: SerializationScope.Input) = GraderInfoImpl(
+            scope.input.readUTF(),
+            scope.readList(),
+            scope.readList(),
+        )
 
-    override fun write(obj: GraderInfoImpl, scope: SerializationScope.Output) {
-      scope.output.writeUTF(obj.name)
-      scope.writeList(obj.assignmentIds)
-      scope.writeList(obj.sourceSets)
+        override fun write(obj: GraderInfoImpl, scope: SerializationScope.Output) {
+            scope.output.writeUTF(obj.name)
+            scope.writeList(obj.assignmentIds)
+            scope.writeList(obj.sourceSets)
+        }
     }
-  }
 
-  object Extractor : ResourceExtractor by InfoJsonResourceExtractor<GraderInfoImpl>("grader-info.json")
+    object Extractor : ResourceExtractor by InfoJsonResourceExtractor<GraderInfoImpl>("grader-info.json")
 }

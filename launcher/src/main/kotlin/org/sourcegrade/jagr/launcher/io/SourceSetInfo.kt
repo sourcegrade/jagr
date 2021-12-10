@@ -20,6 +20,6 @@
 package org.sourcegrade.jagr.launcher.io
 
 interface SourceSetInfo {
-  val name: String
-  val files: List<String>
+    val name: String
+    val files: List<String>
 }

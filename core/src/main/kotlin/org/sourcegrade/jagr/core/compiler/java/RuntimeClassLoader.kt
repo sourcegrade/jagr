@@ -25,25 +25,25 @@ import org.sourcegrade.jagr.launcher.io.get
 import java.io.InputStream
 
 class RuntimeClassLoader(
-  private val runtimeResources: JavaRuntimeResources,
-  parent: ClassLoader = getSystemClassLoader(),
+    private val runtimeResources: JavaRuntimeResources,
+    parent: ClassLoader = getSystemClassLoader(),
 ) : ClassLoader(parent) {
 
-  @Throws(ClassNotFoundException::class, ClassFormatError::class)
-  override fun findClass(name: String): Class<*> {
-    val compiledClass = runtimeResources.classes[name] ?: return super.findClass(name)
-    val byteCode: ByteArray = compiledClass.bytecode
-    return defineClass(name, byteCode, 0, byteCode.size)
-  }
-
-  override fun getResourceAsStream(name: String): InputStream? {
-    return runtimeResources.resources[name]?.inputStream() ?: super.getResourceAsStream(name)
-  }
-
-  companion object Factory : SerializerFactory<RuntimeClassLoader> {
-    override fun read(scope: SerializationScope.Input) = RuntimeClassLoader(scope[JavaRuntimeResources::class])
-
-    override fun write(obj: RuntimeClassLoader, scope: SerializationScope.Output) {
+    @Throws(ClassNotFoundException::class, ClassFormatError::class)
+    override fun findClass(name: String): Class<*> {
+        val compiledClass = runtimeResources.classes[name] ?: return super.findClass(name)
+        val byteCode: ByteArray = compiledClass.bytecode
+        return defineClass(name, byteCode, 0, byteCode.size)
     }
-  }
+
+    override fun getResourceAsStream(name: String): InputStream? {
+        return runtimeResources.resources[name]?.inputStream() ?: super.getResourceAsStream(name)
+    }
+
+    companion object Factory : SerializerFactory<RuntimeClassLoader> {
+        override fun read(scope: SerializationScope.Input) = RuntimeClassLoader(scope[JavaRuntimeResources::class])
+
+        override fun write(obj: RuntimeClassLoader, scope: SerializationScope.Output) {
+        }
+    }
 }

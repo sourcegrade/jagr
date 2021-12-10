@@ -23,7 +23,7 @@ import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.launcher.io.GraderJar
 
 interface GradingRequest {
-  val submission: Submission
+    val submission: Submission
 
-  val graders: List<GraderJar>
+    val graders: List<GraderJar>
 }

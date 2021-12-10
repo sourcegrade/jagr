@@ -27,11 +27,11 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.NonExtendable
 public interface SubmissionInfo {
 
-  String getAssignmentId();
+    String getAssignmentId();
 
-  String getStudentId();
+    String getStudentId();
 
-  String getFirstName();
+    String getFirstName();
 
-  String getLastName();
+    String getLastName();
 }

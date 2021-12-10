@@ -31,56 +31,56 @@ import java.util.concurrent.Callable;
 @FunctionalInterface
 public interface JUnitTestRef {
 
-  static JUnitTestRef ofClass(Class<?> clazz) {
-    return FactoryProvider.factory.ofClass(clazz);
-  }
+    static JUnitTestRef ofClass(Class<?> clazz) {
+        return FactoryProvider.factory.ofClass(clazz);
+    }
 
-  static JUnitTestRef ofMethod(Method method) {
-    return FactoryProvider.factory.ofMethod(method);
-  }
+    static JUnitTestRef ofMethod(Method method) {
+        return FactoryProvider.factory.ofMethod(method);
+    }
 
-  static JUnitTestRef ofClass(Callable<Class<?>> clazzSupplier) {
-    return FactoryProvider.factory.ofClass(clazzSupplier);
-  }
+    static JUnitTestRef ofClass(Callable<Class<?>> clazzSupplier) {
+        return FactoryProvider.factory.ofClass(clazzSupplier);
+    }
 
-  static JUnitTestRef ofMethod(Callable<Method> methodSupplier) {
-    return FactoryProvider.factory.ofMethod(methodSupplier);
-  }
+    static JUnitTestRef ofMethod(Callable<Method> methodSupplier) {
+        return FactoryProvider.factory.ofMethod(methodSupplier);
+    }
 
-  static JUnitTestRef and(JUnitTestRef... testRefs) {
-    return FactoryProvider.factory.and(testRefs);
-  }
+    static JUnitTestRef and(JUnitTestRef... testRefs) {
+        return FactoryProvider.factory.and(testRefs);
+    }
 
-  static JUnitTestRef or(JUnitTestRef... testRefs) {
-    return FactoryProvider.factory.or(testRefs);
-  }
+    static JUnitTestRef or(JUnitTestRef... testRefs) {
+        return FactoryProvider.factory.or(testRefs);
+    }
 
-  static JUnitTestRef not(JUnitTestRef testRef) {
-    return FactoryProvider.factory.not(testRef);
-  }
+    static JUnitTestRef not(JUnitTestRef testRef) {
+        return FactoryProvider.factory.not(testRef);
+    }
 
-  TestExecutionResult get(Map<TestIdentifier, TestExecutionResult> testResults);
+    TestExecutionResult get(Map<TestIdentifier, TestExecutionResult> testResults);
 
-  @ApiStatus.Internal
-  final class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
+    @ApiStatus.Internal
+    final class FactoryProvider {
+        @Inject
+        private static Factory factory;
+    }
 
-  @ApiStatus.Internal
-  interface Factory {
-    JUnitTestRef ofClass(Class<?> clazz);
+    @ApiStatus.Internal
+    interface Factory {
+        JUnitTestRef ofClass(Class<?> clazz);
 
-    JUnitTestRef ofMethod(Method method);
+        JUnitTestRef ofMethod(Method method);
 
-    JUnitTestRef ofClass(Callable<Class<?>> clazzSupplier);
+        JUnitTestRef ofClass(Callable<Class<?>> clazzSupplier);
 
-    JUnitTestRef ofMethod(Callable<Method> methodSupplier);
+        JUnitTestRef ofMethod(Callable<Method> methodSupplier);
 
-    JUnitTestRef and(JUnitTestRef... testRefs);
+        JUnitTestRef and(JUnitTestRef... testRefs);
 
-    JUnitTestRef or(JUnitTestRef... testRefs);
+        JUnitTestRef or(JUnitTestRef... testRefs);
 
-    JUnitTestRef not(JUnitTestRef testRef);
-  }
+        JUnitTestRef not(JUnitTestRef testRef);
+    }
 }

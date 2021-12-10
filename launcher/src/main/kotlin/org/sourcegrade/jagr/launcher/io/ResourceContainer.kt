@@ -23,88 +23,88 @@ import java.io.File
 import java.io.InputStream
 
 interface ResourceContainer : Sequence<Resource> {
-  val info: ResourceContainerInfo
+    val info: ResourceContainerInfo
 
-  interface Builder {
-    var info: ResourceContainerInfo
-    fun addResource(resource: Resource)
-    fun build(): ResourceContainer
-  }
+    interface Builder {
+        var info: ResourceContainerInfo
+        fun addResource(resource: Resource)
+        fun build(): ResourceContainer
+    }
 }
 
 interface ResourceContainerInfo {
-  val name: String
+    val name: String
 
-  interface Builder {
-    var name: String
-    fun build(): ResourceContainerInfo
-  }
+    interface Builder {
+        var name: String
+        fun build(): ResourceContainerInfo
+    }
 
-  companion object Factory : SerializerFactory<ResourceContainerInfo> {
-    override fun read(scope: SerializationScope.Input): ResourceContainerInfo =
-      ResourceContainerInfoImpl(scope.input.readUTF())
+    companion object Factory : SerializerFactory<ResourceContainerInfo> {
+        override fun read(scope: SerializationScope.Input): ResourceContainerInfo =
+            ResourceContainerInfoImpl(scope.input.readUTF())
 
-    override fun write(obj: ResourceContainerInfo, scope: SerializationScope.Output) =
-      scope.output.writeUTF(obj.name)
-  }
+        override fun write(obj: ResourceContainerInfo, scope: SerializationScope.Output) =
+            scope.output.writeUTF(obj.name)
+    }
 }
 
 internal data class ResourceContainerInfoImpl(override val name: String) : ResourceContainerInfo
 
 val ResourceContainerInfo.nameWithoutExtension: String
-  get() = name.substringBeforeLast(".")
+    get() = name.substringBeforeLast(".")
 
 fun Resource.toContainer(): ResourceContainer = createResourceContainer(name, getInputStream())
 
 inline fun buildResourceContainer(configure: ResourceContainer.Builder.() -> Unit): ResourceContainer =
-  createResourceContainerBuilder().apply(configure).build()
+    createResourceContainerBuilder().apply(configure).build()
 
 inline fun ResourceContainer.Builder.addResource(configure: Resource.Builder.() -> Unit) = addResource(buildResource(configure))
 
 fun createResourceContainerBuilder(): ResourceContainer.Builder = ResourceContainerBuilderImpl()
 
 inline fun buildResourceContainerInfo(configure: ResourceContainerInfo.Builder.() -> Unit): ResourceContainerInfo =
-  createResourceContainerInfoBuilder().apply(configure).build()
+    createResourceContainerInfoBuilder().apply(configure).build()
 
 fun createResourceContainerInfoBuilder(): ResourceContainerInfo.Builder = ResourceContainerInfoBuilderImpl()
 
 fun createResourceContainer(name: String, inputStream: InputStream): ResourceContainer {
-  // we assume inputStream is in ZIP format
-  return ZipResourceContainer(name, inputStream)
+    // we assume inputStream is in ZIP format
+    return ZipResourceContainer(name, inputStream)
 }
 
 fun createResourceContainer(file: File): ResourceContainer = when (file.extension) {
-  "zip",
-  "jar",
-  -> ZipResourceContainer(file)
-  else -> throw IllegalArgumentException("Could not an appropriate resource container for $file")
+    "zip",
+    "jar",
+    -> ZipResourceContainer(file)
+    else -> throw IllegalArgumentException("Could not an appropriate resource container for $file")
 }
 
 fun ResourceContainer.writeAsDirIn(dir: File) {
-  val root = dir.resolve(info.name)
-  for (resource in this) {
-    resource.writeIn(root)
-  }
+    val root = dir.resolve(info.name)
+    for (resource in this) {
+        resource.writeIn(root)
+    }
 }
 
 private class ResourceContainerBuilderImpl : ResourceContainer.Builder {
-  private val resources = mutableListOf<Resource>()
-  override lateinit var info: ResourceContainerInfo
-  override fun addResource(resource: Resource) {
-    resources += resource
-  }
+    private val resources = mutableListOf<Resource>()
+    override lateinit var info: ResourceContainerInfo
+    override fun addResource(resource: Resource) {
+        resources += resource
+    }
 
-  override fun build(): ResourceContainer = ListResourceContainer(info, resources)
+    override fun build(): ResourceContainer = ListResourceContainer(info, resources)
 }
 
 private class ResourceContainerInfoBuilderImpl : ResourceContainerInfo.Builder {
-  override lateinit var name: String
-  override fun build(): ResourceContainerInfo = ResourceContainerInfoImpl(name)
+    override lateinit var name: String
+    override fun build(): ResourceContainerInfo = ResourceContainerInfoImpl(name)
 }
 
 private class ListResourceContainer(
-  override val info: ResourceContainerInfo,
-  private val resources: List<Resource>,
+    override val info: ResourceContainerInfo,
+    private val resources: List<Resource>,
 ) : ResourceContainer {
-  override fun iterator(): Iterator<Resource> = resources.iterator()
+    override fun iterator(): Iterator<Resource> = resources.iterator()
 }

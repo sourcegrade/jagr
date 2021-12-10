@@ -25,9 +25,9 @@ import org.jetbrains.annotations.Nullable;
 @ApiStatus.NonExtendable
 public interface Submission {
 
-  SubmissionInfo getInfo();
+    SubmissionInfo getInfo();
 
-  CompileResult getCompileResult();
+    CompileResult getCompileResult();
 
-  @Nullable SourceFile getSourceFile(String fileName);
+    @Nullable SourceFile getSourceFile(String fileName);
 }

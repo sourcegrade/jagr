@@ -22,8 +22,8 @@ package org.sourcegrade.jagr.launcher.io
 import org.sourcegrade.jagr.api.testing.RubricConfiguration
 
 interface GraderJar {
-  val info: GraderInfo
-  val configuration: RubricConfiguration
-  val rubricProviders: Map<String, List<String>>
-  val testProviders: Map<String, List<String>>
+    val info: GraderInfo
+    val configuration: RubricConfiguration
+    val rubricProviders: Map<String, List<String>>
+    val testProviders: Map<String, List<String>>
 }

@@ -20,10 +20,10 @@
 package org.sourcegrade.jagr.core.compiler
 
 interface MutableResourceCollector : ResourceCollector {
-  /**
-   * Adds a resource to this collector. The provided value's runtime type is the key for the resource.
-   *
-   * The value is then accessible via [get].
-   */
-  fun addResource(value: Any)
+    /**
+     * Adds a resource to this collector. The provided value's runtime type is the key for the resource.
+     *
+     * The value is then accessible via [get].
+     */
+    fun addResource(value: Any)
 }

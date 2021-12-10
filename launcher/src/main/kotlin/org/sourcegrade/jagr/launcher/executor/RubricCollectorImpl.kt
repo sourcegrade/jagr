@@ -26,38 +26,38 @@ import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 
 internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollector {
-  private val queued = mutableListOf<GradingQueue>()
-  override val gradingScheduled = mutableListOf<GradingJob>()
-  override val gradingRunning = mutableListOf<GradingJob>()
-  override val gradingFinished = mutableListOf<GradingResult>()
-  override val total: Int
-    get() = queued.sumOf { it.total }
-  override val remaining: Int
-    get() = queued.sumOf { it.remaining }
+    private val queued = mutableListOf<GradingQueue>()
+    override val gradingScheduled = mutableListOf<GradingJob>()
+    override val gradingRunning = mutableListOf<GradingJob>()
+    override val gradingFinished = mutableListOf<GradingResult>()
+    override val total: Int
+        get() = queued.sumOf { it.total }
+    override val remaining: Int
+        get() = queued.sumOf { it.remaining }
 
-  private var listener: (GradingResult) -> Unit = {}
-  private val scope = CoroutineScope(Dispatchers.Unconfined)
+    private var listener: (GradingResult) -> Unit = {}
+    private val scope = CoroutineScope(Dispatchers.Unconfined)
 
-  override fun allocate(queue: GradingQueue) {
-    queued += queue
-  }
-
-  override fun setListener(listener: (GradingResult) -> Unit) {
-    this.listener = listener
-  }
-
-  override fun start(request: GradingRequest): GradingJob {
-    val job = GradingJob(request)
-    gradingRunning += job
-    scope.launch {
-      try {
-        val result = job.result.await()
-        gradingFinished.add(result)
-        listener(result)
-      } catch (e: Exception) {
-        jagr.logger.error("An error occurred receiving result for grading job", e)
-      }
+    override fun allocate(queue: GradingQueue) {
+        queued += queue
     }
-    return job
-  }
+
+    override fun setListener(listener: (GradingResult) -> Unit) {
+        this.listener = listener
+    }
+
+    override fun start(request: GradingRequest): GradingJob {
+        val job = GradingJob(request)
+        gradingRunning += job
+        scope.launch {
+            try {
+                val result = job.result.await()
+                gradingFinished.add(result)
+                listener(result)
+            } catch (e: Exception) {
+                jagr.logger.error("An error occurred receiving result for grading job", e)
+            }
+        }
+        return job
+    }
 }

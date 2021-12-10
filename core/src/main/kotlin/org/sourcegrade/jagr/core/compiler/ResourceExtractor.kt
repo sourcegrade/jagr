@@ -23,19 +23,19 @@ import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 
 fun interface ResourceExtractor {
-  /**
-   * Attempts to extract a special kind of resource from [resource].
-   */
-  fun extract(
-    containerInfo: ResourceContainerInfo,
-    resource: Resource,
-    data: ByteArray,
-    collector: MutableResourceCollector,
-  )
+    /**
+     * Attempts to extract a special kind of resource from [resource].
+     */
+    fun extract(
+        containerInfo: ResourceContainerInfo,
+        resource: Resource,
+        data: ByteArray,
+        collector: MutableResourceCollector,
+    )
 }
 
 fun extractorOf(vararg extractors: ResourceExtractor) = ResourceExtractor { containerInfo, resource, data, collector ->
-  for (extractor in extractors) {
-    extractor.extract(containerInfo, resource, data, collector)
-  }
+    for (extractor in extractors) {
+        extractor.extract(containerInfo, resource, data, collector)
+    }
 }

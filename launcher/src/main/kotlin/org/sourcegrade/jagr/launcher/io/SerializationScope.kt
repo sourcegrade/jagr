@@ -33,72 +33,72 @@ import kotlin.reflect.full.isSubclassOf
  */
 interface SerializationScope {
 
-  val jagr: Jagr
-
-  /**
-   * Gets the value for the provided [Key] in this scope. If this scope has no value for the provided [Key], and there is a
-   * parents scope, the value of the parent scope's [get] method will be returned. Otherwise, an [IllegalStateException] is
-   * thrown.
-   */
-  operator fun <T : Any> get(key: Key<T>): T
-
-  fun <T : Any> getOrNull(key: Key<T>): T?
-
-  operator fun <T : Any> set(key: Key<T>, obj: T)
-
-  /**
-   * Redirects scope access to [key] to [from].
-   */
-  fun <T : Any> proxy(key: Key<T>, from: Key<T>)
-
-  interface Input : SerializationScope {
-
-    val input: ByteArrayDataInput
+    val jagr: Jagr
 
     /**
-     * Reads the value for the provided [Key] from the current [input][ByteArrayDataInput].
-     *
-     * Note: invoking this method will modify the current input's reader index.
+     * Gets the value for the provided [Key] in this scope. If this scope has no value for the provided [Key], and there is a
+     * parents scope, the value of the parent scope's [get] method will be returned. Otherwise, an [IllegalStateException] is
+     * thrown.
      */
-    fun <T : Any> readScoped(key: Key<T>): T
-  }
+    operator fun <T : Any> get(key: Key<T>): T
 
-  interface Output : SerializationScope {
+    fun <T : Any> getOrNull(key: Key<T>): T?
 
-    val output: ByteArrayDataOutput
+    operator fun <T : Any> set(key: Key<T>, obj: T)
 
     /**
-     * Writes the value for the provided [Key] to the current [output][ByteArrayDataOutput].
-     *
-     * Note: invoking this method will modify the current output's writer index.
+     * Redirects scope access to [key] to [from].
      */
-    fun <T : Any> writeScoped(obj: T, key: Key<T>)
-  }
+    fun <T : Any> proxy(key: Key<T>, from: Key<T>)
 
-  /**
-   * Represents a single entry in this scope's data.
-   */
-  interface Key<T : Any> {
+    interface Input : SerializationScope {
 
-    val type: KClass<T>
+        val input: ByteArrayDataInput
 
-    val name: String?
-
-    companion object KeySerializerFactory : SerializerFactory<Key<*>> {
-      /**
-       * Fake constructor hack because of generics.
-       */
-      operator fun <T : Any> invoke(): SerializerFactory<Key<T>> = this as SerializerFactory<Key<T>>
-
-      override fun read(scope: Input): Key<*> =
-        KeyImpl(scope.input.readKClass(), scope.readNullable())
-
-      override fun write(obj: Key<*>, scope: Output) {
-        scope.output.writeKClass(obj.type)
-        scope.writeNullable(obj.name)
-      }
+        /**
+         * Reads the value for the provided [Key] from the current [input][ByteArrayDataInput].
+         *
+         * Note: invoking this method will modify the current input's reader index.
+         */
+        fun <T : Any> readScoped(key: Key<T>): T
     }
-  }
+
+    interface Output : SerializationScope {
+
+        val output: ByteArrayDataOutput
+
+        /**
+         * Writes the value for the provided [Key] to the current [output][ByteArrayDataOutput].
+         *
+         * Note: invoking this method will modify the current output's writer index.
+         */
+        fun <T : Any> writeScoped(obj: T, key: Key<T>)
+    }
+
+    /**
+     * Represents a single entry in this scope's data.
+     */
+    interface Key<T : Any> {
+
+        val type: KClass<T>
+
+        val name: String?
+
+        companion object KeySerializerFactory : SerializerFactory<Key<*>> {
+            /**
+             * Fake constructor hack because of generics.
+             */
+            operator fun <T : Any> invoke(): SerializerFactory<Key<T>> = this as SerializerFactory<Key<T>>
+
+            override fun read(scope: Input): Key<*> =
+                KeyImpl(scope.input.readKClass(), scope.readNullable())
+
+            override fun write(obj: Key<*>, scope: Output) {
+                scope.output.writeKClass(obj.type)
+                scope.writeNullable(obj.name)
+            }
+        }
+    }
 }
 
 /* === Reified helper functions === */
@@ -107,33 +107,33 @@ inline operator fun <reified T : Any> SerializationScope.get(type: KClass<T>, na
 inline fun <reified T : Any> SerializationScope.get(name: String? = null) = get(T::class, name)
 
 inline fun <reified T : Any> SerializationScope.Input.read(factory: SerializerFactory<T> = SerializerFactory.get(jagr)): T {
-  return factory.read(this)
+    return factory.read(this)
 }
 
 inline fun <reified T : Any> SerializationScope.Output.write(
-  obj: T,
-  factory: SerializerFactory<T> = SerializerFactory.get(jagr)
+    obj: T,
+    factory: SerializerFactory<T> = SerializerFactory.get(jagr),
 ) = factory.write(obj, this)
 
 fun SerializationScope.Input.readDynamic(): Pair<KClass<out Any>, Any> {
-  val type = input.readKClass<Any>()
-  return type to read(SerializerFactory[type, jagr])
+    val type = input.readKClass<Any>()
+    return type to read(SerializerFactory[type, jagr])
 }
 
 @Suppress("UNCHECKED_CAST")
 fun SerializationScope.Output.writeDynamic(obj: Any, type: KClass<out Any> = obj::class) {
-  require(obj::class.isSubclassOf(type)) { "${obj::class} is not a subtype of $type" }
-  output.writeKClass(type)
-  write(obj, SerializerFactory[type, jagr] as SerializerFactory<Any>)
+    require(obj::class.isSubclassOf(type)) { "${obj::class} is not a subtype of $type" }
+    output.writeKClass(type)
+    write(obj, SerializerFactory[type, jagr] as SerializerFactory<Any>)
 }
 
 inline fun <reified T : Any> SerializationScope.Input.readNullable(
-  factory: SerializerFactory<T> = SerializerFactory.get(jagr),
+    factory: SerializerFactory<T> = SerializerFactory.get(jagr),
 ): T? = factory.readNullable(this)
 
 inline fun <reified T : Any> SerializationScope.Output.writeNullable(
-  obj: T?,
-  factory: SerializerFactory<T> = SerializerFactory.get(jagr),
+    obj: T?,
+    factory: SerializerFactory<T> = SerializerFactory.get(jagr),
 ) = factory.writeNullable(obj, this)
 
 inline fun <reified T : Any> SerializationScope.Input.readScoped() = readScoped(keyOf(T::class))

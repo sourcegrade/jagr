@@ -32,41 +32,41 @@ import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicInteger
 
 class GradingQueueImpl(
-  logger: Logger,
-  private val compiledBatch: CompiledBatch,
+    logger: Logger,
+    private val compiledBatch: CompiledBatch,
 ) : GradingQueue {
 
-  override val graders: List<GraderJar> get() = compiledBatch.graders
-  override val submissions: List<Submission> get() = compiledBatch.submissions
+    override val graders: List<GraderJar> get() = compiledBatch.graders
+    override val submissions: List<Submission> get() = compiledBatch.submissions
 
-  private val submissionIterator: Iterator<Submission> = submissions.iterator()
-  private val mutex = Mutex()
+    private val submissionIterator: Iterator<Submission> = submissions.iterator()
+    private val mutex = Mutex()
 
-  override val total: Int = submissions.size
+    override val total: Int = submissions.size
 
-  private val _remaining = AtomicInteger(total)
+    private val _remaining = AtomicInteger(total)
 
-  override val remaining: Int
-    get() = _remaining.get()
+    override val remaining: Int
+        get() = _remaining.get()
 
-  override val startedUtc: Instant = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+    override val startedUtc: Instant = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
 
-  @Volatile
-  override var finishedUtc: Instant? = null
+    @Volatile
+    override var finishedUtc: Instant? = null
 
-  override suspend fun next(): GradingRequest? {
-    if (finishedUtc != null) return null
-    return mutex.withLock {
-      // check if next() was called while the last grading request is being processed by another worker
-      if (finishedUtc != null) {
-        null
-      } else if (submissionIterator.hasNext()) {
-        _remaining.getAndDecrement()
-        GradingRequestImpl(submissionIterator.next(), graders, compiledBatch.libraries)
-      } else {
-        finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
-        null
-      }
+    override suspend fun next(): GradingRequest? {
+        if (finishedUtc != null) return null
+        return mutex.withLock {
+            // check if next() was called while the last grading request is being processed by another worker
+            if (finishedUtc != null) {
+                null
+            } else if (submissionIterator.hasNext()) {
+                _remaining.getAndDecrement()
+                GradingRequestImpl(submissionIterator.next(), graders, compiledBatch.libraries)
+            } else {
+                finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+                null
+            }
+        }
     }
-  }
 }

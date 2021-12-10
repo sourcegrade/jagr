@@ -23,34 +23,34 @@ import kotlinx.coroutines.runBlocking
 import kotlin.concurrent.thread
 
 class ThreadWorker(
-  private val runtimeGrader: RuntimeGrader,
-  private val removeActive: (Worker) -> Unit,
+    private val runtimeGrader: RuntimeGrader,
+    private val removeActive: (Worker) -> Unit,
 ) : Worker {
-  override var job: GradingJob? = null
-  override var status: WorkerStatus = WorkerStatus.READY
-  override var userTime: Long = 0
+    override var job: GradingJob? = null
+    override var status: WorkerStatus = WorkerStatus.READY
+    override var userTime: Long = 0
 
-  private lateinit var thread: Thread
+    private lateinit var thread: Thread
 
-  override fun assignJob(job: GradingJob) {
-    check(this.job == null) { "Worker already has a job!" }
-    status = WorkerStatus.RUNNING
-    this.job = job
-    thread(
-      isDaemon = true,
-      name = GRADING_THREAD_PREFIX + job.request.submission.info.toString(),
-      priority = 3,
-    ) {
-      runBlocking {
-        runtimeGrader.grade(job)
-      }
-      status = WorkerStatus.FINISHED
-      removeActive(this)
+    override fun assignJob(job: GradingJob) {
+        check(this.job == null) { "Worker already has a job!" }
+        status = WorkerStatus.RUNNING
+        this.job = job
+        thread(
+            isDaemon = true,
+            name = GRADING_THREAD_PREFIX + job.request.submission.info.toString(),
+            priority = 3,
+        ) {
+            runBlocking {
+                runtimeGrader.grade(job)
+            }
+            status = WorkerStatus.FINISHED
+            removeActive(this)
+        }
     }
-  }
 
-  override fun kill() {
-    thread.stop()
-    removeActive(this)
-  }
+    override fun kill() {
+        thread.stop()
+        removeActive(this)
+    }
 }

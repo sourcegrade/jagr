@@ -25,49 +25,49 @@ import org.spongepowered.configurate.objectmapping.meta.Comment
 @ConfigSerializable
 class Config {
 
-  @Comment("The locations of the following directories may be configured here")
-  val dir: Dir = Dir()
+    @Comment("The locations of the following directories may be configured here")
+    val dir: Dir = Dir()
 
-  val executor = Executor()
+    val executor = Executor()
 
-  val extras: Extras = Extras()
+    val extras: Extras = Extras()
 
-  val transformers = Transformers()
+    val transformers = Transformers()
 }
 
 @ConfigSerializable
 class Dir {
 
-  @Comment("Runtime dependencies for submissions")
-  var libs: String = "libs"
+    @Comment("Runtime dependencies for submissions")
+    var libs: String = "libs"
 
-  @Comment("Rubrics export directory")
-  var rubrics: String = "rubrics"
+    @Comment("Rubrics export directory")
+    var rubrics: String = "rubrics"
 
-  @Comment("Submissions ingest directory")
-  var submissions: String = "submissions"
+    @Comment("Submissions ingest directory")
+    var submissions: String = "submissions"
 
-  @Comment("Submission export directory")
-  var submissionsExport: String = "submissions-export"
+    @Comment("Submission export directory")
+    var submissionsExport: String = "submissions-export"
 
-  @Comment("Grader jar ingest directory")
-  var graders: String = "graders"
+    @Comment("Grader jar ingest directory")
+    var graders: String = "graders"
 }
 
 @ConfigSerializable
 class Executor {
 
-  @Comment(
-    """
+    @Comment(
+        """
 The maximum amount of concurrency to use for grading.
 For a given concurrency n, Jagr will ensure that a maximum of n threads or processes are used concurrently that actively run
 submission code.
 """
-  )
-  val concurrency: Int = 4
+    )
+    val concurrency: Int = 4
 
-  @Comment(
-    """
+    @Comment(
+        """
 The executor mode to use. The following options are available:
 - "single" ::
   Runs every TestCycle consecutively in the main thread. This mode does not create any extra processes or threads for grading.
@@ -87,55 +87,55 @@ The executor mode to use. The following options are available:
 
   The maximum number of concurrent child process used for grading is defined by the option "concurrency".
 """
-  )
-  val mode: String = "process"
+    )
+    val mode: String = "process"
 
-  @Comment(
-    """
+    @Comment(
+        """
 The grading thread's maximum permitted elapsed userTime in milliseconds since the last timeout before an
 AssertionFailedError is thrown. If a thread's userTime satisfies
 (userTime - lastTimeout) > individualTimeout,
 the current userTime is stored for comparison later, and an AssertionFailedError is thrown to be caught by JUnit.
 """
-  )
-  val timeoutIndividual = 10_000L
+    )
+    val timeoutIndividual = 10_000L
 
-  @Comment(
-    """
+    @Comment(
+        """
 The grading thread's maximum permitted elapsed userTime in milliseconds (from thread start) before an
 AssertionFailedError is thrown. If a thread's userTime satisfies
 ((userTime - lastTimeout) > individualTimeout) && (userTime > totalTimeout),
 an AssertionFailedError is thrown to be caught by JUnit. Note that lastTimeout is not reset in this case, and all further
 invocations of checkTimeout() will result in an AssertionFailedError
 """
-  )
-  val timeoutTotal = 150_000L
+    )
+    val timeoutTotal = 150_000L
 }
 
 @ConfigSerializable
 class Extras {
 
-  abstract class Extra {
-    val enabled: Boolean = true
-  }
+    abstract class Extra {
+        val enabled: Boolean = true
+    }
 
-  @ConfigSerializable
-  class MoodleUnpack : Extra() {
-    val studentIdRegex: String = "[a-z]{2}[0-9]{2}[a-z]{4}"
-  }
+    @ConfigSerializable
+    class MoodleUnpack : Extra() {
+        val studentIdRegex: String = "[a-z]{2}[0-9]{2}[a-z]{4}"
+    }
 
-  val moodleUnpack: MoodleUnpack = MoodleUnpack()
+    val moodleUnpack: MoodleUnpack = MoodleUnpack()
 }
 
 @ConfigSerializable
 class Transformers {
 
-  abstract class Transformer {
-    val enabled = true
-  }
+    abstract class Transformer {
+        val enabled = true
+    }
 
-  @ConfigSerializable
-  class TimeoutTransformer : Transformer()
+    @ConfigSerializable
+    class TimeoutTransformer : Transformer()
 
-  val timeout = TimeoutTransformer()
+    val timeout = TimeoutTransformer()
 }

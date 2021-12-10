@@ -31,47 +31,47 @@ import org.sourcegrade.jagr.core.executor.TimeoutHandler
 import org.sourcegrade.jagr.launcher.env.Config
 
 class CommonClassTransformer @Inject constructor(
-  private val config: Config,
+    private val config: Config,
 ) : ClassTransformer {
-  private val name: String = "common-transformer"
-  override fun getName(): String = name
+    private val name: String = "common-transformer"
+    override fun getName(): String = name
 
-  override fun transform(reader: ClassReader, writer: ClassWriter) {
-    reader.accept(CommonClassVisitor(config, writer), 0)
-  }
+    override fun transform(reader: ClassReader, writer: ClassWriter) {
+        reader.accept(CommonClassVisitor(config, writer), 0)
+    }
 }
 
 private class CommonClassVisitor(
-  private val config: Config,
-  writer: ClassWriter,
+    private val config: Config,
+    writer: ClassWriter,
 ) : ClassVisitor(Opcodes.ASM9, writer) {
-  override fun visitMethod(
-    access: Int,
-    name: String?,
-    descriptor: String?,
-    signature: String?,
-    exceptions: Array<out String>?
-  ): MethodVisitor {
-    return CommonMethodVisitor(config, super.visitMethod(access, name, descriptor, signature, exceptions))
-  }
+    override fun visitMethod(
+        access: Int,
+        name: String?,
+        descriptor: String?,
+        signature: String?,
+        exceptions: Array<out String>?,
+    ): MethodVisitor {
+        return CommonMethodVisitor(config, super.visitMethod(access, name, descriptor, signature, exceptions))
+    }
 }
 
 private class CommonMethodVisitor(
-  private val config: Config,
-  methodVisitor: MethodVisitor,
+    private val config: Config,
+    methodVisitor: MethodVisitor,
 ) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
-  override fun visitCode() {
-    visitTimeoutIsns()
-    super.visitCode()
-  }
+    override fun visitCode() {
+        visitTimeoutIsns()
+        super.visitCode()
+    }
 
-  override fun visitJumpInsn(opcode: Int, label: Label?) {
-    visitTimeoutIsns()
-    super.visitJumpInsn(opcode, label)
-  }
+    override fun visitJumpInsn(opcode: Int, label: Label?) {
+        visitTimeoutIsns()
+        super.visitJumpInsn(opcode, label)
+    }
 
-  private fun visitTimeoutIsns() {
-    if (!config.transformers.timeout.enabled) return
-    visitMethodInsn(Opcodes.INVOKESTATIC, TimeoutHandler::checkTimeout)
-  }
+    private fun visitTimeoutIsns() {
+        if (!config.transformers.timeout.enabled) return
+        visitMethodInsn(Opcodes.INVOKESTATIC, TimeoutHandler::checkTimeout)
+    }
 }

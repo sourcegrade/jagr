@@ -34,29 +34,29 @@ import org.sourcegrade.jagr.launcher.io.writeList
 import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class GradedRubricImpl(
-  private val testCycle: TestCycle,
-  private val grade: GradeResult,
-  private val rubric: Rubric,
-  private val childCriteria: List<GradedCriterion>,
+    private val testCycle: TestCycle,
+    private val grade: GradeResult,
+    private val rubric: Rubric,
+    private val childCriteria: List<GradedCriterion>,
 ) : GradedRubric {
-  override fun getTestCycle(): TestCycle = testCycle
-  override fun getGrade(): GradeResult = grade
-  override fun getChildCriteria(): List<GradedCriterion> = childCriteria
-  override fun getRubric(): Rubric = rubric
+    override fun getTestCycle(): TestCycle = testCycle
+    override fun getGrade(): GradeResult = grade
+    override fun getChildCriteria(): List<GradedCriterion> = childCriteria
+    override fun getRubric(): Rubric = rubric
 
-  companion object Factory : SerializerFactory<GradedRubricImpl> {
-    override fun read(scope: SerializationScope.Input) = GradedRubricImpl(
-      scope.readScoped(),
-      scope.read(),
-      scope.read(),
-      scope.readList(),
-    )
+    companion object Factory : SerializerFactory<GradedRubricImpl> {
+        override fun read(scope: SerializationScope.Input) = GradedRubricImpl(
+            scope.readScoped(),
+            scope.read(),
+            scope.read(),
+            scope.readList(),
+        )
 
-    override fun write(obj: GradedRubricImpl, scope: SerializationScope.Output) {
-      scope.writeScoped(obj.testCycle)
-      scope.write(obj.grade)
-      scope.write(obj.rubric)
-      scope.writeList(obj.childCriteria)
+        override fun write(obj: GradedRubricImpl, scope: SerializationScope.Output) {
+            scope.writeScoped(obj.testCycle)
+            scope.write(obj.grade)
+            scope.write(obj.rubric)
+            scope.writeList(obj.childCriteria)
+        }
     }
-  }
 }

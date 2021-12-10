@@ -27,24 +27,24 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 interface Executor {
-  suspend fun schedule(queue: GradingQueue)
-  suspend fun start(rubricCollector: MutableRubricCollector)
-  interface Factory {
-    fun create(jagr: Jagr): Executor
-  }
+    suspend fun schedule(queue: GradingQueue)
+    suspend fun start(rubricCollector: MutableRubricCollector)
+    interface Factory {
+        fun create(jagr: Jagr): Executor
+    }
 }
 
 interface RuntimeGrader {
-  fun grade(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
+    fun grade(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
 
-  fun gradeFallback(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
+    fun gradeFallback(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
 }
 
 fun RuntimeGrader.grade(job: GradingJob) {
-  val startedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
-  val rubrics = with(job.request) {
-    grade(graders, submission)
-  }
-  val finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
-  job.result.complete(GradingResult(startedUtc, finishedUtc, job.request, rubrics))
+    val startedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+    val rubrics = with(job.request) {
+        grade(graders, submission)
+    }
+    val finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+    job.result.complete(GradingResult(startedUtc, finishedUtc, job.request, rubrics))
 }

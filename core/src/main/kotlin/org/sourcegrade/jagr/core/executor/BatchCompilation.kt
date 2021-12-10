@@ -45,123 +45,123 @@ import org.sourcegrade.jagr.launcher.io.GradingBatch
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 
 data class CompiledBatch(
-  val batch: GradingBatch,
-  val graders: List<GraderJar>,
-  val submissions: List<Submission>,
-  val libraries: JavaRuntimeResources,
+    val batch: GradingBatch,
+    val graders: List<GraderJar>,
+    val submissions: List<Submission>,
+    val libraries: JavaRuntimeResources,
 )
 
 class CompiledBatchFactoryImpl @Inject constructor(
-  private val logger: Logger,
-  private val runtimeJarLoader: RuntimeJarLoader,
-  private val commonClassTransformer: CommonClassTransformer,
+    private val logger: Logger,
+    private val runtimeJarLoader: RuntimeJarLoader,
+    private val commonClassTransformer: CommonClassTransformer,
 ) {
 
-  fun compile(batch: GradingBatch): CompiledBatch {
-    val libraries = runtimeJarLoader.loadCompiled(batch.libraries)
-    val commonTransformerApplier = applierOf(commonClassTransformer)
-    val graders: List<GraderJarImpl> = batch.graders.compile(
-      commonTransformerApplier,
-      libraries,
-      "grader",
-      GraderInfoImpl.Extractor,
-    ) {
-      if (errors == 0) GraderJarImpl(logger, this, libraries) else null
-    }
-    val submissionTransformerApplier = createTransformerApplierFromGraders(graders)
-    val submissionFileOverrides = calculateSubmissionFileOverrides(graders)
-
-    // maps assignment ids to files that should be replaced with solution files
-    val replacements = submissionFileOverrides.mapValues { (assignmentId, solutionOverrides) ->
-      val gradersForAssignment = graders.filter { it.info.assignmentIds.contains(assignmentId) }
-      solutionOverrides.mapNotNull { solutionOverride ->
-        gradersForAssignment.firstNotNullOfOrNull { it.container.source.sourceFiles[solutionOverride] }
-      }.associateBy { it.fileName }
-    }
-
-    val submissions: List<Submission> = batch.submissions.compile(
-      submissionTransformerApplier,
-      libraries,
-      "submission",
-      SubmissionInfoImpl.Extractor,
-      replacements,
-    ) submissionCompile@{
-      val submissionInfo = this.submissionInfo
-      if (submissionInfo == null) {
-        logger.error("${info.name} does not have a submission-info.json! Skipping...")
-        return@submissionCompile null
-      }
-      JavaSubmission(submissionInfo, this, libraries)
-    }
-    return CompiledBatch(batch, graders, submissions, libraries)
-  }
-
-  /**
-   * Create a transformer applier that selectively applies transformations to
-   * submissions only if the grader contains a rubric for it
-   */
-  private fun createTransformerApplierFromGraders(graders: List<GraderJar>): TransformationApplier {
-    val base = applierOf(SubmissionVerificationTransformer(), commonClassTransformer)
-    return graders.map { graderJar ->
-      graderJar.configuration.transformers useWhen { result ->
-        result.submissionInfo?.assignmentId?.let(graderJar.info.assignmentIds::contains) == true
-      }
-    }.fold(base) { a, b -> a + b }
-  }
-
-  private fun calculateSubmissionFileOverrides(graders: List<GraderJar>): Map<String, List<String>> {
-    return graders.map { graderJar ->
-      graderJar.info.assignmentIds.flatMap { assignmentId ->
-        graderJar.configuration.fileNameSolutionOverrides.map { solutionOverride ->
-          assignmentId to solutionOverride
+    fun compile(batch: GradingBatch): CompiledBatch {
+        val libraries = runtimeJarLoader.loadCompiled(batch.libraries)
+        val commonTransformerApplier = applierOf(commonClassTransformer)
+        val graders: List<GraderJarImpl> = batch.graders.compile(
+            commonTransformerApplier,
+            libraries,
+            "grader",
+            GraderInfoImpl.Extractor,
+        ) {
+            if (errors == 0) GraderJarImpl(logger, this, libraries) else null
         }
-      }.groupBy({ it.first }, { it.second })
-    }.fold(emptyMap()) { acc, map -> acc + map }
-  }
+        val submissionTransformerApplier = createTransformerApplierFromGraders(graders)
+        val submissionFileOverrides = calculateSubmissionFileOverrides(graders)
 
-  private fun <T> Sequence<ResourceContainer>.compile(
-    transformerApplier: TransformationApplier,
-    libraries: JavaRuntimeResources,
-    containerType: String,
-    resourceExtractor: ResourceExtractor = ResourceExtractor { _, _, _, _ -> },
-    replacements: Map<String, Map<String, JavaSourceFile>> = mapOf(),
-    constructor: JavaCompiledContainer.() -> T?,
-  ): List<T> = toList().parallelMapNotNull {
-    val originalSources = runtimeJarLoader.loadSources(it, resourceExtractor)
-    val submissionInfo = originalSources.submissionInfo
-    val replacementsForAssignment = if (replacements.isNotEmpty() && submissionInfo != null) {
-      replacements[submissionInfo.assignmentId]
-    } else null
-    val replacedSources = if (replacementsForAssignment == null) {
-      originalSources
-    } else {
-      originalSources.copy(
-        sourceFiles = originalSources.sourceFiles + replacementsForAssignment
-      )
+        // maps assignment ids to files that should be replaced with solution files
+        val replacements = submissionFileOverrides.mapValues { (assignmentId, solutionOverrides) ->
+            val gradersForAssignment = graders.filter { it.info.assignmentIds.contains(assignmentId) }
+            solutionOverrides.mapNotNull { solutionOverride ->
+                gradersForAssignment.firstNotNullOfOrNull { it.container.source.sourceFiles[solutionOverride] }
+            }.associateBy { it.fileName }
+        }
+
+        val submissions: List<Submission> = batch.submissions.compile(
+            submissionTransformerApplier,
+            libraries,
+            "submission",
+            SubmissionInfoImpl.Extractor,
+            replacements,
+        ) submissionCompile@{
+            val submissionInfo = this.submissionInfo
+            if (submissionInfo == null) {
+                logger.error("${info.name} does not have a submission-info.json! Skipping...")
+                return@submissionCompile null
+            }
+            JavaSubmission(submissionInfo, this, libraries)
+        }
+        return CompiledBatch(batch, graders, submissions, libraries)
     }
-    val original = runtimeJarLoader.compileSources(replacedSources, libraries)
-    val transformed = try {
-      transformerApplier.transform(original)
-    } catch (e: Exception) {
-      // create a copy of the original compile result but throw out runtime resources (compiled classes and resources)
-      original.copy(
-        runtimeResources = JavaRuntimeResources(),
-        messages = listOf("Transformation failed :: ${e.message}") + original.messages,
-        errors = original.errors + 1,
-      )
+
+    /**
+     * Create a transformer applier that selectively applies transformations to
+     * submissions only if the grader contains a rubric for it
+     */
+    private fun createTransformerApplierFromGraders(graders: List<GraderJar>): TransformationApplier {
+        val base = applierOf(SubmissionVerificationTransformer(), commonClassTransformer)
+        return graders.map { graderJar ->
+            graderJar.configuration.transformers useWhen { result ->
+                result.submissionInfo?.assignmentId?.let(graderJar.info.assignmentIds::contains) == true
+            }
+        }.fold(base) { a, b -> a + b }
     }
-    with(transformed) {
-      printMessages(
-        logger,
-        { "$containerType ${info.name} has $warnings warnings and $errors errors!" },
-      ) { "$containerType ${info.name} has $warnings warnings!" }
-      try {
-        constructor()?.apply { logger.info("Loaded $containerType ${it.info.name}") }
-          ?: run { logger.error("Failed to load $containerType ${it.info.name}"); null }
-      } catch (e: Exception) {
-        logger.error("An error occurred loading $containerType ${it.info.name}", e)
-        null
-      }
+
+    private fun calculateSubmissionFileOverrides(graders: List<GraderJar>): Map<String, List<String>> {
+        return graders.map { graderJar ->
+            graderJar.info.assignmentIds.flatMap { assignmentId ->
+                graderJar.configuration.fileNameSolutionOverrides.map { solutionOverride ->
+                    assignmentId to solutionOverride
+                }
+            }.groupBy({ it.first }, { it.second })
+        }.fold(emptyMap()) { acc, map -> acc + map }
     }
-  }
+
+    private fun <T> Sequence<ResourceContainer>.compile(
+        transformerApplier: TransformationApplier,
+        libraries: JavaRuntimeResources,
+        containerType: String,
+        resourceExtractor: ResourceExtractor = ResourceExtractor { _, _, _, _ -> },
+        replacements: Map<String, Map<String, JavaSourceFile>> = mapOf(),
+        constructor: JavaCompiledContainer.() -> T?,
+    ): List<T> = toList().parallelMapNotNull {
+        val originalSources = runtimeJarLoader.loadSources(it, resourceExtractor)
+        val submissionInfo = originalSources.submissionInfo
+        val replacementsForAssignment = if (replacements.isNotEmpty() && submissionInfo != null) {
+            replacements[submissionInfo.assignmentId]
+        } else null
+        val replacedSources = if (replacementsForAssignment == null) {
+            originalSources
+        } else {
+            originalSources.copy(
+                sourceFiles = originalSources.sourceFiles + replacementsForAssignment
+            )
+        }
+        val original = runtimeJarLoader.compileSources(replacedSources, libraries)
+        val transformed = try {
+            transformerApplier.transform(original)
+        } catch (e: Exception) {
+            // create a copy of the original compile result but throw out runtime resources (compiled classes and resources)
+            original.copy(
+                runtimeResources = JavaRuntimeResources(),
+                messages = listOf("Transformation failed :: ${e.message}") + original.messages,
+                errors = original.errors + 1,
+            )
+        }
+        with(transformed) {
+            printMessages(
+                logger,
+                { "$containerType ${info.name} has $warnings warnings and $errors errors!" },
+            ) { "$containerType ${info.name} has $warnings warnings!" }
+            try {
+                constructor()?.apply { logger.info("Loaded $containerType ${it.info.name}") }
+                    ?: run { logger.error("Failed to load $containerType ${it.info.name}"); null }
+            } catch (e: Exception) {
+                logger.error("An error occurred loading $containerType ${it.info.name}", e)
+                null
+            }
+        }
+    }
 }

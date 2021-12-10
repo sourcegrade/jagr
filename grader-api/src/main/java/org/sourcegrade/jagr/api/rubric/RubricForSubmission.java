@@ -31,5 +31,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface RubricForSubmission {
 
-  String value();
+    String value();
 }
