@@ -40,7 +40,7 @@ data class JavaSubmission(
     override fun getInfo(): SubmissionInfo = info
     override fun getCompileResult(): JavaCompiledContainer = compileResult
     override fun getSourceFile(fileName: String): SourceFile? = compileResult.source.sourceFiles[fileName]
-    override fun getClassNames(): Set<String> = Collections.unmodifiableSet(compileResult.runtimeResources.resources.keys)
+    override fun getClassNames(): Set<String> = Collections.unmodifiableSet(compileResult.runtimeResources.classes.keys)
 
     override fun toString(): String = "$info(${compileResult.info.name})"
 
