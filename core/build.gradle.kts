@@ -32,6 +32,7 @@ dependencies {
     implementation(kotlin("reflect"))
     implementation(files("../gradle/wrapper/gradle-wrapper.jar"))
     runtimeOnly("org.apiguardian:apiguardian-api:1.1.2")
+    implementation("fr.inria.gforge.spoon:spoon-core:10.0.0")
 }
 tasks {
     test {
