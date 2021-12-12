@@ -21,14 +21,12 @@ package org.sourcegrade.jagr.api.testing.extension;
 
 import com.google.inject.Inject;
 import org.jetbrains.annotations.ApiStatus;
-import org.junit.jupiter.api.extension.ConditionEvaluationResult;
-import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-public final class TestCycleResolver implements ParameterResolver, ExecutionCondition {
+public final class TestCycleResolver implements ParameterResolver {
 
     @Override
     public final boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
@@ -40,19 +38,10 @@ public final class TestCycleResolver implements ParameterResolver, ExecutionCond
         return Provider.parameterResolver.resolveParameter(parameterContext, extensionContext);
     }
 
-    @Override
-    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-        if (Provider.parameterResolver == null) {
-            return ConditionEvaluationResult.disabled("Jagr not present");
-        } else {
-            return ConditionEvaluationResult.enabled("Jagr is present");
-        }
-    }
-
     @ApiStatus.Internal
     public static final class Provider {
         @Inject
-        private static Internal parameterResolver;
+        static Internal parameterResolver;
     }
 
     @ApiStatus.Internal
