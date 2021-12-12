@@ -41,7 +41,7 @@ public final class TestCycleResolver implements ParameterResolver {
     @ApiStatus.Internal
     public static final class Provider {
         @Inject
-        private static Internal parameterResolver;
+        static Internal parameterResolver;
     }
 
     @ApiStatus.Internal
