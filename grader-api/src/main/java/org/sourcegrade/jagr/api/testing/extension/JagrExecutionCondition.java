@@ -30,7 +30,7 @@ public final class JagrExecutionCondition implements ExecutionCondition {
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         if (TestCycleResolver.Provider.parameterResolver == null) {
-            return ConditionEvaluationResult.disabled("Jagr not present");
+            return ConditionEvaluationResult.disabled("Jagr is not present");
         } else {
             return ConditionEvaluationResult.enabled("Jagr is present");
         }
