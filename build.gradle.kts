@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.sourcegrade.jagr.script.JagrPublishPlugin
@@ -32,7 +33,7 @@ tasks {
         enabled = false
     }
     shadowJar {
-        transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer::class.java)
+        transform(Log4j2PluginsCacheFileTransformer::class.java)
         from("gradlew") {
             into("org/gradle")
         }
