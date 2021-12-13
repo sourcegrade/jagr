@@ -20,6 +20,7 @@
 package org.sourcegrade.jagr
 
 import kotlinx.coroutines.runBlocking
+import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.config
@@ -104,14 +105,19 @@ class StandardGrading(
             jagr.logger.warn("No rubrics!")
             return
         }
+        fun GradedRubricExporter.exportAndLog(gradedRubric: GradedRubric, file: File) {
+            val resource = export(gradedRubric)
+            jagr.logger.info("Exporting ${file.resolve(resource.name)}")
+            resource.writeIn(file)
+        }
         for (gradedRubric in collector.gradingFinished.asSequence().flatMap { it.rubrics.keys }) {
             try {
-                csvExporter.export(gradedRubric).writeIn(csvFile)
+                csvExporter.exportAndLog(gradedRubric, csvFile)
             } catch (e: Exception) {
                 jagr.logger.error("Could not export $csvFile", e)
             }
             try {
-                htmlExporter.export(gradedRubric).writeIn(htmlFile)
+                htmlExporter.exportAndLog(gradedRubric, htmlFile)
             } catch (e: Exception) {
                 jagr.logger.error("Could not export $htmlFile")
             }
