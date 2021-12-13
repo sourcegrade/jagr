@@ -6,6 +6,7 @@ on:
     paths-ignore:
       # Do not automatically run when a gradle-related file is modified
       - '**gradle**'
+      - '.editorconfig'
     branches: [ master ]
 jobs:
   check:
