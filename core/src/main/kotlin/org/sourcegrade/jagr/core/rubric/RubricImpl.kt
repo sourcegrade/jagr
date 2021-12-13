@@ -48,6 +48,8 @@ class RubricImpl(
     override fun getTitle(): String = title
     override fun getMaxPoints(): Int = maxPointsKt
     override fun getMinPoints(): Int = minPointsKt
+    override fun getTrueMaxPoints(): Int = maxPointsKt
+    override fun getTrueMinPoints(): Int = minPointsKt
     override fun getChildCriteria(): List<CriterionImpl> = criteria
 
     override fun grade(testCycle: TestCycle): GradedRubric {

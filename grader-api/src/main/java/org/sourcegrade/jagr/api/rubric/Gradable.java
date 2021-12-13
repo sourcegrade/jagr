@@ -35,6 +35,32 @@ public interface Gradable<G extends Graded> {
     int getMinPoints();
 
     /**
+     * The true maximum number of points is used to calculate the final grade and is not always equal to {@link #getMaxPoints()}.
+     *
+     * <p>
+     * If the maximum number of points is based on other entities (as may be the case in a {@link CriterionHolder}), this
+     * method will always return the sum of the true maximum points of all children. Otherwise, if the maximum number of points
+     * is <strong>not</strong> based on other entities, this will return the same value as {@link #getMaxPoints()}.
+     * </p>
+     *
+     * @return The true maximum number of points
+     */
+    int getTrueMaxPoints();
+
+    /**
+     * The true minimum number of points is used to calculate the final grade and is not always equal to {@link #getMaxPoints()}.
+     *
+     * <p>
+     * If the minimum number of points is based on other entities (as may be the case in a {@link CriterionHolder}), this
+     * method will always return the sum of the true minimum points of all children. Otherwise, if the minimum number of points
+     * is <strong>not</strong> based on other entities, this will return the same value as {@link #getMaxPoints()}.
+     * </p>
+     *
+     * @return The true minimum number of points
+     */
+    int getTrueMinPoints();
+
+    /**
      * Grade the provided {@link TestCycle}
      */
     G grade(TestCycle testCycle);

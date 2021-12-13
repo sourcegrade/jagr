@@ -47,8 +47,8 @@ class CriterionImpl(
     private val shortDescription: String,
     private val hiddenNotes: String?,
     private val grader: Grader?,
-    private val maxCalculator: CriterionHolderPointCalculator,
-    private val minCalculator: CriterionHolderPointCalculator,
+    private val maxCalculator: CriterionHolderPointCalculator?,
+    private val minCalculator: CriterionHolderPointCalculator?,
     private val childCriteria: List<CriterionImpl>,
 ) : Criterion {
 
@@ -58,9 +58,15 @@ class CriterionImpl(
         }
     }
 
+    private fun maxOfChildren(): Int = CriterionHolderPointCalculator.maxOfChildren(1).getPoints(this)
+    private fun minOfChildren(): Int = CriterionHolderPointCalculator.minOfChildren(0).getPoints(this)
+
     private val terminal: Boolean by lazy { childCriteria.isEmpty() }
-    private val maxPointsKt: Int by lazy { maxCalculator.getPoints(this) }
-    private val minPointsKt: Int by lazy { minCalculator.getPoints(this) }
+    private val maxPointsKt: Int by lazy { maxCalculator?.getPoints(this) ?: maxOfChildren() }
+    private val minPointsKt: Int by lazy { minCalculator?.getPoints(this) ?: minOfChildren() }
+    private val trueMaxPointsKt: Int by lazy { maxPointsKt.takeIf { terminal } ?: maxOfChildren() }
+    private val trueMinPointsKt: Int by lazy { minPointsKt.takeIf { terminal } ?: minOfChildren() }
+
     private lateinit var parentKt: CriterionHolder<CriterionImpl>
     private val parentRubricKt: RubricImpl by lazy {
         var current: Criterion = this
@@ -81,6 +87,8 @@ class CriterionImpl(
     override fun isTerminal(): Boolean = terminal
     override fun getMaxPoints(): Int = maxPointsKt
     override fun getMinPoints(): Int = minPointsKt
+    override fun getTrueMaxPoints(): Int = trueMaxPointsKt
+    override fun getTrueMinPoints(): Int = trueMinPointsKt
     override fun getParentRubric(): RubricImpl = parentRubricKt
     override fun getParent(): CriterionHolder<CriterionImpl> = parentKt
     override fun getParentCriterion(): Criterion? = parentCriterionKt

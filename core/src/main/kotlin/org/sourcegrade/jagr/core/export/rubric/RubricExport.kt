@@ -30,11 +30,11 @@ val Criterion.minMax: String
 
 fun GradeResult.getInRange(gradable: Gradable<*>): String {
     val minReachedPoints = if (gradable is Rubric) {
-        max(0, gradable.minPoints + correctPoints)
+        max(gradable.minPoints, gradable.trueMinPoints + correctPoints)
     } else {
-        gradable.minPoints + correctPoints
+        gradable.trueMinPoints + correctPoints
     }
-    val maxReachedPoints = max(minReachedPoints, gradable.maxPoints - incorrectPoints)
+    val maxReachedPoints = max(minReachedPoints, gradable.trueMaxPoints - incorrectPoints)
     return if (minReachedPoints == maxReachedPoints) {
         minReachedPoints.toString()
     } else {

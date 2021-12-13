@@ -68,8 +68,8 @@ class CriterionBuilderImpl : Criterion.Builder {
             requireNotNull(shortDescription) { "shortDescription is null" },
             hiddenNotes,
             grader,
-            maxCalculator ?: CriterionHolderPointCalculator.maxOfChildren(1),
-            minCalculator ?: CriterionHolderPointCalculator.minOfChildren(0),
+            maxCalculator,
+            minCalculator,
             children,
         )
     }

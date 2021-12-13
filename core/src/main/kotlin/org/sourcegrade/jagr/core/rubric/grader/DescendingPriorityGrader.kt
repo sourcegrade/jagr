@@ -39,10 +39,10 @@ class DescendingPriorityGrader(
         if (graders.size == 1) {
             return graders[0].grade(testCycle, criterion)
         }
-        val maxPoints = criterion.maxPoints
+        val maxPoints = criterion.trueMaxPoints
         // negation is on purpose
-        // criterion.minPoints is always negative but it needs to be positive for comparison later
-        val minPoints = -criterion.minPoints
+        // criterion.minPoints is always negative, but it needs to be positive for comparison later
+        val minPoints = -criterion.trueMinPoints
         var correctPoints = 0
         var incorrectPoints = 0
         val comments: MutableList<String> = mutableListOf()
