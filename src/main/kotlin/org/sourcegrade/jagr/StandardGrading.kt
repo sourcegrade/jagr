@@ -20,6 +20,7 @@
 package org.sourcegrade.jagr
 
 import kotlinx.coroutines.runBlocking
+import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.config
@@ -104,16 +105,22 @@ class StandardGrading(
 
     private fun export(result: GradingResult) {
         for ((gradedRubric, _) in result.rubrics) {
-            try {
-                csvExporter.export(gradedRubric).writeIn(csvDir)
-            } catch (e: Exception) {
-                jagr.logger.error("Could not export $csvDir", e)
-            }
-            try {
-                htmlExporter.export(gradedRubric).writeIn(htmlDir)
-            } catch (e: Exception) {
-                jagr.logger.error("Could not export $htmlDir")
-            }
+            csvExporter.exportSafe(gradedRubric, csvDir)
+            htmlExporter.exportSafe(gradedRubric, htmlDir)
+        }
+    }
+
+    private fun GradedRubricExporter.exportSafe(gradedRubric: GradedRubric, file: File) {
+        val resource = try {
+            export(gradedRubric)
+        } catch (e: Exception) {
+            jagr.logger.info("Could not create export resource for ${gradedRubric.testCycle.submission.info}", e)
+            return
+        }
+        try {
+            resource.writeIn(file)
+        } catch (e: Exception) {
+            jagr.logger.info("Could not export resource ${resource.name}", e)
         }
     }
 }
