@@ -104,7 +104,7 @@ class StandardGrading(
             jagr.logger.warn("No rubrics!")
             return
         }
-        for (gradedRubric in collector.gradingFinished.flatMap { it.rubrics.keys }) {
+        for (gradedRubric in collector.gradingFinished.asSequence().flatMap { it.rubrics.keys }) {
             try {
                 csvExporter.export(gradedRubric).writeIn(csvFile)
             } catch (e: Exception) {
