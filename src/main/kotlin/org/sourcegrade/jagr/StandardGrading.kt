@@ -114,13 +114,13 @@ class StandardGrading(
         val resource = try {
             export(gradedRubric)
         } catch (e: Exception) {
-            jagr.logger.info("Could not create export resource for ${gradedRubric.testCycle.submission.info}", e)
+            jagr.logger.error("Could not create export resource for ${gradedRubric.testCycle.submission.info}", e)
             return
         }
         try {
             resource.writeIn(file)
         } catch (e: Exception) {
-            jagr.logger.info("Could not export resource ${resource.name}", e)
+            jagr.logger.error("Could not export resource ${resource.name}", e)
         }
     }
 }
