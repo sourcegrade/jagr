@@ -38,6 +38,8 @@ sealed class ThreadedGlobalParameterResolver<T : Any>(private val type: KClass<T
         value != null && parameterContext.parameter.type == type.java
 
     override fun resolveParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): T = value!!
+
+    fun getInternalValue(): T? = value
 }
 
 @Singleton
