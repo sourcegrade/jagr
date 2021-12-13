@@ -36,7 +36,7 @@ class GermanCSVExporter @Inject constructor(
         val rubric = gradedRubric.rubric
         val grade = gradedRubric.grade
         return buildResource {
-            name = "${gradedRubric.rubric.title}_${gradedRubric.testCycle.submission.info}.csv"
+            name = "${gradedRubric.testCycle.submission.info}.csv"
             outputStream.bufferedWriter().use {
                 it.append('\ufeff') // UTF-8 Byte Order Mark
                 CSVPrinter(it, CSVFormat.EXCEL).use { csv ->
