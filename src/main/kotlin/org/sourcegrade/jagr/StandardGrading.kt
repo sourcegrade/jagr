@@ -32,7 +32,6 @@ import org.sourcegrade.jagr.launcher.executor.GradingResult
 import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
 import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
 import org.sourcegrade.jagr.launcher.executor.RainbowProgressBar
-import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
 import org.sourcegrade.jagr.launcher.executor.XMasProgressBar
