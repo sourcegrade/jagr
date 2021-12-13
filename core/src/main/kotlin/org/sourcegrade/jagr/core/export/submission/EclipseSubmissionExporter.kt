@@ -19,78 +19,62 @@
 
 package org.sourcegrade.jagr.core.export.submission
 
+import com.google.inject.Inject
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.launcher.io.GraderJar
-import org.sourcegrade.jagr.launcher.io.ResourceContainer
-import org.sourcegrade.jagr.launcher.io.SubmissionExporter
-import org.sourcegrade.jagr.launcher.io.addResource
-import org.sourcegrade.jagr.launcher.io.buildResourceContainer
-import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
+import org.sourcegrade.jagr.core.ensure
+import org.sourcegrade.jagr.core.testing.JavaSubmissionImpl
+import org.sourcegrade.jagr.core.testing.TestJarImpl
+import org.sourcegrade.jagr.core.writeTextSafe
+import org.slf4j.Logger
+import java.io.File
 import java.io.PrintWriter
 
-class EclipseSubmissionExporter : SubmissionExporter.Eclipse {
-    override fun export(graders: List<GraderJar>, submissions: List<Submission>): List<ResourceContainer> {
-        return submissions.map { export(it) }
+class EclipseSubmissionExporter @Inject constructor(
+  private val logger: Logger,
+) : SubmissionExporter {
+  override val name: String = "eclipse"
+  override fun export(submission: Submission, directory: File, testJar: TestJarImpl?) {
+    if (submission !is JavaSubmissionImpl) return
+    val file = directory.resolve(submission.info.toString()).ensure(logger, false) ?: return
+    val src = file.resolve("src").ensure(logger, false) ?: return
+    writeProjectFile(submission, file.resolve(".project"))
+    writeClasspathFile(submission, file.resolve(".classpath"))
+    // sourceFile.name starts with a / and needs to be converted to a relative path
+    for ((_, sourceFile) in submission.sourceFiles) {
+      src.resolve(".${sourceFile.name}").writeTextSafe(sourceFile.content, logger)
     }
+  }
 
-    private fun export(submission: Submission) = buildResourceContainer {
-        submission as JavaSubmission
-        info = buildResourceContainerInfo {
-            name = DEFAULT_EXPORT_NAME
-        }
-        writeProjectFile(submission)
-        writeClasspathFile()
-        for ((fileName, sourceFile) in submission.compileResult.source.sourceFiles) {
-            addResource {
-                name = "src/$fileName"
-                outputStream.writer().use { it.write(sourceFile.content) }
-            }
-        }
-        for ((fileName, resource) in submission.compileResult.runtimeResources.resources) {
-            addResource {
-                name = "res/$fileName"
-                outputStream.writeBytes(resource)
-            }
-        }
-    }
+  private fun writeProjectFile(submission: JavaSubmissionImpl, file: File) {
+    val writer = PrintWriter(file, "UTF-8")
+    writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+    writer.println("<projectDescription>")
+    writer.println("\t<name>${submission.info}</name>")
+    writer.println("<buildSpec>")
+    writer.println("\t\t<buildCommand>")
+    writer.println("\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>")
+    writer.println("\t\t</buildCommand>")
+    writer.println("\t</buildSpec>")
+    writer.println("\t<natures>")
+    writer.println("\t\t<nature>org.eclipse.jdt.core.javanature</nature>")
+    writer.println("\t</natures>")
+    writer.println("</projectDescription>")
+    writer.flush()
+  }
 
-    private fun ResourceContainer.Builder.writeProjectFile(submission: JavaSubmission) = addResource {
-        name = ".project"
-        val writer = PrintWriter(outputStream, false, Charsets.UTF_8)
-        writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-        writer.println("<projectDescription>")
-        writer.println("\t<name>${submission.info}</name>")
-        writer.println("<buildSpec>")
-        writer.println("\t\t<buildCommand>")
-        writer.println("\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>")
-        writer.println("\t\t</buildCommand>")
-        writer.println("\t</buildSpec>")
-        writer.println("\t<natures>")
-        writer.println("\t\t<nature>org.eclipse.jdt.core.javanature</nature>")
-        writer.println("\t</natures>")
-        writer.println("</projectDescription>")
-        writer.flush()
-    }
-
-    private fun ResourceContainer.Builder.writeClasspathFile() = addResource {
-        name = ".classpath"
-        val writer = PrintWriter(outputStream, false, Charsets.UTF_8)
-        writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-        writer.println("<classpath>")
-        writer.println("\t<classpathentry kind=\"src\" path=\"src\"/>")
-        writer.println("\t<classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11\">\n")
-        writer.println("\t\t<attributes>\n")
-        writer.println("\t\t\t<attribute name=\"module\" value=\"true\"/>")
-        writer.println("\t\t</attributes>")
-        writer.println("\t</classpathentry>")
-        writer.println("\t<classpathentry kind=\"con\" path=\"org.eclipse.jdt.junit.JUNIT_CONTAINER/5\"/>")
-        writer.println("\t<classpathentry kind=\"output\" path=\"bin\"/>")
-        writer.println("</classpath>")
-        writer.flush()
-    }
-
-    companion object {
-        const val DEFAULT_EXPORT_NAME = "default"
-    }
+  private fun writeClasspathFile(submission: JavaSubmissionImpl, file: File) {
+    val writer = PrintWriter(file, "UTF-8")
+    writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+    writer.println("<classpath>")
+    writer.println("\t<classpathentry kind=\"src\" path=\"src\"/>")
+    writer.println("\t<classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11\">\n")
+    writer.println("\t\t<attributes>\n")
+    writer.println("\t\t\t<attribute name=\"module\" value=\"true\"/>")
+    writer.println("\t\t</attributes>")
+    writer.println("\t</classpathentry>")
+    writer.println("\t<classpathentry kind=\"con\" path=\"org.eclipse.jdt.junit.JUNIT_CONTAINER/5\"/>")
+    writer.println("\t<classpathentry kind=\"output\" path=\"bin\"/>")
+    writer.println("</classpath>")
+    writer.flush()
+  }
 }

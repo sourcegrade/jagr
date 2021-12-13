@@ -17,11 +17,26 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.core.extra
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import com.google.inject.Inject
+import org.sourcegrade.jagr.core.Config
+import org.slf4j.Logger
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+class ExtrasManager @Inject constructor(
+  private val config: Config,
+  private val logger: Logger,
+  private val moodleUnpack: MoodleUnpack,
+) {
+
+  private fun tryRunExtra(condition: Boolean, extra: Extra) {
+    if (condition) {
+      logger.info("Running extra ${extra.name}")
+      extra.run()
+    }
+  }
+
+  fun runExtras() {
+    tryRunExtra(config.extras.moodleUnpack.enabled, moodleUnpack)
+  }
 }

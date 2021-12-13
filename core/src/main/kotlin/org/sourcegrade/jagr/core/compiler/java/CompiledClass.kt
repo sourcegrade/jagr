@@ -20,12 +20,6 @@
 package org.sourcegrade.jagr.core.compiler.java
 
 import org.objectweb.asm.ClassReader
-import org.sourcegrade.jagr.launcher.io.SerializationScope
-import org.sourcegrade.jagr.launcher.io.SerializerFactory
-import org.sourcegrade.jagr.launcher.io.readByteArray
-import org.sourcegrade.jagr.launcher.io.readNullable
-import org.sourcegrade.jagr.launcher.io.writeByteArray
-import org.sourcegrade.jagr.launcher.io.writeNullable
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -34,41 +28,19 @@ import java.net.URI
 import javax.tools.JavaFileObject
 import javax.tools.SimpleJavaFileObject
 
-sealed class CompiledClass(
-    val className: String,
-    var source: JavaSourceFile? = null,
-) : SimpleJavaFileObject(URI(className), JavaFileObject.Kind.CLASS) {
+sealed class CompiledClass(val className: String) : SimpleJavaFileObject(URI(className), JavaFileObject.Kind.CLASS) {
 
-    abstract val bytecode: ByteArray
-    val reader: ClassReader by lazy { ClassReader(bytecode) }
+  abstract val byteArray: ByteArray
+  val reader: ClassReader by lazy { ClassReader(byteArray) }
+  var source: JavaSourceFile? = null
 
-    fun transformed(bytecode: ByteArray): CompiledClass = Existing(className, bytecode, source)
+  class Runtime(className: String) : CompiledClass(className) {
+    private val outputStream = ByteArrayOutputStream()
+    override val byteArray: ByteArray get() = outputStream.toByteArray()
+    override fun openOutputStream(): OutputStream = outputStream
+  }
 
-    class Runtime(className: String) : CompiledClass(className) {
-        private val outputStream = ByteArrayOutputStream()
-        override val bytecode: ByteArray get() = outputStream.toByteArray()
-        override fun openOutputStream(): OutputStream = outputStream
-    }
-
-    class Existing(
-        className: String,
-        override val bytecode: ByteArray,
-        source: JavaSourceFile? = null,
-    ) : CompiledClass(className, source) {
-        override fun openInputStream(): InputStream = ByteArrayInputStream(bytecode)
-    }
-
-    companion object Factory : SerializerFactory<CompiledClass> {
-        override fun read(scope: SerializationScope.Input) = Existing(
-            scope.input.readUTF(),
-            scope.input.readByteArray(),
-            scope.readNullable(),
-        )
-
-        override fun write(obj: CompiledClass, scope: SerializationScope.Output) {
-            scope.output.writeUTF(obj.className)
-            scope.output.writeByteArray(obj.bytecode)
-            scope.writeNullable(obj.source)
-        }
-    }
+  class Existing(className: String, override val byteArray: ByteArray) : CompiledClass(className) {
+    override fun openInputStream(): InputStream = ByteArrayInputStream(byteArray)
+  }
 }

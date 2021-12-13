@@ -17,11 +17,25 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.api.executor;
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+public class ScopeVerificationException extends RuntimeException {
+    public ScopeVerificationException() {
+    }
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+    public ScopeVerificationException(String message) {
+        super(message);
+    }
+
+    public ScopeVerificationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ScopeVerificationException(Throwable cause) {
+        super(cause);
+    }
+
+    public ScopeVerificationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

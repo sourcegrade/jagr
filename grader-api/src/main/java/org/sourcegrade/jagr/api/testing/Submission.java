@@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Set;
 
 @ApiStatus.NonExtendable
-public interface Submission {
+public interface Submission extends CompiledProgram {
 
     SubmissionInfo getInfo();
 

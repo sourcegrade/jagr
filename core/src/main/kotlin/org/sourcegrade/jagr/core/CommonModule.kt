@@ -22,6 +22,8 @@ package org.sourcegrade.jagr.core
 import com.google.inject.AbstractModule
 import com.google.inject.multibindings.Multibinder
 import org.slf4j.Logger
+import org.sourcegrade.jagr.api.executor.ExecutionScopeVerifier
+import org.sourcegrade.jagr.api.executor.ExecutionSnapshot
 import org.sourcegrade.jagr.api.rubric.Criterion
 import org.sourcegrade.jagr.api.rubric.CriterionHolderPointCalculator
 import org.sourcegrade.jagr.api.rubric.GradeResult
@@ -30,6 +32,8 @@ import org.sourcegrade.jagr.api.rubric.JUnitTestRef
 import org.sourcegrade.jagr.api.rubric.Rubric
 import org.sourcegrade.jagr.api.testing.ClassTransformer
 import org.sourcegrade.jagr.api.testing.extension.TestCycleResolver
+import org.sourcegrade.jagr.core.executor.ExecutionContextFactoryImpl
+import org.sourcegrade.jagr.core.executor.ExecutionContextVerifierFactoryImpl
 import org.sourcegrade.jagr.core.executor.GradingQueueFactoryImpl
 import org.sourcegrade.jagr.core.executor.TimeoutHandler
 import org.sourcegrade.jagr.core.export.rubric.GermanCSVExporter
@@ -70,6 +74,7 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
 
     override fun configure() {
         bind(ClassTransformer.Factory::class.java).to(ClassTransformerFactoryImpl::class.java)
+        bind(ExecutionScopeVerifier.Factory::class.java).to(ExecutionContextVerifierFactoryImpl::class.java)
         bind(Criterion.Factory::class.java).to(CriterionFactoryImpl::class.java)
         bind(CriterionHolderPointCalculator.Factory::class.java).to(CriterionHolderPointCalculatorFactoryImpl::class.java)
         bind(ExtrasManager::class.java).to(ExtrasManagerImpl::class.java)
@@ -99,6 +104,7 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
 
         requestStaticInjection(
             ClassTransformer.FactoryProvider::class.java,
+            ExecutionScopeVerifier.FactoryProvider::class.java,
             Criterion.FactoryProvider::class.java,
             CriterionHolderPointCalculator.FactoryProvider::class.java,
             Grader.FactoryProvider::class.java,

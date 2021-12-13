@@ -40,81 +40,81 @@ import java.util.concurrent.atomic.AtomicLong;
 @SuppressWarnings("unused")
 public final class TimeoutHandler {
 
-  private static final ThreadLocal<AtomicLong> LAST_TIMEOUT = ThreadLocal.withInitial(AtomicLong::new);
-  private static final ThreadLocal<List<String>> TEST_CLASS_NAMES = ThreadLocal.withInitial(Collections::emptyList);
-  private static final ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
+    private static final ThreadLocal<AtomicLong> LAST_TIMEOUT = ThreadLocal.withInitial(AtomicLong::new);
+    private static final ThreadLocal<List<String>> TEST_CLASS_NAMES = ThreadLocal.withInitial(Collections::emptyList);
+    private static final ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
 
-  @Inject
-  private static Config config;
+    @Inject
+    private static Config config;
 
-  @Inject
-  private static Logger logger;
+    @Inject
+    private static Logger logger;
 
-  /**
-   * Nested class for lazy initialization.
-   */
-  private static final class Lazy {
-    private static final long INDIVIDUAL_TIMEOUT = config.getExecutor().getTimeoutIndividual();
-    private static final long TOTAL_TIMEOUT = config.getExecutor().getTimeoutTotal();
-  }
-
-  public static void disableTimeout() {
-    LAST_TIMEOUT.get().set(-1);
-  }
-
-  public static void resetTimeout() {
-    LAST_TIMEOUT.get().set(0);
-  }
-
-  public static void setClassNames(final List<String> classNames) {
-    TEST_CLASS_NAMES.set(classNames);
-  }
-
-  /**
-   * Checks whether the current {@link Thread} has reached a timeout, throwing an {@link AssertionFailedError} if so.
-   *
-   * @throws AssertionFailedError If the timeout has been reached.
-   */
-  public static void checkTimeout() {
-    final long lastTimeout = LAST_TIMEOUT.get().get();
-    if (lastTimeout == -1) {
-      // do nothing
-      return;
+    /**
+     * Nested class for lazy initialization.
+     */
+    private static final class Lazy {
+        private static final long INDIVIDUAL_TIMEOUT = config.getExecutor().getTimeoutIndividual();
+        private static final long TOTAL_TIMEOUT = config.getExecutor().getTimeoutTotal();
     }
-    final Thread currentThread = Thread.currentThread();
-    final long userTime = mxBean.getThreadUserTime(currentThread.getId()) / 1_000_000;
-    if (lastTimeout == 0) {
-      LAST_TIMEOUT.get().set(userTime);
-    } else if (userTime - lastTimeout > Lazy.INDIVIDUAL_TIMEOUT) {
-      final Throwable timeoutLocation = getTimeoutLocation();
-      if (userTime > Lazy.TOTAL_TIMEOUT) {
-        logger.error("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms @ " + currentThread.getName(), timeoutLocation);
-        // do not reset LAST_TIMEOUT
-        throw new AssertionFailedError("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms");
-      } else {
-        logger.error("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms @ " + currentThread.getName(), timeoutLocation);
-        // reset LAST_TIMEOUT so that the next JUnit test doesn't immediately fail
-        LAST_TIMEOUT.get().set(userTime);
-        throw new AssertionFailedError("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms");
-      }
-    }
-  }
 
-  /**
-   * @return The String representing the StackElement of the Test, that produced the timeout
-   */
-  private static Throwable getTimeoutLocation() {
-    final Exception e = new Exception();
-    final StackTraceElement[] trace = e.getStackTrace();
-    int i = 1;
-    for (final StackTraceElement element : trace) {
-      if (TEST_CLASS_NAMES.get().contains(element.getClassName())) {
-        e.setStackTrace(Arrays.copyOfRange(trace, 2, i));
+    public static void disableTimeout() {
+        LAST_TIMEOUT.get().set(-1);
+    }
+
+    public static void resetTimeout() {
+        LAST_TIMEOUT.get().set(0);
+    }
+
+    public static void setClassNames(final List<String> classNames) {
+        TEST_CLASS_NAMES.set(classNames);
+    }
+
+    /**
+     * Checks whether the current {@link Thread} has reached a timeout, throwing an {@link AssertionFailedError} if so.
+     *
+     * @throws AssertionFailedError If the timeout has been reached.
+     */
+    public static void checkTimeout() {
+        final long lastTimeout = LAST_TIMEOUT.get().get();
+        if (lastTimeout == -1) {
+            // do nothing
+            return;
+        }
+        final Thread currentThread = Thread.currentThread();
+        final long userTime = mxBean.getThreadUserTime(currentThread.getId()) / 1_000_000;
+        if (lastTimeout == 0) {
+            LAST_TIMEOUT.get().set(userTime);
+        } else if (userTime - lastTimeout > Lazy.INDIVIDUAL_TIMEOUT) {
+            final Throwable timeoutLocation = getTimeoutLocation();
+            if (userTime > Lazy.TOTAL_TIMEOUT) {
+                logger.error("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms @ " + currentThread.getName(), timeoutLocation);
+                // do not reset LAST_TIMEOUT
+                throw new AssertionFailedError("Total timeout after " + Lazy.TOTAL_TIMEOUT + "ms");
+            } else {
+                logger.error("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms @ " + currentThread.getName(), timeoutLocation);
+                // reset LAST_TIMEOUT so that the next JUnit test doesn't immediately fail
+                LAST_TIMEOUT.get().set(userTime);
+                throw new AssertionFailedError("Timeout after " + Lazy.INDIVIDUAL_TIMEOUT + "ms");
+            }
+        }
+    }
+
+    /**
+     * @return The String representing the StackElement of the Test, that produced the timeout
+     */
+    private static Throwable getTimeoutLocation() {
+        final Exception e = new Exception();
+        final StackTraceElement[] trace = e.getStackTrace();
+        int i = 1;
+        for (final StackTraceElement element : trace) {
+            if (TEST_CLASS_NAMES.get().contains(element.getClassName())) {
+                e.setStackTrace(Arrays.copyOfRange(trace, 2, i));
+                return e;
+            }
+            i++;
+        }
+        logger.error("Unable to calculate timeout location");
         return e;
-      }
-      i++;
     }
-    logger.error("Unable to calculate timeout location");
-    return e;
-  }
 }

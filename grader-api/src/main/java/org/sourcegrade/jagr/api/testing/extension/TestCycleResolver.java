@@ -25,11 +25,18 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import org.sourcegrade.jagr.api.executor.ElementPredicate;
+import org.sourcegrade.jagr.api.executor.ExecutionScopeRunner;
+import org.sourcegrade.jagr.api.executor.ExecutionScopeVerifier;
+import org.sourcegrade.jagr.api.inspect.Loop;
 
 public final class TestCycleResolver implements ParameterResolver {
 
     @Override
     public final boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        ExecutionScopeRunner.runWithVerifiers(scope1 -> {
+
+        }, ExecutionScopeVerifier.ensure(ElementPredicate.nonOfType(Loop.class)));
         return Provider.parameterResolver.supportsParameter(parameterContext, extensionContext);
     }
 

@@ -17,11 +17,29 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.api.executor;
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import com.google.inject.Inject;
+import org.jetbrains.annotations.ApiStatus;
+import org.sourcegrade.jagr.api.inspect.Element;
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+@FunctionalInterface
+public interface ElementPredicate {
+
+    static ElementPredicate nonOfType(Class<? extends Element> type) {
+        return FactoryProvider.factory.ofType(type);
+    }
+
+    boolean test(Element element);
+
+    @ApiStatus.Internal
+    final class FactoryProvider {
+        @Inject
+        private static Factory factory;
+    }
+
+    @ApiStatus.Internal
+    interface Factory {
+        ElementPredicate ofType(Class<? extends Element> type);
+    }
 }

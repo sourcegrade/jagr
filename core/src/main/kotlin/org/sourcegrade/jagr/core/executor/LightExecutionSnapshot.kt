@@ -17,11 +17,15 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.core.executor
 
-import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+data class LightExecutionSnapshot(
+  val anchor: StackTraceElement,
+  val testCycle: TestCycle,
+) {
+  fun withStackTrace(stackTrace: Array<out StackTraceElement>): ExecutionSnapshotImpl {
+    return ExecutionSnapshotImpl(anchor, stackTrace, testCycle)
+  }
 }

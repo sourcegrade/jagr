@@ -19,6 +19,8 @@
 
 package org.sourcegrade.jagr.core.testing
 
+import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.api.testing.TestStatusListener
 import org.junit.platform.launcher.TestPlan
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener
 import org.sourcegrade.jagr.api.testing.TestCycle

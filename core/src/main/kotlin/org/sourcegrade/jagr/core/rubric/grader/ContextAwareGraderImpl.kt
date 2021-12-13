@@ -17,11 +17,23 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.core.rubric.grader
 
-import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.api.rubric.Criterion
+import org.sourcegrade.jagr.api.rubric.GradeResult
+import org.sourcegrade.jagr.api.rubric.Grader
 import org.sourcegrade.jagr.api.testing.TestCycle
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+class ContextAwareGraderImpl(
+  private val predicate: ((TestCycle, Criterion) -> Boolean)?,
+  private val pointCalculatorPassed: ((TestCycle, Criterion) -> GradeResult)?,
+  private val pointCalculatorFailed: ((TestCycle, Criterion) -> GradeResult)?,
+) : Grader {
+
+  override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult? {
+    if (predicate?.invoke(testCycle, criterion) == false) {
+      return null
+    }
+    return null // TODO: Finish implementing this
+  }
 }

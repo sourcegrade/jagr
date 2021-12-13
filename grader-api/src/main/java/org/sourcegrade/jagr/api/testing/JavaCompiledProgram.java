@@ -17,11 +17,10 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.api.testing;
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import org.jetbrains.annotations.ApiStatus;
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+@ApiStatus.NonExtendable
+public interface JavaCompiledProgram extends CompiledProgram {
 }

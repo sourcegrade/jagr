@@ -16,12 +16,17 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+package org.sourcegrade.jagr.core.executor
 
-package org.sourcegrade.jagr.core.testing
+import org.sourcegrade.jagr.core.inspect.ExecutionScopeImpl
+import org.sourcegrade.jagr.core.testing.TestCycleParameterResolver
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
-
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+object ExecutionContextHandler {
+  fun checkExecutionContext() {
+    val callStack = Thread.currentThread().stackTrace
+    for (verifier in CONTEXTS.getOrCreateStack()) {
+      verifier.verify(callStack)
+    }
+    (TestCycleParameterResolver.value.executionScopes.peek() as ExecutionScopeImpl?)?.snapshot =
+  }
 }

@@ -17,11 +17,10 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.core.executor
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.api.executor.ExecutionScopeVerifier
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+class ExecutionContextVerifierFactoryImpl : ExecutionScopeVerifier.Factory {
+  override fun ensureNotRecursive(): ExecutionScopeVerifier = NotRecursiveExecutionScopeVerifier
 }

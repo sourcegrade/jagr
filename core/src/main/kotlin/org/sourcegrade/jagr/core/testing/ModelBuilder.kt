@@ -19,9 +19,18 @@
 
 package org.sourcegrade.jagr.core.testing
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.api.testing.JavaCompiledProgram
+import spoon.Launcher
+import spoon.reflect.CtModel
+import spoon.support.compiler.VirtualFile
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+lateinit var program: JavaCompiledProgram
+fun JavaSubmissionImpl.buildModel(): CtModel {
+  val launcher = Launcher()
+  for ((_, sourceFile) in compileResult.sourceFiles) {
+    launcher.addInputResource(VirtualFile(sourceFile.content, sourceFile.name))
+  }
+  program.compileResult.otherCount
+  launcher.buildModel()
+  return launcher.model
 }

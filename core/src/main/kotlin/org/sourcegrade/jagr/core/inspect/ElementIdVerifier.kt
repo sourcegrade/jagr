@@ -17,11 +17,16 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.core.inspect
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.api.executor.ElementPredicate
+import org.sourcegrade.jagr.api.inspect.Element
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+class ElementIdVerifier(
+  predicate: ElementPredicate,
+  elementTable: Array<Element>,
+) {
+  private val notAllowed: IntArray = elementTable.filter(predicate::test).map { it.id }.toIntArray()
+
+  fun isNotAllowed(id: Int) = notAllowed.contains(id)
 }

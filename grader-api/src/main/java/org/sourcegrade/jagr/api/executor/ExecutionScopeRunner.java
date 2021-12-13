@@ -17,11 +17,28 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.api.executor;
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import com.google.inject.Inject;
+import org.jetbrains.annotations.ApiStatus;
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+@FunctionalInterface
+public interface ExecutionScopeRunner {
+
+    static void runWithVerifiers(ExecutionScopeRunner runnable, ExecutionScopeVerifier... verifiers) {
+        FactoryProvider.factory.runWithVerifiers(runnable, verifiers);
+    }
+
+    void run(ExecutionScope context);
+
+    @ApiStatus.Internal
+    final class FactoryProvider {
+        @Inject
+        private static Factory factory;
+    }
+
+    @ApiStatus.Internal
+    interface Factory {
+        void runWithVerifiers(ExecutionScopeRunner runnable, ExecutionScopeVerifier... verifiers);
+    }
 }

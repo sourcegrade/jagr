@@ -17,11 +17,24 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.api;
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.api.inspect.ContextResolver;
+import org.sourcegrade.jagr.api.inspect.JavaMethodContext;
+import org.sourcegrade.jagr.api.testing.TestCycle;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class IntegrationTest {
+
+  @Test
+  @DisplayName("Fib Iterative Correct")
+  public void fibIterative(TestCycle testCycle) {
+    JavaMethodContext ctx = ContextResolver.ofJavaMethod(() -> Solution.class.getMethod("bar", int.class))
+      .resolve(testCycle);
+    assertTrue(ctx.modified());
+    assertTrue(ctx.getModifiedSource().contains("for"));
+  }
 }

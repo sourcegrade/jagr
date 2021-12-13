@@ -17,11 +17,28 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.core.executor
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import com.google.inject.Singleton
+import org.sourcegrade.jagr.api.executor.ExecutionSnapshot
+import org.sourcegrade.jagr.api.executor.ExecutionScopeVerifier
+import org.sourcegrade.jagr.core.testing.TestCycleParameterResolver
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+@Singleton
+class ExecutionContextFactoryImpl : ExecutionSnapshot.Factory {
+
+
+  override fun runWithVerifiers(runnable: Runnable, vararg verifiers: ExecutionScopeVerifier) {
+    val testCycle = TestCycleParameterResolver.value
+    val snapshot = LightExecutionSnapshot(
+      Thread.currentThread().stackTrace[2],
+      testCycle,
+    )
+    testCycle.push(verifiers.withAnchor(snapshot))
+    try {
+      runnable.run()
+    } finally {
+      testCycle.pop()
+    }
+  }
 }

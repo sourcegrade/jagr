@@ -17,11 +17,25 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.core.executor
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.api.executor.ExecutionScope
+import org.sourcegrade.jagr.api.executor.ExecutionScopeVerifier
+import org.opentest4j.AssertionFailedError
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+object NotRecursiveExecutionScopeVerifier : ExecutionScopeVerifier {
+
+  /**
+   * @throws [AssertionFailedError] if [snapshot] is determined to contain recursive elements.
+   */
+  override fun verify(scope: ExecutionScope) {
+    val snapshot = scope.snapshot
+    val elements = HashSet<StackTraceElement>(snapshot.stackTrace.size)
+    for (element in snapshot.stackTrace) {
+      if (element == snapshot.anchor) break
+      if (!elements.add(element)) {
+        throw AssertionFailedError("Recursive invocation detected @ $element")
+      }
+    }
+  }
 }

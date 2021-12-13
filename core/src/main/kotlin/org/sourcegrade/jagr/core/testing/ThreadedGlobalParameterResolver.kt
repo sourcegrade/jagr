@@ -20,6 +20,8 @@
 package org.sourcegrade.jagr.core.testing
 
 import com.google.inject.Singleton
+import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.api.testing.extension.TestCycleResolver
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.ParameterContext
 import org.junit.jupiter.api.extension.ParameterResolver
@@ -41,4 +43,4 @@ sealed class ThreadedGlobalParameterResolver<T : Any>(private val type: KClass<T
 }
 
 @Singleton
-class TestCycleParameterResolver : ThreadedGlobalParameterResolver<TestCycle>(TestCycle::class), TestCycleResolver.Internal
+object TestCycleParameterResolver : ThreadedGlobalParameterResolver<TestCycle>(TestCycle::class), TestCycleResolver.Internal

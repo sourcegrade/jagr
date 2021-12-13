@@ -17,11 +17,13 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.core.export
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.TestCycle
+import org.sourcegrade.jagr.core.testing.TestJarImpl
+import java.io.File
 
-fun interface RuntimeTester {
-  fun createTestCycle(testJar: TestJarImpl, submission: Submission): TestCycle?
+interface Exporter {
+  val name: String
+  fun initialize(directory: File, testJar: TestJarImpl? = null) = Unit
+  fun finalize(directory: File, testJar: TestJarImpl? = null) = Unit
 }
