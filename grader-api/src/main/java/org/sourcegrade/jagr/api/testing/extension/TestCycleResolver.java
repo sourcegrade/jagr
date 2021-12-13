@@ -29,12 +29,18 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 public final class TestCycleResolver implements ParameterResolver {
 
     @Override
-    public final boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    public boolean supportsParameter(
+        ParameterContext parameterContext,
+        ExtensionContext extensionContext
+    ) throws ParameterResolutionException {
         return Provider.parameterResolver.supportsParameter(parameterContext, extensionContext);
     }
 
     @Override
-    public final Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    public Object resolveParameter(
+        ParameterContext parameterContext,
+        ExtensionContext extensionContext
+    ) throws ParameterResolutionException {
         return Provider.parameterResolver.resolveParameter(parameterContext, extensionContext);
     }
 
