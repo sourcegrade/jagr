@@ -27,36 +27,36 @@ import org.objectweb.asm.Opcodes
 import org.sourcegrade.jagr.api.testing.ClassTransformer
 
 class SubmissionVerificationTransformer : ClassTransformer {
-  private val name: String = "submission-verification"
-  override fun getName(): String = name
-  override fun transform(reader: ClassReader, writer: ClassWriter) = reader.accept(SVVisitor(writer), 0)
-  private inner class SVVisitor(classVisitor: ClassVisitor?) : ClassVisitor(Opcodes.ASM9, classVisitor) {
-    override fun visitMethod(
-      access: Int,
-      name: String?,
-      descriptor: String?,
-      signature: String?,
-      exceptions: Array<out String>?,
-    ) = SVMethodVisitor(super.visitMethod(access, name, descriptor, signature, exceptions))
+    private val name: String = "submission-verification"
+    override fun getName(): String = name
+    override fun transform(reader: ClassReader, writer: ClassWriter) = reader.accept(SVVisitor(writer), 0)
+    private inner class SVVisitor(classVisitor: ClassVisitor?) : ClassVisitor(Opcodes.ASM9, classVisitor) {
+        override fun visitMethod(
+            access: Int,
+            name: String?,
+            descriptor: String?,
+            signature: String?,
+            exceptions: Array<out String>?,
+        ) = SVMethodVisitor(super.visitMethod(access, name, descriptor, signature, exceptions))
 
-    private inner class SVMethodVisitor(methodVisitor: MethodVisitor?) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
-      override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
-        val methodInsnElement = MethodInsnElement(opcode, owner, name, descriptor, isInterface)
-        if (methodInsnElement.let { baseRules.any { rule -> rule(it) } }) {
-          error("Used illegal instruction $owner.$name$descriptor")
+        private inner class SVMethodVisitor(methodVisitor: MethodVisitor?) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
+            override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
+                val methodInsnElement = MethodInsnElement(opcode, owner, name, descriptor, isInterface)
+                if (methodInsnElement.let { baseRules.any { rule -> rule(it) } }) {
+                    error("Used illegal instruction $owner.$name$descriptor")
+                }
+                super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
+            }
         }
-        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
-      }
     }
-  }
 
-  companion object {
-    val baseRules = listOf<MethodInsnElement.() -> Boolean>(
-      { owner.startsWith("java/lang/reflect") },
-      { owner.startsWith("org/sourcegrade") },
-      { owner.startsWith("java/lang/Process") },
-      { owner == "java/lang/System" && name == "exit" },
-      { owner == "java/lang/Runtime" },
-    )
-  }
+    companion object {
+        val baseRules = listOf<MethodInsnElement.() -> Boolean>(
+            { owner.startsWith("java/lang/reflect") },
+            { owner.startsWith("org/sourcegrade") },
+            { owner.startsWith("java/lang/Process") },
+            { owner == "java/lang/System" && name == "exit" },
+            { owner == "java/lang/Runtime" },
+        )
+    }
 }

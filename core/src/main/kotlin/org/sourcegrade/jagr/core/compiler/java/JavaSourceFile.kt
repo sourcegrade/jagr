@@ -27,23 +27,23 @@ import javax.tools.JavaFileObject.Kind
 import javax.tools.SimpleJavaFileObject
 
 data class JavaSourceFile(
-  private val className: String,
-  private val fileName: String,
-  private val content: String,
+    private val className: String,
+    private val fileName: String,
+    private val content: String,
 ) : SimpleJavaFileObject(URI.create("string:///$fileName"), Kind.SOURCE), SourceFile {
-  override fun getFileName(): String = fileName
-  override fun getContent(): String = content
-  override fun getClassName(): String = className
-  override fun getCharContent(ignoreEncodingErrors: Boolean): CharSequence = content
+    override fun getFileName(): String = fileName
+    override fun getContent(): String = content
+    override fun getClassName(): String = className
+    override fun getCharContent(ignoreEncodingErrors: Boolean): CharSequence = content
 
-  companion object Factory : SerializerFactory<JavaSourceFile> {
-    override fun read(scope: SerializationScope.Input): JavaSourceFile =
-      JavaSourceFile(scope.input.readUTF(), scope.input.readUTF(), scope.input.readUTF())
+    companion object Factory : SerializerFactory<JavaSourceFile> {
+        override fun read(scope: SerializationScope.Input): JavaSourceFile =
+            JavaSourceFile(scope.input.readUTF(), scope.input.readUTF(), scope.input.readUTF())
 
-    override fun write(obj: JavaSourceFile, scope: SerializationScope.Output) {
-      scope.output.writeUTF(obj.className)
-      scope.output.writeUTF(obj.fileName)
-      scope.output.writeUTF(obj.content)
+        override fun write(obj: JavaSourceFile, scope: SerializationScope.Output) {
+            scope.output.writeUTF(obj.className)
+            scope.output.writeUTF(obj.fileName)
+            scope.output.writeUTF(obj.content)
+        }
     }
-  }
 }

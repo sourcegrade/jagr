@@ -25,8 +25,8 @@ import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 
 class GradingQueueFactoryImpl @Inject constructor(
-  private val logger: Logger,
-  private val compiledBatchFactory: CompiledBatchFactoryImpl,
+    private val logger: Logger,
+    private val compiledBatchFactory: CompiledBatchFactoryImpl,
 ) : GradingQueue.Factory {
-  override fun create(batch: GradingBatch): GradingQueue = GradingQueueImpl(logger, compiledBatchFactory.compile(batch))
+    override fun create(batch: GradingBatch): GradingQueue = GradingQueueImpl(logger, compiledBatchFactory.compile(batch))
 }

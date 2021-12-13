@@ -27,32 +27,32 @@ import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 
 fun main(vararg args: String) {
-  try {
-    MainCommand().main(args)
-  } catch (e: Throwable) {
-    Jagr.logger.error("A fatal error occurred", e)
-    throw e
-  }
+    try {
+        MainCommand().main(args)
+    } catch (e: Throwable) {
+        Jagr.logger.error("A fatal error occurred", e)
+        throw e
+    }
 }
 
 class MainCommand : CliktCommand() {
 
-  /**
-   * Command line option to indicate that this process will listen to (via std in) to a grading request
-   */
-  private val child by option("--child", "-c").flag()
-  private val exportOnly by option("--export-only", "-e").flag()
-  private val rainbow by option("--rainbow").flag()
-  private val xmas by option("--xmas").flag()
-  override fun run() {
-    if (child) {
-      Environment.initializeChildProcess()
-      ChildProcGrading().grade()
-    } else {
-      Environment.initializeMainProcess()
-      val startTime = System.currentTimeMillis()
-      StandardGrading(rainbow, xmas).grade(exportOnly)
-      Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
+    /**
+     * Command line option to indicate that this process will listen to (via std in) to a grading request
+     */
+    private val child by option("--child", "-c").flag()
+    private val exportOnly by option("--export-only", "-e").flag()
+    private val rainbow by option("--rainbow").flag()
+    private val xmas by option("--xmas").flag()
+    override fun run() {
+        if (child) {
+            Environment.initializeChildProcess()
+            ChildProcGrading().grade()
+        } else {
+            Environment.initializeMainProcess()
+            val startTime = System.currentTimeMillis()
+            StandardGrading(rainbow, xmas).grade(exportOnly)
+            Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
+        }
     }
-  }
 }

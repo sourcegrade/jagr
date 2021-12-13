@@ -22,12 +22,22 @@ package org.sourcegrade.jagr.api.testing;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Set;
+
 @ApiStatus.NonExtendable
 public interface Submission {
 
-  SubmissionInfo getInfo();
+    SubmissionInfo getInfo();
 
-  CompileResult getCompileResult();
+    CompileResult getCompileResult();
 
-  @Nullable SourceFile getSourceFile(String fileName);
+    @Nullable SourceFile getSourceFile(String fileName);
+
+    /**
+     * <b>Experimental API. May be moved in a future release.</b>
+     *
+     * @return An immutable set of Java class names from this submission.
+     */
+    @ApiStatus.Experimental
+    Set<String> getClassNames();
 }

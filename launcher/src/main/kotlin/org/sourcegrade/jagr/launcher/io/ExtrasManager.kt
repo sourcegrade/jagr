@@ -20,5 +20,5 @@
 package org.sourcegrade.jagr.launcher.io
 
 interface ExtrasManager {
-  fun runExtras()
+    fun runExtras()
 }

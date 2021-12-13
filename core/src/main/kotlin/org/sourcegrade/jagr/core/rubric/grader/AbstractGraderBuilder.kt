@@ -23,24 +23,24 @@ import org.sourcegrade.jagr.api.rubric.Grader
 
 abstract class AbstractGraderBuilder<B : Grader.Builder<B>> : Grader.Builder<B> {
 
-  var graderPassed: Grader? = null
-  var graderFailed: Grader? = null
-  var commentIfFailed: String? = null
+    var graderPassed: Grader? = null
+    var graderFailed: Grader? = null
+    var commentIfFailed: String? = null
 
-  abstract fun getThis(): B
+    abstract fun getThis(): B
 
-  override fun pointsPassed(grader: Grader?): B {
-    graderPassed = grader
-    return getThis()
-  }
+    override fun pointsPassed(grader: Grader?): B {
+        graderPassed = grader
+        return getThis()
+    }
 
-  override fun pointsFailed(grader: Grader?): B {
-    graderFailed = grader
-    return getThis()
-  }
+    override fun pointsFailed(grader: Grader?): B {
+        graderFailed = grader
+        return getThis()
+    }
 
-  override fun commentIfFailed(comment: String?): B {
-    commentIfFailed = comment
-    return getThis()
-  }
+    override fun commentIfFailed(comment: String?): B {
+        commentIfFailed = comment
+        return getThis()
+    }
 }

@@ -28,22 +28,28 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 
 public final class TestCycleResolver implements ParameterResolver {
 
-  @Override
-  public final boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-    return Provider.parameterResolver.supportsParameter(parameterContext, extensionContext);
-  }
+    @Override
+    public boolean supportsParameter(
+        ParameterContext parameterContext,
+        ExtensionContext extensionContext
+    ) throws ParameterResolutionException {
+        return Provider.parameterResolver.supportsParameter(parameterContext, extensionContext);
+    }
 
-  @Override
-  public final Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-    return Provider.parameterResolver.resolveParameter(parameterContext, extensionContext);
-  }
+    @Override
+    public Object resolveParameter(
+        ParameterContext parameterContext,
+        ExtensionContext extensionContext
+    ) throws ParameterResolutionException {
+        return Provider.parameterResolver.resolveParameter(parameterContext, extensionContext);
+    }
 
-  @ApiStatus.Internal
-  public static final class Provider {
-    @Inject
-    private static Internal parameterResolver;
-  }
+    @ApiStatus.Internal
+    public static final class Provider {
+        @Inject
+        static Internal parameterResolver;
+    }
 
-  @ApiStatus.Internal
-  public interface Internal extends ParameterResolver {}
+    @ApiStatus.Internal
+    public interface Internal extends ParameterResolver {}
 }

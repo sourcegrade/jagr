@@ -29,40 +29,40 @@ import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
 import org.sourcegrade.jagr.launcher.io.GraderJar
 
 class RuntimeGraderImpl @Inject constructor(
-  private val logger: Logger,
-  private val testers: Set<RuntimeTester>,
-  private val fallbackRuntimeTester: FallbackRuntimeTester,
+    private val logger: Logger,
+    private val testers: Set<RuntimeTester>,
+    private val fallbackRuntimeTester: FallbackRuntimeTester,
 ) : RuntimeGrader {
-  override fun grade(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String> {
-    val gradedRubrics: MutableMap<GradedRubric, String> = mutableMapOf()
-    for (grader in graders) {
-      for (tester in testers) {
-        grader as GraderJarImpl // for now, I want to keep the API as small as possible
-        tester.createTestCycle(grader, submission)?.collectResults()?.also { gradedRubrics += it }
-      }
+    override fun grade(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String> {
+        val gradedRubrics: MutableMap<GradedRubric, String> = mutableMapOf()
+        for (grader in graders) {
+            for (tester in testers) {
+                grader as GraderJarImpl // for now, I want to keep the API as small as possible
+                tester.createTestCycle(grader, submission)?.collectResults()?.also { gradedRubrics += it }
+            }
+        }
+        return gradedRubrics
     }
-    return gradedRubrics
-  }
 
-  override fun gradeFallback(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String> {
-    return graders.asSequence()
-      .mapNotNull { fallbackRuntimeTester.createTestCycle(it as GraderJarImpl, submission)?.collectResults() }
-      .fold(emptyMap()) { a, b -> a + b }
-  }
-
-  private fun TestCycle.collectResults(): Map<GradedRubric, String> {
-    val result: MutableMap<GradedRubric, String> = mutableMapOf()
-    for (rubricProviderName in rubricProviderClassNames) {
-      val rubricProvider = try {
-        // rubric provider must first be loaded again together with submission classes
-        classLoader.loadClass(rubricProviderName).getConstructor().newInstance() as RubricProvider
-      } catch (e: Throwable) {
-        logger.error("Failed to initialize rubricProvider $rubricProviderName for $submission", e)
-        continue
-      }
-      val exportFileName = rubricProvider.getOutputFileName(submission) ?: submission.info.toString()
-      result[rubricProvider.rubric.grade(this)] = exportFileName
+    override fun gradeFallback(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String> {
+        return graders.asSequence()
+            .mapNotNull { fallbackRuntimeTester.createTestCycle(it as GraderJarImpl, submission)?.collectResults() }
+            .fold(emptyMap()) { a, b -> a + b }
     }
-    return result
-  }
+
+    private fun TestCycle.collectResults(): Map<GradedRubric, String> {
+        val result: MutableMap<GradedRubric, String> = mutableMapOf()
+        for (rubricProviderName in rubricProviderClassNames) {
+            val rubricProvider = try {
+                // rubric provider must first be loaded again together with submission classes
+                classLoader.loadClass(rubricProviderName).getConstructor().newInstance() as RubricProvider
+            } catch (e: Throwable) {
+                logger.error("Failed to initialize rubricProvider $rubricProviderName for $submission", e)
+                continue
+            }
+            val exportFileName = rubricProvider.getOutputFileName(submission) ?: submission.info.toString()
+            result[rubricProvider.rubric.grade(this)] = exportFileName
+        }
+        return result
+    }
 }

@@ -24,18 +24,18 @@ import org.sourcegrade.jagr.api.testing.RubricConfiguration
 import java.util.Collections
 
 class RubricConfigurationImpl : RubricConfiguration {
-  private val transformers = mutableListOf<ClassTransformer>()
-  private val fileNameSolutionOverrides = mutableListOf<String>()
-  override fun getTransformers(): List<ClassTransformer> = Collections.unmodifiableList(transformers)
-  override fun getFileNameSolutionOverrides(): MutableList<String> = Collections.unmodifiableList(fileNameSolutionOverrides)
+    private val transformers = mutableListOf<ClassTransformer>()
+    private val fileNameSolutionOverrides = mutableListOf<String>()
+    override fun getTransformers(): List<ClassTransformer> = Collections.unmodifiableList(transformers)
+    override fun getFileNameSolutionOverrides(): MutableList<String> = Collections.unmodifiableList(fileNameSolutionOverrides)
 
-  override fun addTransformer(transformer: ClassTransformer): RubricConfiguration {
-    transformers += transformer
-    return this
-  }
+    override fun addTransformer(transformer: ClassTransformer): RubricConfiguration {
+        transformers += transformer
+        return this
+    }
 
-  override fun addFileNameSolutionOverride(fileName: String): RubricConfiguration {
-    fileNameSolutionOverrides += fileName
-    return this
-  }
+    override fun addFileNameSolutionOverride(fileName: String): RubricConfiguration {
+        fileNameSolutionOverrides += fileName
+        return this
+    }
 }

@@ -35,35 +35,35 @@ import org.sourcegrade.jagr.launcher.io.writeList
  */
 @Serializable
 data class SubmissionInfoImpl(
-  private val assignmentId: String,
-  private val studentId: String,
-  private val firstName: String,
-  private val lastName: String,
-  val sourceSets: List<SourceSetInfoImpl>,
+    private val assignmentId: String,
+    private val studentId: String,
+    private val firstName: String,
+    private val lastName: String,
+    val sourceSets: List<SourceSetInfoImpl>,
 ) : SubmissionInfo {
-  override fun getAssignmentId(): String = assignmentId
-  override fun getStudentId(): String = studentId
-  override fun getFirstName(): String = firstName
-  override fun getLastName(): String = lastName
-  override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
+    override fun getAssignmentId(): String = assignmentId
+    override fun getStudentId(): String = studentId
+    override fun getFirstName(): String = firstName
+    override fun getLastName(): String = lastName
+    override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
 
-  companion object Factory : SerializerFactory<SubmissionInfoImpl> {
-    override fun read(scope: SerializationScope.Input) = SubmissionInfoImpl(
-      scope.input.readUTF(),
-      scope.input.readUTF(),
-      scope.input.readUTF(),
-      scope.input.readUTF(),
-      scope.readList(),
-    )
+    companion object Factory : SerializerFactory<SubmissionInfoImpl> {
+        override fun read(scope: SerializationScope.Input) = SubmissionInfoImpl(
+            scope.input.readUTF(),
+            scope.input.readUTF(),
+            scope.input.readUTF(),
+            scope.input.readUTF(),
+            scope.readList(),
+        )
 
-    override fun write(obj: SubmissionInfoImpl, scope: SerializationScope.Output) {
-      scope.output.writeUTF(obj.assignmentId)
-      scope.output.writeUTF(obj.studentId)
-      scope.output.writeUTF(obj.firstName)
-      scope.output.writeUTF(obj.lastName)
-      scope.writeList(obj.sourceSets)
+        override fun write(obj: SubmissionInfoImpl, scope: SerializationScope.Output) {
+            scope.output.writeUTF(obj.assignmentId)
+            scope.output.writeUTF(obj.studentId)
+            scope.output.writeUTF(obj.firstName)
+            scope.output.writeUTF(obj.lastName)
+            scope.writeList(obj.sourceSets)
+        }
     }
-  }
 
-  object Extractor : ResourceExtractor by InfoJsonResourceExtractor<SubmissionInfoImpl>("submission-info.json")
+    object Extractor : ResourceExtractor by InfoJsonResourceExtractor<SubmissionInfoImpl>("submission-info.json")
 }

@@ -45,18 +45,18 @@ import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import kotlin.reflect.KClass
 
 class SerializationFactoryLocatorImpl : SerializerFactory.Locator {
-  override fun <T : Any> get(type: KClass<T>): SerializerFactory<T>? = when (type) {
-    Criterion::class -> CriterionImpl
-    Rubric::class -> RubricImpl
-    GradeResult::class -> GradeResultImpl
-    GradedCriterion::class -> GradedCriterionImpl
-    GradedRubric::class -> GradedRubricImpl
-    GraderJar::class -> GraderJarImpl
-    GradingRequest::class -> GradingRequestImpl
-    ResourceCollector::class -> ResourceCollectorImpl
-    Submission::class -> JavaSubmission
-    SubmissionInfo::class -> SubmissionInfoImpl
-    TestCycle::class -> JavaTestCycle
-    else -> null
-  } as SerializerFactory<T>?
+    override fun <T : Any> get(type: KClass<T>): SerializerFactory<T>? = when (type) {
+        Criterion::class -> CriterionImpl
+        Rubric::class -> RubricImpl
+        GradeResult::class -> GradeResultImpl
+        GradedCriterion::class -> GradedCriterionImpl
+        GradedRubric::class -> GradedRubricImpl
+        GraderJar::class -> GraderJarImpl
+        GradingRequest::class -> GradingRequestImpl
+        ResourceCollector::class -> ResourceCollectorImpl
+        Submission::class -> JavaSubmission
+        SubmissionInfo::class -> SubmissionInfoImpl
+        TestCycle::class -> JavaTestCycle
+        else -> null
+    } as SerializerFactory<T>?
 }

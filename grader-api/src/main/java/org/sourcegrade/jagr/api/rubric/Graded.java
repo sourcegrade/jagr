@@ -28,7 +28,7 @@ import org.sourcegrade.jagr.api.testing.TestCycle;
 @ApiStatus.NonExtendable
 public interface Graded {
 
-  TestCycle getTestCycle();
+    TestCycle getTestCycle();
 
-  GradeResult getGrade();
+    GradeResult getGrade();
 }

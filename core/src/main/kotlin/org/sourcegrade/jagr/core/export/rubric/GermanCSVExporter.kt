@@ -30,47 +30,47 @@ import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.buildResource
 
 class GermanCSVExporter @Inject constructor(
-  private val logger: Logger,
+    private val logger: Logger,
 ) : GradedRubricExporter.CSV {
-  override fun export(gradedRubric: GradedRubric): Resource {
-    val rubric = gradedRubric.rubric
-    val grade = gradedRubric.grade
-    return buildResource {
-      name = "${gradedRubric.rubric.title}_${gradedRubric.testCycle.submission.info}.csv"
-      outputStream.bufferedWriter().use {
-        it.append('\ufeff') // UTF-8 Byte Order Mark
-        CSVPrinter(it, CSVFormat.EXCEL).use { csv ->
-          csv.printRecord(rubric.title)
-          csv.printRecord("Kriterium", "Möglich", "Erzielt", "Kommentar", "Extra")
-          for (gradedCriterion in gradedRubric.childCriteria) {
-            csv.printCriterion(gradedCriterion)
-          }
-          csv.printRecord(
-            "Gesamt",
-            rubric.maxPoints.toString(),
-            grade.getInRange(rubric),
-            grade.comments.firstOrNull(),
-          )
-          grade.comments.asSequence().drop(1).forEach { comment ->
-            csv.printRecord(null, null, null, comment)
-          }
+    override fun export(gradedRubric: GradedRubric): Resource {
+        val rubric = gradedRubric.rubric
+        val grade = gradedRubric.grade
+        return buildResource {
+            name = "${gradedRubric.testCycle.submission.info}.csv"
+            outputStream.bufferedWriter().use {
+                it.append('\ufeff') // UTF-8 Byte Order Mark
+                CSVPrinter(it, CSVFormat.EXCEL).use { csv ->
+                    csv.printRecord(rubric.title)
+                    csv.printRecord("Kriterium", "Möglich", "Erzielt", "Kommentar", "Extra")
+                    for (gradedCriterion in gradedRubric.childCriteria) {
+                        csv.printCriterion(gradedCriterion)
+                    }
+                    csv.printRecord(
+                        "Gesamt",
+                        rubric.maxPoints.toString(),
+                        grade.getInRange(rubric),
+                        grade.comments.firstOrNull(),
+                    )
+                    grade.comments.asSequence().drop(1).forEach { comment ->
+                        csv.printRecord(null, null, null, comment)
+                    }
+                }
+            }
         }
-      }
     }
-  }
 
-  private fun CSVPrinter.printCriterion(gradedCriterion: GradedCriterion) {
-    val criterion = gradedCriterion.criterion
-    val grade = gradedCriterion.grade
-    val comments = grade.comments.joinToString("; ")
-    if (gradedCriterion.childCriteria.isEmpty()) {
-      printRecord(criterion.shortDescription, criterion.minMax, grade.getInRange(criterion), comments, criterion.hiddenNotes)
-    } else {
-      printRecord(criterion.shortDescription, null, null, comments, criterion.hiddenNotes)
-      for (childGradedCriterion in gradedCriterion.childCriteria) {
-        printCriterion(childGradedCriterion)
-      }
-      this.println()
+    private fun CSVPrinter.printCriterion(gradedCriterion: GradedCriterion) {
+        val criterion = gradedCriterion.criterion
+        val grade = gradedCriterion.grade
+        val comments = grade.comments.joinToString("; ")
+        if (gradedCriterion.childCriteria.isEmpty()) {
+            printRecord(criterion.shortDescription, criterion.minMax, grade.getInRange(criterion), comments, criterion.hiddenNotes)
+        } else {
+            printRecord(criterion.shortDescription, null, null, comments, criterion.hiddenNotes)
+            for (childGradedCriterion in gradedCriterion.childCriteria) {
+                printCriterion(childGradedCriterion)
+            }
+            this.println()
+        }
     }
-  }
 }

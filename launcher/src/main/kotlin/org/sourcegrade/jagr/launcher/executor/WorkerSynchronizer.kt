@@ -31,41 +31,41 @@ import kotlin.coroutines.resume
  * Resumes [continuation] when it receives a notification through [notifyContinuation] (e.g. a [Worker] is finished).
  */
 internal class WorkerSynchronizer {
-  private val finishedBetweenContinuation = AtomicBoolean()
-  private val exitDirectly = AtomicBoolean()
-  private val lock = ReentrantLock()
-  private var continuation: Continuation<Unit>? = null
+    private val finishedBetweenContinuation = AtomicBoolean()
+    private val exitDirectly = AtomicBoolean()
+    private val lock = ReentrantLock()
+    private var continuation: Continuation<Unit>? = null
 
-  fun setContinuation(continuation: Continuation<Unit>, exitDirectly: Boolean = false) = lock.withLock {
-    this.continuation = continuation
-    this.exitDirectly.set(exitDirectly)
-  }
-
-  fun notifyContinuation() = lock.withLock {
-    if (finishedBetweenContinuation.get()) {
-      if (exitDirectly.get()) {
-        resume()
-      } else {
-        return
-      }
+    fun setContinuation(continuation: Continuation<Unit>, exitDirectly: Boolean = false) = lock.withLock {
+        this.continuation = continuation
+        this.exitDirectly.set(exitDirectly)
     }
-    val cont = continuation
-    if (cont == null) {
-      finishedBetweenContinuation.set(true)
-    } else {
-      resume()
-    }
-  }
 
-  fun handleBetween() = lock.withLock {
-    if (finishedBetweenContinuation.get()) {
-      finishedBetweenContinuation.set(false)
-      resume()
+    fun notifyContinuation() = lock.withLock {
+        if (finishedBetweenContinuation.get()) {
+            if (exitDirectly.get()) {
+                resume()
+            } else {
+                return
+            }
+        }
+        val cont = continuation
+        if (cont == null) {
+            finishedBetweenContinuation.set(true)
+        } else {
+            resume()
+        }
     }
-  }
 
-  private fun resume() {
-    continuation?.resume(Unit)
-    continuation = null
-  }
+    fun handleBetween() = lock.withLock {
+        if (finishedBetweenContinuation.get()) {
+            finishedBetweenContinuation.set(false)
+            resume()
+        }
+    }
+
+    private fun resume() {
+        continuation?.resume(Unit)
+        continuation = null
+    }
 }

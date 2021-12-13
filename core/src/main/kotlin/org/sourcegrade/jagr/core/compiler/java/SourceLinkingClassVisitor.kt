@@ -23,18 +23,18 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 
 class SourceLinkingClassVisitor(
-  className: String,
+    className: String,
 ) : ClassVisitor(Opcodes.ASM9) {
 
-  private val packageName = with(className) { lastIndexOf('/').let { if (it == -1) null else substring(0, it) } }
-  var sourceFileName: String? = null
+    private val packageName = with(className) { lastIndexOf('/').let { if (it == -1) null else substring(0, it) } }
+    var sourceFileName: String? = null
 
-  override fun visitSource(source: String?, debug: String?) {
-    if (source == null || sourceFileName != null) return
-    sourceFileName = if (packageName == null) {
-      source
-    } else {
-      "$packageName/$source"
+    override fun visitSource(source: String?, debug: String?) {
+        if (source == null || sourceFileName != null) return
+        sourceFileName = if (packageName == null) {
+            source
+        } else {
+            "$packageName/$source"
+        }
     }
-  }
 }

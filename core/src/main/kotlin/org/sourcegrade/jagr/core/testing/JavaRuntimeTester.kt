@@ -31,63 +31,64 @@ import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 import org.sourcegrade.jagr.core.compiler.java.plus
+import org.sourcegrade.jagr.core.executor.TimeoutHandler
 
 class JavaRuntimeTester @Inject constructor(
-  private val logger: Logger,
-  private val testCycleParameterResolver: TestCycleParameterResolver,
+    private val logger: Logger,
+    private val testCycleParameterResolver: TestCycleParameterResolver,
 ) : RuntimeTester {
-  override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
-    if (submission !is JavaSubmission) return null
-    val info = submission.info
-    val rubricProviders = grader.rubricProviders[info.assignmentId] ?: return null
-    val classLoader = RuntimeClassLoader(
-      submission.compileResult.runtimeResources +
-        submission.libraries +
-        grader.containerWithoutSolution.runtimeResources
-    )
-    val testCycle = JavaTestCycle(rubricProviders, submission, classLoader)
-    grader.testProviders[info.assignmentId]
-      ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
-      ?.runJUnit(testCycle)
-      ?.also(testCycle::setJUnitResult)
-    return testCycle
-  }
+    override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
+        if (submission !is JavaSubmission) return null
+        val info = submission.info
+        val rubricProviders = grader.rubricProviders[info.assignmentId] ?: return null
+        val classLoader = RuntimeClassLoader(
+            submission.compileResult.runtimeResources +
+                submission.libraries +
+                grader.containerWithoutSolution.runtimeResources
+        )
+        val testCycle = JavaTestCycle(rubricProviders, submission, classLoader)
+        grader.testProviders[info.assignmentId]
+            ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
+            ?.runJUnit(testCycle)
+            ?.also(testCycle::setJUnitResult)
+        return testCycle
+    }
 
-  private fun List<ClassSelector>.runJUnit(testCycle: TestCycle): JUnitResultImpl? {
-    testCycleParameterResolver.value = testCycle
-    val info = testCycle.submission.info
-    logger.info("Running JUnit @ $info :: [${joinToString { it.className }}]")
-    val launcher = LauncherFactory.create()
-    val testPlan = try {
-      launcher.discover(LauncherDiscoveryRequestBuilder.request().selectors(this).build())
-    } catch (e: JUnitException) {
-      /*
-       * If a LinkageError occurred in a JUnit test class, try again with the other test classes.
-       * This may occur if a student did not implement a class or method a test class depends on.
-       */
-      if (e.cause is JUnitException && e.cause?.cause is LinkageError) {
-        return partition { e.cause!!.message?.contains(it.className) == false }.let { (included, excluded) ->
-          val excludedClasses = excluded.joinToString { it.className }
-          val msg = e.cause!!.cause!!.message
-          logger.error("Linkage error @ $info :: $msg, retrying without test classes [$excludedClasses]")
-          included.runJUnit(testCycle)
+    private fun List<ClassSelector>.runJUnit(testCycle: TestCycle): JUnitResultImpl? {
+        testCycleParameterResolver.value = testCycle
+        val info = testCycle.submission.info
+        logger.info("Running JUnit @ $info :: [${joinToString { it.className }}]")
+        val launcher = LauncherFactory.create()
+        val testPlan = try {
+            launcher.discover(LauncherDiscoveryRequestBuilder.request().selectors(this).build())
+        } catch (e: JUnitException) {
+            /*
+            * If a LinkageError occurred in a JUnit test class, try again with the other test classes.
+            * This may occur if a student did not implement a class or method a test class depends on.
+            */
+            if (e.cause is JUnitException && e.cause?.cause is LinkageError) {
+                return partition { e.cause!!.message?.contains(it.className) == false }.let { (included, excluded) ->
+                    val excludedClasses = excluded.joinToString { it.className }
+                    val msg = e.cause!!.cause!!.message
+                    logger.error("Linkage error @ $info :: $msg, retrying without test classes [$excludedClasses]")
+                    included.runJUnit(testCycle)
+                }
+            }
+            logger.error("Failed to discover JUnit tests for $info", e)
+            return null
         }
-      }
-      logger.error("Failed to discover JUnit tests for $info", e)
-      return null
+        return try {
+            val summaryListener = SummaryGeneratingListener()
+            val statusListener = TestStatusListenerImpl(logger)
+            TimeoutHandler.setClassNames(map { it.className })
+            launcher.execute(testPlan, summaryListener, statusListener)
+            // if total timeout has been reached, reset so that the rubric provider doesn't throw an error
+            TimeoutHandler.disableTimeout()
+            statusListener.logLinkageErrors(info)
+            JUnitResultImpl(testPlan, summaryListener, statusListener)
+        } catch (e: Throwable) {
+            logger.error("Failed to run JUnit tests for $info", e)
+            null
+        }
     }
-    return try {
-      val summaryListener = SummaryGeneratingListener()
-      val statusListener = TestStatusListenerImpl(logger)
-      org.sourcegrade.jagr.core.executor.TimeoutHandler.setClassNames(map { it.className })
-      launcher.execute(testPlan, summaryListener, statusListener)
-      // if total timeout has been reached, reset so that the rubric provider doesn't throw an error
-      org.sourcegrade.jagr.core.executor.TimeoutHandler.disableTimeout()
-      statusListener.logLinkageErrors(info)
-      JUnitResultImpl(testPlan, summaryListener, statusListener)
-    } catch (e: Throwable) {
-      logger.error("Failed to run JUnit tests for $info", e)
-      null
-    }
-  }
 }

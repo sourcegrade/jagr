@@ -25,17 +25,17 @@ package org.sourcegrade.jagr.launcher.executor
  * A worker may only be used once nad u
  */
 interface Worker {
-  val job: GradingJob?
-  val status: WorkerStatus
-  val userTime: Long // TODO: maybe elapsedTime instead?
+    val job: GradingJob?
+    val status: WorkerStatus
+    val userTime: Long // TODO: maybe elapsedTime instead?
 
-  fun assignJob(job: GradingJob)
+    fun assignJob(job: GradingJob)
 
-  /**
-   * Attempts to kill this worker and stop grading this job to free up resources.
-   *
-   * The goal of this method is to free up system resources from grading futile submissions. While a worker is normally able to
-   * stop properly, there are unfortunately cases where this will not work.
-   */
-  fun kill()
+    /**
+     * Attempts to kill this worker and stop grading this job to free up resources.
+     *
+     * The goal of this method is to free up system resources from grading futile submissions. While a worker is normally able to
+     * stop properly, there are unfortunately cases where this will not work.
+     */
+    fun kill()
 }

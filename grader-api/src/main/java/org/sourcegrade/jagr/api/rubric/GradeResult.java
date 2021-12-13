@@ -30,87 +30,87 @@ import java.util.List;
 @ApiStatus.NonExtendable
 public interface GradeResult {
 
-  static GradeResult ofCorrect(int points) {
-    return FactoryProvider.factory.ofCorrect(points);
-  }
+    static GradeResult ofCorrect(int points) {
+        return FactoryProvider.factory.ofCorrect(points);
+    }
 
-  static GradeResult ofIncorrect(int points) {
-    return FactoryProvider.factory.ofIncorrect(points);
-  }
+    static GradeResult ofIncorrect(int points) {
+        return FactoryProvider.factory.ofIncorrect(points);
+    }
 
-  static GradeResult ofNone() {
-    return FactoryProvider.factory.ofNone();
-  }
+    static GradeResult ofNone() {
+        return FactoryProvider.factory.ofNone();
+    }
 
-  static GradeResult of(int correctPoints, int incorrectPoints) {
-    return FactoryProvider.factory.of(correctPoints, incorrectPoints);
-  }
+    static GradeResult of(int correctPoints, int incorrectPoints) {
+        return FactoryProvider.factory.of(correctPoints, incorrectPoints);
+    }
 
-  static GradeResult of(int correctPoints, int incorrectPoints, String comment) {
-    return FactoryProvider.factory.of(correctPoints, incorrectPoints, comment);
-  }
+    static GradeResult of(int correctPoints, int incorrectPoints, String comment) {
+        return FactoryProvider.factory.of(correctPoints, incorrectPoints, comment);
+    }
 
-  static GradeResult of(GradeResult grade, GradeResult... otherGrades) {
-    return FactoryProvider.factory.of(grade, otherGrades);
-  }
+    static GradeResult of(GradeResult grade, GradeResult... otherGrades) {
+        return FactoryProvider.factory.of(grade, otherGrades);
+    }
 
-  static GradeResult of(GradeResult grade, Iterable<? extends GradeResult> otherGrades) {
-    return FactoryProvider.factory.of(grade, otherGrades);
-  }
+    static GradeResult of(GradeResult grade, Iterable<? extends GradeResult> otherGrades) {
+        return FactoryProvider.factory.of(grade, otherGrades);
+    }
 
-  static GradeResult ofMax(Criterion criterion) {
-    return FactoryProvider.factory.ofMax(criterion);
-  }
+    static GradeResult ofMax(Criterion criterion) {
+        return FactoryProvider.factory.ofMax(criterion);
+    }
 
-  static GradeResult ofMin(Criterion criterion) {
-    return FactoryProvider.factory.ofMin(criterion);
-  }
+    static GradeResult ofMin(Criterion criterion) {
+        return FactoryProvider.factory.ofMin(criterion);
+    }
 
-  static GradeResult withComments(GradeResult grade, Iterable<String> comments) {
-    return FactoryProvider.factory.withComments(grade, comments);
-  }
+    static GradeResult withComments(GradeResult grade, Iterable<String> comments) {
+        return FactoryProvider.factory.withComments(grade, comments);
+    }
 
-  /**
-   * @return The number of points that are definitely correct, as determined by the automatic grader.
-   */
-  int getCorrectPoints();
+    /**
+     * @return The number of points that are definitely correct, as determined by the automatic grader.
+     */
+    int getCorrectPoints();
 
-  /**
-   * @return The number of points that are definitely incorrect, as determined by the automatic grader.
-   */
-  int getIncorrectPoints();
+    /**
+     * @return The number of points that are definitely incorrect, as determined by the automatic grader.
+     */
+    int getIncorrectPoints();
 
-  List<String> getComments();
+    List<String> getComments();
 
-  @ApiStatus.Internal
-  final class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
+    @ApiStatus.Internal
+    final class FactoryProvider {
+        @Inject
+        private static Factory factory;
+    }
 
-  /**
-   * For documentation see static methods above
-   */
-  @ApiStatus.Internal
-  interface Factory {
-    GradeResult ofCorrect(int points);
+    /**
+     * For documentation see static methods above
+     */
+    @ApiStatus.Internal
+    interface Factory {
+        GradeResult ofCorrect(int points);
 
-    GradeResult ofIncorrect(int points);
+        GradeResult ofIncorrect(int points);
 
-    GradeResult ofNone();
+        GradeResult ofNone();
 
-    GradeResult of(int correctPoints, int incorrectPoints);
+        GradeResult of(int correctPoints, int incorrectPoints);
 
-    GradeResult of(int correctPoints, int incorrectPoints, String comment);
+        GradeResult of(int correctPoints, int incorrectPoints, String comment);
 
-    GradeResult of(GradeResult grade, GradeResult... otherGrades);
+        GradeResult of(GradeResult grade, GradeResult... otherGrades);
 
-    GradeResult of(GradeResult grade, Iterable<? extends GradeResult> otherGrades);
+        GradeResult of(GradeResult grade, Iterable<? extends GradeResult> otherGrades);
 
-    GradeResult ofMax(Criterion criterion);
+        GradeResult ofMax(Criterion criterion);
 
-    GradeResult ofMin(Criterion criterion);
+        GradeResult ofMin(Criterion criterion);
 
-    GradeResult withComments(GradeResult grade, Iterable<String> comments);
-  }
+        GradeResult withComments(GradeResult grade, Iterable<String> comments);
+    }
 }

@@ -26,17 +26,17 @@ import org.sourcegrade.jagr.launcher.io.writeDynamicMap
 import kotlin.reflect.KClass
 
 data class ResourceCollectorImpl(
-  private val backing: MutableMap<KClass<out Any>, Any> = mutableMapOf(),
+    private val backing: MutableMap<KClass<out Any>, Any> = mutableMapOf(),
 ) : MutableResourceCollector {
 
-  override fun addResource(value: Any) {
-    backing[value::class] = value
-  }
+    override fun addResource(value: Any) {
+        backing[value::class] = value
+    }
 
-  override fun <T : Any> get(type: KClass<T>): T? = backing[type] as T?
+    override fun <T : Any> get(type: KClass<T>): T? = backing[type] as T?
 
-  companion object Factory : SerializerFactory<ResourceCollectorImpl> {
-    override fun read(scope: SerializationScope.Input) = ResourceCollectorImpl(scope.readDynamicMap().toMutableMap())
-    override fun write(obj: ResourceCollectorImpl, scope: SerializationScope.Output) = scope.writeDynamicMap(obj.backing)
-  }
+    companion object Factory : SerializerFactory<ResourceCollectorImpl> {
+        override fun read(scope: SerializationScope.Input) = ResourceCollectorImpl(scope.readDynamicMap().toMutableMap())
+        override fun write(obj: ResourceCollectorImpl, scope: SerializationScope.Output) = scope.writeDynamicMap(obj.backing)
+    }
 }

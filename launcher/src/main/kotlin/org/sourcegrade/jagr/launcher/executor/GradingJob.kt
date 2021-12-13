@@ -22,7 +22,7 @@ package org.sourcegrade.jagr.launcher.executor
 import kotlinx.coroutines.CompletableDeferred
 
 data class GradingJob(
-  val request: GradingRequest,
+    val request: GradingRequest,
 ) {
-  val result: CompletableDeferred<GradingResult> = CompletableDeferred()
+    val result: CompletableDeferred<GradingResult> = CompletableDeferred()
 }

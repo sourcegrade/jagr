@@ -17,21 +17,22 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.api.testing.extension;
 
-import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.launcher.executor.GradingQueue
+import org.junit.jupiter.api.extension.ConditionEvaluationResult;
+import org.junit.jupiter.api.extension.ExecutionCondition;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
-interface SubmissionExporter {
-    /**
-     * Creates a list of [ResourceContainer] for every combination of [Submission] + [GraderJar].
-     *
-     * The resulting list has [GraderJar].size + 1 entries. (The first entry is the default export without
-     * a combined [GraderJar])
-     */
-    fun export(graders: List<GraderJar>, submissions: List<Submission>): List<ResourceContainer>
-    interface Gradle : SubmissionExporter
-    interface Eclipse : SubmissionExporter
+/**
+ * Checks whether Jagr is currently being used and skips the target test if it is not.
+ */
+public final class JagrExecutionCondition implements ExecutionCondition {
+    @Override
+    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+        if (TestCycleResolver.Provider.parameterResolver == null) {
+            return ConditionEvaluationResult.disabled("Jagr is not present");
+        } else {
+            return ConditionEvaluationResult.enabled("Jagr is present");
+        }
+    }
 }
-
-fun SubmissionExporter.export(queue: GradingQueue) = export(queue.graders, queue.submissions)

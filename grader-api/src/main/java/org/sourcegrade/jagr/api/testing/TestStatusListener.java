@@ -26,5 +26,5 @@ import java.util.Map;
 
 public interface TestStatusListener {
 
-  Map<TestIdentifier, TestExecutionResult> getTestResults();
+    Map<TestIdentifier, TestExecutionResult> getTestResults();
 }

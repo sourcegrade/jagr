@@ -24,24 +24,24 @@ import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.serializerFactoryLocator
 
 fun createScope(output: ByteArrayDataOutput, jagr: Jagr, parent: SerializationScope.Output? = null): SerializationScope.Output {
-  return OutputSerializationScopeImpl(output, jagr, parent)
+    return OutputSerializationScopeImpl(output, jagr, parent)
 }
 
 inline fun <T> openScope(output: ByteArrayDataOutput, jagr: Jagr, block: SerializationScope.Output.() -> T): T {
-  return createScope(output, jagr).block()
+    return createScope(output, jagr).block()
 }
 
 inline fun <T> SerializationScope.Output.openScope(block: SerializationScope.Output.() -> T): T {
-  return createScope(output, jagr, this).block()
+    return createScope(output, jagr, this).block()
 }
 
 private class OutputSerializationScopeImpl(
-  override val output: ByteArrayDataOutput,
-  override val jagr: Jagr,
-  override val parent: SerializationScope.Output?,
+    override val output: ByteArrayDataOutput,
+    override val jagr: Jagr,
+    override val parent: SerializationScope.Output?,
 ) : AbstractSerializationScope(), SerializationScope.Output {
-  override fun <T : Any> writeScoped(obj: T, key: SerializationScope.Key<T>) {
-    SerializerFactory[key.type, jagr.serializerFactoryLocator].write(obj, this)
-    backing[key] = obj
-  }
+    override fun <T : Any> writeScoped(obj: T, key: SerializationScope.Key<T>) {
+        SerializerFactory[key.type, jagr.serializerFactoryLocator].write(obj, this)
+        backing[key] = obj
+    }
 }

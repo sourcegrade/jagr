@@ -25,28 +25,28 @@ import org.sourcegrade.jagr.api.rubric.JUnitTestRef
 
 class TestAwareGraderBuilderImpl : AbstractGraderBuilder<Grader.TestAwareBuilder>(), Grader.TestAwareBuilder {
 
-  override fun getThis(): Grader.TestAwareBuilder = this
+    override fun getThis(): Grader.TestAwareBuilder = this
 
-  private val requirePass: MutableMap<JUnitTestRef, String?> = mutableMapOf()
-  private val requireFail: MutableMap<JUnitTestRef, String?> = mutableMapOf()
+    private val requirePass: MutableMap<JUnitTestRef, String?> = mutableMapOf()
+    private val requireFail: MutableMap<JUnitTestRef, String?> = mutableMapOf()
 
-  override fun requirePass(testRef: JUnitTestRef, comment: String?): Grader.TestAwareBuilder {
-    requirePass[testRef] = comment
-    return this
-  }
+    override fun requirePass(testRef: JUnitTestRef, comment: String?): Grader.TestAwareBuilder {
+        requirePass[testRef] = comment
+        return this
+    }
 
-  override fun requireFail(testRef: JUnitTestRef, comment: String?): Grader.TestAwareBuilder {
-    requireFail[testRef] = comment
-    return this
-  }
+    override fun requireFail(testRef: JUnitTestRef, comment: String?): Grader.TestAwareBuilder {
+        requireFail[testRef] = comment
+        return this
+    }
 
-  override fun build(): Grader {
-    return TestAwareGraderImpl(
-      graderPassed ?: Grader { _, _ -> GradeResult.ofNone() },
-      graderFailed ?: Grader { _, _ -> GradeResult.ofNone() },
-      requirePass,
-      requireFail,
-      commentIfFailed,
-    )
-  }
+    override fun build(): Grader {
+        return TestAwareGraderImpl(
+            graderPassed ?: Grader { _, _ -> GradeResult.ofNone() },
+            graderFailed ?: Grader { _, _ -> GradeResult.ofNone() },
+            requirePass,
+            requireFail,
+            commentIfFailed,
+        )
+    }
 }

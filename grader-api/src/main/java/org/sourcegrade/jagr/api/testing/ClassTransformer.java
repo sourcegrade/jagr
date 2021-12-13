@@ -26,22 +26,22 @@ import org.objectweb.asm.ClassWriter;
 
 public interface ClassTransformer {
 
-  static ClassTransformer replacement(Class<?> replacement, Class<?> original) {
-    return FactoryProvider.factory.replacement(replacement, original);
-  }
+    static ClassTransformer replacement(Class<?> replacement, Class<?> original) {
+        return FactoryProvider.factory.replacement(replacement, original);
+    }
 
-  String getName();
+    String getName();
 
-  void transform(ClassReader reader, ClassWriter writer);
+    void transform(ClassReader reader, ClassWriter writer);
 
-  @ApiStatus.Internal
-  final class FactoryProvider {
-    @Inject
-    private static Factory factory;
-  }
+    @ApiStatus.Internal
+    final class FactoryProvider {
+        @Inject
+        private static Factory factory;
+    }
 
-  @ApiStatus.Internal
-  interface Factory {
-    ClassTransformer replacement(Class<?> replacement, Class<?> original);
-  }
+    @ApiStatus.Internal
+    interface Factory {
+        ClassTransformer replacement(Class<?> replacement, Class<?> original);
+    }
 }
