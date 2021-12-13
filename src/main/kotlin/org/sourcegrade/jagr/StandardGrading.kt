@@ -30,7 +30,6 @@ import org.sourcegrade.jagr.launcher.executor.GradingResult
 import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
 import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
 import org.sourcegrade.jagr.launcher.executor.ProgressBar
-import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
@@ -49,8 +48,8 @@ class StandardGrading(
 ) {
     private val config = jagr.config
     private val rubricsFile = File(config.dir.rubrics).ensure(jagr.logger)!!
-    private val csvFile = rubricsFile.resolve("csv").ensure(jagr.logger)!!
-    private val htmlFile = rubricsFile.resolve("moodle").ensure(jagr.logger)!!
+    private val csvDir = checkNotNull(rubricsFile.resolve("csv").ensure(jagr.logger)) { "csv directory" }
+    private val htmlDir = checkNotNull(rubricsFile.resolve("moodle").ensure(jagr.logger)) { "html directory" }
     private val csvExporter = jagr.injector.getInstance(GradedRubricExporter.CSV::class.java)
     private val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
 
@@ -106,14 +105,14 @@ class StandardGrading(
     private fun export(result: GradingResult) {
         for ((gradedRubric, _) in result.rubrics) {
             try {
-                csvExporter.export(gradedRubric).writeIn(csvFile)
+                csvExporter.export(gradedRubric).writeIn(csvDir)
             } catch (e: Exception) {
-                jagr.logger.error("Could not export $csvFile", e)
+                jagr.logger.error("Could not export $csvDir", e)
             }
             try {
-                htmlExporter.export(gradedRubric).writeIn(htmlFile)
+                htmlExporter.export(gradedRubric).writeIn(htmlDir)
             } catch (e: Exception) {
-                jagr.logger.error("Could not export $htmlFile")
+                jagr.logger.error("Could not export $htmlDir")
             }
         }
     }
