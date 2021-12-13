@@ -28,14 +28,14 @@ class CriterionHolderPointCalculatorFactoryImpl : CriterionHolderPointCalculator
 
     override fun maxOfChildren(defaultPoints: Int): CriterionHolderPointCalculator {
         return CriterionHolderPointCalculator {
-            it.childCriteria.asSequence().map(Criterion::getMaxPoints)
+            it.childCriteria.asSequence().map(Criterion::getTrueMaxPoints)
                 .ifEmpty { listOf(defaultPoints).asSequence() }.sum()
         }
     }
 
     override fun minOfChildren(defaultPoints: Int): CriterionHolderPointCalculator {
         return CriterionHolderPointCalculator {
-            it.childCriteria.asSequence().map(Criterion::getMinPoints)
+            it.childCriteria.asSequence().map(Criterion::getTrueMinPoints)
                 .ifEmpty { listOf(defaultPoints).asSequence() }.sum()
         }
     }
