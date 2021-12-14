@@ -26,23 +26,21 @@ import org.sourcegrade.jagr.launcher.executor.RubricCollector
 
 fun RubricCollector.logHistogram(jagr: Jagr) {
     val histogram = mutableMapOf<Int, Int>()
-    var correctPoints = 0
-    var incorrectPoints = 0
+    var minPoints = 0
     var maxPoints = 0
     val allRubrics = gradingFinished.flatMap { it.rubrics.keys }
     for (rubric in allRubrics) {
-        val prev = histogram.computeIfAbsent(rubric.grade.maxPoints) { 0 }
-        histogram[rubric.grade.maxPoints] = prev + 1
-        correctPoints += rubric.grade.maxPoints
-        incorrectPoints += rubric.grade.minPoints
+        val prev = histogram.computeIfAbsent(rubric.grade.minPoints) { 0 }
+        histogram[rubric.grade.minPoints] = prev + 1
+        minPoints += rubric.grade.minPoints
         maxPoints += rubric.rubric.maxPoints
     }
     if (allRubrics.isEmpty()) {
         return
     }
     jagr.logger.info(
-        "Result: Correct: $correctPoints, Incorrect: $incorrectPoints, Max: $maxPoints, Average: " +
-            "${correctPoints.toDouble() / allRubrics.size.toDouble()}, Rubrics: ${allRubrics.size}"
+        "Result: Min: $minPoints, Max: $maxPoints, Average: " +
+            "${minPoints.toDouble() / allRubrics.size.toDouble()}, Rubrics: ${allRubrics.size}"
     )
     for ((points, count) in histogram.toSortedMap()) {
         StringBuilder().apply {
@@ -65,7 +63,8 @@ fun GradedRubric.logGradedRubric(jagr: Jagr) {
         " (no tests found)"
     } else {
         " ($succeeded/$total tests)" +
-            " points=${grade.maxPoints} -points=${grade.minPoints} maxPoints=${rubric.maxPoints}" +
+            " minPoints=${grade.minPoints}/${rubric.maxPoints}" +
+            " maxPoints=${grade.maxPoints}/${rubric.maxPoints}" +
             " from '${rubric.title}'"
     }
     jagr.logger.info("${testCycle.submission} :: $info")
