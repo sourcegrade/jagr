@@ -55,8 +55,8 @@ class GradeResultFactoryImpl : GradeResult.Factory {
             return grade
         }
         return GradeResultImpl(
-            max(grade.minPoints, gradable.minPoints),
-            min(grade.maxPoints, gradable.maxPoints),
+            grade.minPoints.coerceIn(gradable.minPoints, gradable.maxPoints),
+            grade.maxPoints.coerceIn(gradable.minPoints, gradable.maxPoints),
         )
     }
 }
