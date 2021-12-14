@@ -21,12 +21,28 @@ package org.sourcegrade.jagr.api.testing.extension;
 
 import com.google.inject.Inject;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import org.sourcegrade.jagr.api.testing.TestCycle;
 
 public final class TestCycleResolver implements ParameterResolver {
+
+    /**
+     * <b>Experimental API. May be moved in a future release.</b>
+     *
+     * @return The current {@link TestCycle}
+     */
+    @ApiStatus.Experimental
+    public static @Nullable TestCycle getTestCycle() {
+        if (Provider.parameterResolver == null) {
+            return null;
+        } else {
+            return Provider.parameterResolver.getInternalValue();
+        }
+    }
 
     @Override
     public boolean supportsParameter(
@@ -51,5 +67,7 @@ public final class TestCycleResolver implements ParameterResolver {
     }
 
     @ApiStatus.Internal
-    public interface Internal extends ParameterResolver {}
+    public interface Internal extends ParameterResolver {
+        @Nullable TestCycle getInternalValue();
+    }
 }

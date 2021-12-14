@@ -28,11 +28,23 @@ import org.sourcegrade.jagr.api.testing.TestCycle;
  * @param <G> The resulting graded type
  */
 @ApiStatus.NonExtendable
-public interface Gradable<G extends Graded> {
+public interface Gradable<G extends Graded> extends PointRange {
 
-    int getMaxPoints();
-
+    /**
+     * The minimum achievable number of points for this Gradable.
+     *
+     * @return The minimum achievable number of points.
+     */
+    @Override
     int getMinPoints();
+
+    /**
+     * The maximum achievable number of points for this Gradable.
+     *
+     * @return The maximum achievable number of points.
+     */
+    @Override
+    int getMaxPoints();
 
     /**
      * Grade the provided {@link TestCycle}
