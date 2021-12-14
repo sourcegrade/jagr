@@ -39,6 +39,7 @@ class GradeResultFactoryImpl : GradeResult.Factory {
         return GradeResultImpl(
             grade.minPoints + otherGrades.sumOf { it.minPoints },
             grade.maxPoints + otherGrades.sumOf { it.maxPoints },
+            grade.comments + otherGrades.flatMap { it.comments }
         )
     }
 
