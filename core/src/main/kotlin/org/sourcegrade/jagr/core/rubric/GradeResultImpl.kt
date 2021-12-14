@@ -31,7 +31,7 @@ data class GradeResultImpl(
     private val comments: List<String> = listOf(),
 ) : GradeResult {
     init {
-        require(minPoints <= maxPoints) { "minPoints may not be greater than maxPoints" }
+        require(minPoints <= maxPoints) { "minPoints ($minPoints) may not be greater than maxPoints ($maxPoints)" }
     }
 
     override fun getMinPoints(): Int = minPoints
