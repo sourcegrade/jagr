@@ -27,8 +27,8 @@ class GradeResultFactoryImpl : GradeResult.Factory {
     private val none = GradeResultImpl(0, 0)
     override fun ofCorrect(points: Int): GradeResult = GradeResultImpl(0, points)
     override fun ofNone(): GradeResult = none
-    override fun of(minReachedPoints: Int, maxReachedPoints: Int): GradeResult = GradeResultImpl(maxReachedPoints,
-        minReachedPoints)
+    override fun of(minReachedPoints: Int, maxReachedPoints: Int): GradeResult =
+        GradeResultImpl(maxReachedPoints, minReachedPoints)
 
     override fun of(minReachedPoints: Int, maxReachedPoints: Int, comment: String): GradeResult {
         return GradeResultImpl(maxReachedPoints, minReachedPoints, listOf(comment))
