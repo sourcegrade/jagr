@@ -22,6 +22,8 @@ package org.sourcegrade.jagr.core.rubric
 import org.sourcegrade.jagr.api.rubric.Criterion
 import org.sourcegrade.jagr.api.rubric.Gradable
 import org.sourcegrade.jagr.api.rubric.GradeResult
+import java.lang.Integer.min
+import kotlin.math.max
 
 class GradeResultFactoryImpl : GradeResult.Factory {
     private val none = GradeResultImpl(0, 0)
@@ -44,17 +46,16 @@ class GradeResultFactoryImpl : GradeResult.Factory {
 
     override fun ofMax(criterion: Criterion): GradeResult = ofCorrect(criterion.maxPoints)
 
-    override fun withComments(grade: GradeResult, comments: Iterable<String>): GradeResult {
-        return GradeResultImpl(grade.minPoints, grade.maxPoints, grade.comments + comments)
-    }
+    override fun withComments(grade: GradeResult, comments: Iterable<String>): GradeResult =
+        GradeResultImpl(grade.minPoints, grade.maxPoints, grade.comments + comments)
 
     override fun clamped(grade: GradeResult, gradable: Gradable<*>): GradeResult {
         if (grade.minPoints >= gradable.minPoints && grade.maxPoints <= gradable.maxPoints) {
             return grade
         }
-        return GradeResult.of(
-            grade.minPoints.coerceAtLeast(gradable.minPoints),
-            grade.maxPoints.coerceAtMost(gradable.maxPoints),
+        return GradeResultImpl(
+            max(grade.minPoints, gradable.minPoints),
+            min(grade.maxPoints, gradable.maxPoints),
         )
     }
 }
