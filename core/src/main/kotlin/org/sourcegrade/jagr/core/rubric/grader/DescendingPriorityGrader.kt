@@ -48,8 +48,8 @@ class DescendingPriorityGrader(
         val comments: MutableList<String> = mutableListOf()
         for (grader in graders) {
             val result = grader.grade(testCycle, criterion)
-            correctPoints += result.correctPoints
-            incorrectPoints += result.incorrectPoints
+            correctPoints += result.maxPoints
+            incorrectPoints += result.minPoints
             comments += result.comments
             if (correctPoints + incorrectPoints >= maxPoints + minPoints) break
         }
@@ -62,6 +62,6 @@ for criterion ${criterion.shortDescription}! This is caused by a misconfigured r
 """.trim().replace('\n', ' ')
             )
         }
-        return GradeResultImpl(correctPoints, incorrectPoints, comments)
+        return GradeResultImpl(incorrectPoints, correctPoints, comments)
     }
 }

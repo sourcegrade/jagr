@@ -26,11 +26,11 @@ import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
+import org.sourcegrade.jagr.api.rubric.PointRange
 import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.buildResource
-import kotlin.math.max
 
 class MoodleJSONExporter @Inject constructor(
     private val logger: Logger,
@@ -38,7 +38,7 @@ class MoodleJSONExporter @Inject constructor(
     override fun export(gradedRubric: GradedRubric): Resource {
         val json = MoodleJSON(
             gradedRubric.testCycle.submission.info as SubmissionInfoImpl,
-            max(0, gradedRubric.rubric.minPoints + gradedRubric.grade.correctPoints),
+            gradedRubric.grade.minPoints,
             StringBuilder().writeTable(gradedRubric).toString(),
         )
         val jsonString = Json.encodeToString(json)
@@ -84,7 +84,7 @@ class MoodleJSONExporter @Inject constructor(
         append("<tr>")
         append("<td><strong>Gesamt:</strong></td>")
         append("<td>${rubric.maxPoints}</td>")
-        append("<td>${grade.getInRange(rubric)}</td>")
+        append("<td>${PointRange.toString(grade)}</td>")
         append("<td>${comments.firstOrNull() ?: ""}</td>")
         append("</tr>")
 
@@ -110,8 +110,8 @@ class MoodleJSONExporter @Inject constructor(
         if (gradedCriterion.childCriteria.isEmpty()) {
             append("<tr>")
             append("<td>${criterion.shortDescription}</td>")
-            append("<td>${criterion.minMax}</td>")
-            append("<td>${grade.getInRange(criterion)}</td>")
+            append("<td>${PointRange.toString(criterion)}</td>")
+            append("<td>${PointRange.toString(grade)}</td>")
             append("<td>$comments</td>")
             append("</tr>")
         } else {
