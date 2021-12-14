@@ -30,9 +30,8 @@ class GradeResultFactoryImpl : GradeResult.Factory {
     override fun of(minReachedPoints: Int, maxReachedPoints: Int): GradeResult =
         GradeResultImpl(maxReachedPoints, minReachedPoints)
 
-    override fun of(minReachedPoints: Int, maxReachedPoints: Int, comment: String): GradeResult {
-        return GradeResultImpl(maxReachedPoints, minReachedPoints, listOf(comment))
-    }
+    override fun of(minReachedPoints: Int, maxReachedPoints: Int, comment: String): GradeResult =
+        GradeResultImpl(maxReachedPoints, minReachedPoints, listOf(comment))
 
     override fun of(grade: GradeResult, vararg otherGrades: GradeResult): GradeResult = of(grade, otherGrades.asIterable())
 
