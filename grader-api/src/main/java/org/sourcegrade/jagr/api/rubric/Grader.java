@@ -45,7 +45,7 @@ public interface Grader {
         }
 
         default B pointsPassedMin() {
-            return pointsPassed((testCycle, criterion) -> GradeResult.ofNone());
+            return pointsPassed((testCycle, criterion) -> GradeResult.ofMin(criterion));
         }
 
         B pointsPassed(@Nullable Grader grader);
@@ -55,7 +55,7 @@ public interface Grader {
         }
 
         default B pointsFailedMin() {
-            return pointsFailed((testCycle, criterion) -> GradeResult.ofNone());
+            return pointsFailed((testCycle, criterion) -> GradeResult.ofMin(criterion));
         }
 
         B pointsFailed(@Nullable Grader grader);

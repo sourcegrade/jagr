@@ -58,6 +58,10 @@ public interface GradeResult extends PointRange {
         return FactoryProvider.factory.ofMax(criterion);
     }
 
+    static GradeResult ofMin(Criterion criterion) {
+        return FactoryProvider.factory.ofMin(criterion);
+    }
+
     static GradeResult withComments(GradeResult grade, Iterable<String> comments) {
         return FactoryProvider.factory.withComments(grade, comments);
     }
@@ -104,6 +108,8 @@ public interface GradeResult extends PointRange {
         GradeResult of(GradeResult grade, Iterable<? extends GradeResult> otherGrades);
 
         GradeResult ofMax(Criterion criterion);
+
+        GradeResult ofMin(Criterion criterion);
 
         GradeResult withComments(GradeResult grade, Iterable<String> comments);
 
