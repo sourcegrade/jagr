@@ -43,6 +43,7 @@ public interface Rubric extends Gradable<GradedRubric>, CriterionHolder<Criterio
      * @return The minimum number of points for this rubric.
      * @see CriterionHolderPointCalculator#minOfChildren(int)
      */
+    @Override
     int getMinPoints();
 
     /**
@@ -51,6 +52,7 @@ public interface Rubric extends Gradable<GradedRubric>, CriterionHolder<Criterio
      * @return The maximum number of points for this rubric.
      * @see CriterionHolderPointCalculator#maxOfChildren(int)
      */
+    @Override
     int getMaxPoints();
 
     @ApiStatus.NonExtendable
