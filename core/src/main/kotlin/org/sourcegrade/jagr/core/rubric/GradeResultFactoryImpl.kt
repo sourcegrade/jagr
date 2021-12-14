@@ -22,8 +22,6 @@ package org.sourcegrade.jagr.core.rubric
 import org.sourcegrade.jagr.api.rubric.Criterion
 import org.sourcegrade.jagr.api.rubric.Gradable
 import org.sourcegrade.jagr.api.rubric.GradeResult
-import java.lang.Integer.min
-import kotlin.math.max
 
 class GradeResultFactoryImpl : GradeResult.Factory {
     private val none = GradeResultImpl(0, 0)
