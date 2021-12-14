@@ -39,29 +39,25 @@ class DescendingPriorityGrader(
         if (graders.size == 1) {
             return graders[0].grade(testCycle, criterion)
         }
-        val maxPoints = criterion.maxPoints
-        // negation is on purpose
-        // criterion.minPoints is always negative but it needs to be positive for comparison later
-        val minPoints = -criterion.minPoints
-        var correctPoints = 0
-        var incorrectPoints = 0
+        var minPoints = 0
+        var maxPoints = 0
         val comments: MutableList<String> = mutableListOf()
         for (grader in graders) {
             val result = grader.grade(testCycle, criterion)
-            correctPoints += result.maxPoints
-            incorrectPoints += result.minPoints
+            minPoints += result.maxPoints
+            maxPoints += result.minPoints
             comments += result.comments
-            if (correctPoints + incorrectPoints >= maxPoints + minPoints) break
+            if (maxPoints >= criterion.maxPoints || maxPoints <= criterion.minPoints) break
         }
-        if (correctPoints + incorrectPoints > maxPoints + minPoints) {
+        if (minPoints < criterion.minPoints || maxPoints > criterion.maxPoints) {
             logger.error(
                 """
 Descending priority grader for submission ${testCycle.submission.info} has surpassed point limits
-correctPoints: $correctPoints (max $maxPoints) and incorrectPoints: $incorrectPoints (max $minPoints)
+minPoints $minPoints should be >= ${criterion.minPoints} and maxPoints $maxPoints should be <= ${criterion.maxPoints}
 for criterion ${criterion.shortDescription}! This is caused by a misconfigured rubric provider!
 """.trim().replace('\n', ' ')
             )
         }
-        return GradeResultImpl(incorrectPoints, correctPoints, comments)
+        return GradeResult.clamped(GradeResultImpl(maxPoints, minPoints, comments), criterion)
     }
 }
