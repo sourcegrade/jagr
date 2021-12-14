@@ -38,20 +38,22 @@ public interface Rubric extends Gradable<GradedRubric>, CriterionHolder<Criterio
     String getTitle();
 
     /**
-     * The maximum number of points is the sum of the maximum points of the {@link #getChildCriteria() criteria} of this rubric.
-     *
-     * @return The maximum number of points for this rubric.
-     * @see CriterionHolderPointCalculator#maxOfChildren(int)
-     */
-    int getMaxPoints();
-
-    /**
      * The minimum number of points is the min of the minimum points of the {@link #getChildCriteria() criteria} of this rubric.
      *
      * @return The minimum number of points for this rubric.
      * @see CriterionHolderPointCalculator#minOfChildren(int)
      */
+    @Override
     int getMinPoints();
+
+    /**
+     * The maximum number of points is the sum of the maximum points of the {@link #getChildCriteria() criteria} of this rubric.
+     *
+     * @return The maximum number of points for this rubric.
+     * @see CriterionHolderPointCalculator#maxOfChildren(int)
+     */
+    @Override
+    int getMaxPoints();
 
     @ApiStatus.NonExtendable
     interface Builder {

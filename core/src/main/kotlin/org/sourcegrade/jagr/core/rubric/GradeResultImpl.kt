@@ -26,12 +26,18 @@ import org.sourcegrade.jagr.launcher.io.readList
 import org.sourcegrade.jagr.launcher.io.writeList
 
 data class GradeResultImpl(
-    private val correctPoints: Int,
-    private val incorrectPoints: Int,
+    private val minPoints: Int,
+    private val maxPoints: Int,
     private val comments: List<String> = listOf(),
 ) : GradeResult {
-    override fun getCorrectPoints(): Int = correctPoints
-    override fun getIncorrectPoints(): Int = incorrectPoints
+    init {
+        require(minPoints <= maxPoints) {
+            "minPoints ($minPoints) for grade result may not be greater than maxPoints ($maxPoints)"
+        }
+    }
+
+    override fun getMinPoints(): Int = minPoints
+    override fun getMaxPoints(): Int = maxPoints
     override fun getComments(): List<String> = comments
 
     companion object Factory : SerializerFactory<GradeResultImpl> {
@@ -42,8 +48,8 @@ data class GradeResultImpl(
         )
 
         override fun write(obj: GradeResultImpl, scope: SerializationScope.Output) {
-            scope.output.writeInt(obj.correctPoints)
-            scope.output.writeInt(obj.incorrectPoints)
+            scope.output.writeInt(obj.minPoints)
+            scope.output.writeInt(obj.maxPoints)
             scope.writeList(obj.comments)
         }
     }
