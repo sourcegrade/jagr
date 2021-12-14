@@ -41,21 +41,21 @@ public interface Grader {
     interface Builder<B extends Builder<B>> {
 
         default B pointsPassedMax() {
-            return pointsPassed((testCycle, criterion) -> GradeResult.ofMax(criterion));
+            return pointsPassed((ignored, criterion) -> GradeResult.ofMax(criterion));
         }
 
         default B pointsPassedMin() {
-            return pointsPassed((testCycle, criterion) -> GradeResult.ofMin(criterion));
+            return pointsPassed((ignored, criterion) -> GradeResult.ofMin(criterion));
         }
 
         B pointsPassed(@Nullable Grader grader);
 
         default B pointsFailedMax() {
-            return pointsFailed((testCycle, criterion) -> GradeResult.ofMax(criterion));
+            return pointsFailed((ignored, criterion) -> GradeResult.ofMax(criterion));
         }
 
         default B pointsFailedMin() {
-            return pointsFailed((testCycle, criterion) -> GradeResult.ofMin(criterion));
+            return pointsFailed((ignored, criterion) -> GradeResult.ofMin(criterion));
         }
 
         B pointsFailed(@Nullable Grader grader);
