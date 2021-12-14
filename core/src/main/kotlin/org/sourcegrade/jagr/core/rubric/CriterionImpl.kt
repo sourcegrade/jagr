@@ -52,15 +52,19 @@ class CriterionImpl(
     private val childCriteria: List<CriterionImpl>,
 ) : Criterion {
 
+    private val minPointsKt = minCalculator.getPoints(this)
+    private val maxPointsKt = maxCalculator.getPoints(this)
+
     init {
+        require(minPoints <= maxPoints) {
+            "minPoints ($minPoints) for criterion may not be greater than maxPoints ($maxPoints)"
+        }
         for (criterion in childCriteria) {
             criterion.setParent(this)
         }
     }
 
     private val terminal: Boolean by lazy { childCriteria.isEmpty() }
-    private val minPointsKt: Int by lazy { minCalculator.getPoints(this) }
-    private val maxPointsKt: Int by lazy { maxCalculator.getPoints(this) }
     private lateinit var parentKt: CriterionHolder<CriterionImpl>
     private val parentRubricKt: RubricImpl by lazy {
         var current: Criterion = this
