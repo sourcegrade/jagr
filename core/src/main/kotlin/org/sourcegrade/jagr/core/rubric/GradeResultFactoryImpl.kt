@@ -25,7 +25,7 @@ import org.sourcegrade.jagr.api.rubric.GradeResult
 
 class GradeResultFactoryImpl : GradeResult.Factory {
     private val none = GradeResultImpl(0, 0)
-    override fun ofCorrect(points: Int): GradeResult = GradeResultImpl(0, points)
+    override fun ofCorrect(points: Int): GradeResult = GradeResultImpl(points, points)
     override fun ofNone(): GradeResult = none
     override fun of(minReachedPoints: Int, maxReachedPoints: Int): GradeResult =
         GradeResultImpl(maxReachedPoints, minReachedPoints)
@@ -42,7 +42,7 @@ class GradeResultFactoryImpl : GradeResult.Factory {
         )
     }
 
-    override fun ofMax(criterion: Criterion): GradeResult = ofCorrect(criterion.maxPoints - criterion.minPoints)
+    override fun ofMax(criterion: Criterion): GradeResult = ofCorrect(criterion.maxPoints)
 
     override fun withComments(grade: GradeResult, comments: Iterable<String>): GradeResult {
         return GradeResultImpl(grade.minPoints, grade.maxPoints, grade.comments + comments)
