@@ -38,12 +38,12 @@ public interface GradeResult extends PointRange {
         return FactoryProvider.factory.ofNone();
     }
 
-    static GradeResult of(int minReachedPoints, int maxReachedPoints) {
-        return FactoryProvider.factory.of(minReachedPoints, maxReachedPoints);
+    static GradeResult of(int minPoints, int maxPoints) {
+        return FactoryProvider.factory.of(minPoints, maxPoints);
     }
 
-    static GradeResult of(int minReachedPoints, int maxReachedPoints, String comment) {
-        return FactoryProvider.factory.of(minReachedPoints, maxReachedPoints, comment);
+    static GradeResult of(int minPoints, int maxPoints, String comment) {
+        return FactoryProvider.factory.of(minPoints, maxPoints, comment);
     }
 
     static GradeResult of(GradeResult grade, GradeResult... otherGrades) {
@@ -99,9 +99,9 @@ public interface GradeResult extends PointRange {
 
         GradeResult ofNone();
 
-        GradeResult of(int minReachedPoints, int maxReachedPoints);
+        GradeResult of(int minPoints, int maxPoints);
 
-        GradeResult of(int minReachedPoints, int maxReachedPoints, String comment);
+        GradeResult of(int minPoints, int maxPoints, String comment);
 
         GradeResult of(GradeResult grade, GradeResult... otherGrades);
 
