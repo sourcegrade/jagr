@@ -1,4 +1,5 @@
 plugins {
+    checkstyle
     `java-library`
     kotlin("jvm")
 }
@@ -21,4 +22,8 @@ dependencies {
     api("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
     api("org.ow2.asm:asm:$asmVersion")
     implementation("org.jetbrains:annotations:$jetbrainsAnnotationsVersion")
+}
+
+configure<CheckstyleExtension> {
+    maxWarnings = 0
 }

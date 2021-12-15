@@ -22,17 +22,38 @@ package org.sourcegrade.jagr.api.rubric;
 import com.google.inject.Inject;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.junit.platform.engine.discovery.DiscoverySelectors;
+import org.sourcegrade.jagr.api.testing.TestCycle;
 
 import java.util.List;
 
+/**
+ * A node in a tree-based structure that defines the achievable points for parts of an assignment.
+ *
+ * <p>
+ * A criterion may be {@link #isTerminal() terminal} if it does not have {@link #getChildCriteria() children}. If this is the
+ * case, the result produced by {@link Gradable#grade(TestCycle)} is directly dependant on only the criterion's grader as
+ * defined by {@link Builder#grader(Grader)}.
+ * </p>
+ *
+ * <p>
+ * In the case that a criterion is not {@link #isTerminal() terminal} (i.e. has {@link #getChildCriteria() children})
+ * {@link Gradable#grade(TestCycle)} first executes the criterion's own grader (which is usually undefined anyway if the
+ * criterion is not terminal) and recursively combines the results into a final result which is then returned.
+ * </p>
+ */
 @ApiStatus.NonExtendable
 public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Criterion> {
 
+    /**
+     * Creates a new {@link Builder} for the construction of a criterion.
+     */
     static Builder builder() {
         return FactoryProvider.factory.builder();
     }
 
+    /**
+     * A short summary of the requirements for this criterion.
+     */
     String getShortDescription();
 
     /**
@@ -58,20 +79,28 @@ public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Cr
     CriterionHolder<? extends Criterion> getParent();
 
     /**
-     * @return The direct {@link Criterion} parent. {@code null} if the parent is not a {@link Criterion}.
+     * @return The direct criterion parent or {@code null} if the parent is not a criterion
      */
     @Nullable Criterion getParentCriterion();
 
+    /**
+     * @return The peers of this criterion (i.e. parent.children - this)
+     */
     List<? extends Criterion> getPeers();
 
     @ApiStatus.NonExtendable
     interface Builder {
 
         /**
+         * Sets the short description for this criterion.
+         *
+         * <p>
          * This field is required.
+         * </p>
          *
          * @param shortDescription The short description
          * @return {@code this}
+         * @see #getShortDescription()
          */
         Builder shortDescription(String shortDescription);
 
@@ -80,16 +109,23 @@ public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Cr
          *
          * @param hiddenNotes The hidden notes or {@code null} to unset
          * @return {@code this}
+         * @see #getHiddenNotes()
          */
         Builder hiddenNotes(@Nullable String hiddenNotes);
 
         /**
-         * Sets the {@link Grader} for this criterion.
+         * Sets the {@link Grader} that will be used to calculate the points for the criterion.
          *
-         * @param pointCalculator@return {@code this}
-         * @see DiscoverySelectors
+         * <p>
+         * If the value of the grader is null when the criterion is constructed, the criterion
+         * will always be graded with {@link GradeResult#ofNone()} unless it has {@link #getChildCriteria() children}.
+         * </p>
+         *
+         * @param grader The {@link Grader} to use for this {@link Criterion}
+         * @return {@code this}
+         * @see Criterion#grade(TestCycle)
          */
-        Builder grader(@Nullable Grader pointCalculator);
+        Builder grader(@Nullable Grader grader);
 
         /**
          * Sets the maximum points for the built {@link Criterion}. Pass {@code null} to
@@ -102,6 +138,7 @@ public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Cr
          *
          * @param maxPoints The maximum points
          * @return {@code this}
+         * @see #getMaxPoints()
          */
         default Builder maxPoints(int maxPoints) {
             return maxPoints(CriterionHolderPointCalculator.fixed(maxPoints));
@@ -117,6 +154,7 @@ public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Cr
          *
          * @param maxPointsCalculator The {@link CriterionHolderPointCalculator}
          * @return {@code this}
+         * @see #getMaxPoints()
          */
         Builder maxPoints(@Nullable CriterionHolderPointCalculator maxPointsCalculator);
 
@@ -131,6 +169,7 @@ public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Cr
          *
          * @param minPoints The minimum points
          * @return {@code this}
+         * @see #getMinPoints()
          */
         default Builder minPoints(int minPoints) {
             return minPoints(CriterionHolderPointCalculator.fixed(minPoints));
@@ -146,11 +185,29 @@ public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Cr
          *
          * @param minPointsCalculator The {@link CriterionHolderPointCalculator}
          * @return {@code this}
+         * @see #getMinPoints()
          */
         Builder minPoints(@Nullable CriterionHolderPointCalculator minPointsCalculator);
 
+        /**
+         * Adds child criteria to the criterion.
+         *
+         * <p>
+         * A criterion with at least one child is considered not {@link #isTerminal() terminal}.
+         * </p>
+         *
+         * @param criteria The criteria to add as children
+         * @return {@code this}
+         * @see #getChildCriteria()
+         * @see #isTerminal()
+         */
         Builder addChildCriteria(Criterion... criteria);
 
+        /**
+         * Constructs the criterion with the previously defined properties.
+         *
+         * @return A newly constructed criterion
+         */
         Criterion build();
     }
 

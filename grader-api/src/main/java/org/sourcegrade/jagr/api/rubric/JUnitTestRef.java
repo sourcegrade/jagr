@@ -35,12 +35,12 @@ public interface JUnitTestRef {
         return FactoryProvider.factory.ofClass(clazz);
     }
 
-    static JUnitTestRef ofMethod(Method method) {
-        return FactoryProvider.factory.ofMethod(method);
-    }
-
     static JUnitTestRef ofClass(Callable<Class<?>> clazzSupplier) {
         return FactoryProvider.factory.ofClass(clazzSupplier);
+    }
+
+    static JUnitTestRef ofMethod(Method method) {
+        return FactoryProvider.factory.ofMethod(method);
     }
 
     static JUnitTestRef ofMethod(Callable<Method> methodSupplier) {
@@ -71,9 +71,9 @@ public interface JUnitTestRef {
     interface Factory {
         JUnitTestRef ofClass(Class<?> clazz);
 
-        JUnitTestRef ofMethod(Method method);
-
         JUnitTestRef ofClass(Callable<Class<?>> clazzSupplier);
+
+        JUnitTestRef ofMethod(Method method);
 
         JUnitTestRef ofMethod(Callable<Method> methodSupplier);
 

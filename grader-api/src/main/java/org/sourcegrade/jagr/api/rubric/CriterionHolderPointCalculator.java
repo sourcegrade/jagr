@@ -23,7 +23,7 @@ import com.google.inject.Inject;
 import org.jetbrains.annotations.ApiStatus;
 
 /**
- * A functional interface that calculates a number based on the children of a {@link CriterionHolder}
+ * A functional interface that calculates a number based on the children of a {@link CriterionHolder}.
  */
 @FunctionalInterface
 public interface CriterionHolderPointCalculator {

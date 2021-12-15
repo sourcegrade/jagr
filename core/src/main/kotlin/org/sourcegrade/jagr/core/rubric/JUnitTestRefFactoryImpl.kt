@@ -57,7 +57,6 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     }
 
     override fun ofClass(clazz: Class<*>): JUnitTestRef = Default(ClassSource.from(clazz))
-    override fun ofMethod(method: Method): JUnitTestRef = Default(MethodSource.from(method))
 
     override fun ofClass(clazzSupplier: Callable<Class<*>>): JUnitTestRef {
         return try {
@@ -67,6 +66,8 @@ class JUnitTestRefFactoryImpl @Inject constructor(
             JUnitNoOpTestRef
         }
     }
+
+    override fun ofMethod(method: Method): JUnitTestRef = Default(MethodSource.from(method))
 
     override fun ofMethod(methodSupplier: Callable<Method>): JUnitTestRef {
         return try {
