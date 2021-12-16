@@ -57,33 +57,33 @@ class ProcessWorker(
 
     private val process: Process = ProcessBuilder()
         .also {
-      val sandboxRoot = System.getenv("JAGR_SANDBOX_ROOT")
-      val totalTimeoutSeconds = jagr.config.executor.timeoutTotal / 1000
-      if (sandboxRoot != null && sandboxRoot.isNotBlank()) {
-        val autograderDir = Paths.get(jagrLocation).parent.toString()
-        val env = it.environment()
-        env["AUTOGRADER_DIR"] = autograderDir
-        env["JAGR_JAR_NAME"] = Paths.get(jagrLocation).fileName.toString()
-        it.command(
-          "timeout",
-          "--kill-after=1s",
-          "--verbose",
-          "${totalTimeoutSeconds + 1}s",
-          "unshare",
-          "--net",
-          "--ipc",
-          "--user",
-          "--map-root-user",
-          "--mount-proc",
-          "--pid",
-          "--fork",
-          "--kill-child",
-          Paths.get(autograderDir, "bootstrap-sandbox.sh").toString()
-        )
-      } else {
-        it.command("java", "-Dlog4j.configurationFile=log4j2-child.xml", "-jar", jagrLocation, "--child")
-      }
-    }
+            val sandboxRoot = System.getenv("JAGR_SANDBOX_ROOT")
+            val totalTimeoutSeconds = jagr.config.executor.timeoutTotal / 1000
+            if (sandboxRoot != null && sandboxRoot.isNotBlank()) {
+                val autograderDir = Paths.get(jagrLocation).parent.toString()
+                val env = it.environment()
+                env["AUTOGRADER_DIR"] = autograderDir
+                env["JAGR_JAR_NAME"] = Paths.get(jagrLocation).fileName.toString()
+                it.command(
+                    "timeout",
+                    "--kill-after=1s",
+                    "--verbose",
+                    "${totalTimeoutSeconds + 1}s",
+                    "unshare",
+                    "--net",
+                    "--ipc",
+                    "--user",
+                    "--map-root-user",
+                    "--mount-proc",
+                    "--pid",
+                    "--fork",
+                    "--kill-child",
+                    Paths.get(autograderDir, "bootstrap-sandbox.sh").toString()
+                )
+            } else {
+                it.command("java", "-Dlog4j.configurationFile=log4j2-child.xml", "-jar", jagrLocation, "--child")
+            }
+        }
         .start()
 
     private val coroutineScope = CoroutineScope(processIODispatcher)
