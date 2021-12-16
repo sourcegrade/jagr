@@ -1,8 +1,6 @@
 package org.sourcegrade.jagr.launcher.executor
 
-class DefaultProgressBar(
-    rubricCollector: RubricCollector,
-) : ProgressBarProvider(rubricCollector) {
+class DefaultProgressBar() : ProgressBarProvider() {
     override fun adjustProgressBar(sb: StringBuilder): StringBuilder {
         return sb
     }

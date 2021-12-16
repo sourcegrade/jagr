@@ -31,6 +31,7 @@ import org.sourcegrade.jagr.launcher.executor.DefaultProgressBar
 import org.sourcegrade.jagr.launcher.executor.GradingResult
 import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
 import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
+import org.sourcegrade.jagr.launcher.executor.ProgressBar
 import org.sourcegrade.jagr.launcher.executor.RainbowProgressBar
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
@@ -89,14 +90,15 @@ class StandardGrading(
             }.create(jagr)
         }
         val collector = emptyCollector(jagr)
-        val progress = if (rainbowProgressBar) {
-            RainbowProgressBar(collector)
+        val progressBarProvider = if (rainbowProgressBar) {
+            RainbowProgressBar()
         } else if (xMasProgressBar) {
-            XMasProgressBar(collector)
+            XMasProgressBar()
         } else {
-            DefaultProgressBar(collector)
+            DefaultProgressBar()
         }
-        ProgressAwareOutputStream.progressBarProvider = progress
+        val progress = ProgressBar(collector, progressBarProvider)
+        ProgressAwareOutputStream.progressBar = progress
         collector.setListener { result ->
             result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
             export(result)
@@ -104,7 +106,7 @@ class StandardGrading(
         collector.allocate(queue)
         executor.schedule(queue)
         executor.start(collector)
-        ProgressAwareOutputStream.progressBarProvider = null
+        ProgressAwareOutputStream.progressBar = null
         Environment.cleanupMainProcess()
         collector.logHistogram(jagr)
         if (collector.gradingFinished.isEmpty()) {
