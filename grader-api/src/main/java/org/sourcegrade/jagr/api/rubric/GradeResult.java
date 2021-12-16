@@ -28,26 +28,22 @@ import java.util.List;
  * Instances of this interface are immutable
  */
 @ApiStatus.NonExtendable
-public interface GradeResult {
+public interface GradeResult extends PointRange {
 
     static GradeResult ofCorrect(int points) {
         return FactoryProvider.factory.ofCorrect(points);
-    }
-
-    static GradeResult ofIncorrect(int points) {
-        return FactoryProvider.factory.ofIncorrect(points);
     }
 
     static GradeResult ofNone() {
         return FactoryProvider.factory.ofNone();
     }
 
-    static GradeResult of(int correctPoints, int incorrectPoints) {
-        return FactoryProvider.factory.of(correctPoints, incorrectPoints);
+    static GradeResult of(int minPoints, int maxPoints) {
+        return FactoryProvider.factory.of(minPoints, maxPoints);
     }
 
-    static GradeResult of(int correctPoints, int incorrectPoints, String comment) {
-        return FactoryProvider.factory.of(correctPoints, incorrectPoints, comment);
+    static GradeResult of(int minPoints, int maxPoints, String comment) {
+        return FactoryProvider.factory.of(minPoints, maxPoints, comment);
     }
 
     static GradeResult of(GradeResult grade, GradeResult... otherGrades) {
@@ -70,15 +66,21 @@ public interface GradeResult {
         return FactoryProvider.factory.withComments(grade, comments);
     }
 
-    /**
-     * @return The number of points that are definitely correct, as determined by the automatic grader.
-     */
-    int getCorrectPoints();
+    static GradeResult clamped(GradeResult grade, Gradable<?> gradable) {
+        return FactoryProvider.factory.clamped(grade, gradable);
+    }
 
     /**
-     * @return The number of points that are definitely incorrect, as determined by the automatic grader.
+     * @return The lower bound (inclusive) of points that are definitely correct as determined by the automatic grader.
      */
-    int getIncorrectPoints();
+    @Override
+    int getMinPoints();
+
+    /**
+     * @return The upper bound (inclusive) of points that are definitely correct as determined by the automatic grader.
+     */
+    @Override
+    int getMaxPoints();
 
     List<String> getComments();
 
@@ -95,13 +97,11 @@ public interface GradeResult {
     interface Factory {
         GradeResult ofCorrect(int points);
 
-        GradeResult ofIncorrect(int points);
-
         GradeResult ofNone();
 
-        GradeResult of(int correctPoints, int incorrectPoints);
+        GradeResult of(int minPoints, int maxPoints);
 
-        GradeResult of(int correctPoints, int incorrectPoints, String comment);
+        GradeResult of(int minPoints, int maxPoints, String comment);
 
         GradeResult of(GradeResult grade, GradeResult... otherGrades);
 
@@ -112,5 +112,7 @@ public interface GradeResult {
         GradeResult ofMin(Criterion criterion);
 
         GradeResult withComments(GradeResult grade, Iterable<String> comments);
+
+        GradeResult clamped(GradeResult grade, Gradable<?> gradable);
     }
 }

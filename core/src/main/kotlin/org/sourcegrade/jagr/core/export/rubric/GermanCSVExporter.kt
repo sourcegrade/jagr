@@ -25,6 +25,7 @@ import org.apache.commons.csv.CSVPrinter
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
+import org.sourcegrade.jagr.api.rubric.PointRange
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.buildResource
@@ -36,7 +37,7 @@ class GermanCSVExporter @Inject constructor(
         val rubric = gradedRubric.rubric
         val grade = gradedRubric.grade
         return buildResource {
-            name = "${gradedRubric.rubric.title}_${gradedRubric.testCycle.submission.info}.csv"
+            name = "${gradedRubric.testCycle.submission.info}.csv"
             outputStream.bufferedWriter().use {
                 it.append('\ufeff') // UTF-8 Byte Order Mark
                 CSVPrinter(it, CSVFormat.EXCEL).use { csv ->
@@ -48,7 +49,7 @@ class GermanCSVExporter @Inject constructor(
                     csv.printRecord(
                         "Gesamt",
                         rubric.maxPoints.toString(),
-                        grade.getInRange(rubric),
+                        PointRange.toString(grade),
                         grade.comments.firstOrNull(),
                     )
                     grade.comments.asSequence().drop(1).forEach { comment ->
@@ -64,7 +65,13 @@ class GermanCSVExporter @Inject constructor(
         val grade = gradedCriterion.grade
         val comments = grade.comments.joinToString("; ")
         if (gradedCriterion.childCriteria.isEmpty()) {
-            printRecord(criterion.shortDescription, criterion.minMax, grade.getInRange(criterion), comments, criterion.hiddenNotes)
+            printRecord(
+                criterion.shortDescription,
+                PointRange.toString(criterion),
+                PointRange.toString(grade),
+                comments,
+                criterion.hiddenNotes,
+            )
         } else {
             printRecord(criterion.shortDescription, null, null, comments, criterion.hiddenNotes)
             for (childGradedCriterion in gradedCriterion.childCriteria) {

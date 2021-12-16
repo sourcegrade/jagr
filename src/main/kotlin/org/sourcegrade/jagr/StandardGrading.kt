@@ -20,16 +20,17 @@
 package org.sourcegrade.jagr
 
 import kotlinx.coroutines.runBlocking
+import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.extrasManager
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
+import org.sourcegrade.jagr.launcher.executor.GradingResult
 import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
 import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
 import org.sourcegrade.jagr.launcher.executor.ProgressBar
-import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
@@ -46,8 +47,14 @@ class StandardGrading(
     private val rainbowProgressBar: Boolean,
     private val jagr: Jagr = Jagr,
 ) {
+    private val config = jagr.config
+    private val rubricsFile = File(config.dir.rubrics).ensure(jagr.logger)!!
+    private val csvDir = checkNotNull(rubricsFile.resolve("csv").ensure(jagr.logger)) { "csv directory" }
+    private val htmlDir = checkNotNull(rubricsFile.resolve("moodle").ensure(jagr.logger)) { "html directory" }
+    private val csvExporter = jagr.injector.getInstance(GradedRubricExporter.CSV::class.java)
+    private val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
+
     fun grade(exportOnly: Boolean) = runBlocking {
-        val config = jagr.config
         File(config.dir.submissions).ensure(jagr.logger)
         jagr.extrasManager.runExtras()
         val batch = buildGradingBatch {
@@ -83,6 +90,7 @@ class StandardGrading(
         ProgressAwareOutputStream.progressBar = progress
         collector.setListener { result ->
             result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
+            export(result)
         }
         collector.allocate(queue)
         executor.schedule(queue)
@@ -90,31 +98,29 @@ class StandardGrading(
         ProgressAwareOutputStream.progressBar = null
         Environment.cleanupMainProcess()
         collector.logHistogram(jagr)
-        export(collector)
-    }
-
-    private fun export(collector: RubricCollector) {
-        val csvExporter = jagr.injector.getInstance(GradedRubricExporter.CSV::class.java)
-        val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
-        val config = jagr.config
-        val rubricsFile = File(config.dir.rubrics).ensure(jagr.logger)!!
-        val csvFile = rubricsFile.resolve("csv").ensure(jagr.logger)!!
-        val htmlFile = rubricsFile.resolve("moodle").ensure(jagr.logger)!!
         if (collector.gradingFinished.isEmpty()) {
             jagr.logger.warn("No rubrics!")
+        }
+    }
+
+    private fun export(result: GradingResult) {
+        for ((gradedRubric, _) in result.rubrics) {
+            csvExporter.exportSafe(gradedRubric, csvDir)
+            htmlExporter.exportSafe(gradedRubric, htmlDir)
+        }
+    }
+
+    private fun GradedRubricExporter.exportSafe(gradedRubric: GradedRubric, file: File) {
+        val resource = try {
+            export(gradedRubric)
+        } catch (e: Exception) {
+            jagr.logger.error("Could not create export resource for ${gradedRubric.testCycle.submission.info}", e)
             return
         }
-        for (gradedRubric in collector.gradingFinished.asSequence().flatMap { it.rubrics.keys }) {
-            try {
-                csvExporter.export(gradedRubric).writeIn(csvFile)
-            } catch (e: Exception) {
-                jagr.logger.error("Could not export $csvFile", e)
-            }
-            try {
-                htmlExporter.export(gradedRubric).writeIn(htmlFile)
-            } catch (e: Exception) {
-                jagr.logger.error("Could not export $htmlFile")
-            }
+        try {
+            resource.writeIn(file)
+        } catch (e: Exception) {
+            jagr.logger.error("Could not export resource ${resource.name}", e)
         }
     }
 }

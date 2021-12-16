@@ -38,67 +38,71 @@ import org.sourcegrade.jagr.api.testing.TestCycle
  * explicitly stated otherwise in the method's documentation
  */
 class CriterionImpl(
-  private val shortDescription: String,
-  private val hiddenNotes: String?,
-  private val grader: Grader?,
-  private val maxCalculator: CriterionHolderPointCalculator,
-  private val minCalculator: CriterionHolderPointCalculator,
-  private val childCriteria: List<CriterionImpl>,
+    private val shortDescription: String,
+    private val hiddenNotes: String?,
+    private val grader: Grader?,
+    private val maxCalculator: CriterionHolderPointCalculator,
+    private val minCalculator: CriterionHolderPointCalculator,
+    private val childCriteria: List<CriterionImpl>,
 ) : Criterion {
 
-  init {
-    for (criterion in childCriteria) {
-      criterion.setParent(this)
+    private val minPointsKt = minCalculator.getPoints(this)
+    private val maxPointsKt = maxCalculator.getPoints(this)
+
+    init {
+        require(minPoints <= maxPoints) {
+            "minPoints ($minPoints) for criterion may not be greater than maxPoints ($maxPoints)"
+        }
+        for (criterion in childCriteria) {
+            criterion.setParent(this)
+        }
     }
-  }
 
-  private val terminal: Boolean by lazy { childCriteria.isEmpty() }
-  private val maxPointsKt: Int by lazy { maxCalculator.getPoints(this) }
-  private val minPointsKt: Int by lazy { minCalculator.getPoints(this) }
-  private lateinit var parentKt: CriterionHolder<CriterionImpl>
-  private val parentRubricKt: RubricImpl by lazy {
-    var current: Criterion = this
-    while (current.parent !is Rubric) {
-      current = current.parent as Criterion
+    private val terminal: Boolean by lazy { childCriteria.isEmpty() }
+    private lateinit var parentKt: CriterionHolder<CriterionImpl>
+    private val parentRubricKt: RubricImpl by lazy {
+        var current: Criterion = this
+        while (current.parent !is Rubric) {
+            current = current.parent as Criterion
+        }
+        current.parent as RubricImpl
     }
-    current.parent as RubricImpl
-  }
-  private val parentCriterionKt: CriterionImpl? by lazy { parentKt as? CriterionImpl }
-  private val peersKt: List<CriterionImpl> by lazy { parentKt.childCriteria - this }
+    private val parentCriterionKt: CriterionImpl? by lazy { parentKt as? CriterionImpl }
+    private val peersKt: List<CriterionImpl> by lazy { parentKt.childCriteria - this }
 
-  fun setParent(parent: CriterionHolder<Criterion>) {
-    this.parentKt = parent as CriterionHolder<CriterionImpl>
-  }
-
-  override fun getShortDescription(): String = shortDescription
-  override fun getHiddenNotes(): String? = hiddenNotes
-  override fun isTerminal(): Boolean = terminal
-  override fun getMaxPoints(): Int = maxPointsKt
-  override fun getMinPoints(): Int = minPointsKt
-  override fun getParentRubric(): RubricImpl = parentRubricKt
-  override fun getParent(): CriterionHolder<CriterionImpl> = parentKt
-  override fun getParentCriterion(): Criterion? = parentCriterionKt
-  override fun getPeers(): List<CriterionImpl> = peersKt
-  override fun getChildCriteria(): List<CriterionImpl> = childCriteria
-  override fun grade(testCycle: TestCycle): GradedCriterion {
-    val graderResult = grader?.grade(testCycle, this) ?: GradeResult.ofNone()
-    if (childCriteria.isEmpty()) {
-      return GradedCriterionImpl(testCycle, graderResult, this)
+    fun setParent(parent: CriterionHolder<Criterion>) {
+        this.parentKt = parent as CriterionHolder<CriterionImpl>
     }
-    val childGraded = childCriteria.map { it.grade(testCycle) }
-    val gradeResult = GradeResult.of(graderResult, childGraded.map(
-      Graded::getGrade))
-    return GradedCriterionImpl(testCycle, gradeResult, this, childGraded)
-  }
 
-  private val stringRep: String by lazy {
-    MoreObjects.toStringHelper(this)
-      .add("shortDescription", shortDescription)
-      .add("maxPoints", maxPointsKt)
-      .add("minPoints", minPointsKt)
-      .add("childCriteria", childCriteria)
-      .toString()
-  }
+    override fun getShortDescription(): String = shortDescription
+    override fun getHiddenNotes(): String? = hiddenNotes
+    override fun isTerminal(): Boolean = terminal
+    override fun getMinPoints(): Int = minPointsKt
+    override fun getMaxPoints(): Int = maxPointsKt
+    override fun getParentRubric(): RubricImpl = parentRubricKt
+    override fun getParent(): CriterionHolder<CriterionImpl> = parentKt
+    override fun getParentCriterion(): Criterion? = parentCriterionKt
+    override fun getPeers(): List<CriterionImpl> = peersKt
+    override fun getChildCriteria(): List<CriterionImpl> = childCriteria
+    override fun grade(testCycle: TestCycle): GradedCriterion {
+        val graderResult = GradeResult.clamped(grader?.grade(testCycle, this) ?: GradeResult.ofNone(), this)
+        if (childCriteria.isEmpty()) {
+            return GradedCriterionImpl(testCycle, graderResult, this)
+        }
+        val childGraded = childCriteria.map { it.grade(testCycle) }
+        val gradeResult = GradeResult.clamped(GradeResult.of(graderResult, childGraded.map(
+            Graded::getGrade)), this)
+        return GradedCriterionImpl(testCycle, gradeResult, this, childGraded)
+    }
 
-  override fun toString(): String = stringRep
+    private val stringRep: String by lazy {
+        MoreObjects.toStringHelper(this)
+            .add("shortDescription", shortDescription)
+            .add("maxPoints", maxPointsKt)
+            .add("minPoints", minPointsKt)
+            .add("childCriteria", childCriteria)
+            .toString()
+    }
+
+    override fun toString(): String = stringRep
 }
