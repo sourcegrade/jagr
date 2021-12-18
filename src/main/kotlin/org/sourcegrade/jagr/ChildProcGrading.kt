@@ -66,14 +66,17 @@ class ChildProcGrading(private val jagr: Jagr = Jagr) {
     }
 
     private fun notifyParent(collector: RubricCollector) {
+        collector.gradingFinished.firstOrNull()?.sendToParent()
+        Environment.stdOut.close()
+    }
+
+    private fun GradingResult.sendToParent() {
         val outputStream = ByteArrayOutputStream(8192)
         val output = ByteStreams.newDataOutput(outputStream)
         Environment.stdOut.write(ProcessWorker.MARK_RESULT_BYTE)
-        val before = collector.gradingFinished[0]
         openScope(output, Jagr) {
-            SerializerFactory.get<GradingResult>().write(before, this)
+            SerializerFactory.get<GradingResult>().write(this@sendToParent, this)
         }
         outputStream.writeTo(Environment.stdOut)
-        Environment.stdOut.close()
     }
 }

@@ -20,7 +20,6 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import org.sourcegrade.jagr.launcher.env.Jagr
-import org.sourcegrade.jagr.launcher.env.runtimeGrader
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.coroutines.resume
@@ -49,7 +48,7 @@ class ThreadWorkerPool(
         if (maxCount == 0) return emptyList()
         val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
         return List(workerCount) {
-            ThreadWorker(jagr.runtimeGrader, this::removeActiveWorker).also(activeWorkers::add)
+            ThreadWorker(jagr, this::removeActiveWorker).also(activeWorkers::add)
         }
     }
 
