@@ -22,6 +22,7 @@ package org.sourcegrade.jagr
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.choice
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
@@ -42,7 +43,7 @@ class MainCommand : CliktCommand() {
      */
     private val child by option("--child", "-c").flag()
     private val exportOnly by option("--export-only", "-e").flag()
-    private val progress by option("--progress")
+    private val progress by option("--progress").choice("rainbow", "xmas")
     override fun run() {
         if (child) {
             Environment.initializeChildProcess()
