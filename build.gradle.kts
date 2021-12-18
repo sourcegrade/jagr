@@ -12,6 +12,7 @@ plugins {
 
 dependencies {
     runtimeOnly(project("jagr-core"))
+    runtimeOnly("fr.inria.gforge.spoon:spoon-core:10.0.0")
     implementation(project("jagr-launcher"))
     implementation("com.github.ajalt.clikt:clikt:3.3.0")
 }
