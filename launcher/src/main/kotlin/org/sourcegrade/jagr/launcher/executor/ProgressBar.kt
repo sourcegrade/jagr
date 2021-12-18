@@ -37,7 +37,7 @@ class ProgressBar(
         val formattedPercentage = decimalFormat.format(progressDecimal * 100.0)
         val barCount = (ProgressBarProvider.INNER_WIDTH * progressDecimal).toInt()
         val sb = StringBuilder(30)
-        // grau
+        // gray
         sb.append("\u001b[38;5;250m")
         sb.append('[')
         sb.append(progressBarProvider.createProgressBar(progressDecimal))
