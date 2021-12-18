@@ -20,10 +20,11 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import kotlinx.coroutines.runBlocking
+import org.sourcegrade.jagr.launcher.env.Jagr
 import kotlin.concurrent.thread
 
 class ThreadWorker(
-    private val runtimeGrader: RuntimeGrader,
+    private val jagr: Jagr,
     private val removeActive: (Worker) -> Unit,
 ) : Worker {
     override var job: GradingJob? = null
@@ -42,7 +43,7 @@ class ThreadWorker(
             priority = 3,
         ) {
             runBlocking {
-                runtimeGrader.grade(job)
+                job.gradeCatching(jagr)
             }
             status = WorkerStatus.FINISHED
             removeActive(this)
