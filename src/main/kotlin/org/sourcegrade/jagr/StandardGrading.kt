@@ -98,8 +98,11 @@ class StandardGrading(
         ProgressAwareOutputStream.progressBar = null
         Environment.cleanupMainProcess()
         collector.logHistogram(jagr)
-        if (collector.gradingFinished.isEmpty()) {
+        val rubricCount = collector.gradingFinished.sumOf { it.rubrics.size }
+        if (rubricCount == 0) {
             jagr.logger.warn("No rubrics!")
+        } else {
+            jagr.logger.info("Exported $rubricCount rubrics")
         }
     }
 
