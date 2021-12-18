@@ -27,15 +27,13 @@ import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.extrasManager
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
-import org.sourcegrade.jagr.launcher.executor.DefaultProgressBar
 import org.sourcegrade.jagr.launcher.executor.GradingResult
 import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
 import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
 import org.sourcegrade.jagr.launcher.executor.ProgressBar
-import org.sourcegrade.jagr.launcher.executor.RainbowProgressBar
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
-import org.sourcegrade.jagr.launcher.executor.XMasProgressBar
+import org.sourcegrade.jagr.launcher.executor.createProgressBarProvider
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
@@ -47,8 +45,7 @@ import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
 
 class StandardGrading(
-    private val rainbowProgressBar: Boolean,
-    private val xMasProgressBar: Boolean,
+    private val progressBarName: String?,
     private val jagr: Jagr = Jagr,
 ) {
     private val config = jagr.config
@@ -90,14 +87,7 @@ class StandardGrading(
             }.create(jagr)
         }
         val collector = emptyCollector(jagr)
-        val progressBarProvider = if (rainbowProgressBar) {
-            RainbowProgressBar()
-        } else if (xMasProgressBar) {
-            XMasProgressBar()
-        } else {
-            DefaultProgressBar()
-        }
-        val progress = ProgressBar(collector, progressBarProvider)
+        val progress = ProgressBar(collector, createProgressBarProvider(progressBarName))
         ProgressAwareOutputStream.progressBar = progress
         collector.setListener { result ->
             result.rubrics.keys.forEach { it.logGradedRubric(jagr) }

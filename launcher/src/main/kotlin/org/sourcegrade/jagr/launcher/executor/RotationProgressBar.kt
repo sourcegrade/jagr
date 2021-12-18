@@ -1,9 +1,13 @@
 package org.sourcegrade.jagr.launcher.executor
 
-abstract class RotationProgressBar : ProgressBarProvider {
+open class RotationProgressBar(private vararg val rotationColors: String) : ProgressBarProvider {
+
+    init {
+        require(rotationColors.isNotEmpty()) { "rotationColors may not be empty" }
+    }
+
     private val reset = "\u001b[0m"
 
-    abstract val rotationColors: Array<String>
     private var startIndex = 0
 
     override fun transformProgressBar(sb: StringBuilder): StringBuilder {
@@ -16,4 +20,10 @@ abstract class RotationProgressBar : ProgressBarProvider {
         startIndex = (startIndex + 1) % rotationColors.size
         return tmp
     }
+
+    // red, purple, blue, cyan, green, yellow
+    class Rainbow : RotationProgressBar("\u001b[31m", "\u001B[35m", "\u001B[34m", "\u001B[36m", "\u001B[32m", "\u001B[33m")
+
+    // red, green
+    class XMas : RotationProgressBar("\u001b[31m", "\u001B[32m")
 }

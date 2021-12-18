@@ -10,6 +10,17 @@ fun interface ProgressBarProvider {
         const val TIP_CHAR = '>'
         const val WIDTH = 120
     }
+
+    object Default : ProgressBarProvider {
+        override fun transformProgressBar(sb: StringBuilder): StringBuilder = sb
+    }
+}
+
+fun createProgressBarProvider(name: String?): ProgressBarProvider = when (name) {
+    "rainbow" -> RotationProgressBar.Rainbow()
+    "xmas" -> RotationProgressBar.XMas()
+    null -> ProgressBarProvider.Default
+    else -> error("Could not find progress bar provider $name")
 }
 
 fun ProgressBarProvider.createProgressBar(progressDecimal: Double, barLengthFull: Int): String =

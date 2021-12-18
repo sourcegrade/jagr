@@ -42,8 +42,7 @@ class MainCommand : CliktCommand() {
      */
     private val child by option("--child", "-c").flag()
     private val exportOnly by option("--export-only", "-e").flag()
-    private val rainbow by option("--rainbow").flag()
-    private val xmas by option("--xmas").flag()
+    private val progress by option("--progress")
     override fun run() {
         if (child) {
             Environment.initializeChildProcess()
@@ -51,7 +50,7 @@ class MainCommand : CliktCommand() {
         } else {
             Environment.initializeMainProcess()
             val startTime = System.currentTimeMillis()
-            StandardGrading(rainbow, xmas).grade(exportOnly)
+            StandardGrading(progress).grade(exportOnly)
             Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
         }
     }
