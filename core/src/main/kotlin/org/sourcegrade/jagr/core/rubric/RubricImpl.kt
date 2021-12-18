@@ -36,14 +36,17 @@ class RubricImpl(
     private val criteria: List<CriterionImpl>,
 ) : Rubric {
 
+    private val maxPointsKt = CriterionHolderPointCalculator.maxOfChildren(0).getPoints(this)
+    private val minPointsKt = CriterionHolderPointCalculator.minOfChildren(0).getPoints(this)
+
     init {
+        require(minPoints <= maxPoints) {
+            "minPoints ($minPoints) for rubric may not be greater than maxPoints ($maxPoints)"
+        }
         for (criterion in criteria) {
             criterion.setParent(this)
         }
     }
-
-    private val maxPointsKt: Int by lazy { CriterionHolderPointCalculator.maxOfChildren(0).getPoints(this) }
-    private val minPointsKt: Int by lazy { CriterionHolderPointCalculator.minOfChildren(0).getPoints(this) }
 
     override fun getTitle(): String = title
     override fun getMaxPoints(): Int = maxPointsKt
