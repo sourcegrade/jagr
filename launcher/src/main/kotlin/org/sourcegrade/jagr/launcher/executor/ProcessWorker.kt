@@ -64,7 +64,6 @@ class ProcessWorker(
         status = WorkerStatus.RUNNING
         coroutineScope.launch {
             sendRequest(job.request)
-            jagr.logger.info("Sending request!")
             job.gradeCatching(jagr, ::receiveResult)
             status = WorkerStatus.FINISHED
             removeActive(this@ProcessWorker)
