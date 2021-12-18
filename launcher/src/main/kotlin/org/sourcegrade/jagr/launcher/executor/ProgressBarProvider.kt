@@ -25,9 +25,10 @@ fun interface ProgressBarProvider {
 
     companion object {
         const val BAR_CHAR = '='
-        const val SIDE_CHAR = '|'
         const val TIP_CHAR = '>'
-        const val WIDTH = 120
+        const val INNER_WIDTH = 50
+        const val MAX_WIDTH = 120
+        val CLEAR_TEXT = " ".repeat(MAX_WIDTH) + '\r'
     }
 
     object Default : ProgressBarProvider {
@@ -42,15 +43,13 @@ fun createProgressBarProvider(name: String?): ProgressBarProvider = when (name) 
     else -> error("Could not find progress bar provider $name")
 }
 
-fun ProgressBarProvider.createProgressBar(progressDecimal: Double, barLengthFull: Int): String =
-    transformProgressBar(createBasicProgressBar(progressDecimal, barLengthFull)).toString()
+fun ProgressBarProvider.createProgressBar(progressDecimal: Double): String =
+    transformProgressBar(createBasicProgressBar(progressDecimal)).toString()
 
-private fun createBasicProgressBar(progressDecimal: Double, barLengthFull: Int): StringBuilder {
-    val barCount = barLengthFull * progressDecimal
+private fun createBasicProgressBar(progressDecimal: Double): StringBuilder {
+    val barCount = (ProgressBarProvider.INNER_WIDTH * progressDecimal).toInt()
     val sb = StringBuilder(30)
-    sb.append(ProgressBarProvider.SIDE_CHAR)
-    val actualBarCount = barCount.toInt()
-    for (i in 0 until actualBarCount) {
+    for (i in 0 until barCount) {
         sb.append(ProgressBarProvider.BAR_CHAR)
     }
     if (progressDecimal < 1.0) {
