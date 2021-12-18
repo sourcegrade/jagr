@@ -62,7 +62,6 @@ fun GradingJob.gradeCatching(
     jagr: Jagr,
     primaryGrader: (GradingRequest) -> GradingResult? = { request.gradeCatching(jagr, jagr.runtimeGrader::grade) },
 ) {
-    jagr.logger.info("gradeCatching!")
     try {
         // first try to grade normally, then try to grade with fallback
         val gradingResult = primaryGrader(request)
