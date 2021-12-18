@@ -8,9 +8,9 @@ abstract class RotationProgressBar : ProgressBarProvider {
 
     override fun transformProgressBar(sb: StringBuilder): StringBuilder {
         val tmp = StringBuilder(6 * sb.length)
-        for (i in sb.indices) {
+        for ((i, elem) in sb.withIndex()) {
             tmp.append(rotationColors[(i + rotationColors.size - startIndex) % rotationColors.size])
-            tmp.append(sb[i])
+            tmp.append(elem)
         }
         tmp.append(reset)
         startIndex = (startIndex + 1) % rotationColors.size
