@@ -21,7 +21,6 @@ package org.sourcegrade.jagr.launcher.executor
 
 import kotlinx.coroutines.asCoroutineDispatcher
 import org.sourcegrade.jagr.launcher.env.Jagr
-import org.sourcegrade.jagr.launcher.env.runtimeGrader
 import java.util.concurrent.Executors
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -56,7 +55,7 @@ class ProcessWorkerPool(
         if (maxCount == 0) return emptyList()
         val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
         return List(workerCount) {
-            ProcessWorker(jagr, jagr.runtimeGrader, this::removeActiveWorker, processIODispatcher).also(activeWorkers::add)
+            ProcessWorker(jagr, this::removeActiveWorker, processIODispatcher).also(activeWorkers::add)
         }
     }
 

@@ -32,7 +32,7 @@ dependencies {
 ```
 
 Where `$version` is in the [semver](https://semver.org/) format, optionally suffixed with `-SNAPSHOT` for snapshots versions.
-E.g: `0.1.0` or `0.1.0-SNAPSHOT`
+E.g: `0.3` or `0.3-SNAPSHOT`
 
 ## Usage
 
