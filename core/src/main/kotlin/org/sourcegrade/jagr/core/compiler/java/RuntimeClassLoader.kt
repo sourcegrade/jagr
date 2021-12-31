@@ -23,6 +23,9 @@ import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get
 import java.io.InputStream
+import java.net.URL
+import java.net.URLConnection
+import java.net.URLStreamHandler
 
 class RuntimeClassLoader(
     private val runtimeResources: RuntimeResources,
@@ -38,6 +41,22 @@ class RuntimeClassLoader(
 
     override fun getResourceAsStream(name: String): InputStream? {
         return runtimeResources.resources[name]?.inputStream() ?: super.getResourceAsStream(name)
+    }
+
+    override fun getResource(name: String?): URL? {
+        val resource: ByteArray = runtimeResources.resources[name] ?: return super.getResource(name)
+        return URL(
+            null,
+            "jagrresource:$name",
+            object : URLStreamHandler() {
+                override fun openConnection(u: URL?): URLConnection {
+                    return object : URLConnection(u) {
+                        override fun connect() = Unit
+                        override fun getInputStream(): InputStream = resource.inputStream()
+                    }
+                }
+            }
+        )
     }
 
     companion object Factory : SerializerFactory<RuntimeClassLoader> {
