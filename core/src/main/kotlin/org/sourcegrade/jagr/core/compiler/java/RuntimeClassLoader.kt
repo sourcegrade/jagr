@@ -39,12 +39,8 @@ class RuntimeClassLoader(
         return defineClass(name, byteCode, 0, byteCode.size)
     }
 
-    override fun getResourceAsStream(name: String): InputStream? {
-        return runtimeResources.resources[name]?.inputStream() ?: super.getResourceAsStream(name)
-    }
-
-    override fun getResource(name: String?): URL? {
-        val resource: ByteArray = runtimeResources.resources[name] ?: return super.getResource(name)
+    override fun findResource(name: String?): URL? {
+        val resource: ByteArray = runtimeResources.resources[name] ?: return null
         return URL(
             null,
             "jagrresource:$name",
@@ -57,6 +53,10 @@ class RuntimeClassLoader(
                 }
             }
         )
+    }
+
+    override fun getResourceAsStream(name: String): InputStream? {
+        return runtimeResources.resources[name]?.inputStream() ?: super.getResourceAsStream(name)
     }
 
     companion object Factory : SerializerFactory<RuntimeClassLoader> {
