@@ -26,6 +26,8 @@ import java.io.InputStream
 import java.net.URL
 import java.net.URLConnection
 import java.net.URLStreamHandler
+import java.util.Collections
+import java.util.Enumeration
 
 class RuntimeClassLoader(
     private val runtimeResources: RuntimeResources,
@@ -39,7 +41,7 @@ class RuntimeClassLoader(
         return defineClass(name, byteCode, 0, byteCode.size)
     }
 
-    override fun findResource(name: String?): URL? {
+    override fun findResource(name: String): URL? {
         val resource: ByteArray = runtimeResources.resources[name] ?: return null
         return URL(
             null,
@@ -53,6 +55,10 @@ class RuntimeClassLoader(
                 }
             }
         )
+    }
+
+    override fun findResources(name: String): Enumeration<URL> {
+        return Collections.enumeration(listOf(findResource(name) ?: return Collections.emptyEnumeration()))
     }
 
     override fun getResourceAsStream(name: String): InputStream? {
