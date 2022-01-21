@@ -5,7 +5,7 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
-version = "0.3.0-SNAPSHOT"
+version = "0.3.1-SNAPSHOT"
 
 val configurateVersion: String by project
 val guiceVersion: String by project

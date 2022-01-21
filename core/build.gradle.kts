@@ -11,7 +11,7 @@ val asmVersion: String by project
 val configurateVersion: String by project
 val jansiVersion: String by project
 val juniversalchardetVersion: String by project
-val kotlinCoroutinesVersion: String by project
+val kotlinxCoroutinesVersion: String by project
 val kotlinxSerializationVersion: String by project
 val log4jVersion: String by project
 
@@ -20,7 +20,7 @@ dependencies {
     api(project(":jagr-launcher"))
     implementation("org.apache.commons:commons-csv:1.9.0")
     implementation("org.ow2.asm:asm-util:$asmVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")

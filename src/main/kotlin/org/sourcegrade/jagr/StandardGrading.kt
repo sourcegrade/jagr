@@ -33,6 +33,7 @@ import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
 import org.sourcegrade.jagr.launcher.executor.ProgressBar
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
+import org.sourcegrade.jagr.launcher.executor.createProgressBarProvider
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
@@ -44,7 +45,7 @@ import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
 
 class StandardGrading(
-    private val rainbowProgressBar: Boolean,
+    private val progressBarName: String?,
     private val jagr: Jagr = Jagr,
 ) {
     private val config = jagr.config
@@ -86,7 +87,7 @@ class StandardGrading(
             }.create(jagr)
         }
         val collector = emptyCollector(jagr)
-        val progress = ProgressBar(collector, rainbowProgressBar)
+        val progress = ProgressBar(collector, createProgressBarProvider(progressBarName))
         ProgressAwareOutputStream.progressBar = progress
         collector.setListener { result ->
             result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
@@ -98,8 +99,11 @@ class StandardGrading(
         ProgressAwareOutputStream.progressBar = null
         Environment.cleanupMainProcess()
         collector.logHistogram(jagr)
-        if (collector.gradingFinished.isEmpty()) {
+        val rubricCount = collector.gradingFinished.sumOf { it.rubrics.size }
+        if (rubricCount == 0) {
             jagr.logger.warn("No rubrics!")
+        } else {
+            jagr.logger.info("Exported $rubricCount rubrics")
         }
     }
 
