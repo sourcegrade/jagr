@@ -43,6 +43,10 @@ import org.sourcegrade.jagr.core.transformer.useWhen
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
+import org.sourcegrade.jagr.launcher.io.nameWithoutExtension
+import java.io.File
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 
 data class CompiledBatch(
     val batch: GradingBatch,
@@ -150,6 +154,23 @@ class CompiledBatchFactoryImpl @Inject constructor(
                 errors = original.errors + 1,
             )
         }
+
+        fun JavaCompiledContainer.exportCompilationResult(suffix: String) {
+            val file = File("compilation/${info.nameWithoutExtension}-$suffix.jar")
+            file.parentFile.mkdirs()
+            @Suppress("BlockingMethodInNonBlockingContext")
+            JarOutputStream(file.outputStream().buffered()).use { jar ->
+                for ((className, compiledClass) in runtimeResources.classes) {
+                    val entry = JarEntry("${className.replace(".", "/")}.class")
+                    entry.time = System.currentTimeMillis()
+                    jar.putNextEntry(entry)
+                    jar.write(compiledClass.bytecode)
+                    jar.closeEntry()
+                }
+            }
+        }
+        original.exportCompilationResult("original")
+        transformed.exportCompilationResult("transformed")
         with(transformed) {
             printMessages(
                 logger,
