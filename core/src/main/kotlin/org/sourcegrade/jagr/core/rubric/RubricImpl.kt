@@ -21,7 +21,6 @@ package org.sourcegrade.jagr.core.rubric
 
 import com.google.common.base.MoreObjects
 import org.sourcegrade.jagr.api.rubric.CriterionHolderPointCalculator
-import org.sourcegrade.jagr.api.rubric.GradeResult
 import org.sourcegrade.jagr.api.rubric.Graded
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.rubric.Rubric
@@ -64,7 +63,7 @@ class RubricImpl(
                 else -> null
             }?.also(comments::add)
             comments += messages
-            GradeResult.withComments(GradeResult.of(GradeResult.ofNone(), childGraded.map(Graded::getGrade)), comments)
+            childGraded.asSequence().map(Graded::getGrade).sum().withComments(comments)
         }
         return GradedRubricImpl(testCycle, gradeResult, this, childGraded)
     }
