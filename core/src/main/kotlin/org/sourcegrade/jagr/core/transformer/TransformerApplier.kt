@@ -80,7 +80,7 @@ fun Map<String, CompiledClass>.transform(transformer: ClassTransformer): Map<Str
 
 fun ClassTransformer.transform(byteArray: ByteArray): ByteArray {
     val reader = ClassReader(byteArray)
-    val writer = ClassWriter(reader, 0)
+    val writer = ClassWriter(reader, writerFlags)
     transform(reader, writer)
     return writer.toByteArray()
 }
