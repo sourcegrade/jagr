@@ -142,7 +142,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
         val original = runtimeJarLoader.compileSources(replacedSources, libraries)
         val transformed = try {
             transformerApplier.transform(original)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             // create a copy of the original compile result but throw out runtime resources (compiled classes and resources)
             original.copy(
                 runtimeResources = RuntimeResources(),
