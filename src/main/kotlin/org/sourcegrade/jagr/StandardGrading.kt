@@ -67,7 +67,8 @@ class StandardGrading(
         val queue = jagr.gradingQueueFactory.create(batch)
         if (!noExport) {
             exportSubmissions(queue)
-        } else if (exportOnly) {
+        }
+        if (exportOnly) {
             jagr.logger.info("Only exporting, finished!")
             return@runBlocking
         }
