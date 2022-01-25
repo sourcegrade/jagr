@@ -36,7 +36,7 @@ class RubricImpl(
 ) : Rubric {
 
     private val maxPointsKt = CriterionHolderPointCalculator.maxOfChildren(0).getPoints(this)
-    private val minPointsKt = CriterionHolderPointCalculator.minOfChildren(0).getPoints(this)
+    private val minPointsKt = 0
 
     init {
         require(minPoints <= maxPoints) {
@@ -63,7 +63,7 @@ class RubricImpl(
                 else -> null
             }?.also(comments::add)
             comments += messages
-            childGraded.asSequence().map(Graded::getGrade).sum().withComments(comments)
+            childGraded.asSequence().map(Graded::getGrade).sum().clamped(this@RubricImpl).withComments(comments)
         }
         return GradedRubricImpl(testCycle, gradeResult, this, childGraded)
     }
