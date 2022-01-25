@@ -55,7 +55,7 @@ allprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     group = "org.sourcegrade"
-    version = "0.3.1-SNAPSHOT"
+    version = "0.3.1"
 
     project.findProperty("buildNumber")
         ?.takeIf { version.toString().contains("SNAPSHOT") }
