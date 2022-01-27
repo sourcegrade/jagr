@@ -21,6 +21,8 @@ package org.sourcegrade.jagr.launcher.executor
 
 import java.io.PrintStream
 import java.text.DecimalFormat
+import java.time.Duration
+import java.time.Instant
 
 class ProgressBar(
     private val rubricCollector: RubricCollector,
@@ -29,6 +31,35 @@ class ProgressBar(
 ) {
 
     private val decimalFormat = DecimalFormat("00.00")
+    private val gradingStart = Instant.now()
+    private val bufferSize = 32
+    private val deltaBuffer = IntArray(bufferSize)
+    private val timeBuffer = arrayOfNulls<Instant>(bufferSize)
+    private var bufferPos = 0
+    private var lastFinished = 0
+
+    /**
+     * The amount of time a single submission takes to grade, averaged over the last [bufferSize] submissions
+     */
+    private fun calculateVelocity(): Duration {
+        val all = mutableListOf<Duration>()
+        for (i in 1 until bufferSize) {
+            val posA = (bufferPos + i - 1 + bufferSize) % bufferSize
+            val posB = (bufferPos + i + bufferSize) % bufferSize
+            val start = timeBuffer[posA] ?: continue
+            val end = timeBuffer[posB] ?: continue
+            deltaBuffer[posA].let {
+                if (it != 0) {
+                    all += Duration.between(start, end).multipliedBy(it.toLong())
+                }
+            }
+        }
+        return if (all.isEmpty()) {
+            Duration.ZERO
+        } else {
+            all.fold(Duration.ZERO, Duration::plus).dividedBy(all.size.toLong())
+        }
+    }
 
     fun print(out: PrintStream) {
         val finished = rubricCollector.gradingFinished.size
@@ -53,6 +84,23 @@ class ProgressBar(
         if (rubricCollector.gradingScheduled.size in 1 until showElementsIfLessThan) {
             sb.append(" Remaining: [${rubricCollector.gradingScheduled.joinToString { it.request.submission.toString() }}]")
         }
+        // if more submissions are finished, save the time and how many submissions were graded since last save
+        if (finished != lastFinished) {
+            deltaBuffer[bufferPos] = finished - lastFinished
+            timeBuffer[bufferPos] = Instant.now()
+            bufferPos = (bufferPos + 1) % bufferSize
+            lastFinished = finished
+        }
+        val now = Instant.now()
+        val elapsed = Duration.between(gradingStart, now)
+        val velocity = calculateVelocity()
+        val estimatedTotal = velocity.multipliedBy(total.toLong())
+        val estimatedLeft = estimatedTotal.minus(elapsed)
+        try {
+            sb.append(" ", elapsed.formatted, " / ", estimatedTotal.formatted, " (", estimatedLeft.formatted, " remaining)")
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         // pad with spaces
         sb.append(" ".repeat((ProgressBarProvider.MAX_WIDTH - sb.length).coerceAtLeast(0)))
         out.print(sb.toString() + '\r')
@@ -60,3 +108,8 @@ class ProgressBar(
 
     fun clear(out: PrintStream) = out.print(ProgressBarProvider.CLEAR_TEXT)
 }
+
+val Duration.formatted: String
+    get() = "${toHours()}".padStart(2, '0') + ":" +
+        "${toMinutesPart()}".padStart(2, '0') + ":" +
+        "${toSecondsPart()}".padStart(2, '0')

@@ -45,7 +45,7 @@ object Environment {
     private fun setWasteBasket() {
         val wasteBasket = PrintStream(OutputStream.nullOutputStream())
         System.setOut(wasteBasket)
-        System.setErr(wasteBasket)
+        // System.setErr(wasteBasket)
     }
 
     fun cleanupMainProcess() {
