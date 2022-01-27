@@ -64,16 +64,14 @@ class GermanCSVExporter @Inject constructor(
         val criterion = gradedCriterion.criterion
         val grade = gradedCriterion.grade
         val comments = grade.comments.joinToString("; ")
-        if (gradedCriterion.childCriteria.isEmpty()) {
-            printRecord(
-                criterion.shortDescription,
-                PointRange.toString(criterion),
-                PointRange.toString(grade),
-                comments,
-                criterion.hiddenNotes,
-            )
-        } else {
-            printRecord(criterion.shortDescription, null, null, comments, criterion.hiddenNotes)
+        printRecord(
+            criterion.shortDescription,
+            PointRange.toString(criterion),
+            PointRange.toString(grade),
+            comments,
+            criterion.hiddenNotes,
+        )
+        if (gradedCriterion.childCriteria.isNotEmpty()) {
             for (childGradedCriterion in gradedCriterion.childCriteria) {
                 printCriterion(childGradedCriterion)
             }
