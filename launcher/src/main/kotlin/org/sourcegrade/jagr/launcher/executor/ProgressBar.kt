@@ -93,14 +93,9 @@ class ProgressBar(
         }
         val now = Instant.now()
         val elapsed = Duration.between(gradingStart, now)
-        val velocity = calculateVelocity()
-        val estimatedTotal = velocity.multipliedBy(total.toLong())
+        val estimatedTotal = calculateVelocity().multipliedBy(total.toLong())
         val estimatedLeft = estimatedTotal.minus(elapsed)
-        try {
-            sb.append(" ", elapsed.formatted, " / ", estimatedTotal.formatted, " (", estimatedLeft.formatted, " remaining)")
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        sb.append(" ", elapsed.formatted, " / ", estimatedTotal.formatted, " (", estimatedLeft.formatted, " remaining)")
         // pad with spaces
         sb.append(" ".repeat((ProgressBarProvider.MAX_WIDTH - sb.length).coerceAtLeast(0)))
         out.print(sb.toString() + '\r')
