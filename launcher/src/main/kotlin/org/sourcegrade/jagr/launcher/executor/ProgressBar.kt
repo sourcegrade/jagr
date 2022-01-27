@@ -39,7 +39,7 @@ class ProgressBar(
     private var lastFinished = 0
 
     /**
-     * The amount of time a single submission takes to grade, averaged over the last [bufferSize] submissions
+     * The amount of time a single submission takes to grade, averaged over the last [bufferSize] - 1 submissions
      */
     private fun calculateVelocity(): Duration {
         val all = mutableListOf<Duration>()
