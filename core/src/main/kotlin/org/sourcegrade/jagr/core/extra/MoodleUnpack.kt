@@ -30,7 +30,7 @@ class MoodleUnpack @Inject constructor(
     override val config: Config,
     override val logger: Logger,
 ) : Unpack() {
-    private val assignmentIdRegex = Regex(".*Abgabe.*(?<assignmentId>[0-9]+).*[.]zip")
+    private val assignmentIdRegex = config.extras.moodleUnpack.assignmentIdRegex.toRegex()
     override val name: String = "moodle-unpack"
     override fun run() {
         val submissions = File(config.dir.submissions)
