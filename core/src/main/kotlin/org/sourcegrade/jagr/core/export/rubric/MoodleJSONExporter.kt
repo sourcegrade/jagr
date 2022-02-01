@@ -55,7 +55,7 @@ class MoodleJSONExporter @Inject constructor(
 
         // Title
         append("<tr>")
-        append("<td><strong>${gradedRubric.rubric.title}</strong></td>")
+        append("<td><strong>${gradedRubric.rubric.title.escaped()}</strong></td>")
         append("<td></td>")
         append("<td></td>")
         append("<td></td>")
@@ -85,7 +85,7 @@ class MoodleJSONExporter @Inject constructor(
         append("<td><strong>Gesamt:</strong></td>")
         append("<td>${rubric.maxPoints}</td>")
         append("<td>${PointRange.toString(grade)}</td>")
-        append("<td>${comments.firstOrNull() ?: ""}</td>")
+        append("<td>${comments.firstOrNull()?.escaped() ?: ""}</td>")
         append("</tr>")
 
         for (i in 1 until comments.size) {
@@ -93,7 +93,7 @@ class MoodleJSONExporter @Inject constructor(
             append("<td></td>")
             append("<td></td>")
             append("<td></td>")
-            append("<td>${comments[i]}</td>")
+            append("<td>${comments[i].escaped()}</td>")
             append("</tr>")
         }
 
@@ -108,10 +108,10 @@ class MoodleJSONExporter @Inject constructor(
         val grade = gradedCriterion.grade
         val comments = grade.comments.joinToString("<br />")
         append("<tr>")
-        append("<td>${criterion.shortDescription}</td>")
+        append("<td>${criterion.shortDescription.escaped()}</td>")
         append("<td>${PointRange.toString(criterion)}</td>")
         append("<td>${PointRange.toString(grade)}</td>")
-        append("<td>$comments</td>")
+        append("<td>${comments.escaped()}</td>")
         append("</tr>")
         if (gradedCriterion.childCriteria.isNotEmpty()) {
             for (childGradedCriterion in gradedCriterion.childCriteria) {
@@ -128,6 +128,11 @@ class MoodleJSONExporter @Inject constructor(
             append("<td></td>")
         }
         append("</tr>")
+    }
+
+    private fun String.escaped(): String {
+        return replace("<", "&lt;")
+            .replace(">", "&gt;")
     }
 
     @Serializable
