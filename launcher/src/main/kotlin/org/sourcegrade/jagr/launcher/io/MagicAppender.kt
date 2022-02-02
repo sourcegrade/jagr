@@ -16,7 +16,6 @@ import org.sourcegrade.jagr.launcher.env.Environment.stdOut
 import org.sourcegrade.jagr.launcher.executor.ProcessWorker
 import java.io.ObjectOutputStream
 import java.io.Serializable
-import java.nio.charset.StandardCharsets
 
 @Plugin(
     name = "MagicAppender",

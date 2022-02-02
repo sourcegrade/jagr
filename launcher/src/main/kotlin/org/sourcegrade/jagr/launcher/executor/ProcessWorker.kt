@@ -31,7 +31,11 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
-import org.sourcegrade.jagr.launcher.io.*
+import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.get
+import org.sourcegrade.jagr.launcher.io.getScoped
+import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.ObjectInputStream
@@ -104,7 +108,7 @@ class ProcessWorker(
                 val throwable = ois.readObject() as Throwable? // the throwable field is not serialized in event or message
                 ProgressAwareOutputStream.enabled = false
                 jagr.logger.let<Logger, KFunction2<String, Throwable?, Unit>> {
-                    when (event.level.intLevel()/100) {
+                    when (event.level.intLevel() / 100) {
                         2 -> it::error
                         3 -> it::warn
                         4 -> it::info
