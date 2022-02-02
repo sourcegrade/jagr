@@ -14,8 +14,8 @@ import org.apache.logging.log4j.core.config.plugins.PluginFactory
 import org.apache.logging.log4j.core.layout.PatternLayout
 import org.sourcegrade.jagr.launcher.env.Environment.stdOut
 import org.sourcegrade.jagr.launcher.executor.ProcessWorker
+import java.io.ObjectOutputStream
 import java.io.Serializable
-import java.nio.charset.StandardCharsets
 
 @Plugin(
     name = "MagicAppender",
@@ -34,14 +34,9 @@ class MagicAppender private constructor(
     override fun append(event: LogEvent) {
         val out = stdOut
         out.write(ProcessWorker.MARK_LOG_MESSAGE_BYTE)
-        out.write(event.level.intLevel() / 100)
-        val msg = event.message.formattedMessage.toByteArray(StandardCharsets.UTF_8)
-        val msgLength = msg.size
-        out.write(msgLength shr 24)
-        out.write(msgLength shr 16)
-        out.write(msgLength shr 8)
-        out.write(msgLength)
-        out.write(msg)
+        val oos = ObjectOutputStream(out)
+        oos.writeObject(event)
+        oos.writeObject(event.thrown)
     }
 
     @Suppress("unused")
