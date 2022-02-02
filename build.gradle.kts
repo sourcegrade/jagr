@@ -10,10 +10,12 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
 }
 
+val cliktVersion: String by project
+
 dependencies {
     runtimeOnly(project("jagr-core"))
     implementation(project("jagr-launcher"))
-    implementation("com.github.ajalt.clikt:clikt:3.3.0")
+    implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
 }
 
 application {
@@ -53,7 +55,7 @@ allprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     group = "org.sourcegrade"
-    version = "0.3.1-SNAPSHOT"
+    version = "0.4.0-SNAPSHOT"
 
     project.findProperty("buildNumber")
         ?.takeIf { version.toString().contains("SNAPSHOT") }

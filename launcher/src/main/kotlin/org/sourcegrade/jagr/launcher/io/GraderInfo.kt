@@ -19,6 +19,8 @@
 
 package org.sourcegrade.jagr.launcher.io
 
+import kotlin.properties.ReadOnlyProperty
+
 /**
  * Represents the contents of a grader-info.json file.
  */
@@ -28,8 +30,9 @@ interface GraderInfo {
     val sourceSets: List<SourceSetInfo>
 }
 
-val GraderInfo.graderFiles: List<String>
-    get() = sourceSets.first { it.name == "grader" }.files
+val GraderInfo.graderFiles: List<String> by named("grader")
 
-val GraderInfo.solutionFiles: List<String>
-    get() = sourceSets.first { it.name == "solution" }.files
+val GraderInfo.solutionFiles: List<String> by named("solution")
+
+private fun named(name: String): ReadOnlyProperty<GraderInfo, List<String>> =
+    ReadOnlyProperty { info, _ -> info.sourceSets.first { it.name == name }.files }

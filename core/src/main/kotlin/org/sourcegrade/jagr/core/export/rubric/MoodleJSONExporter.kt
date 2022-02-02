@@ -107,20 +107,13 @@ class MoodleJSONExporter @Inject constructor(
         val criterion = gradedCriterion.criterion
         val grade = gradedCriterion.grade
         val comments = grade.comments.joinToString("<br />")
-        if (gradedCriterion.childCriteria.isEmpty()) {
-            append("<tr>")
-            append("<td>${criterion.shortDescription}</td>")
-            append("<td>${PointRange.toString(criterion)}</td>")
-            append("<td>${PointRange.toString(grade)}</td>")
-            append("<td>$comments</td>")
-            append("</tr>")
-        } else {
-            append("<tr>")
-            append("<td><strong>${criterion.shortDescription}</strong></td>")
-            append("<td></td>")
-            append("<td></td>")
-            append("<td>$comments</td>")
-            append("</tr>")
+        append("<tr>")
+        append("<td>${criterion.shortDescription}</td>")
+        append("<td>${PointRange.toString(criterion)}</td>")
+        append("<td>${PointRange.toString(grade)}</td>")
+        append("<td>$comments</td>")
+        append("</tr>")
+        if (gradedCriterion.childCriteria.isNotEmpty()) {
             for (childGradedCriterion in gradedCriterion.childCriteria) {
                 appendCriterion(childGradedCriterion)
             }

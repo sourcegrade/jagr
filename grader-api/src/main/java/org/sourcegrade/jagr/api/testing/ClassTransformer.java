@@ -34,6 +34,16 @@ public interface ClassTransformer {
 
     void transform(ClassReader reader, ClassWriter writer);
 
+    /**
+     * The flags to use in the construction of the {@link ClassWriter} provided to {@link #transform(ClassReader, ClassWriter)}.
+     *
+     * @return The flags to use
+     * @see ClassWriter for more information as to which flags are available
+     */
+    default int getWriterFlags() {
+        return 0;
+    }
+
     @ApiStatus.Internal
     final class FactoryProvider {
         @Inject

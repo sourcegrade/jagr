@@ -21,7 +21,6 @@ package org.sourcegrade.jagr.core.rubric
 
 import com.google.common.base.MoreObjects
 import org.sourcegrade.jagr.api.rubric.CriterionHolderPointCalculator
-import org.sourcegrade.jagr.api.rubric.GradeResult
 import org.sourcegrade.jagr.api.rubric.Graded
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.rubric.Rubric
@@ -37,7 +36,7 @@ class RubricImpl(
 ) : Rubric {
 
     private val maxPointsKt = CriterionHolderPointCalculator.maxOfChildren(0).getPoints(this)
-    private val minPointsKt = CriterionHolderPointCalculator.minOfChildren(0).getPoints(this)
+    private val minPointsKt = 0
 
     init {
         require(minPoints <= maxPoints) {
@@ -64,7 +63,7 @@ class RubricImpl(
                 else -> null
             }?.also(comments::add)
             comments += messages
-            GradeResult.withComments(GradeResult.of(GradeResult.ofNone(), childGraded.map(Graded::getGrade)), comments)
+            childGraded.asSequence().map(Graded::getGrade).sum().clamped(this@RubricImpl).withComments(comments)
         }
         return GradedRubricImpl(testCycle, gradeResult, this, childGraded)
     }
