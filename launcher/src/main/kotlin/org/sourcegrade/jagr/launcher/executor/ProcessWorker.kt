@@ -26,19 +26,22 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.apache.logging.log4j.core.LogEvent
 import org.slf4j.Logger
+import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.logger
+import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.nio.charset.StandardCharsets
+import java.io.ObjectInputStream
 import java.nio.file.Paths
-import kotlin.reflect.KFunction1
+import kotlin.reflect.KFunction2
 
 class ProcessWorker(
     private val jagr: Jagr,
@@ -129,21 +132,12 @@ class ProcessWorker(
                 jagr.logger.error("${request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
                 return null
             } else if (next == MARK_LOG_MESSAGE_BYTE) {
-                val level = childProcessIn.read()
-                val length = childProcessIn.read() shl 24 or
-                    childProcessIn.read() shl 16 or
-                    childProcessIn.read() shl 8 or
-                    childProcessIn.read()
-                if (length < 0) {
-                    jagr.logger.error("${request.submission.info} :: Received IOException while waiting for child process to complete")
-                    return null
-                }
-                val message: String = runCatching { process.inputStream.readNBytes(length) }.getOrElse {
-                    jagr.logger.error("${request.submission.info} :: Received IOException while waiting for child process to complete")
-                    return null
-                }.toString(StandardCharsets.UTF_8)
-                jagr.logger.let<Logger, KFunction1<String, Unit>> {
-                    when (level) {
+                val ois = ObjectInputStream(childProcessIn)
+                val event = ois.readObject() as LogEvent
+                val throwable = ois.readObject() as Throwable? // the throwable field is not serialized in event or message
+                ProgressAwareOutputStream.enabled = false
+                jagr.logger.let<Logger, KFunction2<String, Throwable?, Unit>> {
+                    when (event.level.intLevel() / 100) {
                         2 -> it::error
                         3 -> it::warn
                         4 -> it::info
@@ -151,7 +145,9 @@ class ProcessWorker(
                         6 -> it::trace
                         else -> it::info
                     }
-                }(message)
+                }(event.message.formattedMessage, throwable)
+                ProgressAwareOutputStream.enabled = true
+                ProgressAwareOutputStream.progressBar?.print(Environment.stdOut)
             }
         }
         val bytes: ByteArray = runCatching { process.inputStream.readAllBytes() }.getOrElse {

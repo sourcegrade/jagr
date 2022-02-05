@@ -16,7 +16,7 @@ class ProgressAwareOutputStream(private val delegate: PrintStream) : OutputStrea
 
     private fun writeWithProgress(progressBar: ProgressBar, b: Int) {
         delegate.write(b)
-        if (b == newLine) {
+        if (enabled && b == newLine) {
             progressBar.print(delegate)
         }
     }
@@ -24,5 +24,6 @@ class ProgressAwareOutputStream(private val delegate: PrintStream) : OutputStrea
     companion object {
         const val newLine = '\n'.code
         var progressBar: ProgressBar? = null
+        var enabled = true
     }
 }

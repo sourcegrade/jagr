@@ -67,8 +67,6 @@ class TestAwareGraderImpl(
             when (this) {
                 is AssertionFailedError,
                 -> message.toString()
-                    .replace('>', ']')
-                    .replace('<', '[')
                 // students should not see an invocation target exception
                 // it's better to show the actual exception thrown from their code
                 is InvocationTargetException,
