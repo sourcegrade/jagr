@@ -45,7 +45,9 @@ private object NoOpTransformerAppliedImpl : TransformationApplier {
 
 private class TransformerApplierImpl(private val transformer: ClassTransformer) : TransformationApplier {
     override fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer = result.copy(
-        runtimeResources = result.runtimeResources.copy(classes = result.runtimeResources.classes.transform(transformer, classLoader))
+        runtimeResources = result.runtimeResources.copy(
+            classes = transformer.transform(result.runtimeResources.classes, classLoader),
+        )
     )
 }
 
@@ -53,7 +55,7 @@ private class MultiTransformerApplierImpl(private vararg val transformers: Class
     override fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer {
         var classes = result.runtimeResources.classes
         for (transformer in transformers) {
-            classes = classes.transform(transformer, classLoader)
+            classes = transformer.transform(classes, classLoader)
         }
         return result.copy(runtimeResources = result.runtimeResources.copy(classes = classes))
     }
@@ -74,18 +76,16 @@ infix fun List<ClassTransformer>.useWhen(predicate: (JavaCompiledContainer) -> B
     }
 }
 
-fun Map<String, CompiledClass>.transform(transformer: ClassTransformer, classLoader: ClassLoader): Map<String, CompiledClass> {
-    return mapValues { (_, compiledClass) ->
-        compiledClass.transformed(transformer.transform(compiledClass.bytecode, classLoader))
+fun ClassTransformer.transform(classes: Map<String, CompiledClass>, classLoader: ClassLoader): Map<String, CompiledClass> {
+    return classes.mapValues { (_, compiledClass) ->
+        compiledClass.transformed(transform(compiledClass.bytecode, classLoader))
     }
 }
 
 fun ClassTransformer.transform(byteArray: ByteArray, classLoader: ClassLoader): ByteArray {
     val reader = ClassReader(byteArray)
     val writer = object : ClassWriter(reader, writerFlags) {
-        override fun getClassLoader(): ClassLoader {
-            return classLoader
-        }
+        override fun getClassLoader() = classLoader
     }
     transform(reader, writer)
     return writer.toByteArray()
