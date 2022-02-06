@@ -30,30 +30,32 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaMethod
 
 fun interface TransformationApplier {
-    fun transform(result: JavaCompiledContainer): JavaCompiledContainer
+    fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer
 }
 
 operator fun TransformationApplier.plus(other: TransformationApplier): TransformationApplier {
     if (this is NoOpTransformerAppliedImpl) return other
     if (other is NoOpTransformerAppliedImpl) return this
-    return TransformationApplier { other.transform(transform(it)) }
+    return TransformationApplier { result, classLoader -> other.transform(transform(result, classLoader), classLoader) }
 }
 
 private object NoOpTransformerAppliedImpl : TransformationApplier {
-    override fun transform(result: JavaCompiledContainer): JavaCompiledContainer = result
+    override fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer = result
 }
 
 private class TransformerApplierImpl(private val transformer: ClassTransformer) : TransformationApplier {
-    override fun transform(result: JavaCompiledContainer): JavaCompiledContainer = result.copy(
-        runtimeResources = result.runtimeResources.copy(classes = result.runtimeResources.classes.transform(transformer))
+    override fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer = result.copy(
+        runtimeResources = result.runtimeResources.copy(
+            classes = transformer.transform(result.runtimeResources.classes, classLoader),
+        )
     )
 }
 
 private class MultiTransformerApplierImpl(private vararg val transformers: ClassTransformer) : TransformationApplier {
-    override fun transform(result: JavaCompiledContainer): JavaCompiledContainer {
+    override fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer {
         var classes = result.runtimeResources.classes
         for (transformer in transformers) {
-            classes = classes.transform(transformer)
+            classes = transformer.transform(classes, classLoader)
         }
         return result.copy(runtimeResources = result.runtimeResources.copy(classes = classes))
     }
@@ -69,18 +71,22 @@ fun applierOf(vararg transformers: ClassTransformer): TransformationApplier {
 
 infix fun List<ClassTransformer>.useWhen(predicate: (JavaCompiledContainer) -> Boolean): TransformationApplier {
     val backing = MultiTransformerApplierImpl(*toTypedArray())
-    return TransformationApplier { if (predicate(it)) backing.transform(it) else it }
-}
-
-fun Map<String, CompiledClass>.transform(transformer: ClassTransformer): Map<String, CompiledClass> {
-    return mapValues { (_, compiledClass) ->
-        compiledClass.transformed(transformer.transform(compiledClass.bytecode))
+    return TransformationApplier { result, classLoader ->
+        if (predicate(result)) backing.transform(result, classLoader) else result
     }
 }
 
-fun ClassTransformer.transform(byteArray: ByteArray): ByteArray {
+fun ClassTransformer.transform(classes: Map<String, CompiledClass>, classLoader: ClassLoader): Map<String, CompiledClass> {
+    return classes.mapValues { (_, compiledClass) ->
+        compiledClass.transformed(transform(compiledClass.bytecode, classLoader))
+    }
+}
+
+fun ClassTransformer.transform(byteArray: ByteArray, classLoader: ClassLoader): ByteArray {
     val reader = ClassReader(byteArray)
-    val writer = ClassWriter(reader, writerFlags)
+    val writer = object : ClassWriter(reader, writerFlags) {
+        override fun getClassLoader() = classLoader
+    }
     transform(reader, writer)
     return writer.toByteArray()
 }
