@@ -27,12 +27,12 @@ import java.io.Closeable
  */
 interface WorkerPool : Closeable {
 
-    suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T): T
+    suspend fun <T> withActiveWorkers(block: suspend (List<Worker>) -> T): T
 
     /**
      * Creates up to [maxCount] workers depending on availability.
      */
-    fun createWorkers(maxCount: Int): List<Worker>
+    suspend fun createWorkers(maxCount: Int): List<Worker>
 
     /**
      * Closes this [WorkerPool] and any resources associated with it. (e.g. Extra monitor/IO threads)

@@ -43,7 +43,7 @@ import kotlin.reflect.KFunction2
 
 class ProcessWorker(
     private val jagr: Jagr,
-    private val removeActive: (Worker) -> Unit,
+    private val removeActive: suspend (Worker) -> Unit,
     processIODispatcher: CoroutineDispatcher,
 ) : Worker {
     override var job: GradingJob? = null
