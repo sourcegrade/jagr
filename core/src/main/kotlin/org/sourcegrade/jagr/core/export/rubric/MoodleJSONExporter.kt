@@ -133,6 +133,7 @@ class MoodleJSONExporter @Inject constructor(
     private fun String.escaped(): String {
         return replace("<", "&lt;")
             .replace(">", "&gt;")
+            .replace("\n", "<br>")
     }
 
     @Serializable
