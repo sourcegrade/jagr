@@ -49,6 +49,9 @@ public final class TestCycleResolver implements ParameterResolver {
         ParameterContext parameterContext,
         ExtensionContext extensionContext
     ) throws ParameterResolutionException {
+        if (Provider.parameterResolver == null) {
+            return false;
+        }
         return Provider.parameterResolver.supportsParameter(parameterContext, extensionContext);
     }
 
