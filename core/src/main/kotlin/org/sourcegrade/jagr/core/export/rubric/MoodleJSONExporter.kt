@@ -106,7 +106,7 @@ class MoodleJSONExporter @Inject constructor(
     private fun StringBuilder.appendCriterion(gradedCriterion: GradedCriterion): StringBuilder {
         val criterion = gradedCriterion.criterion
         val grade = gradedCriterion.grade
-        val comments = grade.comments.joinToString("<br />") { s -> s.escaped() }
+        val comments = grade.comments.joinToString("<br />") { it.escaped() }
         append("<tr>")
         append("<td>${criterion.shortDescription.escaped()}</td>")
         append("<td>${PointRange.toString(criterion)}</td>")
