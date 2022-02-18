@@ -55,7 +55,6 @@ internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollec
         block(gradingFinished)
     }
 
-
     override suspend fun getTotal(): Int = mutex.withLock { total }
     override suspend fun getRemaining(): Int = mutex.withLock { remaining }
 
@@ -70,13 +69,15 @@ internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollec
     }
 
     override suspend fun <T> withSnapshot(block: suspend (RubricCollector.Snapshot) -> T): T = mutex.withLock {
-        return block(RubricCollector.Snapshot(
-            gradingScheduled,
-            gradingRunning,
-            gradingFinished,
-            total,
-            remaining,
-        ))
+        return block(
+            RubricCollector.Snapshot(
+                gradingScheduled,
+                gradingRunning,
+                gradingFinished,
+                total,
+                remaining,
+            )
+        )
     }
 
     override suspend fun allocate(queue: GradingQueue) = mutex.withLock {

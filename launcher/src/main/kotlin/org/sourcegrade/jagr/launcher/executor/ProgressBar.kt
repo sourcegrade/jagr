@@ -19,7 +19,6 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-import kotlinx.coroutines.runBlocking
 import java.io.PrintStream
 import java.text.DecimalFormat
 import java.time.Duration
