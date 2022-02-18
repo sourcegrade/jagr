@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.core.LogEvent
 import org.slf4j.Logger
 import org.sourcegrade.jagr.launcher.env.Environment
@@ -118,7 +119,11 @@ class ProcessWorker(
                     }
                 }(event.message.formattedMessage, throwable)
                 ProgressAwareOutputStream.enabled = true
-                ProgressAwareOutputStream.progressBar?.print(Environment.stdOut)
+                ProgressAwareOutputStream.progressBar?.let {
+                    runBlocking {
+                        print(Environment.stdOut)
+                    }
+                }
             }
         }
         val bytes: ByteArray = runCatching { process.inputStream.readAllBytes() }.getOrElse {

@@ -1,5 +1,6 @@
 package org.sourcegrade.jagr.launcher.io
 
+import kotlinx.coroutines.runBlocking
 import org.sourcegrade.jagr.launcher.executor.ProgressBar
 import java.io.OutputStream
 import java.io.PrintStream
@@ -17,7 +18,9 @@ class ProgressAwareOutputStream(private val delegate: PrintStream) : OutputStrea
     private fun writeWithProgress(progressBar: ProgressBar, b: Int) {
         delegate.write(b)
         if (enabled && b == newLine) {
-            progressBar.print(delegate)
+            runBlocking {
+                progressBar.print(delegate)
+            }
         }
     }
 
