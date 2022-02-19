@@ -22,13 +22,13 @@ package org.sourcegrade.jagr
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
-import org.sourcegrade.jagr.launcher.executor.RubricCollector
+import org.sourcegrade.jagr.launcher.executor.GradingResult
 
-fun RubricCollector.logHistogram(jagr: Jagr) {
+fun List<GradingResult>.logHistogram(jagr: Jagr) {
     val histogram = mutableMapOf<Int, Int>()
     var minPoints = 0
     var maxPoints = 0
-    val allRubrics = gradingFinished.flatMap { it.rubrics.keys }
+    val allRubrics = flatMap { it.rubrics.keys }
     for (rubric in allRubrics) {
         val prev = histogram.computeIfAbsent(rubric.grade.minPoints) { 0 }
         histogram[rubric.grade.minPoints] = prev + 1

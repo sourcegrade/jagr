@@ -32,7 +32,6 @@ import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.GradingRequest
 import org.sourcegrade.jagr.launcher.executor.GradingResult
 import org.sourcegrade.jagr.launcher.executor.ProcessWorker
-import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.executor.toGradingQueue
@@ -53,7 +52,8 @@ class ChildProcGrading(private val jagr: Jagr = Jagr) {
         val executor = SyncExecutor(jagr)
         executor.schedule(queue)
         executor.start(collector)
-        notifyParent(collector)
+        collector.withGradingFinished { it.firstOrNull()?.sendToParent() }
+        Environment.stdOut.close()
     }
 
     private suspend fun next(): GradingQueue = withContext(Dispatchers.IO) {
@@ -63,11 +63,6 @@ class ChildProcGrading(private val jagr: Jagr = Jagr) {
         openScope(ByteStreams.newDataInput(bytes), jagr) {
             SerializerFactory.getScoped<GradingRequest>(jagr).readScoped(this)
         }.toGradingQueue()
-    }
-
-    private fun notifyParent(collector: RubricCollector) {
-        collector.gradingFinished.firstOrNull()?.sendToParent()
-        Environment.stdOut.close()
     }
 
     private fun GradingResult.sendToParent() {
