@@ -25,6 +25,11 @@ sealed interface MutableRubricCollector : RubricCollector {
     suspend fun setListener(listener: (GradingResult) -> Unit)
     suspend fun allocate(queue: GradingQueue)
     suspend fun start(request: GradingRequest): GradingJob
+    suspend fun <T> startBlock(block: suspend (StartBlock) -> T): T
+
+    interface StartBlock {
+        fun start(request: GradingRequest): GradingJob
+    }
 }
 
 fun emptyCollector(jagr: Jagr = Jagr): MutableRubricCollector = RubricCollectorImpl(jagr)

@@ -19,9 +19,6 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Jagr
@@ -58,10 +55,9 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
                 return
             }
         }
-        // TODO: Optimize by synchronizing over entire sequence instead of individually
-        val workersAndJobs = requests.asFlow()
-            .map { it.first to rubricCollector.start(it.second) }
-            .toList()
+        val workersAndJobs = rubricCollector.startBlock { startBlock ->
+            requests.map { it.first to startBlock.start(it.second) }
+        }
         suspendCoroutine<Unit> { continuation ->
             synchronizer.setContinuation(continuation)
             for ((worker, job) in workersAndJobs) {
