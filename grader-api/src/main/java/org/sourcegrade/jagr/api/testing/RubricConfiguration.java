@@ -23,15 +23,20 @@ import org.jetbrains.annotations.ApiStatus;
 import org.objectweb.asm.Type;
 
 import java.util.List;
+import java.util.Map;
 
 @ApiStatus.NonExtendable
 public interface RubricConfiguration {
 
-    List<ClassTransformer> getTransformers();
+    Map<ClassTransformerOrder, List<ClassTransformer>> getTransformers();
 
     List<String> getFileNameSolutionOverrides();
 
-    RubricConfiguration addTransformer(ClassTransformer transformer);
+    RubricConfiguration addTransformer(ClassTransformer transformer, ClassTransformerOrder order);
+
+    default RubricConfiguration addTransformer(ClassTransformer transformer) {
+        return addTransformer(transformer, ClassTransformerOrder.DEFAULT);
+    }
 
     /**
      * Adds a file that will be overridden in the submission from the solution.
