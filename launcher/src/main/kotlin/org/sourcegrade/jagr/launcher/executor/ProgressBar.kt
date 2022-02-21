@@ -61,9 +61,9 @@ class ProgressBar(
         }
     }
 
-    fun print(out: PrintStream) {
-        val finished = rubricCollector.gradingFinished.size
-        val total = rubricCollector.total
+    suspend fun print(out: PrintStream) = rubricCollector.withSnapshot { snapshot ->
+        val finished = snapshot.gradingFinished.size
+        val total = snapshot.total
         val progressDecimal = finished.toDouble() / total.toDouble().coerceAtLeast(0.0)
         val formattedPercentage = decimalFormat.format(progressDecimal * 100.0)
         val barCount = (ProgressBarProvider.INNER_WIDTH * progressDecimal).toInt()
@@ -81,8 +81,8 @@ class ProgressBar(
         sb.append(formattedPercentage)
         sb.append('%')
         sb.append(" ($finished/$total)")
-        if (rubricCollector.gradingScheduled.size in 1 until showElementsIfLessThan) {
-            sb.append(" Remaining: [${rubricCollector.gradingScheduled.joinToString { it.request.submission.toString() }}]")
+        if (snapshot.gradingScheduled.size in 1 until showElementsIfLessThan) {
+            sb.append(" Remaining: [${snapshot.gradingScheduled.joinToString { it.request.submission.toString() }}]")
         }
         // if more submissions are finished, save the time and how many submissions were graded since last save
         if (finished != lastFinished) {

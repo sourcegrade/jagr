@@ -20,9 +20,19 @@
 package org.sourcegrade.jagr.launcher.executor
 
 sealed interface RubricCollector {
-    val gradingScheduled: List<GradingJob>
-    val gradingRunning: List<GradingJob>
-    val gradingFinished: List<GradingResult>
-    val total: Int
-    val remaining: Int
+    suspend fun <T> withGradingScheduled(block: suspend (List<GradingJob>) -> T): T
+    suspend fun <T> withGradingRunning(block: suspend (List<GradingJob>) -> T): T
+    suspend fun <T> withGradingFinished(block: suspend (List<GradingResult>) -> T): T
+    suspend fun getTotal(): Int
+    suspend fun getRemaining(): Int
+    suspend fun toSnapshot(): Snapshot
+    suspend fun <T> withSnapshot(block: suspend (Snapshot) -> T): T
+
+    data class Snapshot(
+        val gradingScheduled: List<GradingJob>,
+        val gradingRunning: List<GradingJob>,
+        val gradingFinished: List<GradingResult>,
+        val total: Int,
+        val remaining: Int,
+    )
 }

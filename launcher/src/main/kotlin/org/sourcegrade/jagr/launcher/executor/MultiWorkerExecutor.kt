@@ -55,12 +55,14 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
                 return
             }
         }
+        val workersAndJobs = rubricCollector.startBlock { startBlock ->
+            requests.map { it.first to startBlock.start(it.second) }
+        }
         suspendCoroutine<Unit> { continuation ->
             synchronizer.setContinuation(continuation)
-            for (request in requests) {
-                val job = rubricCollector.start(request.second)
+            for ((worker, job) in workersAndJobs) {
                 job.result.invokeOnCompletion { synchronizer.notifyContinuation() }
-                request.first.assignJob(job)
+                worker.assignJob(job)
             }
             synchronizer.handleBetween()
         }

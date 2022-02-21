@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.core.LogEvent
 import org.slf4j.Logger
 import org.sourcegrade.jagr.launcher.env.Environment
@@ -45,7 +46,7 @@ import kotlin.reflect.KFunction2
 
 class ProcessWorker(
     private val jagr: Jagr,
-    private val removeActive: (Worker) -> Unit,
+    private val removeActive: suspend (Worker) -> Unit,
     processIODispatcher: CoroutineDispatcher,
 ) : Worker {
     override var job: GradingJob? = null
@@ -147,7 +148,11 @@ class ProcessWorker(
                     }
                 }(event.message.formattedMessage, throwable)
                 ProgressAwareOutputStream.enabled = true
-                ProgressAwareOutputStream.progressBar?.print(Environment.stdOut)
+                ProgressAwareOutputStream.progressBar?.let {
+                    runBlocking {
+                        print(Environment.stdOut)
+                    }
+                }
             }
         }
         val bytes: ByteArray = runCatching { process.inputStream.readAllBytes() }.getOrElse {

@@ -20,38 +20,27 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Jagr
 import java.util.concurrent.Executors
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class ProcessWorkerPool(
     private val jagr: Jagr,
     private val concurrency: Int,
 ) : WorkerPool {
     private val activeWorkers: MutableList<Worker> = mutableListOf()
-    private val activeWorkersLock = ReentrantLock()
-    private fun removeActiveWorker(worker: Worker) = activeWorkersLock.withLock { activeWorkers -= worker }
+    private val mutex = Mutex()
+    private suspend fun removeActiveWorker(worker: Worker) = mutex.withLock { activeWorkers -= worker }
 
     /**
      * These threads are used to send and listen to results from each child process.
      */
     private val processIODispatcher = Executors.newFixedThreadPool(concurrency * 2).asCoroutineDispatcher()
 
-    override suspend fun <T> withActiveWorkers(block: (List<Worker>) -> T) = suspendCoroutine<T> {
-        activeWorkersLock.withLock {
-            try {
-                it.resume(block(activeWorkers))
-            } catch (e: Exception) {
-                it.resumeWithException(e)
-            }
-        }
-    }
+    override suspend fun <T> withActiveWorkers(block: suspend (List<Worker>) -> T) = mutex.withLock { block(activeWorkers) }
 
-    override fun createWorkers(maxCount: Int): List<Worker> {
+    override suspend fun createWorkers(maxCount: Int): List<Worker> {
         if (maxCount == 0) return emptyList()
         val workerCount = minOf(maxCount, concurrency - activeWorkers.size)
         return List(workerCount) {

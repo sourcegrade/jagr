@@ -25,7 +25,7 @@ import kotlin.concurrent.thread
 
 class ThreadWorker(
     private val jagr: Jagr,
-    private val removeActive: (Worker) -> Unit,
+    private val removeActive: suspend (Worker) -> Unit,
 ) : Worker {
     override var job: GradingJob? = null
     override var status: WorkerStatus = WorkerStatus.READY
@@ -44,14 +44,16 @@ class ThreadWorker(
         ) {
             runBlocking {
                 job.gradeCatching(jagr)
+                status = WorkerStatus.FINISHED
+                removeActive(this@ThreadWorker)
             }
-            status = WorkerStatus.FINISHED
-            removeActive(this)
         }
     }
 
     override fun kill() {
         thread.stop()
-        removeActive(this)
+        runBlocking {
+            removeActive(this@ThreadWorker)
+        }
     }
 }
