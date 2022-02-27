@@ -76,6 +76,7 @@ allprojects {
     tasks {
         withType<KotlinCompile> {
             kotlinOptions.jvmTarget = "11"
+            kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
         }
         withType<JavaCompile> {
             options.encoding = "UTF-8"
