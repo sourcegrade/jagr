@@ -74,7 +74,7 @@ fun Map<ClassTransformerOrder, List<ClassTransformer>>.createApplier(
     order: ClassTransformerOrder,
     predicate: (JavaCompiledContainer) -> Boolean,
 ): TransformationApplier {
-    val backing = MultiTransformerApplierImpl(*requireNotNull(this[order]).toTypedArray())
+    val backing = MultiTransformerApplierImpl(*(this[order] ?: return applierOf()).toTypedArray())
     return TransformationApplier { result, classLoader ->
         if (predicate(result)) backing.transform(result, classLoader) else result
     }
