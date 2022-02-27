@@ -28,7 +28,7 @@ class RubricConfigurationImpl : RubricConfiguration {
     private val transformers = mutableMapOf<ClassTransformerOrder, MutableList<ClassTransformer>>()
     private val fileNameSolutionOverrides = mutableListOf<String>()
     override fun getTransformers(): Map<ClassTransformerOrder, List<ClassTransformer>> =
-        Collections.unmodifiableMap(transformers) // TODO: Make nested list unmodifiable
+        transformers.asSequence().map { (a, b) -> a to Collections.unmodifiableList(b) }.toMap()
 
     override fun getFileNameSolutionOverrides(): List<String> = Collections.unmodifiableList(fileNameSolutionOverrides)
 

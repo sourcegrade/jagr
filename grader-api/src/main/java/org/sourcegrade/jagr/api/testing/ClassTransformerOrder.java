@@ -21,11 +21,13 @@ package org.sourcegrade.jagr.api.testing;
 
 public enum ClassTransformerOrder {
 
-
     /**
      * Before submission verification.
      */
     PRE,
 
+    /**
+     * After submission verification.
+     */
     DEFAULT,
 }
