@@ -24,6 +24,7 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Type
 import org.sourcegrade.jagr.api.testing.ClassTransformer
+import org.sourcegrade.jagr.api.testing.ClassTransformerOrder
 import org.sourcegrade.jagr.core.compiler.java.CompiledClass
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import kotlin.reflect.KFunction
@@ -69,8 +70,11 @@ fun applierOf(vararg transformers: ClassTransformer): TransformationApplier {
     }
 }
 
-infix fun List<ClassTransformer>.useWhen(predicate: (JavaCompiledContainer) -> Boolean): TransformationApplier {
-    val backing = MultiTransformerApplierImpl(*toTypedArray())
+fun Map<ClassTransformerOrder, List<ClassTransformer>>.createApplier(
+    order: ClassTransformerOrder,
+    predicate: (JavaCompiledContainer) -> Boolean,
+): TransformationApplier {
+    val backing = MultiTransformerApplierImpl(*(this[order] ?: return applierOf()).toTypedArray())
     return TransformationApplier { result, classLoader ->
         if (predicate(result)) backing.transform(result, classLoader) else result
     }

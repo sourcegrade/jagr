@@ -21,6 +21,7 @@ package org.sourcegrade.jagr.core.executor
 
 import com.google.inject.Inject
 import org.slf4j.Logger
+import org.sourcegrade.jagr.api.testing.ClassTransformerOrder
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
@@ -40,8 +41,8 @@ import org.sourcegrade.jagr.core.transformer.CommonClassTransformer
 import org.sourcegrade.jagr.core.transformer.SubmissionVerificationTransformer
 import org.sourcegrade.jagr.core.transformer.TransformationApplier
 import org.sourcegrade.jagr.core.transformer.applierOf
+import org.sourcegrade.jagr.core.transformer.createApplier
 import org.sourcegrade.jagr.core.transformer.plus
-import org.sourcegrade.jagr.core.transformer.useWhen
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
@@ -107,12 +108,19 @@ class CompiledBatchFactoryImpl @Inject constructor(
      * submissions only if the grader contains a rubric for it
      */
     private fun createTransformerApplierFromGraders(graders: List<GraderJar>): TransformationApplier {
-        val base = applierOf(SubmissionVerificationTransformer(), commonClassTransformer)
-        return graders.map { graderJar ->
-            graderJar.configuration.transformers useWhen { result ->
-                result.submissionInfo?.assignmentId?.let(graderJar.info.assignmentIds::contains) == true
+        fun GraderJar.createApplier(order: ClassTransformerOrder): TransformationApplier =
+            configuration.transformers.createApplier(order) { result ->
+                result.submissionInfo?.assignmentId?.let(info.assignmentIds::contains) == true
             }
-        }.fold(base) { a, b -> a + b }
+
+        fun createApplier(order: ClassTransformerOrder): TransformationApplier =
+            graders.map { it.createApplier(order) }.fold(applierOf()) { a, b -> a + b }
+
+        return sequenceOf(
+            createApplier(ClassTransformerOrder.PRE),
+            applierOf(SubmissionVerificationTransformer(), commonClassTransformer),
+            createApplier(ClassTransformerOrder.DEFAULT),
+        ).reduce { a, b -> a + b }
     }
 
     private fun calculateSubmissionFileOverrides(graders: List<GraderJar>): Map<String, List<String>> {
