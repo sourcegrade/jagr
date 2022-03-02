@@ -46,6 +46,14 @@ public interface GradeResult extends PointRange {
         return FactoryProvider.factory.of(minPoints, maxPoints, comment);
     }
 
+    static GradeResult of(PointRange pointRange) {
+        return of(pointRange.getMinPoints(), pointRange.getMaxPoints());
+    }
+
+    static GradeResult of(PointRange pointRange, String comment) {
+        return of(pointRange.getMinPoints(), pointRange.getMaxPoints(), comment);
+    }
+
     static GradeResult of(GradeResult grade, GradeResult... otherGrades) {
         return FactoryProvider.factory.of(grade, otherGrades);
     }
