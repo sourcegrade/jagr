@@ -91,12 +91,20 @@ class CriterionImpl(
     override fun getPeers(): List<CriterionImpl> = peersKt
     override fun getChildCriteria(): List<CriterionImpl> = childCriteria
     override fun grade(testCycle: TestCycle): GradedCriterion {
-        val graderResult = GradeResult.clamped(grader?.grade(testCycle, this) ?: GradeResult.ofNone(), this)
+        val graderResult = GradeResult.clamped(
+            grader?.grade(testCycle, this)
+                ?: GradeResult.of(this, "No grader provided"),
+            this
+        )
         if (childCriteria.isEmpty()) {
             return GradedCriterionImpl(testCycle, graderResult, this)
         }
         val childGraded = childCriteria.map { it.grade(testCycle) }
-        val gradeResult = childGraded.asSequence().map(Graded::getGrade).sum().clamped(this)
+        val gradeResult = childGraded.asSequence()
+            .map(Graded::getGrade)
+            .sum()
+            .withoutComments()
+            .clamped(this)
         return GradedCriterionImpl(testCycle, gradeResult, this, childGraded)
     }
 
