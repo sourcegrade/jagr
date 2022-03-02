@@ -92,6 +92,14 @@ public interface GradeResult extends PointRange {
 
     List<String> getComments();
 
+    default GradeResult withoutComments() {
+        if (getComments().isEmpty()) {
+            return this;
+        } else {
+            return GradeResult.of(this);
+        }
+    }
+
     @ApiStatus.Internal
     final class FactoryProvider {
         @Inject

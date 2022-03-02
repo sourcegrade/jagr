@@ -63,7 +63,12 @@ class RubricImpl(
                 else -> null
             }?.also(comments::add)
             comments += messages
-            childGraded.asSequence().map(Graded::getGrade).sum().clamped(this@RubricImpl).withComments(comments)
+            childGraded.asSequence()
+                .map(Graded::getGrade)
+                .sum()
+                .withoutComments()
+                .clamped(this@RubricImpl)
+                .withComments(comments)
         }
         return GradedRubricImpl(testCycle, gradeResult, this, childGraded)
     }

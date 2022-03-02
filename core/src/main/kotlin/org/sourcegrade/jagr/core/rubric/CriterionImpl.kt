@@ -100,7 +100,11 @@ class CriterionImpl(
             return GradedCriterionImpl(testCycle, graderResult, this)
         }
         val childGraded = childCriteria.map { it.grade(testCycle) }
-        val gradeResult = childGraded.asSequence().map(Graded::getGrade).sum().clamped(this)
+        val gradeResult = childGraded.asSequence()
+            .map(Graded::getGrade)
+            .sum()
+            .withoutComments()
+            .clamped(this)
         return GradedCriterionImpl(testCycle, gradeResult, this, childGraded)
     }
 
