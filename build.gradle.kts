@@ -53,13 +53,13 @@ tasks {
     }
 }
 
-project.extra["apiVersion"] = "0.4-SNAPSHOT"
+project.extra["apiVersion"] = "0.4"
 
 allprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     group = "org.sourcegrade"
-    version = "0.4.0-SNAPSHOT"
+    version = "0.4.0"
 
     project.findProperty("buildNumber")
         ?.takeIf { version.toString().contains("SNAPSHOT") }
