@@ -121,7 +121,7 @@ class Extras {
 
     @ConfigSerializable
     class MoodleUnpack : Extra() {
-        val assignmentIdRegex = ".*Abgabe.*(?<assignmentId>[0-9]+).*[.]zip"
+        val assignmentIdRegex = ".*Abgabe.*(?<assignmentId>[0-9]{2}).*[.]zip"
         val studentIdRegex: String = "([a-z]{2}[0-9]{2}[a-z]{4})|([a-z]+_[a-z]+)"
     }
 
