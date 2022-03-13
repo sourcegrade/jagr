@@ -55,19 +55,13 @@ private class ResourceBuilderImpl : Resource.Builder {
 }
 
 private class ReadableByteArrayOutputStream : ByteArrayOutputStream() {
-    fun toResource(name: String): Resource = BackedByStreamResource(name, buf, count)
+    fun toResource(name: String): Resource = ByteArrayResource(name, buf, count)
 }
 
-private class BackedByStreamResource(
+internal class ByteArrayResource(
     override val name: String,
     private val buf: ByteArray,
-    count: Int,
+    override val size: Int = buf.size,
 ) : Resource {
-    override val size: Int = count
     override fun getInputStream(): InputStream = ByteArrayInputStream(buf, 0, size)
-}
-
-internal class ByteArrayResource(override val name: String, val data: ByteArray) : Resource {
-    override val size: Int = data.size
-    override fun getInputStream(): InputStream = ByteArrayInputStream(data)
 }
