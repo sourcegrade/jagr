@@ -22,8 +22,9 @@ package org.sourcegrade.jagr.launcher.io
 import java.io.File
 import java.io.InputStream
 
-interface ResourceContainer : Sequence<Resource> {
+interface ResourceContainer {
     val info: ResourceContainerInfo
+    val resources: Sequence<Resource>
 
     interface Builder {
         var info: ResourceContainerInfo
@@ -82,7 +83,7 @@ fun createResourceContainer(file: File): ResourceContainer = when (file.extensio
 
 fun ResourceContainer.writeAsDirIn(dir: File) {
     val root = dir.resolve(info.name)
-    for (resource in this) {
+    for (resource in resources) {
         resource.writeIn(root)
     }
 }
@@ -102,9 +103,10 @@ private class ResourceContainerInfoBuilderImpl : ResourceContainerInfo.Builder {
     override fun build(): ResourceContainerInfo = ResourceContainerInfoImpl(name)
 }
 
-private class ListResourceContainer(
+internal class ListResourceContainer(
     override val info: ResourceContainerInfo,
-    private val resources: List<Resource>,
+    private val _resources: List<Resource>,
 ) : ResourceContainer {
-    override fun iterator(): Iterator<Resource> = resources.iterator()
+    override val resources: Sequence<Resource>
+        get() = _resources.asSequence()
 }

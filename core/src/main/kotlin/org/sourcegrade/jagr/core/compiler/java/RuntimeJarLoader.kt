@@ -45,7 +45,7 @@ class RuntimeJarLoader @Inject constructor(
         val resourceCollector = ResourceCollectorImpl()
         val classStorage: MutableMap<String, CompiledClass> = mutableMapOf()
         val resources: MutableMap<String, ByteArray> = mutableMapOf()
-        for (resource in container) {
+        for (resource in container.resources) {
             when {
                 resource.name.endsWith(".class") -> {
                     val className = resource.name.replace('/', '.').substring(0, resource.name.length - 6)
@@ -83,7 +83,7 @@ class RuntimeJarLoader @Inject constructor(
         }
 
         val messages = mutableListOf<String>()
-        for (resource in container) {
+        for (resource in container.resources) {
             try {
                 loadResource(resource)
             } catch (e: Exception) {

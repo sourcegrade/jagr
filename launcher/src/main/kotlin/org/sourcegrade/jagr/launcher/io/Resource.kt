@@ -33,11 +33,16 @@ interface Resource {
         val outputStream: ByteArrayOutputStream
         fun build(): Resource
     }
+
+    companion object {
+        const val DEFAULT_SIZE = 2048
+    }
 }
 
-inline fun buildResource(configure: Resource.Builder.() -> Unit): Resource = createResourceBuilder().apply(configure).build()
+inline fun buildResource(size: Int = Resource.DEFAULT_SIZE, configure: Resource.Builder.() -> Unit): Resource =
+    createResourceBuilder(size).apply(configure).build()
 
-fun createResourceBuilder(): Resource.Builder = ResourceBuilderImpl()
+fun createResourceBuilder(size: Int = Resource.DEFAULT_SIZE): Resource.Builder = ResourceBuilderImpl(size)
 
 fun Resource.writeIn(dir: File, name: String? = null): File {
     val file = dir.resolve(name ?: this.name)
@@ -48,13 +53,13 @@ fun Resource.writeIn(dir: File, name: String? = null): File {
     return file
 }
 
-private class ResourceBuilderImpl : Resource.Builder {
+private class ResourceBuilderImpl(size: Int) : Resource.Builder {
     override lateinit var name: String
-    override val outputStream = ReadableByteArrayOutputStream()
+    override val outputStream = ReadableByteArrayOutputStream(size)
     override fun build(): Resource = outputStream.toResource(name)
 }
 
-private class ReadableByteArrayOutputStream : ByteArrayOutputStream() {
+private class ReadableByteArrayOutputStream(size: Int) : ByteArrayOutputStream(size) {
     fun toResource(name: String): Resource = ByteArrayResource(name, buf, count)
 }
 

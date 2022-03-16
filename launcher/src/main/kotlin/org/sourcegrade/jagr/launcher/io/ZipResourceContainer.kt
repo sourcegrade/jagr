@@ -31,7 +31,9 @@ internal class ZipResourceContainer(
     constructor(name: String, input: InputStream) : this(ResourceContainerInfoImpl(name), input)
     constructor(file: File) : this(file.name, file.inputStream().buffered())
 
-    override fun iterator(): Iterator<Resource> = ZipResourceIterator(ZipInputStream(input))
+    override val resources: Sequence<Resource>
+        get() = Sequence { ZipResourceIterator(ZipInputStream(input)) }
+
     override fun toString(): String = info.toString()
 }
 
@@ -61,4 +63,8 @@ private class ZipResourceIterator(private val zip: ZipInputStream) : Iterator<Re
         } // no cached next, calculate and return
             ?: ByteArrayResource(requireNotNull(calculateNext()) { "No next entry!" }.name, zip.readBytes())
     }
+}
+
+private class ZipResource(override val name: String, override val size: Int, val zip: ZipInputStream) : Resource {
+    override fun getInputStream(): ZipInputStream = zip
 }
