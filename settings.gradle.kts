@@ -1,11 +1,3 @@
-rootProject.name = "Jagr"
-include(":jagr-core")
-include(":jagr-grader-api")
-include(":jagr-launcher")
-project(":jagr-core").projectDir = File("core")
-project(":jagr-grader-api").projectDir = File("grader-api")
-project(":jagr-launcher").projectDir = File("launcher")
-
 pluginManagement {
     plugins {
         val kotlinVersion: String by settings
@@ -15,4 +7,16 @@ pluginManagement {
         kotlin("plugin.serialization") version kotlinVersion
         id("com.github.johnrengelman.shadow") version shadowVersion
     }
+}
+
+rootProject.name = "Jagr"
+
+sequenceOf(
+    "core",
+    "grader-api",
+    "launcher",
+).forEach {
+    val project = ":jagr-$it"
+    include(project)
+    project(project).projectDir = file(it)
 }
