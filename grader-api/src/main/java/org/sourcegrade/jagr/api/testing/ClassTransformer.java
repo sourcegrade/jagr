@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -33,6 +33,16 @@ public interface ClassTransformer {
     String getName();
 
     void transform(ClassReader reader, ClassWriter writer);
+
+    /**
+     * The flags to use in the construction of the {@link ClassWriter} provided to {@link #transform(ClassReader, ClassWriter)}.
+     *
+     * @return The flags to use
+     * @see ClassWriter for more information as to which flags are available
+     */
+    default int getWriterFlags() {
+        return 0;
+    }
 
     @ApiStatus.Internal
     final class FactoryProvider {

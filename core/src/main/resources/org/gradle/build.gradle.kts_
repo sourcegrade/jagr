@@ -10,7 +10,7 @@ allprojects {
   }
   dependencies {
     implementation("org.sourcegrade:jagr-grader-api:0.3-SNAPSHOT")
-    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    implementation("org.junit.jupiter:junit-jupiter:5.8.2")
   }
   java {
     sourceCompatibility = JavaVersion.VERSION_11

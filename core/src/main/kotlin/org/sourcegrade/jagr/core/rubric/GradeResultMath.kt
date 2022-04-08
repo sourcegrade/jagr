@@ -17,25 +17,16 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.compiler
+package org.sourcegrade.jagr.core.rubric
 
-import org.sourcegrade.jagr.launcher.io.Resource
-import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
+import org.sourcegrade.jagr.api.rubric.Gradable
+import org.sourcegrade.jagr.api.rubric.GradeResult
 
-fun interface ResourceExtractor {
-    /**
-     * Attempts to extract a special kind of resource from [resource].
-     */
-    fun extract(
-        containerInfo: ResourceContainerInfo,
-        resource: Resource,
-        data: ByteArray,
-        collector: MutableResourceCollector,
-    )
-}
+operator fun GradeResult.plus(other: GradeResult): GradeResult =
+    GradeResultImpl(minPoints + other.minPoints, maxPoints + other.maxPoints, comments + other.comments)
 
-fun extractorOf(vararg extractors: ResourceExtractor) = ResourceExtractor { containerInfo, resource, data, collector ->
-    for (extractor in extractors) {
-        extractor.extract(containerInfo, resource, data, collector)
-    }
-}
+fun Sequence<GradeResult>.sum(): GradeResult = fold(GradeResult.ofNone()) { a, b -> a + b }
+
+fun GradeResult.withComments(comments: Iterable<String>): GradeResult = GradeResult.withComments(this, comments)
+
+fun GradeResult.clamped(gradable: Gradable<*>): GradeResult = GradeResult.clamped(this, gradable)

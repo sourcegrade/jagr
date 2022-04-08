@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -20,11 +20,12 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import kotlinx.coroutines.runBlocking
+import org.sourcegrade.jagr.launcher.env.Jagr
 import kotlin.concurrent.thread
 
 class ThreadWorker(
-    private val runtimeGrader: RuntimeGrader,
-    private val removeActive: (Worker) -> Unit,
+    private val jagr: Jagr,
+    private val removeActive: suspend (Worker) -> Unit,
 ) : Worker {
     override var job: GradingJob? = null
     override var status: WorkerStatus = WorkerStatus.READY
@@ -42,15 +43,17 @@ class ThreadWorker(
             priority = 3,
         ) {
             runBlocking {
-                runtimeGrader.grade(job)
+                job.gradeCatching(jagr)
+                status = WorkerStatus.FINISHED
+                removeActive(this@ThreadWorker)
             }
-            status = WorkerStatus.FINISHED
-            removeActive(this)
         }
     }
 
     override fun kill() {
         thread.stop()
-        removeActive(this)
+        runBlocking {
+            removeActive(this@ThreadWorker)
+        }
     }
 }

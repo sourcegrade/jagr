@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -46,6 +46,14 @@ public interface GradeResult extends PointRange {
         return FactoryProvider.factory.of(minPoints, maxPoints, comment);
     }
 
+    static GradeResult of(PointRange pointRange) {
+        return of(pointRange.getMinPoints(), pointRange.getMaxPoints());
+    }
+
+    static GradeResult of(PointRange pointRange, String comment) {
+        return of(pointRange.getMinPoints(), pointRange.getMaxPoints(), comment);
+    }
+
     static GradeResult of(GradeResult grade, GradeResult... otherGrades) {
         return FactoryProvider.factory.of(grade, otherGrades);
     }
@@ -83,6 +91,14 @@ public interface GradeResult extends PointRange {
     int getMaxPoints();
 
     List<String> getComments();
+
+    default GradeResult withoutComments() {
+        if (getComments().isEmpty()) {
+            return this;
+        } else {
+            return GradeResult.of(this);
+        }
+    }
 
     @ApiStatus.Internal
     final class FactoryProvider {

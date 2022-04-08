@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -32,7 +32,6 @@ import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.GradingRequest
 import org.sourcegrade.jagr.launcher.executor.GradingResult
 import org.sourcegrade.jagr.launcher.executor.ProcessWorker
-import org.sourcegrade.jagr.launcher.executor.RubricCollector
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.executor.toGradingQueue
@@ -53,7 +52,8 @@ class ChildProcGrading(private val jagr: Jagr = Jagr) {
         val executor = SyncExecutor(jagr)
         executor.schedule(queue)
         executor.start(collector)
-        notifyParent(collector)
+        collector.withGradingFinished { it.firstOrNull()?.sendToParent() }
+        Environment.stdOut.close()
     }
 
     private suspend fun next(): GradingQueue = withContext(Dispatchers.IO) {
@@ -65,15 +65,13 @@ class ChildProcGrading(private val jagr: Jagr = Jagr) {
         }.toGradingQueue()
     }
 
-    private fun notifyParent(collector: RubricCollector) {
+    private fun GradingResult.sendToParent() {
         val outputStream = ByteArrayOutputStream(8192)
         val output = ByteStreams.newDataOutput(outputStream)
         Environment.stdOut.write(ProcessWorker.MARK_RESULT_BYTE)
-        val before = collector.gradingFinished[0]
         openScope(output, Jagr) {
-            SerializerFactory.get<GradingResult>().write(before, this)
+            SerializerFactory.get<GradingResult>().write(this@sendToParent, this)
         }
         outputStream.writeTo(Environment.stdOut)
-        Environment.stdOut.close()
     }
 }

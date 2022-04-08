@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -23,6 +23,11 @@ import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get
 import java.io.InputStream
+import java.net.URL
+import java.net.URLConnection
+import java.net.URLStreamHandler
+import java.util.Collections
+import java.util.Enumeration
 
 class RuntimeClassLoader(
     private val runtimeResources: RuntimeResources,
@@ -34,6 +39,26 @@ class RuntimeClassLoader(
         val compiledClass = runtimeResources.classes[name] ?: return super.findClass(name)
         val byteCode: ByteArray = compiledClass.bytecode
         return defineClass(name, byteCode, 0, byteCode.size)
+    }
+
+    override fun findResource(name: String): URL? {
+        val resource: ByteArray = runtimeResources.resources[name] ?: return null
+        return URL(
+            null,
+            "jagrresource:$name",
+            object : URLStreamHandler() {
+                override fun openConnection(u: URL?): URLConnection {
+                    return object : URLConnection(u) {
+                        override fun connect() = Unit
+                        override fun getInputStream(): InputStream = resource.inputStream()
+                    }
+                }
+            }
+        )
+    }
+
+    override fun findResources(name: String): Enumeration<URL> {
+        return Collections.enumeration(listOf(findResource(name) ?: return Collections.emptyEnumeration()))
     }
 
     override fun getResourceAsStream(name: String): InputStream? {

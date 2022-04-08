@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -19,12 +19,7 @@
 
 package org.sourcegrade.jagr.launcher.executor
 
-import org.sourcegrade.jagr.api.rubric.GradedRubric
-import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.launcher.env.Jagr
-import org.sourcegrade.jagr.launcher.io.GraderJar
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 interface Executor {
     suspend fun schedule(queue: GradingQueue)
@@ -32,19 +27,4 @@ interface Executor {
     interface Factory {
         fun create(jagr: Jagr): Executor
     }
-}
-
-interface RuntimeGrader {
-    fun grade(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
-
-    fun gradeFallback(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
-}
-
-fun RuntimeGrader.grade(job: GradingJob) {
-    val startedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
-    val rubrics = with(job.request) {
-        grade(graders, submission)
-    }
-    val finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
-    job.result.complete(GradingResult(startedUtc, finishedUtc, job.request, rubrics))
 }

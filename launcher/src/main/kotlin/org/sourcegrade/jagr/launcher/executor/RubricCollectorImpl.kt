@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -22,42 +22,96 @@ package org.sourcegrade.jagr.launcher.executor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 
 internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollector {
     private val queued = mutableListOf<GradingQueue>()
-    override val gradingScheduled = mutableListOf<GradingJob>()
-    override val gradingRunning = mutableListOf<GradingJob>()
-    override val gradingFinished = mutableListOf<GradingResult>()
-    override val total: Int
+    private val gradingScheduled = mutableListOf<GradingJob>()
+    private val gradingRunning = mutableListOf<GradingJob>()
+    private val gradingFinished = mutableListOf<GradingResult>()
+
+    private val total: Int
         get() = queued.sumOf { it.total }
-    override val remaining: Int
+    private val remaining: Int
         get() = queued.sumOf { it.remaining }
 
     private var listener: (GradingResult) -> Unit = {}
     private val scope = CoroutineScope(Dispatchers.Unconfined)
 
-    override fun allocate(queue: GradingQueue) {
+    private val mutex = Mutex()
+
+    override suspend fun <T> withGradingScheduled(block: suspend (List<GradingJob>) -> T): T = mutex.withLock {
+        block(gradingScheduled)
+    }
+
+    override suspend fun <T> withGradingRunning(block: suspend (List<GradingJob>) -> T): T = mutex.withLock {
+        block(gradingRunning)
+    }
+
+    override suspend fun <T> withGradingFinished(block: suspend (List<GradingResult>) -> T): T = mutex.withLock {
+        block(gradingFinished)
+    }
+
+    override suspend fun getTotal(): Int = mutex.withLock { total }
+    override suspend fun getRemaining(): Int = mutex.withLock { remaining }
+
+    override suspend fun toSnapshot(): RubricCollector.Snapshot = mutex.withLock {
+        RubricCollector.Snapshot(
+            gradingScheduled.toList(),
+            gradingRunning.toList(),
+            gradingFinished.toList(),
+            total,
+            remaining,
+        )
+    }
+
+    override suspend fun <T> withSnapshot(block: suspend (RubricCollector.Snapshot) -> T): T = mutex.withLock {
+        return block(
+            RubricCollector.Snapshot(
+                gradingScheduled,
+                gradingRunning,
+                gradingFinished,
+                total,
+                remaining,
+            )
+        )
+    }
+
+    override suspend fun allocate(queue: GradingQueue) = mutex.withLock {
         queued += queue
     }
 
-    override fun setListener(listener: (GradingResult) -> Unit) {
+    override suspend fun setListener(listener: (GradingResult) -> Unit) = mutex.withLock {
         this.listener = listener
     }
 
-    override fun start(request: GradingRequest): GradingJob {
+    private fun startDirect(request: GradingRequest): GradingJob {
         val job = GradingJob(request)
         gradingRunning += job
         scope.launch {
             try {
                 val result = job.result.await()
-                gradingFinished.add(result)
+                mutex.withLock {
+                    gradingFinished.add(result)
+                }
                 listener(result)
             } catch (e: Exception) {
                 jagr.logger.error("An error occurred receiving result for grading job", e)
             }
         }
         return job
+    }
+
+    override suspend fun start(request: GradingRequest): GradingJob = mutex.withLock {
+        startDirect(request)
+    }
+
+    override suspend fun <T> startBlock(block: suspend (MutableRubricCollector.StartBlock) -> T): T = mutex.withLock {
+        block(object : MutableRubricCollector.StartBlock {
+            override fun start(request: GradingRequest): GradingJob = startDirect(request)
+        })
     }
 }

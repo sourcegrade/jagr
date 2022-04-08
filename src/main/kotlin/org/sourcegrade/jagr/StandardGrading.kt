@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -27,12 +27,14 @@ import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.extrasManager
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
+import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.GradingResult
 import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
 import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
 import org.sourcegrade.jagr.launcher.executor.ProgressBar
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.ThreadWorkerPool
+import org.sourcegrade.jagr.launcher.executor.createProgressBarProvider
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
@@ -44,7 +46,7 @@ import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
 
 class StandardGrading(
-    private val rainbowProgressBar: Boolean,
+    private val progressBarName: String?,
     private val jagr: Jagr = Jagr,
 ) {
     private val config = jagr.config
@@ -54,7 +56,7 @@ class StandardGrading(
     private val csvExporter = jagr.injector.getInstance(GradedRubricExporter.CSV::class.java)
     private val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
 
-    fun grade(exportOnly: Boolean) = runBlocking {
+    fun grade(noExport: Boolean, exportOnly: Boolean) = runBlocking {
         File(config.dir.submissions).ensure(jagr.logger)
         jagr.extrasManager.runExtras()
         val batch = buildGradingBatch {
@@ -63,10 +65,8 @@ class StandardGrading(
             discoverLibraries(config.dir.libs) { _, n -> n.endsWith("jar") }
         }
         val queue = jagr.gradingQueueFactory.create(batch)
-        jagr.logger.info("Beginning export")
-        val submissionExportFile = File(config.dir.submissionsExport).ensure(jagr.logger)!!
-        for (resourceContainer in jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
-            resourceContainer.writeAsDirIn(submissionExportFile)
+        if (!noExport) {
+            exportSubmissions(queue)
         }
         if (exportOnly) {
             jagr.logger.info("Only exporting, finished!")
@@ -86,24 +86,37 @@ class StandardGrading(
             }.create(jagr)
         }
         val collector = emptyCollector(jagr)
-        val progress = ProgressBar(collector, rainbowProgressBar)
+        val progress = ProgressBar(collector, createProgressBarProvider(progressBarName))
         ProgressAwareOutputStream.progressBar = progress
         collector.setListener { result ->
             result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
-            export(result)
+            exportRubrics(result)
         }
         collector.allocate(queue)
         executor.schedule(queue)
         executor.start(collector)
         ProgressAwareOutputStream.progressBar = null
         Environment.cleanupMainProcess()
-        collector.logHistogram(jagr)
-        if (collector.gradingFinished.isEmpty()) {
+        val rubricCount = collector.withGradingFinished { gradingFinished ->
+            gradingFinished.logHistogram(jagr)
+            gradingFinished.sumOf { it.rubrics.size }
+        }
+        if (rubricCount == 0) {
             jagr.logger.warn("No rubrics!")
+        } else {
+            jagr.logger.info("Exported $rubricCount rubrics")
         }
     }
 
-    private fun export(result: GradingResult) {
+    private fun exportSubmissions(queue: GradingQueue) {
+        jagr.logger.info("Beginning export")
+        val submissionExportFile = File(config.dir.submissionsExport).ensure(jagr.logger)!!
+        for (resourceContainer in jagr.injector.getInstance(SubmissionExporter.Gradle::class.java).export(queue)) {
+            resourceContainer.writeAsDirIn(submissionExportFile)
+        }
+    }
+
+    private fun exportRubrics(result: GradingResult) {
         for ((gradedRubric, _) in result.rubrics) {
             csvExporter.exportSafe(gradedRubric, csvDir)
             htmlExporter.exportSafe(gradedRubric, htmlDir)

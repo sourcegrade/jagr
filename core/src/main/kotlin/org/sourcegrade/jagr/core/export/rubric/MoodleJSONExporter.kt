@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -55,7 +55,7 @@ class MoodleJSONExporter @Inject constructor(
 
         // Title
         append("<tr>")
-        append("<td><strong>${gradedRubric.rubric.title}</strong></td>")
+        append("<td><strong>${gradedRubric.rubric.title.escaped()}</strong></td>")
         append("<td></td>")
         append("<td></td>")
         append("<td></td>")
@@ -85,7 +85,7 @@ class MoodleJSONExporter @Inject constructor(
         append("<td><strong>Gesamt:</strong></td>")
         append("<td>${rubric.maxPoints}</td>")
         append("<td>${PointRange.toString(grade)}</td>")
-        append("<td>${comments.firstOrNull() ?: ""}</td>")
+        append("<td>${comments.firstOrNull()?.escaped() ?: ""}</td>")
         append("</tr>")
 
         for (i in 1 until comments.size) {
@@ -93,7 +93,7 @@ class MoodleJSONExporter @Inject constructor(
             append("<td></td>")
             append("<td></td>")
             append("<td></td>")
-            append("<td>${comments[i]}</td>")
+            append("<td>${comments[i].escaped()}</td>")
             append("</tr>")
         }
 
@@ -106,21 +106,14 @@ class MoodleJSONExporter @Inject constructor(
     private fun StringBuilder.appendCriterion(gradedCriterion: GradedCriterion): StringBuilder {
         val criterion = gradedCriterion.criterion
         val grade = gradedCriterion.grade
-        val comments = grade.comments.joinToString("<br />")
-        if (gradedCriterion.childCriteria.isEmpty()) {
-            append("<tr>")
-            append("<td>${criterion.shortDescription}</td>")
-            append("<td>${PointRange.toString(criterion)}</td>")
-            append("<td>${PointRange.toString(grade)}</td>")
-            append("<td>$comments</td>")
-            append("</tr>")
-        } else {
-            append("<tr>")
-            append("<td><strong>${criterion.shortDescription}</strong></td>")
-            append("<td></td>")
-            append("<td></td>")
-            append("<td>$comments</td>")
-            append("</tr>")
+        val comments = grade.comments.joinToString("<br />") { it.escaped() }
+        append("<tr>")
+        append("<td>${criterion.shortDescription.escaped()}</td>")
+        append("<td>${PointRange.toString(criterion)}</td>")
+        append("<td>${PointRange.toString(grade)}</td>")
+        append("<td>$comments</td>")
+        append("</tr>")
+        if (gradedCriterion.childCriteria.isNotEmpty()) {
             for (childGradedCriterion in gradedCriterion.childCriteria) {
                 appendCriterion(childGradedCriterion)
             }
@@ -135,6 +128,12 @@ class MoodleJSONExporter @Inject constructor(
             append("<td></td>")
         }
         append("</tr>")
+    }
+
+    private fun String.escaped(): String {
+        return replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\n", "<br>")
     }
 
     @Serializable

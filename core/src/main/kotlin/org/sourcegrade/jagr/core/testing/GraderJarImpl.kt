@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -35,6 +35,7 @@ import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.graderFiles
 import org.sourcegrade.jagr.launcher.io.read
+import org.sourcegrade.jagr.launcher.io.solutionFiles
 import org.sourcegrade.jagr.launcher.io.write
 
 class GraderJarImpl(
@@ -59,6 +60,7 @@ class GraderJarImpl(
     override val testProviders: Map<String, List<String>>
 
     private val graderFiles = info.graderFiles.toSet()
+    private val solutionFiles = info.solutionFiles.toSet()
 
     val containerWithoutSolution = container.copy(
         runtimeResources = container.runtimeResources.copy(
@@ -69,6 +71,11 @@ class GraderJarImpl(
     )
 
     init {
+        for ((fileName, _) in container.source.sourceFiles) {
+            if (!graderFiles.contains(fileName) && !solutionFiles.contains(fileName)) {
+                error("Grader ${container.info.name} file $fileName is not declared in the grader-info.json")
+            }
+        }
         val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
         val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
         val baseClassLoader = RuntimeClassLoader(container.runtimeResources + libraries)

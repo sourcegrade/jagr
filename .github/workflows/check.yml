@@ -17,4 +17,4 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - run: ./gradlew check
+      - run: ./gradlew clean check --continue

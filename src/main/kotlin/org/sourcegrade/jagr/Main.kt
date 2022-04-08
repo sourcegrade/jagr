@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -22,6 +22,7 @@ package org.sourcegrade.jagr
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.choice
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
@@ -41,8 +42,9 @@ class MainCommand : CliktCommand() {
      * Command line option to indicate that this process will listen to (via std in) to a grading request
      */
     private val child by option("--child", "-c").flag()
+    private val noExport by option("--no-export", "-n").flag()
     private val exportOnly by option("--export-only", "-e").flag()
-    private val rainbow by option("--rainbow").flag()
+    private val progress by option("--progress").choice("rainbow", "xmas")
     override fun run() {
         if (child) {
             Environment.initializeChildProcess()
@@ -50,7 +52,7 @@ class MainCommand : CliktCommand() {
         } else {
             Environment.initializeMainProcess()
             val startTime = System.currentTimeMillis()
-            StandardGrading(rainbow).grade(exportOnly)
+            StandardGrading(progress).grade(noExport, exportOnly)
             Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
         }
     }

@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -55,12 +55,14 @@ class MultiWorkerExecutor internal constructor(private val workerPool: WorkerPoo
                 return
             }
         }
+        val workersAndJobs = rubricCollector.startBlock { startBlock ->
+            requests.map { it.first to startBlock.start(it.second) }
+        }
         suspendCoroutine<Unit> { continuation ->
             synchronizer.setContinuation(continuation)
-            for (request in requests) {
-                val job = rubricCollector.start(request.second)
+            for ((worker, job) in workersAndJobs) {
                 job.result.invokeOnCompletion { synchronizer.notifyContinuation() }
-                request.first.assignJob(job)
+                worker.assignJob(job)
             }
             synchronizer.handleBetween()
         }

@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -26,25 +26,25 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.apache.logging.log4j.core.LogEvent
 import org.slf4j.Logger
+import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
+import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.nio.charset.StandardCharsets
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.reflect.KFunction1
+import java.io.ObjectInputStream
+import kotlin.reflect.KFunction2
 
 class ProcessWorker(
     private val jagr: Jagr,
-    private val runtimeGrader: RuntimeGrader,
-    private val removeActive: (Worker) -> Unit,
+    private val removeActive: suspend (Worker) -> Unit,
     processIODispatcher: CoroutineDispatcher,
 ) : Worker {
     override var job: GradingJob? = null
@@ -68,11 +68,7 @@ class ProcessWorker(
         status = WorkerStatus.RUNNING
         coroutineScope.launch {
             sendRequest(job.request)
-            try {
-                job.result.complete(receiveResult(job))
-            } catch (e: Exception) {
-                job.result.completeExceptionally(e)
-            }
+            job.gradeCatching(jagr, ::receiveResult)
             status = WorkerStatus.FINISHED
             removeActive(this@ProcessWorker)
         }
@@ -98,32 +94,22 @@ class ProcessWorker(
         process.outputStream.close()
     }
 
-    private fun receiveResult(job: GradingJob): GradingResult {
-        val startedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+    private fun receiveResult(request: GradingRequest): GradingResult? {
         val childProcessIn = process.inputStream
         while (true) {
             val next = childProcessIn.read()
             if (next == MARK_RESULT_BYTE) {
                 break
             } else if (next == -1) {
-                jagr.logger.error("${job.request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
-                return createFallbackResult(startedUtc, job.request)
+                jagr.logger.error("${request.submission.info} :: Received unexpected EOF while waiting for child process to complete")
+                return null
             } else if (next == MARK_LOG_MESSAGE_BYTE) {
-                val level = childProcessIn.read()
-                val length = childProcessIn.read() shl 24 or
-                    childProcessIn.read() shl 16 or
-                    childProcessIn.read() shl 8 or
-                    childProcessIn.read()
-                if (length < 0) {
-                    jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
-                    return createFallbackResult(startedUtc, job.request)
-                }
-                val message: String = runCatching { process.inputStream.readNBytes(length) }.getOrElse {
-                    jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
-                    return createFallbackResult(startedUtc, job.request)
-                }.toString(StandardCharsets.UTF_8)
-                jagr.logger.let<Logger, KFunction1<String, Unit>> {
-                    when (level) {
+                val ois = ObjectInputStream(childProcessIn)
+                val event = ois.readObject() as LogEvent
+                val throwable = ois.readObject() as Throwable? // the throwable field is not serialized in event or message
+                ProgressAwareOutputStream.enabled = false
+                jagr.logger.let<Logger, KFunction2<String, Throwable?, Unit>> {
+                    when (event.level.intLevel() / 100) {
                         2 -> it::error
                         3 -> it::warn
                         4 -> it::info
@@ -131,23 +117,23 @@ class ProcessWorker(
                         6 -> it::trace
                         else -> it::info
                     }
-                }(message)
+                }(event.message.formattedMessage, throwable)
+                ProgressAwareOutputStream.enabled = true
+                ProgressAwareOutputStream.progressBar?.let {
+                    runBlocking {
+                        print(Environment.stdOut)
+                    }
+                }
             }
         }
         val bytes: ByteArray = runCatching { process.inputStream.readAllBytes() }.getOrElse {
-            jagr.logger.error("${job.request.submission.info} :: Received IOException while waiting for child process to complete")
-            return createFallbackResult(startedUtc, job.request)
+            jagr.logger.error("${request.submission.info} :: Received IOException while waiting for child process to complete")
+            return null
         }
         return openScope(ByteStreams.newDataInput(bytes), jagr) {
-            SerializerFactory.getScoped<GradingRequest>(jagr).putInScope(job.request, this)
+            SerializerFactory.getScoped<GradingRequest>(jagr).putInScope(request, this)
             SerializerFactory.get<GradingResult>(jagr).read(this)
         }
-    }
-
-    private fun createFallbackResult(startedUtc: Instant, request: GradingRequest): GradingResult {
-        val finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
-        val fallbackRubrics = runtimeGrader.gradeFallback(request.graders, request.submission)
-        return GradingResult(startedUtc, finishedUtc, request, fallbackRubrics)
     }
 
     companion object {

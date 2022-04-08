@@ -17,25 +17,17 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.compiler
+package org.sourcegrade.jagr.api.testing;
 
-import org.sourcegrade.jagr.launcher.io.Resource
-import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
+public enum ClassTransformerOrder {
 
-fun interface ResourceExtractor {
     /**
-     * Attempts to extract a special kind of resource from [resource].
+     * Before submission verification.
      */
-    fun extract(
-        containerInfo: ResourceContainerInfo,
-        resource: Resource,
-        data: ByteArray,
-        collector: MutableResourceCollector,
-    )
-}
+    PRE,
 
-fun extractorOf(vararg extractors: ResourceExtractor) = ResourceExtractor { containerInfo, resource, data, collector ->
-    for (extractor in extractors) {
-        extractor.extract(containerInfo, resource, data, collector)
-    }
+    /**
+     * After submission verification.
+     */
+    DEFAULT,
 }

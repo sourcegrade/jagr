@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -22,13 +22,11 @@ package org.sourcegrade.jagr.launcher.executor
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Jagr
-import org.sourcegrade.jagr.launcher.env.runtimeGrader
 
 class SyncExecutor constructor(
-    jagr: Jagr,
+    private val jagr: Jagr,
 ) : Executor {
     private val mutex = Mutex()
-    private val runtimeGrader = jagr.runtimeGrader
     private val scheduled = mutableListOf<GradingQueue>()
 
     override suspend fun schedule(queue: GradingQueue) = mutex.withLock {
@@ -38,7 +36,7 @@ class SyncExecutor constructor(
     override suspend fun start(rubricCollector: MutableRubricCollector) = mutex.withLock {
         while (scheduled.isNotEmpty()) {
             val next = scheduled.next() ?: break
-            runtimeGrader.grade(rubricCollector.start(next))
+            rubricCollector.start(next).gradeCatching(jagr)
         }
         scheduled.clear()
     }

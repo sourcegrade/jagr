@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -21,13 +21,16 @@ package org.sourcegrade.jagr.core.executor
 
 import com.google.inject.Inject
 import org.slf4j.Logger
+import org.sourcegrade.jagr.api.testing.ClassTransformerOrder
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.loadCompiled
+import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.core.compiler.submissionInfo
 import org.sourcegrade.jagr.core.parallelMapNotNull
 import org.sourcegrade.jagr.core.testing.GraderInfoImpl
@@ -38,8 +41,8 @@ import org.sourcegrade.jagr.core.transformer.CommonClassTransformer
 import org.sourcegrade.jagr.core.transformer.SubmissionVerificationTransformer
 import org.sourcegrade.jagr.core.transformer.TransformationApplier
 import org.sourcegrade.jagr.core.transformer.applierOf
+import org.sourcegrade.jagr.core.transformer.createApplier
 import org.sourcegrade.jagr.core.transformer.plus
-import org.sourcegrade.jagr.core.transformer.useWhen
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
@@ -101,12 +104,19 @@ class CompiledBatchFactoryImpl @Inject constructor(
      * submissions only if the grader contains a rubric for it
      */
     private fun createTransformerApplierFromGraders(graders: List<GraderJar>): TransformationApplier {
-        val base = applierOf(SubmissionVerificationTransformer(), commonClassTransformer)
-        return graders.map { graderJar ->
-            graderJar.configuration.transformers useWhen { result ->
-                result.submissionInfo?.assignmentId?.let(graderJar.info.assignmentIds::contains) == true
+        fun GraderJar.createApplier(order: ClassTransformerOrder): TransformationApplier =
+            configuration.transformers.createApplier(order) { result ->
+                result.submissionInfo?.assignmentId?.let(info.assignmentIds::contains) == true
             }
-        }.fold(base) { a, b -> a + b }
+
+        fun createApplier(order: ClassTransformerOrder): TransformationApplier =
+            graders.map { it.createApplier(order) }.fold(applierOf()) { a, b -> a + b }
+
+        return sequenceOf(
+            createApplier(ClassTransformerOrder.PRE),
+            applierOf(SubmissionVerificationTransformer(), commonClassTransformer),
+            createApplier(ClassTransformerOrder.DEFAULT),
+        ).reduce { a, b -> a + b }
     }
 
     private fun calculateSubmissionFileOverrides(graders: List<GraderJar>): Map<String, List<String>> {
@@ -141,8 +151,9 @@ class CompiledBatchFactoryImpl @Inject constructor(
         }
         val original = runtimeJarLoader.compileSources(replacedSources, libraries)
         val transformed = try {
-            transformerApplier.transform(original)
-        } catch (e: Exception) {
+            val classLoader = RuntimeClassLoader(original.runtimeResources + libraries)
+            transformerApplier.transform(original, classLoader)
+        } catch (e: Throwable) {
             // create a copy of the original compile result but throw out runtime resources (compiled classes and resources)
             original.copy(
                 runtimeResources = RuntimeResources(),

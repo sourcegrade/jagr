@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -28,6 +28,7 @@ import org.sourcegrade.jagr.api.rubric.GradeResult
 import org.sourcegrade.jagr.api.rubric.Grader
 import org.sourcegrade.jagr.api.rubric.JUnitTestRef
 import org.sourcegrade.jagr.api.testing.TestCycle
+import java.lang.reflect.InvocationTargetException
 
 class TestAwareGraderImpl(
     private val graderPassed: Grader,
@@ -61,16 +62,19 @@ class TestAwareGraderImpl(
         return graderPassed.grade(testCycle, criterion)
     }
 
-    private val TestExecutionResult.message
+    private val TestExecutionResult.message: String?
         get() = throwable.orElse(null)?.run {
             when (this) {
                 is AssertionFailedError,
                 -> message.toString()
-                    .replace('>', ']')
-                    .replace('<', '[')
-                is NullPointerException,
-                -> "${this::class.simpleName}: $message @ ${stackTrace.firstOrNull()}"
-                else -> "${this::class.simpleName}: $message"
+                // students should not see an invocation target exception
+                // it's better to show the actual exception thrown from their code
+                is InvocationTargetException,
+                -> cause?.prettyMessage
+                else -> prettyMessage
             }
         }
+
+    private val Throwable.prettyMessage
+        get() = "${this::class.simpleName}: $message @ ${stackTrace.firstOrNull()}"
 }

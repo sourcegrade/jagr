@@ -10,10 +10,12 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
 }
 
+val cliktVersion: String by project
+
 dependencies {
     runtimeOnly(project("jagr-core"))
     implementation(project("jagr-launcher"))
-    implementation("com.github.ajalt.clikt:clikt:3.3.0")
+    implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
 }
 
 application {
@@ -21,13 +23,17 @@ application {
 }
 
 tasks {
+    val runDir = File("build/run")
     named<JavaExec>("run") {
         doFirst {
             error("Use runShadow instead")
         }
     }
     named<JavaExec>("runShadow") {
-        workingDir = File("build/run").also(File::mkdirs)
+        doFirst {
+            runDir.mkdirs()
+        }
+        workingDir = runDir
     }
     jar {
         enabled = false
@@ -47,13 +53,13 @@ tasks {
     }
 }
 
-project.extra["apiVersion"] = "0.3-SNAPSHOT"
+project.extra["apiVersion"] = "0.5-SNAPSHOT"
 
 allprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     group = "org.sourcegrade"
-    version = "0.3.0-SNAPSHOT"
+    version = "0.4.1-SNAPSHOT"
 
     project.findProperty("buildNumber")
         ?.takeIf { version.toString().contains("SNAPSHOT") }
