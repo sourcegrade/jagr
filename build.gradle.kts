@@ -1,13 +1,12 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.sourcegrade.jagr.script.JagrPublishPlugin
 
 plugins {
     application
     kotlin("jvm")
     id("com.github.johnrengelman.shadow")
-    id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+    id("org.sourcegrade.style")
 }
 
 val cliktVersion: String by project
@@ -56,7 +55,7 @@ tasks {
 project.extra["apiVersion"] = "0.5-SNAPSHOT"
 
 allprojects {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    apply(plugin = "org.sourcegrade.style")
 
     group = "org.sourcegrade"
     version = "0.4.1-SNAPSHOT"
@@ -67,10 +66,6 @@ allprojects {
 
     repositories {
         mavenCentral()
-    }
-
-    configure<KtlintExtension> {
-        enableExperimentalRules.set(true)
     }
 
     tasks {
