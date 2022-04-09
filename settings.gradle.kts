@@ -1,4 +1,9 @@
 pluginManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+    }
     plugins {
         val kotlinVersion: String by settings
         val shadowVersion: String by settings
@@ -7,7 +12,7 @@ pluginManagement {
         kotlin("kapt") version kotlinVersion
         kotlin("plugin.serialization") version kotlinVersion
         id("com.github.johnrengelman.shadow") version shadowVersion
-        id("org.sourcegrade.style") version styleVersion
+        id("org.sourcegrade.style") version "2.1.0-SNAPSHOT"
     }
 }
 

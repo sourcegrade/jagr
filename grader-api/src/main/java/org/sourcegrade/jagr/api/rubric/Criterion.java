@@ -64,30 +64,48 @@ public interface Criterion extends Gradable<GradedCriterion>, CriterionHolder<Cr
     /**
      * A criterion is terminal iff it does not have any children.
      *
-     * @return Whether this criterion is terminal.
+     * @return Whether this criterion is terminal
      */
     boolean isTerminal();
 
     /**
-     * @return The {@link Rubric} parent. This is not necessarily the direct parent.
+     * The {@link Rubric} parent of this criterion. This is not necessarily the direct parent.
+     *
+     * @return The {@link Rubric} parent of this criterion
+     * @see #getParent()
      */
     Rubric getParentRubric();
 
     /**
-     * @return The direct parent, this may be a {@link Rubric} or a {@link Criterion}.
+     * The direct parent of this criterion. This may be a {@link Rubric} or a {@link Criterion}.
+     *
+     * @return The direct parent of this criterion
      */
     CriterionHolder<? extends Criterion> getParent();
 
     /**
+     * The direct criterion parent of this criterion.
+     *
      * @return The direct criterion parent or {@code null} if the parent is not a criterion
      */
     @Nullable Criterion getParentCriterion();
 
     /**
-     * @return The peers of this criterion (i.e. parent.children - this)
+     * The peers of this criterion.
+     *
+     * <p>
+     * The returned list contains all children of this criterion's parent but does not include this criterion.
+     * </p>
+     *
+     * @return The peers of this criterion
      */
     List<? extends Criterion> getPeers();
 
+    /**
+     * Used to build a new {@link Criterion} instance. Use {@link Criterion#builder()} to create an instance of this interface.
+     *
+     * @see Criterion#builder()
+     */
     @ApiStatus.NonExtendable
     interface Builder {
 
