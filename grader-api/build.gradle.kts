@@ -14,6 +14,7 @@ val junitPlatformVersion: String by project
 val slf4jVersion: String by project
 
 dependencies {
+    api(libs.guice)
     api("com.google.inject:guice:$guiceVersion")
     api("org.slf4j:slf4j-api:$slf4jVersion")
     api("org.junit.jupiter:junit-jupiter:$junitVersion")

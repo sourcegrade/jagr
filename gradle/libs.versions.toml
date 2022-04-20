@@ -1,0 +1,12 @@
+[versions]
+kotlin = "1.6.10"
+asm = "9.2"
+
+[libraries]
+apache-commons-csv = "org.apache.commons:commons-csv:1.9.0"
+asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
+guice = "com.google.inject:guice:5.0.1"
+slf4j = "org.slf4j:slf4j-api:1.7.32"
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
