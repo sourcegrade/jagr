@@ -3,19 +3,20 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.sourcegrade.jagr.script.JagrPublishPlugin
 
+@Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     application
-    kotlin("jvm")
-    id("com.github.johnrengelman.shadow")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.kapt) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.shadow)
     id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
 }
-
-val cliktVersion: String by project
 
 dependencies {
     runtimeOnly(project("jagr-core"))
     implementation(project("jagr-launcher"))
-    implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
+    implementation(libs.clikt)
 }
 
 application {
