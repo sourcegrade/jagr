@@ -8,6 +8,7 @@ log4j = "2.17.2"
 [libraries]
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
 asm-core = { module = "org.ow2.asm:asm", version.ref = "asm" }
+clikt = "com.github.ajalt.clikt:clikt:3.4.0"
 configurate-core = { module = "org.spongepowered:configurate-extra-kotlin", version.ref = "configurate" }
 configurate-hocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate" }
 coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0"
@@ -30,5 +31,5 @@ junit = ["junit-core", "junit-engine", "junit-launcher"]
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin-serialization", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 shadow = { id = "com.github.johnrengelman.shadow", version = "7.1.2" }

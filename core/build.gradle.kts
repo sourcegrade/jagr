@@ -7,13 +7,6 @@ repositories {
     maven("https://repo.spongepowered.org/repository/maven-public/")
 }
 
-val asmVersion: String by project
-val configurateVersion: String by project
-val jansiVersion: String by project
-val juniversalchardetVersion: String by project
-val kotlinxSerializationVersion: String by project
-val log4jVersion: String by project
-
 dependencies {
     api(project(":jagr-grader-api"))
     api(project(":jagr-launcher"))
