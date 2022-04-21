@@ -6,6 +6,7 @@ kotlin = "1.6.10"
 log4j = "2.17.2"
 
 [libraries]
+apiguardian = "org.apiguardian:apiguardian-api:1.1.2"
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
 asm-core = { module = "org.ow2.asm:asm", version.ref = "asm" }
 clikt = "com.github.ajalt.clikt:clikt:3.4.0"

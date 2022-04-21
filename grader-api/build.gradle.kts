@@ -1,6 +1,5 @@
 plugins {
     `java-library`
-    kotlin("jvm")
 }
 
 val apiVersion: String by rootProject

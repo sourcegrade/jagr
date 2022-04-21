@@ -19,7 +19,7 @@ dependencies {
     implementation(libs.configurate.core)
     implementation(kotlin("reflect"))
     implementation(files("../gradle/wrapper/gradle-wrapper.jar"))
-    runtimeOnly("org.apiguardian:apiguardian-api:1.1.2")
+    runtimeOnly(libs.apiguardian)
 }
 tasks {
     test {

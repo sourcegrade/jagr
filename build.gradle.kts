@@ -7,8 +7,8 @@ import org.sourcegrade.jagr.script.JagrPublishPlugin
 plugins {
     application
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.kapt)
-    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.kapt) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.shadow)
     id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
 }
