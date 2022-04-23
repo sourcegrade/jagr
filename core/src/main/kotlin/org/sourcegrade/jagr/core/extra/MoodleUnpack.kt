@@ -48,7 +48,7 @@ class MoodleUnpack @Inject constructor(
             for (entry in zipFile.entries()) {
                 if (!entry.name.endsWith(".jar")) continue
                 try {
-                    unpackedFiles += zipFile.unpackEntry(entry.name.split("/"), entry, submissions, studentIdRegex, assignmentId)
+                    unpackedFiles += zipFile.unpackEntry(entry, submissions, studentIdRegex, assignmentId)
                 } catch (e: Throwable) {
                     logger.info("extra($name) :: Unable to unpack entry ${entry.name} in candidate $candidate", e)
                 }
@@ -58,14 +58,13 @@ class MoodleUnpack @Inject constructor(
     }
 
     private fun ZipFile.unpackEntry(
-        path: List<String>,
         entry: ZipEntry,
         directory: File,
         studentIdRegex: Regex,
         assignmentId: String,
     ): SubmissionInfoVerification {
-        val studentId = path[1].split(" - ").run { this[size - 1] }.takeIf { studentIdRegex.matches(it) }
-        val fileName = "$studentId-${path[path.size - 1]}"
+        val studentId = studentIdRegex.matchEntire(entry.name)?.groups?.get("studentId")?.value
+        val fileName = "$studentId-${entry.name.substringAfter('/')}"
         if (studentId == null) {
             logger.warn("extra(moodle-unpack) :: Unpacking unknown studentId in file $fileName")
         } else {
