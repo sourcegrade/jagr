@@ -3,7 +3,6 @@ plugins {
     kotlin("plugin.serialization")
 }
 repositories {
-    mavenCentral()
     maven("https://repo.spongepowered.org/repository/maven-public/")
 }
 
