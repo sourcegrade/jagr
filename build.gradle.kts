@@ -66,10 +66,6 @@ allprojects {
         ?.takeIf { version.toString().contains("SNAPSHOT") }
         ?.also { version = version.toString().replace("SNAPSHOT", "RC$it") }
 
-    repositories {
-        mavenCentral()
-    }
-
     configure<KtlintExtension> {
         enableExperimentalRules.set(true)
     }
