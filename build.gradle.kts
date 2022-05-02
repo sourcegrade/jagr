@@ -1,11 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
-import org.sourcegrade.jagr.script.JagrPublishPlugin
 
 @Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     application
+    alias(libs.plugins.indra.sonatype)
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.kapt) apply false
     alias(libs.plugins.kotlin.serialization) apply false
@@ -80,8 +80,4 @@ allprojects {
             targetCompatibility = "11"
         }
     }
-}
-
-subprojects {
-    apply<JagrPublishPlugin>()
 }
