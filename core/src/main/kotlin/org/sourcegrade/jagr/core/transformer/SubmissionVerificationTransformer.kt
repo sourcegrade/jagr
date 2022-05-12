@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -55,6 +55,7 @@ class SubmissionVerificationTransformer : ClassTransformer {
             { owner.startsWith("java/lang/reflect") },
             { owner.startsWith("org/sourcegrade") },
             { owner.startsWith("java/lang/Process") },
+            { owner == "java/lang/ClassLoader" },
             { owner == "java/lang/System" && name == "exit" },
             { owner == "java/lang/Runtime" },
         )

@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -72,8 +72,8 @@ class StandardGrading(
             jagr.logger.info("Only exporting, finished!")
             return@runBlocking
         }
-        jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
         val mode = config.executor.mode
+        jagr.logger.info("Executor mode '$mode' :: expected submission: ${batch.expectedSubmissions}")
         val executor = if (mode == "single") {
             SyncExecutor(jagr)
         } else {
