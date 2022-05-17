@@ -64,7 +64,7 @@ class MoodleUnpack @Inject constructor(
         studentIdRegex: Regex,
         assignmentId: String,
     ): SubmissionInfoVerification {
-        val studentId = path[0].split(" - ").run { this[size - 1] }.takeIf { studentIdRegex.matches(it) }
+        val studentId = path[1].split(" - ").run { this[size - 1] }.takeIf { studentIdRegex.matches(it) }
         val fileName = "$studentId-${path[path.size - 1]}"
         if (studentId == null) {
             logger.warn("extra(moodle-unpack) :: Unpacking unknown studentId in file $fileName")

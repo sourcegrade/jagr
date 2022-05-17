@@ -1,18 +1,8 @@
-pluginManagement {
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        mavenLocal()
         mavenCentral()
-        gradlePluginPortal()
-    }
-    plugins {
-        val kotlinVersion: String by settings
-        val shadowVersion: String by settings
-        val styleVersion: String by settings
-        kotlin("jvm") version kotlinVersion
-        kotlin("kapt") version kotlinVersion
-        kotlin("plugin.serialization") version kotlinVersion
-        id("com.github.johnrengelman.shadow") version shadowVersion
-        id("org.sourcegrade.style") version "2.1.0-SNAPSHOT"
+        maven("https://repo.spongepowered.org/repository/maven-public/")
     }
 }
 

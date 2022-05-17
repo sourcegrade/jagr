@@ -72,8 +72,8 @@ class StandardGrading(
             jagr.logger.info("Only exporting, finished!")
             return@runBlocking
         }
-        jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
         val mode = config.executor.mode
+        jagr.logger.info("Executor mode '$mode' :: expected submission: ${batch.expectedSubmissions}")
         val executor = if (mode == "single") {
             SyncExecutor(jagr)
         } else {

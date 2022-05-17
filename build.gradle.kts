@@ -2,19 +2,20 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCach
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.sourcegrade.jagr.script.JagrPublishPlugin
 
+@Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     application
-    kotlin("jvm")
-    id("com.github.johnrengelman.shadow")
-    id("org.sourcegrade.style")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.kapt) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.style)
 }
-
-val cliktVersion: String by project
 
 dependencies {
     runtimeOnly(project("jagr-core"))
     implementation(project("jagr-launcher"))
-    implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
+    implementation(libs.clikt)
 }
 
 application {
@@ -58,15 +59,11 @@ allprojects {
     apply(plugin = "org.sourcegrade.style")
 
     group = "org.sourcegrade"
-    version = "0.4.1-SNAPSHOT"
+    version = "0.5.0-SNAPSHOT"
 
     project.findProperty("buildNumber")
         ?.takeIf { version.toString().contains("SNAPSHOT") }
         ?.also { version = version.toString().replace("SNAPSHOT", "RC$it") }
-
-    repositories {
-        mavenCentral()
-    }
 
     tasks {
         withType<KotlinCompile> {
