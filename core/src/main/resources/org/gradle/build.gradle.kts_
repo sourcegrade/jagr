@@ -1,29 +1,30 @@
 plugins {
-  java
+    java
 }
 allprojects {
-  apply(plugin = "java")
-  apply(plugin = "application")
-  repositories {
-    mavenCentral()
-    maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
-  }
-  dependencies {
-    implementation("org.sourcegrade:jagr-grader-api:0.3-SNAPSHOT")
-    implementation("org.junit.jupiter:junit-jupiter:5.8.2")
-  }
-  java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-  }
-  tasks {
-    create<Jar>("prepareSubmission") {
-      group = "submit"
-      from(sourceSets.main.get().allSource)
-      archiveFileName.set("${project.name}-submission.jar")
+    apply(plugin = "java")
+    apply(plugin = "application")
+    repositories {
+        mavenCentral()
+        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
     }
-    test {
-      useJUnitPlatform()
+    dependencies {
+        implementation("org.jetbrains:annotations:23.0.0")
+        implementation("org.sourcegrade:jagr-launcher:0.5.0-SNAPSHOT")
+        implementation("org.junit.jupiter:junit-jupiter:5.8.2")
     }
-  }
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    tasks {
+        create<Jar>("prepareSubmission") {
+            group = "submit"
+            from(sourceSets.main.get().allSource)
+            archiveFileName.set("${project.name}-submission.jar")
+        }
+        test {
+            useJUnitPlatform()
+        }
+    }
 }
