@@ -34,7 +34,7 @@ class DescendingPriorityGrader(
     override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult {
         // quick exit if only 0 or 1 grader
         if (graders.isEmpty()) {
-            return GradeResult.ofNone()
+            return GradeResult.of(criterion)
         }
         if (graders.size == 1) {
             return graders[0].grade(testCycle, criterion)

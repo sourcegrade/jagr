@@ -36,7 +36,6 @@ class FallbackRuntimeTester : RuntimeTester {
         val notes = listOf(
             "The grading process was forcibly terminated.",
             "Please check if you have an infinite loop or infinite recursion.",
-            "Contact your tutor if you have any questions.",
         )
         return FallbackTestCycle(rubricProviders, submission, classLoader, notes)
     }
