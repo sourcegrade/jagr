@@ -26,7 +26,6 @@ import org.sourcegrade.jagr.api.rubric.RubricProvider
 import org.sourcegrade.jagr.api.rubric.TestForSubmission
 import org.sourcegrade.jagr.core.compiler.graderInfo
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
-import org.sourcegrade.jagr.core.compiler.java.JavaSourceContainer
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.plus
