@@ -48,7 +48,7 @@ class MoodleUnpack @Inject constructor(
             for (entry in zipFile.entries()) {
                 val matcher = studentRegex.matchEntire(entry.name) ?: continue
                 try {
-                    unpackedFiles += zipFile.unpackEntry(entry, submissions, assignmentId, matcher)
+                    unpackedFiles += zipFile.unpackEntry(entry, submissions, "projekt", matcher)
                 } catch (e: Throwable) {
                     logger.info("extra($name) :: Unable to unpack entry ${entry.name} in candidate $candidate", e)
                 }

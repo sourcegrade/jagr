@@ -26,6 +26,7 @@ import org.sourcegrade.jagr.api.rubric.RubricProvider
 import org.sourcegrade.jagr.api.rubric.TestForSubmission
 import org.sourcegrade.jagr.core.compiler.graderInfo
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
+import org.sourcegrade.jagr.core.compiler.java.JavaSourceContainer
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.plus
@@ -63,10 +64,14 @@ class GraderJarImpl(
     private val solutionFiles = info.solutionFiles.toSet()
 
     val containerWithoutSolution = container.copy(
+        source = container.source.copy(
+            sourceFiles = container.source.sourceFiles.filterKeys { it in graderFiles },
+            resources = container.source.resources.filterKeys { it in graderFiles },
+        ),
         runtimeResources = container.runtimeResources.copy(
             // whitelist file from grader
-            classes = container.runtimeResources.classes.filter { graderFiles.contains(it.value.source?.fileName) },
-            resources = container.runtimeResources.resources.filterKeys { graderFiles.contains(it) },
+            classes = container.runtimeResources.classes.filter { it.value.source?.fileName in graderFiles },
+            resources = container.runtimeResources.resources.filterKeys { it in graderFiles },
         )
     )
 
