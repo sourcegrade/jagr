@@ -63,10 +63,14 @@ class GraderJarImpl(
     private val solutionFiles = info.solutionFiles.toSet()
 
     val containerWithoutSolution = container.copy(
+        source = container.source.copy(
+            sourceFiles = container.source.sourceFiles.filterKeys { it in graderFiles },
+            resources = container.source.resources.filterKeys { it in graderFiles },
+        ),
         runtimeResources = container.runtimeResources.copy(
             // whitelist file from grader
-            classes = container.runtimeResources.classes.filter { graderFiles.contains(it.value.source?.fileName) },
-            resources = container.runtimeResources.resources.filterKeys { graderFiles.contains(it) },
+            classes = container.runtimeResources.classes.filter { it.value.source?.fileName in graderFiles },
+            resources = container.runtimeResources.resources.filterKeys { it in graderFiles },
         )
     )
 
