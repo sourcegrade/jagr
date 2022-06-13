@@ -27,8 +27,8 @@ import org.sourcegrade.jagr.api.rubric.Rubric
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.SubmissionInfo
 import org.sourcegrade.jagr.api.testing.TestCycle
-import org.sourcegrade.jagr.core.compiler.ResourceCollector
-import org.sourcegrade.jagr.core.compiler.ResourceCollectorImpl
+import org.sourcegrade.jagr.launcher.pipeline.ResourceCollector
+import org.sourcegrade.jagr.launcher.pipeline.ResourceCollectorImpl
 import org.sourcegrade.jagr.core.executor.GradingRequestImpl
 import org.sourcegrade.jagr.core.rubric.CriterionImpl
 import org.sourcegrade.jagr.core.rubric.GradeResultImpl

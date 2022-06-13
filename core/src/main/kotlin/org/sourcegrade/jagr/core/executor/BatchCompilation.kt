@@ -24,14 +24,14 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.ClassTransformerOrder
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
-import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
+import org.sourcegrade.jagr.core.compiler.base.CompilationService
+import org.sourcegrade.jagr.core.compiler.jvm.JVMCompilerContainer
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
-import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.loadCompiled
 import org.sourcegrade.jagr.core.compiler.java.plus
-import org.sourcegrade.jagr.core.compiler.submissionInfo
+import org.sourcegrade.jagr.launcher.pipeline.submissionInfo
 import org.sourcegrade.jagr.core.parallelMapNotNull
 import org.sourcegrade.jagr.core.testing.GraderInfoImpl
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
@@ -56,11 +56,10 @@ data class CompiledBatch(
 
 class CompiledBatchFactoryImpl @Inject constructor(
     private val logger: Logger,
-    private val runtimeJarLoader: RuntimeJarLoader,
+    private val compilationService: CompilationService,
     private val commonClassTransformer: CommonClassTransformer,
 ) {
-
-    fun compile(batch: GradingBatch): CompiledBatch {
+    fun compile(bath: GradingBatch): CompiledBatch {
         val libraries = runtimeJarLoader.loadCompiled(batch.libraries)
         val commonTransformerApplier = applierOf(commonClassTransformer)
         val graders: List<GraderJarImpl> = batch.graders.compile(
@@ -135,7 +134,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
         containerType: String,
         resourceExtractor: ResourceExtractor = ResourceExtractor { _, _, _, _ -> },
         replacements: Map<String, Map<String, JavaSourceFile>> = mapOf(),
-        constructor: JavaCompiledContainer.() -> T?,
+        constructor: JVMCompilerContainer.() -> T?,
     ): List<T> = toList().parallelMapNotNull {
         val originalSources = runtimeJarLoader.loadSources(it, resourceExtractor)
         val submissionInfo = originalSources.submissionInfo

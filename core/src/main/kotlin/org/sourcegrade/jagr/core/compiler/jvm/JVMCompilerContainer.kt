@@ -17,12 +17,14 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.compiler.java
+package org.sourcegrade.jagr.core.compiler.jvm
 
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.CompileResult
-import org.sourcegrade.jagr.core.compiler.ResourceCollector
-import org.sourcegrade.jagr.core.compiler.RuntimeContainer
+import org.sourcegrade.jagr.launcher.pipeline.ResourceCollector
+import org.sourcegrade.jagr.launcher.pipeline.RuntimeContainer
+import org.sourcegrade.jagr.core.compiler.java.JavaSourceContainer
+import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -31,7 +33,7 @@ import org.sourcegrade.jagr.launcher.io.readList
 import org.sourcegrade.jagr.launcher.io.write
 import org.sourcegrade.jagr.launcher.io.writeList
 
-data class JavaCompiledContainer(
+data class JVMCompilerContainer(
     override val source: JavaSourceContainer,
     override val runtimeResources: RuntimeResources = RuntimeResources(),
     private val messages: List<String> = listOf(),
@@ -59,8 +61,8 @@ data class JavaCompiledContainer(
         }
     }
 
-    companion object Factory : SerializerFactory<JavaCompiledContainer> {
-        override fun read(scope: SerializationScope.Input): JavaCompiledContainer = JavaCompiledContainer(
+    companion object Factory : SerializerFactory<JVMCompilerContainer> {
+        override fun read(scope: SerializationScope.Input): JVMCompilerContainer = JVMCompilerContainer(
             scope.read(),
             scope.read(),
             scope.readList(),
@@ -69,7 +71,7 @@ data class JavaCompiledContainer(
             scope.input.readInt(),
         )
 
-        override fun write(obj: JavaCompiledContainer, scope: SerializationScope.Output) {
+        override fun write(obj: JVMCompilerContainer, scope: SerializationScope.Output) {
             scope.write(obj.source)
             scope.write(obj.runtimeResources)
             scope.writeList(obj.messages)

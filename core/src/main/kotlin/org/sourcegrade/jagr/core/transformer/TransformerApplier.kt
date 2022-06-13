@@ -26,12 +26,12 @@ import org.objectweb.asm.Type
 import org.sourcegrade.jagr.api.testing.ClassTransformer
 import org.sourcegrade.jagr.api.testing.ClassTransformerOrder
 import org.sourcegrade.jagr.core.compiler.java.CompiledClass
-import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
+import org.sourcegrade.jagr.core.compiler.jvm.JVMCompilerContainer
 import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaMethod
 
 fun interface TransformationApplier {
-    fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer
+    fun transform(result: JVMCompilerContainer, classLoader: ClassLoader): JVMCompilerContainer
 }
 
 operator fun TransformationApplier.plus(other: TransformationApplier): TransformationApplier {
@@ -41,11 +41,11 @@ operator fun TransformationApplier.plus(other: TransformationApplier): Transform
 }
 
 private object NoOpTransformerAppliedImpl : TransformationApplier {
-    override fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer = result
+    override fun transform(result: JVMCompilerContainer, classLoader: ClassLoader): JVMCompilerContainer = result
 }
 
 private class TransformerApplierImpl(private val transformer: ClassTransformer) : TransformationApplier {
-    override fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer = result.copy(
+    override fun transform(result: JVMCompilerContainer, classLoader: ClassLoader): JVMCompilerContainer = result.copy(
         runtimeResources = result.runtimeResources.copy(
             classes = transformer.transform(result.runtimeResources.classes, classLoader),
         )
@@ -53,7 +53,7 @@ private class TransformerApplierImpl(private val transformer: ClassTransformer) 
 }
 
 private class MultiTransformerApplierImpl(private vararg val transformers: ClassTransformer) : TransformationApplier {
-    override fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer {
+    override fun transform(result: JVMCompilerContainer, classLoader: ClassLoader): JVMCompilerContainer {
         var classes = result.runtimeResources.classes
         for (transformer in transformers) {
             classes = transformer.transform(classes, classLoader)
@@ -72,7 +72,7 @@ fun applierOf(vararg transformers: ClassTransformer): TransformationApplier {
 
 fun Map<ClassTransformerOrder, List<ClassTransformer>>.createApplier(
     order: ClassTransformerOrder,
-    predicate: (JavaCompiledContainer) -> Boolean,
+    predicate: (JVMCompilerContainer) -> Boolean,
 ): TransformationApplier {
     val backing = MultiTransformerApplierImpl(*(this[order] ?: return applierOf()).toTypedArray())
     return TransformationApplier { result, classLoader ->

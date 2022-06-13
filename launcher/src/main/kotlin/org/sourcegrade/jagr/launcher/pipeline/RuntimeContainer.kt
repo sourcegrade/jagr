@@ -17,9 +17,9 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.compiler
+package org.sourcegrade.jagr.launcher.pipeline
 
-import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
+import org.sourcegrade.jagr.launcher.pipeline.ProcessedContainer
 
 interface RuntimeContainer : ProcessedContainer {
 

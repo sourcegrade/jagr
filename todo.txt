@@ -1,0 +1,42 @@
+1. GradingBatch -> ResourceContainer (unbuffered)
+ - submissions jars
+ - grader jars
+ - libraries
+
+2. Buffer all graders -> ResourceContainer (buffered)
+
+3. Process graders -> ResourceCollector
+ - assignmentIds
+ - supported languages
+
+4. For each (group of) submissions - beginning of pipeline
+ -
+
+
+
+Host process
+
+
+
+
+
+3. Compile graders
+ - use correct languages
+
+3. RubricCollector
+ - with estimated size of submissions
+
+4.
+
+
+
+
+
+
+
+1. GradingBatch
+2. Read all graders
+3. CompiledBatch
+4. GradingQueue
+5. Run - split work
+6. RubricCollector is full

@@ -21,9 +21,10 @@ package org.sourcegrade.jagr.core.compiler.java
 
 import com.google.inject.Inject
 import org.slf4j.Logger
-import org.sourcegrade.jagr.core.compiler.ResourceCollectorImpl
+import org.sourcegrade.jagr.launcher.pipeline.ResourceCollectorImpl
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
-import org.sourcegrade.jagr.core.compiler.RuntimeContainer
+import org.sourcegrade.jagr.launcher.pipeline.RuntimeContainer
+import org.sourcegrade.jagr.core.compiler.jvm.JVMCompilerContainer
 import org.sourcegrade.jagr.core.compiler.readEncoded
 import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
@@ -42,22 +43,7 @@ class RuntimeJarLoader @Inject constructor(
         container: ResourceContainer,
         resourceExtractor: ResourceExtractor = ResourceExtractor { _, _, _, _ -> },
     ): RuntimeContainer {
-        val resourceCollector = ResourceCollectorImpl()
-        val classStorage: MutableMap<String, CompiledClass> = mutableMapOf()
-        val resources: MutableMap<String, ByteArray> = mutableMapOf()
-        for (resource in container) {
-            when {
-                resource.name.endsWith(".class") -> {
-                    val className = resource.name.replace('/', '.').substring(0, resource.name.length - 6)
-                    classStorage[className] = CompiledClass.Existing(className, resource.getInputStream().use { it.readBytes() })
-                }
-                resource.name.endsWith("MANIFEST.MF") -> { // ignore
-                }
-                else -> resources[resource.name] = resource.getInputStream().use { it.readAllBytes() }
-                    .also { data -> resourceExtractor.extract(container.info, resource, data, resourceCollector) }
-            }
-        }
-        return JavaRuntimeContainer(container.info, resourceCollector, RuntimeResources(classStorage, resources))
+
     }
 
     fun loadSources(
@@ -97,10 +83,10 @@ class RuntimeJarLoader @Inject constructor(
     fun compileSources(
         source: JavaSourceContainer,
         runtimeResources: RuntimeResources,
-    ): JavaCompiledContainer {
+    ): JVMCompilerContainer {
         if (source.sourceFiles.isEmpty()) {
             // no source files, skip compilation task
-            return JavaCompiledContainer(source, messages = source.messages)
+            return JVMCompilerContainer(source, messages = source.messages)
         }
         val compiledClasses: MutableMap<String, CompiledClass> = mutableMapOf()
         val collector = DiagnosticCollector<JavaFileObject>()
@@ -130,7 +116,7 @@ class RuntimeJarLoader @Inject constructor(
                 }
                 messages += "${diag.source?.name}:${diag.lineNumber} ${diag.kind} :: ${diag.getMessage(Locale.getDefault())}"
             }
-            return JavaCompiledContainer(
+            return JVMCompilerContainer(
                 source,
                 newRuntimeResources,
                 messages,
@@ -139,6 +125,6 @@ class RuntimeJarLoader @Inject constructor(
                 other
             )
         }
-        return JavaCompiledContainer(source, newRuntimeResources)
+        return JVMCompilerContainer(source, newRuntimeResources)
     }
 }

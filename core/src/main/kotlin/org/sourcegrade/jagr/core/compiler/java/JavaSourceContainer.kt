@@ -19,8 +19,8 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
-import org.sourcegrade.jagr.core.compiler.ProcessedContainer
-import org.sourcegrade.jagr.core.compiler.ResourceCollector
+import org.sourcegrade.jagr.launcher.pipeline.ProcessedContainer
+import org.sourcegrade.jagr.launcher.pipeline.ResourceCollector
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory

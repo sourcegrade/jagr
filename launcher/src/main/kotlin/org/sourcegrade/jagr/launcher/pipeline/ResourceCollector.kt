@@ -17,10 +17,10 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.compiler
+package org.sourcegrade.jagr.launcher.pipeline
 
-import org.sourcegrade.jagr.core.testing.GraderInfoImpl
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
+import org.sourcegrade.jagr.api.testing.SubmissionInfo
+import org.sourcegrade.jagr.launcher.io.GraderInfo
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
@@ -30,9 +30,9 @@ interface ResourceCollector {
 
 inline fun <reified T : Any> ResourceCollector.get() = get(T::class)
 
-val ProcessedContainer.submissionInfo: SubmissionInfoImpl? by collected()
+val ProcessedContainer.submissionInfo: SubmissionInfo? by collected()
 
-val ProcessedContainer.graderInfo: GraderInfoImpl? by collected()
+val ProcessedContainer.graderInfo: GraderInfo? by collected()
 
 private inline fun <reified T : Any> collected(): ReadOnlyProperty<ProcessedContainer, T?> =
     ReadOnlyProperty { e, _ -> e.resourceCollector.get() }

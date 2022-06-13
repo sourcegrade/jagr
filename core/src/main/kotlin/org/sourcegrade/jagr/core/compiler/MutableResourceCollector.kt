@@ -19,6 +19,8 @@
 
 package org.sourcegrade.jagr.core.compiler
 
+import org.sourcegrade.jagr.launcher.pipeline.ResourceCollector
+
 interface MutableResourceCollector : ResourceCollector {
     /**
      * Adds a resource to this collector. The provided value's runtime type is the key for the resource.
