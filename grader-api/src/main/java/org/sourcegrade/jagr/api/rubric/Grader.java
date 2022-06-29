@@ -24,6 +24,14 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.sourcegrade.jagr.api.testing.TestCycle;
 
+/**
+ * A functional interface used by Jagr to determine the points for a given {@link TestCycle} and {@link Criterion}.
+ *
+ * <p>
+ * There are two base implementations {@link #testAwareBuilder()} and {@link #descendingPriority(Grader...)} or it may be
+ * implemented directly for more fine-grained control.
+ * </p>
+ */
 @FunctionalInterface
 public interface Grader {
 
@@ -35,6 +43,13 @@ public interface Grader {
         return FactoryProvider.factory.descendingPriority(graders);
     }
 
+    /**
+     * The grading function determines points for a given {@link TestCycle} and {@link Criterion}.
+     *
+     * @param testCycle The {@link TestCycle} used to grade
+     * @param criterion The {@link Criterion} used to grade
+     * @return A {@link GradeResult} resulting from the grading process
+     */
     GradeResult grade(TestCycle testCycle, Criterion criterion);
 
     @ApiStatus.NonExtendable
@@ -73,7 +88,7 @@ public interface Grader {
     }
 
     /**
-     * Builds a grader that uses JUnit to determine a grade
+     * Builds a grader that uses JUnit to determine a grade.
      */
     @ApiStatus.NonExtendable
     interface TestAwareBuilder extends Builder<TestAwareBuilder> {

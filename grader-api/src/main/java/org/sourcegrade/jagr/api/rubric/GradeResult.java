@@ -25,7 +25,7 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.List;
 
 /**
- * An int-int tuple containing the points given for a criterion with additional comments.
+ * An immutable int-int tuple containing the points given for a criterion with additional comments.
  */
 @ApiStatus.NonExtendable
 public interface GradeResult extends PointRange {
@@ -164,7 +164,7 @@ public interface GradeResult extends PointRange {
     /**
      * Ensures that the values of provided grade result lie within the range of the provided {@link Gradable}.
      *
-     * @param grade The grade result to use
+     * @param grade    The grade result to use
      * @param gradable The {@link Gradable} to check
      * @return A grade result with both {@code minPoints} and {@code maxPoints} clamped in range
      */
@@ -190,6 +190,12 @@ public interface GradeResult extends PointRange {
 
     List<String> getComments();
 
+    /**
+     * Returns a grade result with the same {@link #getMinPoints() minPoints} and {@link #getMaxPoints() maxPoints} as
+     * this grade result but without comments.
+     *
+     * @return A grade result with the same points as this one but without cmments
+     */
     default GradeResult withoutComments() {
         if (getComments().isEmpty()) {
             return this;
@@ -204,9 +210,6 @@ public interface GradeResult extends PointRange {
         private static Factory factory;
     }
 
-    /**
-     * For documentation see static methods above
-     */
     @ApiStatus.Internal
     interface Factory {
         GradeResult ofCorrect(int points);

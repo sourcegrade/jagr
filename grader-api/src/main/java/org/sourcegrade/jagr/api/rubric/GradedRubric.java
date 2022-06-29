@@ -21,8 +21,16 @@ package org.sourcegrade.jagr.api.rubric;
 
 import org.jetbrains.annotations.ApiStatus;
 
+/**
+ * A {@link Rubric} that has been graded.
+ */
 @ApiStatus.NonExtendable
 public interface GradedRubric extends Graded, CriterionHolder<GradedCriterion> {
 
+    /**
+     * Returns the {@link Rubric} that was used to create this graded rubric.
+     *
+     * @return The {@link Rubric} that was used to create this graded rubric
+     */
     Rubric getRubric();
 }
