@@ -28,37 +28,90 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+/**
+ * Represents a JUnit test.
+ */
 @FunctionalInterface
 public interface JUnitTestRef {
 
+    /**
+     * Creates a {@link JUnitTestRef} from a JUnit {@link Class}
+     *
+     * @param clazz The JUnit {@link Class} to create a {@link JUnitTestRef} from
+     * @return A {@link JUnitTestRef} from a JUnit {@link Class}
+     */
     static JUnitTestRef ofClass(Class<?> clazz) {
         return FactoryProvider.factory.ofClass(clazz);
     }
 
+    /**
+     * Creates a {@link JUnitTestRef} from a JUnit {@link Class}
+     *
+     * @param clazzSupplier A {@link Callable} that returns the JUnit {@link Class} to create a {@link JUnitTestRef} from
+     * @return A {@link JUnitTestRef} from a JUnit {@link Class}
+     */
     static JUnitTestRef ofClass(Callable<Class<?>> clazzSupplier) {
         return FactoryProvider.factory.ofClass(clazzSupplier);
     }
 
+    /**
+     * Creates a {@link JUnitTestRef} from a JUnit {@link Method}.
+     *
+     * @param method The JUnit {@link Method} to create the {@link JUnitTestRef} from
+     * @return A {@link JUnitTestRef} from the given {@link Method}
+     */
     static JUnitTestRef ofMethod(Method method) {
         return FactoryProvider.factory.ofMethod(method);
     }
 
+    /**
+     * Creates a {@link JUnitTestRef} from a JUnit {@link Method}.
+     *
+     * @param methodSupplier A {@link Callable} that returns the JUnit {@link Method} to create the {@link JUnitTestRef} from
+     * @return A {@link JUnitTestRef} from the given {@link Method}
+     */
     static JUnitTestRef ofMethod(Callable<Method> methodSupplier) {
         return FactoryProvider.factory.ofMethod(methodSupplier);
     }
 
+    /**
+     * Combines the provided {@link JUnitTestRef}s into a single {@link JUnitTestRef} that passes only if
+     * all the provided {@link JUnitTestRef}s pass.
+     *
+     * @param testRefs The {@link JUnitTestRef}s to combine
+     * @return A {@link JUnitTestRef} that passes only if all the provided {@link JUnitTestRef}s pass
+     */
     static JUnitTestRef and(JUnitTestRef... testRefs) {
         return FactoryProvider.factory.and(testRefs);
     }
 
+    /**
+     * Combines the provided {@link JUnitTestRef}s into a single {@link JUnitTestRef} that passes only if
+     * at least one of the provided {@link JUnitTestRef}s pass.
+     *
+     * @param testRefs The {@link JUnitTestRef}s to combine
+     * @return A {@link JUnitTestRef} that passes only if at least one of the provided {@link JUnitTestRef}s pass
+     */
     static JUnitTestRef or(JUnitTestRef... testRefs) {
         return FactoryProvider.factory.or(testRefs);
     }
 
+    /**
+     * Negates the provided {@link JUnitTestRef}.
+     *
+     * @param testRef The {@link JUnitTestRef} to negate
+     * @return A {@link JUnitTestRef} that passes iff the provided {@link JUnitTestRef} fails
+     */
     static JUnitTestRef not(JUnitTestRef testRef) {
         return FactoryProvider.factory.not(testRef);
     }
 
+    /**
+     * Searches in the given {@link Map} for a {@link JUnitTestRef} that matches the given {@link TestIdentifier}.
+     *
+     * @param testResults The {@link Map} to search in
+     * @return A {@link TestExecutionResult} that matches the given {@link TestIdentifier}
+     */
     TestExecutionResult get(Map<TestIdentifier, TestExecutionResult> testResults);
 
     @ApiStatus.Internal

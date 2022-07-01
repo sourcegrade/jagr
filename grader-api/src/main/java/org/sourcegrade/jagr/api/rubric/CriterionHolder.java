@@ -32,5 +32,10 @@ import java.util.List;
 @ApiStatus.NonExtendable
 public interface CriterionHolder<C> {
 
+    /**
+     * The criterion children of this CriterionHolder.
+     *
+     * @return The criterion children of this CriterionHolder
+     */
     List<? extends C> getChildCriteria();
 }
