@@ -35,7 +35,7 @@ import java.util.concurrent.Callable;
 public interface JUnitTestRef {
 
     /**
-     * Creates a {@link JUnitTestRef} from a JUnit {@link Class}
+     * Creates a {@link JUnitTestRef} from a JUnit {@link Class}.
      *
      * @param clazz The JUnit {@link Class} to create a {@link JUnitTestRef} from
      * @return A {@link JUnitTestRef} from a JUnit {@link Class}
@@ -45,7 +45,7 @@ public interface JUnitTestRef {
     }
 
     /**
-     * Creates a {@link JUnitTestRef} from a JUnit {@link Class}
+     * Creates a {@link JUnitTestRef} from a JUnit {@link Class}.
      *
      * @param clazzSupplier A {@link Callable} that returns the JUnit {@link Class} to create a {@link JUnitTestRef} from
      * @return A {@link JUnitTestRef} from a JUnit {@link Class}

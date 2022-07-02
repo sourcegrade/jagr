@@ -64,6 +64,11 @@ public interface Grader {
      */
     GradeResult grade(TestCycle testCycle, Criterion criterion);
 
+    /**
+     * A builder used to create {@link Grader}s.
+     *
+     * @param <B> The builder type
+     */
     @ApiStatus.NonExtendable
     interface Builder<B extends Builder<B>> {
 

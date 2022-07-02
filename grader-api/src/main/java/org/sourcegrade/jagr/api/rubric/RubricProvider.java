@@ -31,8 +31,6 @@ public interface RubricProvider {
      * <pre><code>
      * assignmentId + "_Rubric_" + studentLastName + "_" + studentFirstName
      * </code></pre>
-     * <p>
-     * If there are multiple rubrics with conflicting names, a number will be added on the end
      */
     default @Nullable String getOutputFileName(Submission submission) {
         return null;

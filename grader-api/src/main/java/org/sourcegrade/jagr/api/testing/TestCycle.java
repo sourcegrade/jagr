@@ -29,6 +29,11 @@ import java.util.List;
 @ApiStatus.NonExtendable
 public interface TestCycle {
 
+    /**
+     * The class names of every rubric provider in this test cycle.
+     *
+     * @return An immutable set of class names
+     */
     List<String> getRubricProviderClassNames();
 
     /**
@@ -39,10 +44,25 @@ public interface TestCycle {
      */
     ClassLoader getClassLoader();
 
+    /**
+     * The {@link Submission} used in this test cycle.
+     *
+     * @return The {@link Submission} used in this test cycle
+     */
     Submission getSubmission();
 
+    /**
+     * The number of tests that succeeded.
+     *
+     * @return The number of tests that succeeded
+     */
     int getTestsSucceededCount();
 
+    /**
+     * The number of tests that began execution.
+     *
+     * @return The number of tests that began execution
+     */
     int getTestsStartedCount();
 
     List<String> getNotes();
