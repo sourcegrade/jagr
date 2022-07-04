@@ -21,19 +21,57 @@ package org.sourcegrade.jagr.api.testing;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.objectweb.asm.Type;
+import org.sourcegrade.jagr.api.rubric.RubricProvider;
 
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The configuration of a rubric provider via {@link RubricProvider#configure(RubricConfiguration)}.
+ *
+ * @see RubricProvider
+ */
 @ApiStatus.NonExtendable
 public interface RubricConfiguration {
 
+    /**
+     * The transformers to apply to every matching submission.
+     *
+     * @return The transformers to apply to every matching submission
+     */
     Map<ClassTransformerOrder, List<ClassTransformer>> getTransformers();
 
+    /**
+     * The files that will be overridden in the submission from the solution.
+     *
+     * <p>
+     * All files from this list will be taken from the solution, overwriting files with the same name from the submission.
+     * </p>
+     *
+     * @return The files that will be overridden in the submission from the solution
+     */
     List<String> getFileNameSolutionOverrides();
 
+    /**
+     * Adds a transformer to the list of transformers to apply to every matching submission.
+     *
+     * @param transformer The {@link ClassTransformer} to add
+     * @param order       The {@link ClassTransformerOrder} in which to run the provided transformer
+     * @return {@code this}
+     */
     RubricConfiguration addTransformer(ClassTransformer transformer, ClassTransformerOrder order);
 
+    /**
+     * Adds a transformer to the list of transformers to apply to every matching submission.
+     *
+     * <p>
+     * Same as {@link #addTransformer(ClassTransformer, ClassTransformerOrder)} but uses\
+     * order {@link ClassTransformerOrder#DEFAULT}.
+     * </p>
+     *
+     * @param transformer The {@link ClassTransformer} to add
+     * @return {@code this}
+     */
     default RubricConfiguration addTransformer(ClassTransformer transformer) {
         return addTransformer(transformer, ClassTransformerOrder.DEFAULT);
     }

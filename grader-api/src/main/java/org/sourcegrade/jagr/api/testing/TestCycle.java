@@ -26,6 +26,16 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 
 import java.util.List;
 
+/**
+ * A combination of {@link Submission} and grader.
+ *
+ * <p>
+ * For every submission-grader pair, a test cycle is created. The test cycle stores the test execution information
+ * and other meta data about the grader such as the rubric provider names.
+ * </p>
+ *
+ * @see Submission
+ */
 @ApiStatus.NonExtendable
 public interface TestCycle {
 
@@ -65,16 +75,44 @@ public interface TestCycle {
      */
     int getTestsStartedCount();
 
+    /**
+     * The notes of this test cycle.
+     *
+     * @return The notes of this test cycle
+     */
     List<String> getNotes();
 
+    /**
+     * The {@link JUnitResult} associated with this test cycle, if present.
+     *
+     * @return The {@link JUnitResult} associated with this test cycle, if present
+     */
     @Nullable JUnitResult getJUnitResult();
 
+    /**
+     * Contains information about the JUnit test execution for this test cycle.
+     */
     @ApiStatus.NonExtendable
     interface JUnitResult {
+        /**
+         * The {@link TestPlan} used to execute the tests.
+         *
+         * @return The {@link TestPlan} used to execute the tests
+         */
         TestPlan getTestPlan();
 
+        /**
+         * The {@link SummaryGeneratingListener} used to generate the summary of the test execution.
+         *
+         * @return The {@link SummaryGeneratingListener} used to generate the summary of the test execution
+         */
         SummaryGeneratingListener getSummaryListener();
 
+        /**
+         * The {@link TestStatusListener} of the test execution.
+         *
+         * @return The {@link TestStatusListener} of the test execution
+         */
         TestStatusListener getStatusListener();
     }
 }
