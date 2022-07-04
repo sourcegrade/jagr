@@ -33,6 +33,14 @@ import org.objectweb.asm.ClassWriter;
  */
 public interface ClassTransformer {
 
+    /**
+     * Creates a transformer that replaces all method invocations and field accesses targeting {@code original} with
+     * invocations and accesses targeting {@code replacement}.
+     *
+     * @param replacement The class with replacement methods and fields
+     * @param original    The original class to be replaced
+     * @return The transformer
+     */
     static ClassTransformer replacement(Class<?> replacement, Class<?> original) {
         return FactoryProvider.factory.replacement(replacement, original);
     }
