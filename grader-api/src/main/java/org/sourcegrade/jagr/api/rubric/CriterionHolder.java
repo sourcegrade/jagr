@@ -24,10 +24,18 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.List;
 
 /**
- * Something that has criterion children
+ * Something that has criterion children.
+ *
+ * @see Criterion
+ * @see Rubric
  */
 @ApiStatus.NonExtendable
 public interface CriterionHolder<C> {
 
+    /**
+     * The criterion children of this CriterionHolder.
+     *
+     * @return The criterion children of this CriterionHolder
+     */
     List<? extends C> getChildCriteria();
 }

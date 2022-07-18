@@ -33,7 +33,9 @@ public interface Rubric extends Gradable<GradedRubric>, CriterionHolder<Criterio
     }
 
     /**
-     * @return The title of the rubric or exercise, e.g. "H00"
+     * The title of this rubric or exercise, e.g. "H00".
+     *
+     * @return The title of the rubric
      */
     String getTitle();
 
@@ -55,6 +57,9 @@ public interface Rubric extends Gradable<GradedRubric>, CriterionHolder<Criterio
     @Override
     int getMaxPoints();
 
+    /**
+     * A builder used to create {@link Rubric}s.
+     */
     @ApiStatus.NonExtendable
     interface Builder {
 

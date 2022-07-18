@@ -22,12 +22,30 @@ package org.sourcegrade.jagr.api.testing;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * A java source file.
+ */
 @ApiStatus.NonExtendable
 public interface SourceFile {
 
+    /**
+     * The file name.
+     *
+     * @return The file name
+     */
     String getFileName();
 
+    /**
+     * The content of the file.
+     *
+     * @return The content of the file
+     */
     String getContent();
 
+    /**
+     * The top-level class name of this file, if present.
+     *
+     * @return The top-level class name of this file, if present
+     */
     @Nullable String getClassName();
 }
