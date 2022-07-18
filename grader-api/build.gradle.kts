@@ -1,5 +1,4 @@
 plugins {
-    checkstyle
     `java-library`
 }
 
@@ -12,8 +11,4 @@ dependencies {
     api(libs.logging.api)
     api(libs.bundles.junit)
     implementation(libs.annotations)
-}
-
-configure<CheckstyleExtension> {
-    maxWarnings = 0
 }
