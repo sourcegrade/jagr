@@ -13,7 +13,7 @@ asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
 clikt = "com.github.ajalt.clikt:clikt:3.4.1"
 configurate-core = { module = "org.spongepowered:configurate-extra-kotlin", version.ref = "configurate" }
 configurate-hocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate" }
-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2"
+coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
 csv = "org.apache.commons:commons-csv:1.9.0"
 guice = "com.google.inject:guice:5.1.0"
 jansi = "org.fusesource.jansi:jansi:2.4.0"
