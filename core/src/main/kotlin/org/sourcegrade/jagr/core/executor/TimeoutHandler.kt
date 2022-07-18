@@ -46,7 +46,7 @@ object TimeoutHandler {
     private val timeoutIndividual by lazy { config.executor.timeoutIndividual }
     private val timeoutTotal by lazy { config.executor.timeoutTotal }
 
-    private val lastTimeout = ThreadLocal.withInitial { AtomicLong() }
+    private val lastTimeout = ThreadLocal.withInitial { AtomicLong(-1) }
     private val testClassNames = ThreadLocal.withInitial<List<String>> { emptyList() }
     private val mxBean = ManagementFactory.getThreadMXBean()
 
