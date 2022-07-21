@@ -27,11 +27,31 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.NonExtendable
 public interface SubmissionInfo {
 
+    /**
+     * The assignment id for which this submission was created.
+     *
+     * @return The assignment id for which this submission was created
+     */
     String getAssignmentId();
 
+    /**
+     * The student id of the student who submitted this submission.
+     *
+     * @return The student id of the student who submitted this submission
+     */
     String getStudentId();
 
+    /**
+     * The first name of the student who submitted this submission.
+     *
+     * @return The first name of the student who submitted this submission
+     */
     String getFirstName();
 
+    /**
+     * The last name of the student who submitted this submission.
+     *
+     * @return The last name of the student who submitted this submission
+     */
     String getLastName();
 }

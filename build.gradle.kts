@@ -54,13 +54,14 @@ tasks {
     }
 }
 
-project.extra["apiVersion"] = "0.5-SNAPSHOT"
+val projectVersion = file("version").readLines().first()
+project.extra["apiVersion"] = projectVersion.replace(".[0-9]+(?=($|-SNAPSHOT))".toRegex(), "")
 
 allprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     group = "org.sourcegrade"
-    version = "0.5.0-SNAPSHOT"
+    version = projectVersion
 
     project.findProperty("buildNumber")
         ?.takeIf { version.toString().contains("SNAPSHOT") }

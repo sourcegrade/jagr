@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-    api(project(":jagr-grader-api"))
     api(project(":jagr-launcher"))
     implementation(libs.csv)
     implementation(libs.asm.util)

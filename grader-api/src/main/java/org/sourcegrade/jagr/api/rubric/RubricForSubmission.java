@@ -26,10 +26,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * This annotation is used to mark a class as a rubric provider for a submission.
+ */
 @ApiStatus.NonExtendable
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface RubricForSubmission {
 
+    /**
+     * The assignment id of the submission.
+     *
+     * @return The assignment id of the submission
+     */
     String value();
 }

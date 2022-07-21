@@ -24,13 +24,32 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
+/**
+ * A student submission to be graded.
+ */
 @ApiStatus.NonExtendable
 public interface Submission {
 
+    /**
+     * The {@link SubmissionInfo} of the submission.
+     *
+     * @return The {@link SubmissionInfo} of the submission
+     */
     SubmissionInfo getInfo();
 
+    /**
+     * The {@link CompileResult} of the submission.
+     *
+     * @return The {@link CompileResult} of the submission
+     */
     CompileResult getCompileResult();
 
+    /**
+     * The {@link SourceFile} for the given file name.
+     *
+     * @param fileName The name of the file to return
+     * @return The {@link SourceFile} for the given file name
+     */
     @Nullable SourceFile getSourceFile(String fileName);
 
     /**

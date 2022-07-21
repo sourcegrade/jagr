@@ -24,14 +24,40 @@ import org.jetbrains.annotations.ApiStatus;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
+/**
+ * Used to transform classes in submissions.
+ *
+ * <p>
+ * The transform method is called for each class in the submission.
+ * </p>
+ */
 public interface ClassTransformer {
 
+    /**
+     * Creates a transformer that replaces all method invocations and field accesses targeting {@code original} with
+     * invocations and accesses targeting {@code replacement}.
+     *
+     * @param replacement The class with replacement methods and fields
+     * @param original    The original class to be replaced
+     * @return The transformer
+     */
     static ClassTransformer replacement(Class<?> replacement, Class<?> original) {
         return FactoryProvider.factory.replacement(replacement, original);
     }
 
+    /**
+     * The name of this transformer.
+     *
+     * @return The name of this transformer
+     */
     String getName();
 
+    /**
+     * Transforms the bytecode from the provided {@link ClassReader} into the provided {@link ClassWriter}.
+     *
+     * @param reader The {@link ClassReader} from which to read the bytecode
+     * @param writer The {@link ClassWriter} to which to write the bytecode
+     */
     void transform(ClassReader reader, ClassWriter writer);
 
     /**

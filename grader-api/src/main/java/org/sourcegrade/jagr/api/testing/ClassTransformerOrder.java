@@ -19,6 +19,9 @@
 
 package org.sourcegrade.jagr.api.testing;
 
+/**
+ * The order in which to apply a {@link ClassTransformer}.
+ */
 public enum ClassTransformerOrder {
 
     /**

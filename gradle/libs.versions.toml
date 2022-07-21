@@ -2,18 +2,18 @@
 asm = "9.3"
 configurate = "4.1.2"
 junit = "5.8.2"
-kotlin = "1.7.0"
-log4j = "2.17.2"
+kotlin = "1.7.10"
+log4j = "2.18.0"
 
 [libraries]
 annotations = "org.jetbrains:annotations:23.0.0"
 apiguardian = "org.apiguardian:apiguardian-api:1.1.2"
 asm-core = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
-clikt = "com.github.ajalt.clikt:clikt:3.4.1"
+clikt = "com.github.ajalt.clikt:clikt:3.5.0"
 configurate-core = { module = "org.spongepowered:configurate-extra-kotlin", version.ref = "configurate" }
 configurate-hocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate" }
-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2"
+coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
 csv = "org.apache.commons:commons-csv:1.9.0"
 guice = "com.google.inject:guice:5.1.0"
 jansi = "org.fusesource.jansi:jansi:2.4.0"

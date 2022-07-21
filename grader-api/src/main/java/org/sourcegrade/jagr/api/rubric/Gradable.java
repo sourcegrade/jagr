@@ -23,7 +23,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.sourcegrade.jagr.api.testing.TestCycle;
 
 /**
- * Something that can be graded via a {@link TestCycle}
+ * Something that can be graded via a {@link TestCycle}.
  *
  * @param <G> The resulting graded type
  */
@@ -47,7 +47,7 @@ public interface Gradable<G extends Graded> extends PointRange {
     int getMaxPoints();
 
     /**
-     * Grade the provided {@link TestCycle}
+     * Grade the provided {@link TestCycle}.
      */
     G grade(TestCycle testCycle);
 }
