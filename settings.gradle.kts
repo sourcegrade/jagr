@@ -6,7 +6,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Jagr"
+rootProject.name = "jagr"
 
 sequenceOf(
     "core",
