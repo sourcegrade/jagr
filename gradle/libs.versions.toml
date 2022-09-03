@@ -15,6 +15,7 @@ configurate-core = { module = "org.spongepowered:configurate-extra-kotlin", vers
 configurate-hocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate" }
 coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
 csv = "org.apache.commons:commons-csv:1.9.0"
+guava = "com.google.guava:guava:31.1-jre"
 guice = "com.google.inject:guice:5.1.0"
 jansi = "org.fusesource.jansi:jansi:2.4.0"
 junit-core = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
@@ -32,5 +33,6 @@ junit = ["junit-core", "junit-engine", "junit-launcher"]
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 shadow = { id = "com.github.johnrengelman.shadow", version = "7.1.2" }

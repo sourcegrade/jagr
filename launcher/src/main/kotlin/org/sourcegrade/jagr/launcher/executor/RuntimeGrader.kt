@@ -24,7 +24,7 @@ import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.env.runtimeGrader
-import org.sourcegrade.jagr.launcher.io.GraderJar
+import org.sourcegrade.jagr.domain.GraderJar
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 

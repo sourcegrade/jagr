@@ -22,7 +22,8 @@ package org.sourcegrade.jagr.launcher.executor
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.sourcegrade.jagr.launcher.env.Jagr
-import kotlin.concurrent.withLock
+import org.sourcegrade.jagr.util.scheduler.Worker
+import org.sourcegrade.jagr.util.scheduler.WorkerPool
 
 class ThreadWorkerPool(
     private val jagr: Jagr,

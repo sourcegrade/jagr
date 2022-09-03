@@ -20,6 +20,7 @@
 package org.sourcegrade.jagr.launcher.io
 
 import org.sourcegrade.jagr.api.rubric.GradedRubric
+import org.sourcegrade.jagr.domain.io.Resource
 
 interface GradedRubricExporter {
     fun export(gradedRubric: GradedRubric): Resource

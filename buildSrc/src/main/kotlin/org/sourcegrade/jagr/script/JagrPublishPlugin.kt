@@ -33,61 +33,66 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
+import java.lang.IllegalStateException
 import java.net.URI
 
 class JagrPublishPlugin : Plugin<Project> {
-  override fun apply(target: Project) = target.afterEvaluate { configure() }
-  private fun Project.configure() {
-    apply<JavaBasePlugin>()
-    apply<MavenPublishPlugin>()
-    apply<SigningPlugin>()
-    extensions.configure<JavaPluginExtension> {
-      withJavadocJar()
-      withSourcesJar()
-    }
-    extensions.configure<PublishingExtension> {
-      repositories {
-        maven {
-          credentials {
-            username = project.findProperty("sonatypeUsername") as? String
-            password = project.findProperty("sonatypePassword") as? String
-          }
-          val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-          val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots"
-          url = URI(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+    override fun apply(target: Project) = target.afterEvaluate {  }
+    private fun Project.configure() {
+        apply<JavaBasePlugin>()
+        apply<MavenPublishPlugin>()
+        apply<SigningPlugin>()
+        extensions.configure<JavaPluginExtension> {
+            try {
+                withJavadocJar()
+                withSourcesJar()
+            } catch (e: Exception) {
+                throw IllegalStateException("Failed to configure javadoc and sources jars for project ${project.name}", e)
+            }
         }
-      }
-      publications {
-        create<MavenPublication>("maven") {
-          from(components["java"])
-          pom {
-            name.set("Jagr")
-            description.set("An automated tool for grading programming assignments")
-            url.set("https://www.sourcegrade.org")
-            scm {
-              url.set("https://github.com/SourceGrade/Jagr")
-              connection.set("scm:git:https://github.com/SourceGrade/Jagr.git")
-              developerConnection.set("scm:git:https://github.com/SourceGrade/Jagr.git")
+        extensions.configure<PublishingExtension> {
+            repositories {
+                maven {
+                    credentials {
+                        username = project.findProperty("sonatypeUsername") as? String
+                        password = project.findProperty("sonatypePassword") as? String
+                    }
+                    val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                    val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots"
+                    url = URI(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+                }
             }
-            licenses {
-              license {
-                name.set("GNU AFFERO GENERAL PUBLIC LICENSE Version 3")
-                url.set("https://www.gnu.org/licenses/agpl-3.0.html")
-                distribution.set("repo")
-              }
+            publications {
+                create<MavenPublication>("maven") {
+                    from(components["java"])
+                    pom {
+                        name.set("Jagr")
+                        description.set("An automated tool for grading programming assignments")
+                        url.set("https://www.sourcegrade.org")
+                        scm {
+                            url.set("https://github.com/SourceGrade/Jagr")
+                            connection.set("scm:git:https://github.com/SourceGrade/Jagr.git")
+                            developerConnection.set("scm:git:https://github.com/SourceGrade/Jagr.git")
+                        }
+                        licenses {
+                            license {
+                                name.set("GNU AFFERO GENERAL PUBLIC LICENSE Version 3")
+                                url.set("https://www.gnu.org/licenses/agpl-3.0.html")
+                                distribution.set("repo")
+                            }
+                        }
+                        developers {
+                            developer {
+                                id.set("alexstaeding")
+                                name.set("Alexander Staeding")
+                            }
+                        }
+                    }
+                }
             }
-            developers {
-              developer {
-                id.set("alexstaeding")
-                name.set("Alexander Staeding")
-              }
-            }
-          }
         }
-      }
+        extensions.configure<SigningExtension> {
+            sign(extensions.getByType<PublishingExtension>().publications)
+        }
     }
-    extensions.configure<SigningExtension> {
-      sign(extensions.getByType<PublishingExtension>().publications)
-    }
-  }
 }

@@ -20,6 +20,8 @@
 package org.sourcegrade.jagr.launcher.io
 
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.domain.GraderJar
+import org.sourcegrade.jagr.domain.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 
 interface SubmissionExporter {

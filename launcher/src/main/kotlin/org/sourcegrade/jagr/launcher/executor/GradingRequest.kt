@@ -20,7 +20,7 @@
 package org.sourcegrade.jagr.launcher.executor
 
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.launcher.io.GraderJar
+import org.sourcegrade.jagr.domain.GraderJar
 
 interface GradingRequest {
     val submission: Submission

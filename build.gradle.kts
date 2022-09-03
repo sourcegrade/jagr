@@ -14,7 +14,6 @@ plugins {
 }
 
 dependencies {
-    runtimeOnly(project("jagr-core"))
     implementation(project("jagr-launcher"))
     implementation(libs.clikt)
 }
@@ -73,12 +72,13 @@ allprojects {
 
     tasks {
         withType<KotlinCompile> {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = "17"
+            kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers", "-Xskip-prerelease-check")
         }
         withType<JavaCompile> {
             options.encoding = "UTF-8"
-            sourceCompatibility = "11"
-            targetCompatibility = "11"
+            sourceCompatibility = "17"
+            targetCompatibility = "17"
         }
     }
 }
