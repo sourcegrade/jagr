@@ -88,6 +88,11 @@ class GraderJarImpl(
             rubricProviders.putIfRubric(clazz)
             testProviders.putIfTest(clazz)
         }
+        logger.warn(
+            "Grader ${container.info.name} discovered " +
+                "${rubricProviders.size} rubric provider${if (rubricProviders.size == 1) "" else "s"} and " +
+                "${testProviders.size} test provider${if (testProviders.size == 1) "" else "s"}"
+        )
         this.rubricProviders = rubricProviders
         this.testProviders = testProviders
     }
