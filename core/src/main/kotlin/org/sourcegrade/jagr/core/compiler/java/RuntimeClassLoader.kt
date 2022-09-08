@@ -31,14 +31,28 @@ import java.util.Enumeration
 
 class RuntimeClassLoader(
     private val runtimeResources: RuntimeResources,
-    parent: ClassLoader = getSystemClassLoader(),
+    parent: ClassLoader = RuntimeClassLoader::class.java.classLoader,
 ) : ClassLoader(parent) {
 
     @Throws(ClassNotFoundException::class, ClassFormatError::class)
     override fun findClass(name: String): Class<*> {
-        val compiledClass = runtimeResources.classes[name] ?: return super.findClass(name)
+        val compiledClass = runtimeResources.classes[name]
+            ?: try {
+                return super.findClass(name)
+            } catch (e: Exception) {
+                null
+            }
+            ?: try {
+                return Class.forName(name)
+            } catch (e: Exception) {
+                throw ClassNotFoundException("Failed to load class $name from $parent", e)
+            }
         val byteCode: ByteArray = compiledClass.bytecode
-        return defineClass(name, byteCode, 0, byteCode.size)
+        try {
+            return defineClass(name, byteCode, 0, byteCode.size)
+        } catch (e: Exception) {
+            throw IllegalStateException("Failed to define class $name", e)
+        }
     }
 
     override fun findResource(name: String): URL? {
