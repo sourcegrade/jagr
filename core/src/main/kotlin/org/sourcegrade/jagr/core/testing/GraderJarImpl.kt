@@ -108,7 +108,6 @@ class GraderJarImpl(
             return
         }
 
-        val assignmentId = annotation.value
         val rubricProvider = try {
             checkNotNull(asRubricProvider.getConstructor().newInstance())
         } catch (e: NoSuchMethodException) {
@@ -116,7 +115,7 @@ class GraderJarImpl(
             return
         }
         rubricProvider.configure(configuration)
-        logger.debug("Grader ${info.name} discovered rubric provider ${clazz.name} for assignment $assignmentId")
+        logger.debug("Grader ${info.name} discovered rubric provider ${clazz.name} for assignment ${annotation.value}")
         computeIfAbsent(annotation.value) { mutableListOf() }.add(asRubricProvider.name)
     }
 
