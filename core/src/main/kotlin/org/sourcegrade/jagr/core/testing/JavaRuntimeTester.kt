@@ -40,7 +40,14 @@ class JavaRuntimeTester @Inject constructor(
     override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
         if (submission !is JavaSubmission) return null
         val info = submission.info
-        val rubricProviders = grader.rubricProviders[info.assignmentId] ?: return null
+        val rubricProviders = grader.rubricProviders[info.assignmentId]
+        if (rubricProviders == null) {
+            logger.warn(
+                "Submission $info does not have any applicable rubric providers! " +
+                    "assignmentId: ${info.assignmentId}, available: ${grader.rubricProviders.keys}"
+            )
+            return null
+        }
         val classLoader = RuntimeClassLoader(
             submission.compileResult.runtimeResources +
                 submission.libraries +
