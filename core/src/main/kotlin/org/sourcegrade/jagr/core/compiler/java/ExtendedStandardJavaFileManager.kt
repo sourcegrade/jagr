@@ -19,6 +19,8 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
+import com.google.common.collect.FluentIterable
+import com.google.common.reflect.ClassPath
 import javax.tools.FileObject
 import javax.tools.ForwardingJavaFileManager
 import javax.tools.JavaFileManager
@@ -53,7 +55,11 @@ class ExtendedStandardJavaFileManager(
     ): Iterable<JavaFileObject> {
         val fromDelegate = super.list(location, packageName, kinds, recurse)
         if (packageName != null && kinds.contains(JavaFileObject.Kind.CLASS) && location != null && location.name == "CLASS_PATH") {
-            return fromDelegate + getCompiledClassesFromClassPath(packageName)
+            return if (packageName.startsWith("org.sourcegrade")) {
+                getCompiledClassesFromClassPath(packageName) + searchClassLoader(packageName)
+            } else {
+                fromDelegate + getCompiledClassesFromClassPath(packageName)
+            }
         }
         return fromDelegate
     }
@@ -63,6 +69,21 @@ class ExtendedStandardJavaFileManager(
             .filter { it.key.startsWith(packageName) }
             .map { it.value }
             .toList()
+    }
+
+    @Suppress("UnstableApiUsage")
+    private fun searchClassLoader(packageName: String): List<JavaFileObject> {
+        val classLoader = javaClass.classLoader
+        return FluentIterable.from(ClassPath.from(classLoader).resources)
+            .mapNotNull { it as? ClassPath.ClassInfo }
+            .filter { it.packageName == packageName }
+            .map {
+                val className = "${it.name.replace('.', '/')}.class"
+                val classStream = checkNotNull(classLoader.getResourceAsStream(className)) {
+                    "Could not find class $className in classpath"
+                }
+                CompiledClass.Existing(it.name, classStream.readAllBytes())
+            }.toList()
     }
 
     override fun inferBinaryName(location: JavaFileManager.Location, file: JavaFileObject): String {
