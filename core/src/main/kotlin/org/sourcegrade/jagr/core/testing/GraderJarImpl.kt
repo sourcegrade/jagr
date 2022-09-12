@@ -102,7 +102,7 @@ class GraderJarImpl(
             clazz.asSubclass(RubricProvider::class.java)
         } catch (e: ClassCastException) {
             logger.error(
-                "Grader ${info.name} class ${clazz.name} annotated with @RubricForSubmission" +
+                "Grader ${info.name} class ${clazz.name} annotated with @RubricForSubmission " +
                     "does not implement RubricProvider! Ignoring..."
             )
             return
