@@ -66,7 +66,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
         val graders: List<GraderJarImpl> = batch.graders.compile(
             commonTransformerApplier,
             libraries,
-            "grader",
+            "Grader",
             GraderInfoImpl.Extractor,
         ) {
             if (errors == 0) GraderJarImpl(logger, this, libraries) else null
@@ -85,13 +85,13 @@ class CompiledBatchFactoryImpl @Inject constructor(
         val submissions: List<Submission> = batch.submissions.compile(
             submissionTransformerApplier,
             libraries,
-            "submission",
+            "Submission",
             SubmissionInfoImpl.Extractor,
             replacements,
         ) submissionCompile@{
             val submissionInfo = this.submissionInfo
             if (submissionInfo == null) {
-                logger.error("${info.name} does not have a submission-info.json! Skipping...")
+                logger.error("Submission container ${info.name} does not have a submission-info.json! Skipping...")
                 return@submissionCompile null
             }
             JavaSubmission(submissionInfo, this, libraries)
@@ -164,15 +164,21 @@ class CompiledBatchFactoryImpl @Inject constructor(
         with(transformed) {
             printMessages(
                 logger,
-                { "$containerType ${info.name} has $warnings warnings and $errors errors!" },
-            ) { "$containerType ${info.name} has $warnings warnings!" }
-            try {
-                constructor()?.apply { logger.info("Loaded $containerType ${it.info.name}") }
-                    ?: run { logger.error("Failed to load $containerType ${it.info.name}"); null }
+                lazyError = { "$containerType ${info.name} has $warnings warnings and $errors errors" },
+                lazyWarning = { "$containerType ${info.name} has $warnings warnings" },
+            )
+            val result = try {
+                constructor()
             } catch (e: Exception) {
-                logger.error("An error occurred loading $containerType ${it.info.name}", e)
-                null
+                logger.error("$containerType container ${info.name} failed to invoke constructor", e)
+                return@with null
             }
+            if (result == null) {
+                logger.error("$containerType container ${info.name} failed to load")
+            } else {
+                logger.info("$containerType container ${info.name} loaded")
+            }
+            result
         }
     }
 }
