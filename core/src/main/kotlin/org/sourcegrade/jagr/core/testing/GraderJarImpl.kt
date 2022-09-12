@@ -43,7 +43,7 @@ class GraderJarImpl(
     val container: JavaCompiledContainer,
     libraries: RuntimeResources,
 ) : GraderJar {
-    override val info = requireNotNull(container.graderInfo) { "Container ${container.info.name} is missing graderInfo" }
+    override val info = requireNotNull(container.graderInfo) { "Grader container ${container.info.name} is missing graderInfo" }
 
     override val configuration = RubricConfigurationImpl()
 
@@ -77,7 +77,7 @@ class GraderJarImpl(
     init {
         for ((fileName, _) in container.source.sourceFiles) {
             if (!graderFiles.contains(fileName) && !solutionFiles.contains(fileName)) {
-                error("Grader ${container.info.name} file $fileName is not declared in the grader-info.json")
+                error("Grader ${info.name} file $fileName is not declared in the grader-info.json")
             }
         }
         val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
@@ -88,8 +88,8 @@ class GraderJarImpl(
             rubricProviders.putIfRubric(clazz)
             testProviders.putIfTest(clazz)
         }
-        logger.warn(
-            "Grader ${container.info.name} discovered " +
+        logger.info(
+            "Grader ${info.name} discovered " +
                 "${rubricProviders.size} rubric provider${if (rubricProviders.size == 1) "" else "s"} and " +
                 "${testProviders.size} test provider${if (testProviders.size == 1) "" else "s"}"
         )
@@ -98,40 +98,34 @@ class GraderJarImpl(
     }
 
     private fun MutableMap<String, MutableList<String>>.putIfRubric(clazz: Class<*>) {
-        val filter = clazz.getAnnotation(RubricForSubmission::class.java) ?: return
+        val annotation = clazz.getAnnotation(RubricForSubmission::class.java) ?: return
         val asRubricProvider = try {
             clazz.asSubclass(RubricProvider::class.java)
         } catch (e: ClassCastException) {
-            logger.error("Class annotated with @RubricForSubmission does not implement RubricProvider! Ignoring...")
+            logger.error("Grader ${info.name} class ${clazz.name} annotated with @RubricForSubmission" +
+                "does not implement RubricProvider! Ignoring...")
             return
         }
 
-        val assignmentId = filter.value
-        val className = clazz.name
+        val assignmentId = annotation.value
         val rubricProvider = try {
-            asRubricProvider.getConstructor().newInstance()!!
+            checkNotNull(asRubricProvider.getConstructor().newInstance())
         } catch (e: NoSuchMethodException) {
-            logger.error("Rubric provider $className in grader ${info.name} must have a no-args public constructor!")
+            logger.error("Grader ${info.name} rubric provider ${clazz.name} must have an accessible no-args constructor!")
             return
         }
         rubricProvider.configure(configuration)
-        logger.info("${info.name} Discovered rubric provider $className for assignment $assignmentId")
-        computeIfAbsent(filter.value) { mutableListOf() }.add(asRubricProvider.name)
+        logger.debug("Grader ${info.name} discovered rubric provider ${clazz.name} for assignment $assignmentId")
+        computeIfAbsent(annotation.value) { mutableListOf() }.add(asRubricProvider.name)
     }
 
     private fun MutableMap<String, MutableList<String>>.putIfTest(clazz: Class<*>) {
-        val filter = clazz.getAnnotation(TestForSubmission::class.java) ?: return
-        computeIfAbsent(filter.value) { mutableListOf() }.add(clazz.name)
+        val annotation = clazz.getAnnotation(TestForSubmission::class.java) ?: return
+        computeIfAbsent(annotation.value) { mutableListOf() }.add(clazz.name)
+        logger.debug("Grader ${info.name} discovered test provider ${clazz.name} for assignment ${annotation.value}")
     }
 
-    private val stringRep: String by lazy {
-        MoreObjects.toStringHelper(this)
-            .add("container", container)
-            .add("applicableSubmissions", rubricProviders.keys.joinToString(", "))
-            .toString()
-    }
-
-    override fun toString(): String = stringRep
+    override fun toString(): String = info.name
 
     companion object Factory : SerializerFactory<GraderJarImpl> {
         override fun read(scope: SerializationScope.Input): GraderJarImpl =
