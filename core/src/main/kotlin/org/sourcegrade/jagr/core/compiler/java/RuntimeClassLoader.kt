@@ -31,7 +31,7 @@ import java.util.Enumeration
 
 class RuntimeClassLoader(
     private val runtimeResources: RuntimeResources,
-    parent: ClassLoader = getSystemClassLoader(),
+    parent: ClassLoader = RuntimeClassLoader::class.java.classLoader,
 ) : ClassLoader(parent) {
 
     @Throws(ClassNotFoundException::class, ClassFormatError::class)
