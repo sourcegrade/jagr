@@ -36,17 +36,7 @@ class RuntimeClassLoader(
 
     @Throws(ClassNotFoundException::class, ClassFormatError::class)
     override fun findClass(name: String): Class<*> {
-        val compiledClass = runtimeResources.classes[name]
-            ?: try {
-                return super.findClass(name)
-            } catch (e: Exception) {
-                null
-            }
-            ?: try {
-                return Class.forName(name)
-            } catch (e: Exception) {
-                throw ClassNotFoundException("Failed to load class $name from $parent", e)
-            }
+        val compiledClass = runtimeResources.classes[name] ?: return super.findClass(name)
         val byteCode: ByteArray = compiledClass.bytecode
         try {
             return defineClass(name, byteCode, 0, byteCode.size)
