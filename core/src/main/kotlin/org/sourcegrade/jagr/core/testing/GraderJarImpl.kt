@@ -19,7 +19,6 @@
 
 package org.sourcegrade.jagr.core.testing
 
-import com.google.common.base.MoreObjects
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.RubricForSubmission
 import org.sourcegrade.jagr.api.rubric.RubricProvider
@@ -102,8 +101,10 @@ class GraderJarImpl(
         val asRubricProvider = try {
             clazz.asSubclass(RubricProvider::class.java)
         } catch (e: ClassCastException) {
-            logger.error("Grader ${info.name} class ${clazz.name} annotated with @RubricForSubmission" +
-                "does not implement RubricProvider! Ignoring...")
+            logger.error(
+                "Grader ${info.name} class ${clazz.name} annotated with @RubricForSubmission" +
+                    "does not implement RubricProvider! Ignoring..."
+            )
             return
         }
 
