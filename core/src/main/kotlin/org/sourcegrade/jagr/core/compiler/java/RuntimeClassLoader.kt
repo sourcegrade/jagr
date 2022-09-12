@@ -38,11 +38,7 @@ class RuntimeClassLoader(
     override fun findClass(name: String): Class<*> {
         val compiledClass = runtimeResources.classes[name] ?: return super.findClass(name)
         val byteCode: ByteArray = compiledClass.bytecode
-        try {
-            return defineClass(name, byteCode, 0, byteCode.size)
-        } catch (e: Exception) {
-            throw IllegalStateException("Failed to define class $name", e)
-        }
+        return defineClass(name, byteCode, 0, byteCode.size)
     }
 
     override fun findResource(name: String): URL? {
