@@ -76,7 +76,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
 
         // maps assignment ids to files that should be replaced with solution files
         val replacements = submissionFileOverrides.mapValues { (assignmentId, solutionOverrides) ->
-            val gradersForAssignment = graders.filter { it.info.assignmentIds.contains(assignmentId) }
+            val gradersForAssignment = graders.filter { it.info.assignmentId.contains(assignmentId) }
             solutionOverrides.mapNotNull { solutionOverride ->
                 gradersForAssignment.firstNotNullOfOrNull { it.container.source.sourceFiles[solutionOverride] }
             }.associateBy { it.fileName }
@@ -106,7 +106,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
     private fun createTransformerApplierFromGraders(graders: List<GraderJar>): TransformationApplier {
         fun GraderJar.createApplier(order: ClassTransformerOrder): TransformationApplier =
             configuration.transformers.createApplier(order) { result ->
-                result.submissionInfo?.assignmentId?.let(info.assignmentIds::contains) == true
+                result.submissionInfo?.assignmentId == info.assignmentId
             }
 
         fun createApplier(order: ClassTransformerOrder): TransformationApplier =
@@ -120,13 +120,11 @@ class CompiledBatchFactoryImpl @Inject constructor(
     }
 
     private fun calculateSubmissionFileOverrides(graders: List<GraderJar>): Map<String, List<String>> {
-        return graders.map { graderJar ->
-            graderJar.info.assignmentIds.flatMap { assignmentId ->
-                graderJar.configuration.fileNameSolutionOverrides.map { solutionOverride ->
-                    assignmentId to solutionOverride
-                }
-            }.groupBy({ it.first }, { it.second })
-        }.fold(emptyMap()) { acc, map -> acc + map }
+        return graders.flatMap { graderJar ->
+            graderJar.configuration.fileNameSolutionOverrides.map { solutionOverride ->
+                graderJar.info.assignmentId to solutionOverride
+            }
+        }.groupBy({ it.first }, { it.second })
     }
 
     private fun <T> Sequence<ResourceContainer>.compile(

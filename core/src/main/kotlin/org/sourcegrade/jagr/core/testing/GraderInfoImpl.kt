@@ -25,26 +25,28 @@ import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.launcher.io.GraderInfo
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.write
 import org.sourcegrade.jagr.launcher.io.writeList
 
 @Serializable
 data class GraderInfoImpl(
     override val name: String,
-    override val assignmentIds: List<String>,
+    override val assignmentId: String,
     override val sourceSets: List<SourceSetInfoImpl>,
 ) : GraderInfo {
 
     companion object Factory : SerializerFactory<GraderInfoImpl> {
         override fun read(scope: SerializationScope.Input) = GraderInfoImpl(
             scope.input.readUTF(),
-            scope.readList(),
+            scope.read(),
             scope.readList(),
         )
 
         override fun write(obj: GraderInfoImpl, scope: SerializationScope.Output) {
             scope.output.writeUTF(obj.name)
-            scope.writeList(obj.assignmentIds)
+            scope.write(obj.assignmentId)
             scope.writeList(obj.sourceSets)
         }
     }
