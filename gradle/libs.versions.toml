@@ -3,7 +3,7 @@ asm = "9.3"
 configurate = "4.1.2"
 junit = "5.9.0"
 kotlin = "1.7.10"
-log4j = "2.18.0"
+log4j = "2.19.0"
 
 [libraries]
 annotations = "org.jetbrains:annotations:23.0.0"
