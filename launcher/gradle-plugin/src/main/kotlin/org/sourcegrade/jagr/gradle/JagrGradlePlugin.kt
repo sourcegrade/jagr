@@ -7,7 +7,7 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.exclude
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 import org.sourcegrade.jagr.gradle.task.GradeTask
@@ -65,7 +65,7 @@ class JagrGradlePlugin : Plugin<Project> {
             "compileOnly",
             jagr.toolVersion.map { "org.sourcegrade:jagr-launcher:$it" }
         ) {
-            it.exclude(mapOf("org.jetbrains" to "annotations"))
+            it.exclude("org.jetbrains", "annotations")
         }
     }
 }
