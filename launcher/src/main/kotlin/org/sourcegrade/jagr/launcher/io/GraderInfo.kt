@@ -26,7 +26,7 @@ import kotlin.properties.ReadOnlyProperty
  */
 interface GraderInfo {
     val name: String
-    val assignmentIds: List<String>
+    val assignmentId: String
     val sourceSets: List<SourceSetInfo>
 }
 
