@@ -17,6 +17,7 @@ dependencies {
     )
     runtimeOnly(project(":jagr-core"))
     implementation(project(":jagr-launcher"))
+    implementation(files(rootProject.file("version")))
 }
 
 tasks {

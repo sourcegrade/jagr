@@ -41,11 +41,17 @@ abstract class WriteGraderInfoTask : DefaultTask() {
         val graderInfo = GraderInfo(
             graderName.get(),
             assignmentId.get(),
-            mapOf(
-                "grader" to listOf("graderPublic", "graderPrivate"),
-                "solution" to listOf("main", "test"),
-            ),
+            // TODO: Clean this up
             sourceSets.get()
+                .partition { it.name.contains("grader") }
+                .let { p ->
+                    p.first.fold(SourceSetInfo("grader", emptyList())) { acc, sourceSetInfo ->
+                        acc.copy(files = acc.files + sourceSetInfo.files)
+                    } to p.second.fold(SourceSetInfo("solution", emptyList())) { acc, sourceSetInfo ->
+                        acc.copy(files = acc.files + sourceSetInfo.files)
+                    }
+                }
+                .toList(),
         )
         graderInfoFile.apply {
             parentFile.mkdirs()

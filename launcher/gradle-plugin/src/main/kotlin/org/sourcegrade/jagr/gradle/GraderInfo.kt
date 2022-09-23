@@ -7,7 +7,6 @@ import org.gradle.api.tasks.SourceSet
 internal data class GraderInfo(
     val name: String,
     val assignmentId: String,
-    val sourceDescriptors: Map<String, List<String>>,
     val sourceSets: List<SourceSetInfo>,
 )
 
