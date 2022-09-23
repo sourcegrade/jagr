@@ -27,15 +27,12 @@ import kotlin.properties.ReadOnlyProperty
 interface GraderInfo {
     val name: String
     val assignmentId: String
-    val sourceDescriptors: Map<String, List<String>>
     val sourceSets: List<SourceSetInfo>
 }
 
-val GraderInfo.graderFiles: List<String> by withDescriptor("grader")
+val GraderInfo.graderFiles: List<String> by named("grader")
 
-val GraderInfo.solutionFiles: List<String> by withDescriptor("solution")
+val GraderInfo.solutionFiles: List<String> by named("solution")
 
-private fun withDescriptor(name: String): ReadOnlyProperty<GraderInfo, List<String>> = ReadOnlyProperty { info, _ ->
-    val descriptors = checkNotNull(info.sourceDescriptors[name]) { "No source descriptor named $name" }
-    info.sourceSets.filter { it.name in descriptors }.flatMap { it.files }
-}
+private fun named(name: String): ReadOnlyProperty<GraderInfo, List<String>> =
+    ReadOnlyProperty { info, _ -> info.sourceSets.first { it.name == name }.files }
