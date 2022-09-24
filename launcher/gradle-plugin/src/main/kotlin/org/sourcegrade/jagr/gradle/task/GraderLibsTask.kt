@@ -11,10 +11,10 @@ import org.gradle.kotlin.dsl.getByType
 import java.util.Locale
 
 @Suppress("LeakingThis")
-abstract class GraderLibsTask : Jar() {
+abstract class GraderLibsTask : Jar(), GraderTask {
 
     @get:Input
-    abstract val graderName: Property<String>
+    abstract override val graderName: Property<String>
 
     @get:Input
     abstract val assignmentId: Property<String>
@@ -48,5 +48,12 @@ abstract class GraderLibsTask : Jar() {
                 }
             }
         from(runtimeDeps)
+    }
+
+    object Factory : GraderTask.Factory<GraderLibsTask> {
+        override fun determineTaskName(name: String) = "${name}Libs"
+        override fun configureTask(task: GraderLibsTask) {
+            task.description = "Builds the grader libs jar for ${task.sourceSetName.get()}"
+        }
     }
 }

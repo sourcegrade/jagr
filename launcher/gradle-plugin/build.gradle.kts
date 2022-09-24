@@ -24,10 +24,6 @@ tasks {
         sourceCompatibility = "11"
         targetCompatibility = "11"
     }
-    @Suppress("UnstableApiUsage")
-    withType<ProcessResources> {
-        from(rootProject.file("version"))
-    }
 }
 
 gradlePlugin {

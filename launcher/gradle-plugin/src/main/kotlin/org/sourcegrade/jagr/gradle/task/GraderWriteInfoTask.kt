@@ -4,7 +4,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.SourceSetContainer
@@ -16,13 +15,7 @@ import org.sourcegrade.jagr.gradle.SourceSetInfo
 import org.sourcegrade.jagr.gradle.toInfo
 
 @Suppress("LeakingThis")
-abstract class WriteGraderInfoTask : DefaultTask() {
-
-    @get:Input
-    abstract val graderName: Property<String>
-
-    @get:Input
-    abstract val assignmentId: Property<String>
+abstract class GraderWriteInfoTask : DefaultTask(), GraderTask, TargetAssignmentTask {
 
     @get:Input
     internal val sourceSets: ListProperty<SourceSetInfo> = project.objects.listProperty<SourceSetInfo>()
@@ -56,6 +49,13 @@ abstract class WriteGraderInfoTask : DefaultTask() {
         graderInfoFile.apply {
             parentFile.mkdirs()
             writeText(Json.encodeToString(graderInfo))
+        }
+    }
+
+    object Factory : GraderTask.Factory<GraderWriteInfoTask> {
+        override fun determineTaskName(name: String) = "${name}WriteInfo"
+        override fun configureTask(task: GraderWriteInfoTask) {
+            task.description = "Runs the ${task.sourceSetName.get()} grader"
         }
     }
 }

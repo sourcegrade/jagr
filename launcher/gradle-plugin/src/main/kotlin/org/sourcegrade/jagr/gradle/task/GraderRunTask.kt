@@ -25,7 +25,7 @@ import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.createResourceContainer
 
 @Suppress("LeakingThis")
-abstract class GradeTask : DefaultTask() {
+abstract class GraderRunTask : DefaultTask(), GraderTask {
 
     @get:InputFile
     val graderInfoFile = project.buildDir.resolve("resources/jagr/grader-info.json")
@@ -34,8 +34,7 @@ abstract class GradeTask : DefaultTask() {
     val submissionInfoFile = project.buildDir.resolve("resources/submit/submission-info.json")
 
     init {
-        dependsOn("writeSubmissionInfo")
-        dependsOn("writeGraderInfo")
+        dependsOn(sourceSetName.map(GraderWriteInfoTask.Factory::determineTaskName))
         group = "jagr"
     }
 
@@ -142,6 +141,13 @@ abstract class GradeTask : DefaultTask() {
                     }
                 }
             }
+        }
+    }
+
+    object Factory : GraderTask.Factory<GraderRunTask> {
+        override fun determineTaskName(name: String) = "${name}Run"
+        override fun configureTask(task: GraderRunTask) {
+            task.description = "Runs the ${task.sourceSetName.get()} grader"
         }
     }
 }
