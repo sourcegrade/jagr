@@ -5,8 +5,8 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.exclude
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
@@ -14,12 +14,12 @@ import org.sourcegrade.jagr.gradle.task.GradeTask
 import org.sourcegrade.jagr.gradle.task.GraderJarTask
 import org.sourcegrade.jagr.gradle.task.GraderLibsTask
 import org.sourcegrade.jagr.gradle.task.WriteGraderInfoTask
-import org.sourcegrade.submitter.SubmitterPlugin
 
 class JagrGradlePlugin : Plugin<Project> {
-    override fun apply(target: Project) {
-        target.apply<SubmitterPlugin>()
 
+    val version = checkNotNull(javaClass.classLoader.getResourceAsStream("version")).bufferedReader().readLine()
+
+    override fun apply(target: Project) {
         // create extensions
         val jagr = target.extensions.create<JagrExtension>("jagr")
         val grader = jagr.extensions.create<GraderExtension>("grader")
@@ -61,11 +61,10 @@ class JagrGradlePlugin : Plugin<Project> {
         }
 
         // add jagr dependency to target project
-        target.dependencies.addProvider<_, ExternalModuleDependency>(
-            "compileOnly",
-            jagr.toolVersion.map { "org.sourcegrade:jagr-launcher:$it" }
-        ) {
-            it.exclude("org.jetbrains", "annotations")
+        target.dependencies {
+            "compileOnly"("org.sourcegrade:jagr-launcher:$version") {
+                exclude("org.jetbrains", "annotations")
+            }
         }
     }
 }

@@ -9,5 +9,4 @@ import javax.inject.Inject
 abstract class JagrExtension @Inject constructor(
     objectFactory: ObjectFactory,
 ) : ExtensionAware {
-    val toolVersion: Property<String> = objectFactory.property<String>().convention("0.6.0-SNAPSHOT")
 }
