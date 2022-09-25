@@ -16,9 +16,11 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:UseSerializers(serializerClasses = [SafeStringSerializer::class])
 
 package org.sourcegrade.jagr.launcher.io
 
+import kotlinx.serialization.UseSerializers
 import kotlin.properties.ReadOnlyProperty
 
 /**

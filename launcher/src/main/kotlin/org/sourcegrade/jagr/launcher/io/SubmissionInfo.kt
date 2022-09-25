@@ -16,9 +16,12 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:UseSerializers(serializerClasses = [SafeStringSerializer::class])
+
 package org.sourcegrade.jagr.launcher.io
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 
 /**
  * Represents the contents of a submission-info.json file
