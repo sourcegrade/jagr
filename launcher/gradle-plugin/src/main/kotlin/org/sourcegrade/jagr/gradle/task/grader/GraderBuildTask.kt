@@ -32,7 +32,7 @@ abstract class GraderBuildTask : Jar(), GraderTask {
     }
 
     internal object Factory : JagrTaskFactory<GraderBuildTask, GraderConfiguration> {
-        override fun determineTaskName(name: String) = "${name}Build"
+        override fun determineTaskName(name: String) = "${name}BuildGrader"
         override fun configureTask(task: GraderBuildTask, project: Project, configuration: GraderConfiguration) {
             task.description = "Builds the grader jar for ${task.sourceSetNames.get()}"
         }

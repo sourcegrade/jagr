@@ -8,6 +8,7 @@ import org.sourcegrade.jagr.gradle.task.grader.GraderLibsTask
 import org.sourcegrade.jagr.gradle.task.grader.GraderRunTask
 import org.sourcegrade.jagr.gradle.task.grader.GraderWriteInfoTask
 import org.sourcegrade.jagr.gradle.task.grader.registerTask
+import org.sourcegrade.jagr.gradle.task.submission.SubmissionBuildTask
 import org.sourcegrade.jagr.gradle.task.submission.SubmissionWriteInfoTask
 import org.sourcegrade.jagr.gradle.task.submission.registerTask
 
@@ -29,6 +30,7 @@ class JagrGradlePlugin : Plugin<Project> {
             GraderRunTask.Factory.registerTask(target, grader)
         }
         for (submission in jagr.submissions) {
+            SubmissionBuildTask.Factory.registerTask(target, submission)
             SubmissionWriteInfoTask.Factory.registerTask(target, submission)
         }
     }
