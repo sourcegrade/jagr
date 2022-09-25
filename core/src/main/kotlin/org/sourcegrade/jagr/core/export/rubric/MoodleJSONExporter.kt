@@ -27,9 +27,10 @@ import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.rubric.PointRange
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
+import org.sourcegrade.jagr.core.testing.JavaSubmission
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.Resource
+import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import org.sourcegrade.jagr.launcher.io.buildResource
 
 class MoodleJSONExporter @Inject constructor(
@@ -37,7 +38,7 @@ class MoodleJSONExporter @Inject constructor(
 ) : GradedRubricExporter.HTML {
     override fun export(gradedRubric: GradedRubric): Resource {
         val json = MoodleJSON(
-            gradedRubric.testCycle.submission.info as SubmissionInfoImpl,
+            (gradedRubric.testCycle.submission as JavaSubmission).submissionInfo,
             gradedRubric.grade.minPoints,
             StringBuilder().writeTable(gradedRubric).toString(),
         )
@@ -138,7 +139,7 @@ class MoodleJSONExporter @Inject constructor(
 
     @Serializable
     data class MoodleJSON(
-        val submissionInfo: SubmissionInfoImpl,
+        val submissionInfo: SubmissionInfo,
         val totalPoints: Int,
         val feedbackComment: String,
     )
