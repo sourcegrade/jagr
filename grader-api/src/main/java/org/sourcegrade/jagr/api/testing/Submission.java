@@ -31,11 +31,11 @@ import java.util.Set;
 public interface Submission {
 
     /**
-     * The {@link SubmissionInfo} of the submission.
+     * The info of the submission.
      *
-     * @return The {@link SubmissionInfo} of the submission
+     * @return The info of the submission
      */
-    SubmissionInfo getInfo();
+    String getInfo();
 
     /**
      * The {@link CompileResult} of the submission.

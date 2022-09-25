@@ -18,7 +18,7 @@
  */
 @file:UseSerializers(serializerClasses = [SafeStringSerializer::class])
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.launcher.io
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.UseSerializers

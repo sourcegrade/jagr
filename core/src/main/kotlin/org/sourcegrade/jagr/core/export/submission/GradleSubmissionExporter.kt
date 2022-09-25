@@ -29,7 +29,6 @@ import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.SubmissionExporter
@@ -62,7 +61,7 @@ class GradleSubmissionExporter @Inject constructor(
         val filteredSubmissions = if (graderJar == null) {
             submissions
         } else {
-            submissions.filter { graderJar.rubricProviders.containsKey(it.info.assignmentId) }
+            submissions.filter { graderJar.rubricProviders.containsKey((it as JavaSubmission).submissionInfo.assignmentId) }
         }
         for (submission in filteredSubmissions) {
             writeSubmission(submission, graderJar)
@@ -129,10 +128,10 @@ class GradleSubmissionExporter @Inject constructor(
 
     private fun ResourceContainer.Builder.writeSubmission(submission: Submission, graderJar: GraderJarImpl?) {
         if (submission !is JavaSubmission) return
-        val submissionName = submission.info.toString()
+        val submissionName = submission.submissionInfo.toString()
         addResource {
             name = "$submissionName/src/main/resources/submission-info.json"
-            outputStream.writer().use { it.write(Json.encodeToString(submission.info as SubmissionInfoImpl)) }
+            outputStream.writer().use { it.write(Json.encodeToString(submission.submissionInfo)) }
         }
         writeSourceFiles("$submissionName/src/main/java/", submission.compileResult.source.sourceFiles)
         writeResources("$submissionName/src/main/resources/", submission.compileResult.runtimeResources.resources)
