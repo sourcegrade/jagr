@@ -42,7 +42,6 @@ interface GraderTask : TargetAssignmentTask, TargetSourceSetsTask {
 
     @get:Input
     val solutionConfigurationName: Property<String>
-
 }
 
 internal fun <T : GraderTask> JagrTaskFactory<T, GraderConfiguration>.registerTask(
