@@ -17,7 +17,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.gradle.task
+package org.sourcegrade.jagr.gradle.task.grader
 
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
@@ -27,6 +27,8 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 import org.sourcegrade.jagr.gradle.GraderConfiguration
 import org.sourcegrade.jagr.gradle.JagrExtension
+import org.sourcegrade.jagr.gradle.task.TargetAssignmentTask
+import org.sourcegrade.jagr.gradle.task.TargetSourceSetsTask
 import kotlin.reflect.KClass
 
 interface GraderTask : TargetAssignmentTask, TargetSourceSetsTask {

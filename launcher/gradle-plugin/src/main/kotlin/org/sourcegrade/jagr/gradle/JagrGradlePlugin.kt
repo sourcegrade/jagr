@@ -3,11 +3,11 @@ package org.sourcegrade.jagr.gradle
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
-import org.sourcegrade.jagr.gradle.task.GraderBuildTask
-import org.sourcegrade.jagr.gradle.task.GraderLibsTask
-import org.sourcegrade.jagr.gradle.task.GraderRunTask
-import org.sourcegrade.jagr.gradle.task.GraderWriteInfoTask
-import org.sourcegrade.jagr.gradle.task.registerTask
+import org.sourcegrade.jagr.gradle.task.grader.GraderBuildTask
+import org.sourcegrade.jagr.gradle.task.grader.GraderLibsTask
+import org.sourcegrade.jagr.gradle.task.grader.GraderRunTask
+import org.sourcegrade.jagr.gradle.task.grader.GraderWriteInfoTask
+import org.sourcegrade.jagr.gradle.task.grader.registerTask
 
 class JagrGradlePlugin : Plugin<Project> {
 

@@ -17,10 +17,12 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.gradle.task
+package org.sourcegrade.jagr.gradle.task.submission
 
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.sourcegrade.jagr.gradle.task.TargetAssignmentTask
+import org.sourcegrade.jagr.gradle.task.TargetSourceSetsTask
 
 interface SubmissionTask : TargetSourceSetsTask, TargetAssignmentTask {
 

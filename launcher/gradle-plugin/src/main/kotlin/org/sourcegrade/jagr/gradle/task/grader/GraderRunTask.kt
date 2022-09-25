@@ -1,4 +1,4 @@
-package org.sourcegrade.jagr.gradle.task
+package org.sourcegrade.jagr.gradle.task.grader
 
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask

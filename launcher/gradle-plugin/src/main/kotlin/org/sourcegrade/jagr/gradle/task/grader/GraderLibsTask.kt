@@ -1,4 +1,4 @@
-package org.sourcegrade.jagr.gradle.task
+package org.sourcegrade.jagr.gradle.task.grader
 
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
