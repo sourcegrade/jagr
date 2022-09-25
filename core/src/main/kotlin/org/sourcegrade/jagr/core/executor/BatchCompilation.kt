@@ -23,6 +23,7 @@ import com.google.inject.Inject
 import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.ClassTransformerOrder
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.core.compiler.InfoJsonResourceExtractor
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
@@ -33,10 +34,8 @@ import org.sourcegrade.jagr.core.compiler.java.loadCompiled
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.core.compiler.submissionInfo
 import org.sourcegrade.jagr.core.parallelMapNotNull
-import org.sourcegrade.jagr.core.testing.GraderInfoImpl
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.core.transformer.CommonClassTransformer
 import org.sourcegrade.jagr.core.transformer.SubmissionVerificationTransformer
 import org.sourcegrade.jagr.core.transformer.TransformationApplier
@@ -67,7 +66,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
             commonTransformerApplier,
             libraries,
             "Grader",
-            GraderInfoImpl.Extractor,
+            InfoJsonResourceExtractor.Grader,
         ) {
             if (errors == 0) GraderJarImpl(logger, this, libraries) else null
         }
@@ -86,7 +85,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
             submissionTransformerApplier,
             libraries,
             "Submission",
-            SubmissionInfoImpl.Extractor,
+            InfoJsonResourceExtractor.Submission,
             replacements,
         ) submissionCompile@{
             val submissionInfo = this.submissionInfo

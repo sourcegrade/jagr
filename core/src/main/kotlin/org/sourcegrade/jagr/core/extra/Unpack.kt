@@ -27,8 +27,8 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.Logger
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.env.Config
+import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import java.io.File
 import java.nio.file.FileSystems
 import kotlin.io.path.ExperimentalPathApi
@@ -57,7 +57,7 @@ abstract class Unpack : Extra {
                 null
             }?.use useReader@{ reader ->
                 val submissionInfo = try {
-                    Json.decodeFromString<SubmissionInfoImpl>(reader.readText())
+                    Json.decodeFromString<SubmissionInfo>(reader.readText())
                 } catch (e: SerializationException) {
                     return@useReader null
                 }
@@ -75,7 +75,7 @@ abstract class Unpack : Extra {
                             if (replaceLastName) append(" lastName(${submissionInfo.lastName} -> $lastName)")
                         }.toString()
                     )
-                    SubmissionInfoImpl(
+                    SubmissionInfo(
                         if (replaceAssignmentId) assignmentId!! else submissionInfo.assignmentId,
                         if (replaceStudentId) studentId!! else submissionInfo.studentId,
                         if (replaceFirstName) firstName!! else submissionInfo.firstName,
@@ -83,7 +83,7 @@ abstract class Unpack : Extra {
                         submissionInfo.sourceSets,
                     )
                 } else return
-            } ?: SubmissionInfoImpl(
+            } ?: SubmissionInfo(
                 assignmentId = assignmentId ?: "none",
                 studentId = studentId ?: "none",
                 firstName = firstName ?: "none",

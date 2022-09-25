@@ -16,22 +16,36 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.sourcegrade.jagr.launcher.io
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents the contents of a submission-info.json file
+ */
 @Serializable
-data class SourceSetInfo(
-    val name: String,
-    val files: List<String>,
+data class SubmissionInfo(
+    val assignmentId: String,
+    val studentId: String,
+    val firstName: String,
+    val lastName: String,
+    val sourceSets: List<SourceSetInfo>,
 ) {
-    companion object Factory : SerializerFactory<SourceSetInfo> {
-        override fun read(scope: SerializationScope.Input) = SourceSetInfo(scope.input.readUTF(), scope.readList())
+    companion object Factory : SerializerFactory<SubmissionInfo> {
+        override fun read(scope: SerializationScope.Input) = SubmissionInfo(
+            scope.input.readUTF(),
+            scope.input.readUTF(),
+            scope.input.readUTF(),
+            scope.input.readUTF(),
+            scope.readList(),
+        )
 
-        override fun write(obj: SourceSetInfo, scope: SerializationScope.Output) {
-            scope.output.writeUTF(obj.name)
-            scope.writeList(obj.files)
+        override fun write(obj: SubmissionInfo, scope: SerializationScope.Output) {
+            scope.output.writeUTF(obj.assignmentId)
+            scope.output.writeUTF(obj.studentId)
+            scope.output.writeUTF(obj.firstName)
+            scope.output.writeUTF(obj.lastName)
+            scope.writeList(obj.sourceSets)
         }
     }
 }

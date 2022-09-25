@@ -24,10 +24,24 @@ import kotlin.properties.ReadOnlyProperty
 /**
  * Represents the contents of a grader-info.json file.
  */
-interface GraderInfo {
-    val name: String
-    val assignmentId: String
-    val sourceSets: List<SourceSetInfo>
+data class GraderInfo(
+    val assignmentId: String,
+    val name: String,
+    val sourceSets: List<SourceSetInfo>,
+) {
+    companion object Factory : SerializerFactory<GraderInfo> {
+        override fun read(scope: SerializationScope.Input) = GraderInfo(
+            scope.read(),
+            scope.input.readUTF(),
+            scope.readList(),
+        )
+
+        override fun write(obj: GraderInfo, scope: SerializationScope.Output) {
+            scope.output.writeUTF(obj.name)
+            scope.write(obj.assignmentId)
+            scope.writeList(obj.sourceSets)
+        }
+    }
 }
 
 val GraderInfo.graderFiles: List<String> by named("grader")
