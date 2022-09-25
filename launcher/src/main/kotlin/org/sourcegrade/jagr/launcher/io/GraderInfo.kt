@@ -20,12 +20,14 @@
 
 package org.sourcegrade.jagr.launcher.io
 
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlin.properties.ReadOnlyProperty
 
 /**
  * Represents the contents of a grader-info.json file.
  */
+@Serializable
 data class GraderInfo(
     val assignmentId: String,
     val name: String,

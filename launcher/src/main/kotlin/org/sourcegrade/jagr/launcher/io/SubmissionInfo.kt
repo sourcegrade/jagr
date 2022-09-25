@@ -34,6 +34,8 @@ data class SubmissionInfo(
     val lastName: String,
     val sourceSets: List<SourceSetInfo>,
 ) {
+    override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
+
     companion object Factory : SerializerFactory<SubmissionInfo> {
         override fun read(scope: SerializationScope.Input) = SubmissionInfo(
             scope.input.readUTF(),
