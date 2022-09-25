@@ -51,7 +51,9 @@ abstract class AbstractSourceSetConfiguration(
     }
 
     fun from(vararg sourceSetNames: String) {
-        this.sourceSetNames.addAll(*sourceSetNames)
+        for (sourceSetName in sourceSetNames) {
+            this.sourceSetNames.add(sourceSetName)
+        }
     }
 
     fun dependsOn(vararg configurations: AbstractSourceSetConfiguration) {
