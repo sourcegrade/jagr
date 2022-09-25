@@ -39,7 +39,7 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         if (parentConfiguration.isPresent) {
             result.addAll(parentConfiguration.get().getFilesRecursive())
         }
-        return result;
+        return result
     }
 
     @TaskAction
