@@ -9,6 +9,7 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.GraderConfiguration
+import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import java.io.File
 
 @Suppress("LeakingThis")
@@ -30,9 +31,9 @@ abstract class GraderBuildTask : Jar(), GraderTask {
         )
     }
 
-    object Factory : GraderTask.Factory<GraderBuildTask> {
+    internal object Factory : JagrTaskFactory<GraderBuildTask, GraderConfiguration> {
         override fun determineTaskName(name: String) = "${name}Build"
-        override fun configureTask(task: GraderBuildTask, project: Project, grader: GraderConfiguration) {
+        override fun configureTask(task: GraderBuildTask, project: Project, configuration: GraderConfiguration) {
             task.description = "Builds the grader jar for ${task.sourceSetNames.get()}"
         }
     }

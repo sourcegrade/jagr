@@ -1,20 +1,6 @@
 package org.sourcegrade.jagr.gradle
 
-import kotlinx.serialization.Serializable
 import org.gradle.api.tasks.SourceSet
-
-@Serializable
-internal data class GraderInfo(
-    val name: String,
-    val assignmentId: String,
-    val sourceSets: List<SourceSetInfo>,
-)
-
-@Serializable
-internal data class SourceSetInfo(
-    val name: String,
-    val files: List<String>,
-) : java.io.Serializable
 
 internal fun SourceSet.forEachFile(action: (String) -> Unit) {
     return allSource.files.forEach { file ->

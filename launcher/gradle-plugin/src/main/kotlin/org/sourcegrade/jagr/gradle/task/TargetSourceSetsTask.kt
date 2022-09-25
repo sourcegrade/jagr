@@ -21,9 +21,13 @@ package org.sourcegrade.jagr.gradle.task
 
 import org.gradle.api.Task
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 
 interface TargetSourceSetsTask : Task {
+
+    @get:Input
+    val configurationName: Property<String>
 
     @get:Input
     val sourceSetNames: ListProperty<String>

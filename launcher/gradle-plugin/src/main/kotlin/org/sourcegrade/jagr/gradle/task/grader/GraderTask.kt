@@ -27,14 +27,12 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 import org.sourcegrade.jagr.gradle.GraderConfiguration
 import org.sourcegrade.jagr.gradle.JagrExtension
+import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.TargetAssignmentTask
 import org.sourcegrade.jagr.gradle.task.TargetSourceSetsTask
 import kotlin.reflect.KClass
 
 interface GraderTask : TargetAssignmentTask, TargetSourceSetsTask {
-
-    @get:Input
-    val configurationName: Property<String>
 
     @get:Input
     val graderName: Property<String>
@@ -45,20 +43,16 @@ interface GraderTask : TargetAssignmentTask, TargetSourceSetsTask {
     @get:Input
     val solutionConfigurationName: Property<String>
 
-    interface Factory<T : GraderTask> {
-        fun determineTaskName(name: String): String
-        fun configureTask(task: T, project: Project, grader: GraderConfiguration)
-    }
 }
 
-fun <T : GraderTask> GraderTask.Factory<T>.registerTask(
+internal fun <T : GraderTask> JagrTaskFactory<T, GraderConfiguration>.registerTask(
     project: Project,
     configuration: GraderConfiguration,
     type: KClass<T>,
 ): TaskProvider<T> {
     val jagr = project.extensions.getByType<JagrExtension>()
     return project.tasks.register(determineTaskName(configuration.name), type) { task ->
-        task.group = "jagr"
+        task.group = "jagr" // TODO: Maybe grader?
         task.assignmentId.set(jagr.assignmentId)
         task.configurationName.set(configuration.name)
         task.graderName.set(configuration.graderName)
@@ -70,9 +64,7 @@ fun <T : GraderTask> GraderTask.Factory<T>.registerTask(
     }
 }
 
-inline fun <reified T : GraderTask> GraderTask.Factory<T>.registerTask(
+internal inline fun <reified T : GraderTask> JagrTaskFactory<T, GraderConfiguration>.registerTask(
     project: Project,
     configuration: GraderConfiguration,
-): TaskProvider<T> {
-    return registerTask(project, configuration, T::class)
-}
+): TaskProvider<T> = registerTask(project, configuration, T::class)

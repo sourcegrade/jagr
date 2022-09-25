@@ -13,6 +13,7 @@ import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.GraderConfiguration
 import org.sourcegrade.jagr.gradle.logGradedRubric
 import org.sourcegrade.jagr.gradle.logHistogram
+import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
@@ -42,7 +43,6 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     init {
         dependsOn("writeSubmissionInfo")
         dependsOn(configurationName.map(GraderWriteInfoTask.Factory::determineTaskName))
-        group = "jagr"
     }
 
     @TaskAction
@@ -151,9 +151,9 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         }
     }
 
-    object Factory : GraderTask.Factory<GraderRunTask> {
+    internal object Factory : JagrTaskFactory<GraderRunTask, GraderConfiguration> {
         override fun determineTaskName(name: String) = "${name}Run"
-        override fun configureTask(task: GraderRunTask, project: Project, grader: GraderConfiguration) {
+        override fun configureTask(task: GraderRunTask, project: Project, configuration: GraderConfiguration) {
             task.description = "Runs the ${task.sourceSetNames.get()} grader"
         }
     }

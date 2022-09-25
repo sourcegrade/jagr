@@ -8,6 +8,7 @@ import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.sourcegrade.jagr.gradle.GraderConfiguration
+import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import java.util.Locale
 
 @Suppress("LeakingThis")
@@ -44,9 +45,9 @@ abstract class GraderLibsTask : Jar(), GraderTask {
         from(runtimeDeps)
     }
 
-    object Factory : GraderTask.Factory<GraderLibsTask> {
+    internal object Factory : JagrTaskFactory<GraderLibsTask, GraderConfiguration> {
         override fun determineTaskName(name: String) = "${name}Libs"
-        override fun configureTask(task: GraderLibsTask, project: Project, grader: GraderConfiguration) {
+        override fun configureTask(task: GraderLibsTask, project: Project, configuration: GraderConfiguration) {
             task.description = "Builds the grader libs jar for ${task.sourceSetNames.get()}"
         }
     }

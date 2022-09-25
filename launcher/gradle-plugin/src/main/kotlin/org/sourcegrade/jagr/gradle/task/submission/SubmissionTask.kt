@@ -19,10 +19,18 @@
 
 package org.sourcegrade.jagr.gradle.task.submission
 
+import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.register
+import org.sourcegrade.jagr.gradle.JagrExtension
+import org.sourcegrade.jagr.gradle.SubmissionConfiguration
+import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.TargetAssignmentTask
 import org.sourcegrade.jagr.gradle.task.TargetSourceSetsTask
+import kotlin.reflect.KClass
 
 interface SubmissionTask : TargetSourceSetsTask, TargetAssignmentTask {
 
@@ -35,3 +43,26 @@ interface SubmissionTask : TargetSourceSetsTask, TargetAssignmentTask {
     @get:Input
     val lastName: Property<String>
 }
+
+internal fun <T : SubmissionTask> JagrTaskFactory<T, SubmissionConfiguration>.registerTask(
+    project: Project,
+    configuration: SubmissionConfiguration,
+    type: KClass<T>,
+): TaskProvider<T> {
+    val jagr = project.extensions.getByType<JagrExtension>()
+    return project.tasks.register(determineTaskName(configuration.name), type) { task ->
+        task.group = "jagr" // TODO: Maybe submit/submission?
+        task.assignmentId.set(jagr.assignmentId)
+        task.studentId.set(configuration.studentId)
+        task.firstName.set(configuration.firstName)
+        task.lastName.set(configuration.lastName)
+        task.configurationName.set(configuration.name)
+        task.sourceSetNames.set(configuration.sourceSetNames)
+        configureTask(task, project, configuration)
+    }
+}
+
+internal inline fun <reified T : SubmissionTask> JagrTaskFactory<T, SubmissionConfiguration>.registerTask(
+    project: Project,
+    configuration: SubmissionConfiguration,
+): TaskProvider<T> = registerTask(project, configuration, T::class)

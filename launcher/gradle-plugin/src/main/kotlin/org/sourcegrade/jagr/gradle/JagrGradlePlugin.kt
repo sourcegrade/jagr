@@ -8,7 +8,10 @@ import org.sourcegrade.jagr.gradle.task.grader.GraderLibsTask
 import org.sourcegrade.jagr.gradle.task.grader.GraderRunTask
 import org.sourcegrade.jagr.gradle.task.grader.GraderWriteInfoTask
 import org.sourcegrade.jagr.gradle.task.grader.registerTask
+import org.sourcegrade.jagr.gradle.task.submission.SubmissionWriteInfoTask
+import org.sourcegrade.jagr.gradle.task.submission.registerTask
 
+@Suppress("unused")
 class JagrGradlePlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
@@ -24,6 +27,9 @@ class JagrGradlePlugin : Plugin<Project> {
             GraderLibsTask.Factory.registerTask(target, grader)
             GraderWriteInfoTask.Factory.registerTask(target, grader)
             GraderRunTask.Factory.registerTask(target, grader)
+        }
+        for (submission in jagr.submissions) {
+            SubmissionWriteInfoTask.Factory.registerTask(target, submission)
         }
     }
 }

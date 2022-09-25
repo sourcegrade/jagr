@@ -11,11 +11,12 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.GraderConfiguration
-import org.sourcegrade.jagr.gradle.GraderInfo
 import org.sourcegrade.jagr.gradle.JagrExtension
-import org.sourcegrade.jagr.gradle.SourceSetInfo
 import org.sourcegrade.jagr.gradle.forEachFile
 import org.sourcegrade.jagr.gradle.getFiles
+import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
+import org.sourcegrade.jagr.launcher.io.GraderInfo
+import org.sourcegrade.jagr.launcher.io.SourceSetInfo
 import java.io.File
 
 @Suppress("LeakingThis")
@@ -28,7 +29,6 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
     init {
         // TODO: Depend only on compilation task from required source sets
         dependsOn("compileJava")
-        group = "jagr"
     }
 
     private fun GraderConfiguration.getFilesRecursive(): List<String> {
@@ -48,8 +48,8 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         val graderFiles = jagr.graders[configurationName.get()].getFilesRecursive()
         val solutionFiles = jagr.submissions[solutionConfigurationName.get()].sourceSets.flatMap { it.getFiles() }
         val graderInfo = GraderInfo(
-            graderName.get(),
             assignmentId.get(),
+            graderName.get(),
             listOf(
                 SourceSetInfo("grader", graderFiles),
                 SourceSetInfo("solution", solutionFiles)
@@ -61,9 +61,9 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         }
     }
 
-    object Factory : GraderTask.Factory<GraderWriteInfoTask> {
-        override fun determineTaskName(name: String) = "${name}WriteInfo"
-        override fun configureTask(task: GraderWriteInfoTask, project: Project, grader: GraderConfiguration) {
+    internal object Factory : JagrTaskFactory<GraderWriteInfoTask, GraderConfiguration> {
+        override fun determineTaskName(name: String) = "${name}WriteGraderInfo"
+        override fun configureTask(task: GraderWriteInfoTask, project: Project, configuration: GraderConfiguration) {
             task.description = "Runs the ${task.sourceSetNames.get()} grader"
             task.assignmentId.set(project.extensions.getByType<JagrExtension>().assignmentId)
         }
