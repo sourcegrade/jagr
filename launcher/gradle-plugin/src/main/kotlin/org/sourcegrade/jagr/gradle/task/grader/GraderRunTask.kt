@@ -6,14 +6,18 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
+import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.GraderConfiguration
+import org.sourcegrade.jagr.gradle.JagrExtension
 import org.sourcegrade.jagr.gradle.logGradedRubric
 import org.sourcegrade.jagr.gradle.logHistogram
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
+import org.sourcegrade.jagr.gradle.task.submission.SubmissionWriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
@@ -38,10 +42,11 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/grader-info.json") })
 
     @get:InputFile
-    val submissionInfoFile = project.buildDir.resolve("resources/submit/submission-info.json")
+    val submissionInfoFile: Property<File> = project.objects.property<File>()
+        .value(submissionConfigurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })
 
     init {
-        dependsOn("writeSubmissionInfo")
+        dependsOn(submissionConfigurationName.map(SubmissionWriteInfoTask.Factory::determineTaskName))
         dependsOn(configurationName.map(GraderWriteInfoTask.Factory::determineTaskName))
     }
 
@@ -53,15 +58,17 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     }
 
     private suspend fun grade() {
+        val jagrExtension = project.extensions.getByType<JagrExtension>()
         val batch: GradingBatch = buildGradingBatch {
             addGrader(
                 buildResourceContainer {
                     info = buildResourceContainerInfo {
                         name = "grader"
                     }
+                    val solutionSourceSetNames = jagrExtension.submissions[solutionConfigurationName.get()].sourceSetNames.get()
                     project.extensions
                         .getByType<SourceSetContainer>()
-//                    .filter { it.name == "grader" || it.name == "main" || it.name == "test" }
+                        .filter { it.name in sourceSetNames.get() || it.name in solutionSourceSetNames }
                         .forEach { sourceSet -> sourceSet.allSource.sourceDirectories.writeToContainer(this) }
                     addResource {
                         name = "grader-info.json"
@@ -78,11 +85,12 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     info = buildResourceContainerInfo {
                         name = "submission"
                     }
-                    writeSourceSet("main")
-                    writeSourceSet("test")
+                    for (sourceSet in jagrExtension.submissions[submissionConfigurationName.get()].sourceSets) {
+                        writeSourceSet(sourceSet)
+                    }
                     addResource {
                         name = "submission-info.json"
-                        submissionInfoFile.inputStream().use { input ->
+                        submissionInfoFile.get().inputStream().use { input ->
                             outputStream.use { output ->
                                 input.transferTo(output)
                             }
@@ -127,10 +135,8 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         }
     }
 
-    private fun ResourceContainer.Builder.writeSourceSet(sourceSetName: String) {
-        project.extensions
-            .getByType<SourceSetContainer>()
-            .getByName(sourceSetName)
+    private fun ResourceContainer.Builder.writeSourceSet(sourceSet: SourceSet) {
+        sourceSet
             .allSource
             .sourceDirectories
             .writeToContainer(this)
