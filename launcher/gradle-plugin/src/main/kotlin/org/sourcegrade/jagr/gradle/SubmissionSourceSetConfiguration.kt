@@ -20,8 +20,17 @@
 package org.sourcegrade.jagr.gradle
 
 import org.gradle.api.Project
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.kotlin.dsl.listProperty
 
 abstract class SubmissionSourceSetConfiguration(
-    val name: String,
+    name: String,
     project: Project,
-)
+) : AbstractSourceSetConfiguration(name, project) {
+    override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>()
+        .convention(listOf("main", "test"))
+    abstract val studentId: Property<String>
+    abstract val firstName: Property<String>
+    abstract val lastName: Property<String>
+}

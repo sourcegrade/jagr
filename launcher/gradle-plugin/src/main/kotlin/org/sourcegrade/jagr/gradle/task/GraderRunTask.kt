@@ -2,11 +2,13 @@ package org.sourcegrade.jagr.gradle.task
 
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
+import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.getByType
+import org.sourcegrade.jagr.gradle.GraderSourceSetConfiguration
 import org.sourcegrade.jagr.gradle.logGradedRubric
 import org.sourcegrade.jagr.gradle.logHistogram
 import org.sourcegrade.jagr.launcher.env.Environment
@@ -146,7 +148,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
 
     object Factory : GraderTask.Factory<GraderRunTask> {
         override fun determineTaskName(name: String) = "${name}Run"
-        override fun configureTask(task: GraderRunTask) {
+        override fun configureTask(task: GraderRunTask, project: Project, grader: GraderSourceSetConfiguration) {
             task.description = "Runs the ${task.sourceSetName.get()} grader"
         }
     }

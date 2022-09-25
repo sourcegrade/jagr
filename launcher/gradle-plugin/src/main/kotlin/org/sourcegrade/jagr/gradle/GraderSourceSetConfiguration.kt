@@ -20,57 +20,32 @@
 package org.sourcegrade.jagr.gradle
 
 import org.gradle.api.Project
-import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.SourceSet
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.exclude
-import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.listProperty
 import org.sourcegrade.jagr.launcher.VersionProvider
 
 abstract class GraderSourceSetConfiguration(
     name: String,
     project: Project,
-) : AbstractSourceSetConfiguration(name, project, SourceSet.TEST_SOURCE_SET_NAME) {
+) : AbstractSourceSetConfiguration(name, project) {
+    override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>()
+        .convention(listOf(name))
+
     abstract val graderName: Property<String>
-    private val sourceSetContainer: SourceSetContainer = project.extensions.getByType()
-    private val compileClasspath: ConfigurableFileCollection = project.objects.fileCollection()
-    private val runtimeClasspath: ConfigurableFileCollection = project.objects.fileCollection()
-    val sourceSet: SourceSet
 
     init {
-        val testSourceSet = sourceSetContainer.getByName(SourceSet.TEST_SOURCE_SET_NAME)
-        compileClasspath.from(testSourceSet.output)
-        compileClasspath.from(testSourceSet.compileClasspath)
-        runtimeClasspath.from(testSourceSet.output)
-        runtimeClasspath.from(testSourceSet.runtimeClasspath)
-
-        // create own source set
-        sourceSet = sourceSetContainer.create(name) { sourceSet ->
-            sourceSet.compileClasspath += compileClasspath
-            sourceSet.runtimeClasspath += runtimeClasspath
-        }
-
-        // add jagr dependencies
-        project.dependencies {
-            sourceSet.implementationConfigurationName("org.sourcegrade:jagr-launcher:${VersionProvider.version}") {
-                exclude("org.jetbrains", "annotations")
+        project.afterEvaluate {
+            // add jagr dependency
+            it.dependencies {
+                for (sourceSet in sourceSets) {
+                    sourceSet.implementationConfigurationName("org.sourcegrade:jagr-launcher:${VersionProvider.version}") {
+                        exclude("org.jetbrains", "annotations")
+                    }
+                }
             }
-        }
-    }
-
-    fun dependsOn(vararg sourceSets: SourceSet) {
-        // clear compile and runtime classpath
-        compileClasspath.setFrom()
-        runtimeClasspath.setFrom()
-
-        // add all dependencies
-        for (sourceSet in sourceSets) {
-            compileClasspath.from(sourceSet.output)
-            compileClasspath.from(sourceSet.compileClasspath)
-            runtimeClasspath.from(sourceSet.output)
-            runtimeClasspath.from(sourceSet.runtimeClasspath)
         }
     }
 }

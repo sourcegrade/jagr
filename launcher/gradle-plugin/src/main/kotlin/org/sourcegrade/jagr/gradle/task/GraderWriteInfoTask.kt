@@ -3,6 +3,7 @@ package org.sourcegrade.jagr.gradle.task
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
+import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
@@ -11,6 +12,8 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.listProperty
 import org.sourcegrade.jagr.gradle.GraderInfo
+import org.sourcegrade.jagr.gradle.GraderSourceSetConfiguration
+import org.sourcegrade.jagr.gradle.JagrExtension
 import org.sourcegrade.jagr.gradle.SourceSetInfo
 import org.sourcegrade.jagr.gradle.toInfo
 
@@ -54,8 +57,9 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask, TargetAssignment
 
     object Factory : GraderTask.Factory<GraderWriteInfoTask> {
         override fun determineTaskName(name: String) = "${name}WriteInfo"
-        override fun configureTask(task: GraderWriteInfoTask) {
+        override fun configureTask(task: GraderWriteInfoTask, project: Project, grader: GraderSourceSetConfiguration) {
             task.description = "Runs the ${task.sourceSetName.get()} grader"
+            task.assignmentId.set(project.extensions.getByType<JagrExtension>().assignmentId)
         }
     }
 }

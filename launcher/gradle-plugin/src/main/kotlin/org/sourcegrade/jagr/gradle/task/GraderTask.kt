@@ -34,7 +34,7 @@ interface GraderTask : TargetSourceSetTask {
 
     interface Factory<T : GraderTask> {
         fun determineTaskName(name: String): String
-        fun configureTask(task: T)
+        fun configureTask(task: T, project: Project, grader: GraderSourceSetConfiguration)
     }
 }
 
@@ -43,11 +43,11 @@ fun <T : GraderTask> GraderTask.Factory<T>.registerTask(
     grader: GraderSourceSetConfiguration,
     type: KClass<T>,
 ): TaskProvider<T> {
-    return project.tasks.register(determineTaskName(grader.sourceSet.name), type) { task ->
+    return project.tasks.register(determineTaskName(grader.name), type) { task ->
         task.group = "jagr"
         task.graderName.set(grader.graderName)
-        task.sourceSetName.set(grader.sourceSet.name)
-        configureTask(task)
+        task.sourceSetName.set(grader.name)
+        configureTask(task, project, grader)
     }
 }
 
