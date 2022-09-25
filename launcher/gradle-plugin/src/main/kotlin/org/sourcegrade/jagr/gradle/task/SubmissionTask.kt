@@ -22,7 +22,7 @@ package org.sourcegrade.jagr.gradle.task
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 
-interface SubmissionTask : TargetSourceSetTask, TargetAssignmentTask {
+interface SubmissionTask : TargetSourceSetsTask, TargetAssignmentTask {
 
     @get:Input
     val studentId: Property<String>

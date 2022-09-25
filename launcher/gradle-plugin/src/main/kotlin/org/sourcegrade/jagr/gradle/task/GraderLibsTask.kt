@@ -2,24 +2,16 @@ package org.sourcegrade.jagr.gradle.task
 
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
-import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
-import org.sourcegrade.jagr.gradle.GraderSourceSetConfiguration
+import org.sourcegrade.jagr.gradle.GraderConfiguration
 import java.util.Locale
 
 @Suppress("LeakingThis")
 abstract class GraderLibsTask : Jar(), GraderTask {
-
-    @get:Input
-    abstract override val graderName: Property<String>
-
-    @get:Input
-    abstract val assignmentId: Property<String>
 
     init {
         group = "build"
@@ -54,8 +46,8 @@ abstract class GraderLibsTask : Jar(), GraderTask {
 
     object Factory : GraderTask.Factory<GraderLibsTask> {
         override fun determineTaskName(name: String) = "${name}Libs"
-        override fun configureTask(task: GraderLibsTask, project: Project, grader: GraderSourceSetConfiguration) {
-            task.description = "Builds the grader libs jar for ${task.sourceSetName.get()}"
+        override fun configureTask(task: GraderLibsTask, project: Project, grader: GraderConfiguration) {
+            task.description = "Builds the grader libs jar for ${task.sourceSetNames.get()}"
         }
     }
 }

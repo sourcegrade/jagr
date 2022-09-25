@@ -10,11 +10,10 @@ import javax.inject.Inject
 
 abstract class JagrExtension @Inject constructor(
     project: Project,
-    objectFactory: ObjectFactory,
 ) : ExtensionAware {
     abstract val assignmentId: Property<String>
-    val graders: NamedDomainObjectContainer<GraderSourceSetConfiguration> = project.container()
-    val submissions: NamedDomainObjectContainer<SubmissionSourceSetConfiguration> = project.container()
-    fun graders(configure: NamedDomainObjectContainer<GraderSourceSetConfiguration>.() -> Unit) = graders.configure()
-    fun submissions(configure: NamedDomainObjectContainer<SubmissionSourceSetConfiguration>.() -> Unit) = submissions.configure()
+    val graders: NamedDomainObjectContainer<GraderConfiguration> = project.container()
+    val submissions: NamedDomainObjectContainer<SubmissionConfiguration> = project.container()
+    fun graders(configure: NamedDomainObjectContainer<GraderConfiguration>.() -> Unit) = graders.configure()
+    fun submissions(configure: NamedDomainObjectContainer<SubmissionConfiguration>.() -> Unit) = submissions.configure()
 }

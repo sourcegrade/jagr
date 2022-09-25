@@ -16,13 +16,18 @@ internal data class SourceSetInfo(
     val files: List<String>,
 ) : java.io.Serializable
 
-internal fun SourceSet.getFiles(): List<String> {
-    return allSource.files.map { file ->
+internal fun SourceSet.forEachFile(action: (String) -> Unit) {
+    return allSource.files.forEach { file ->
         allSource.srcDirs.asSequence()
             .map(file::relativeTo)
             .reduce { a, b -> if (a.path.length < b.path.length) a else b }
             .path
+            .apply(action)
     }
 }
 
-internal fun SourceSet.toInfo() = SourceSetInfo(name, getFiles())
+internal fun SourceSet.getFiles(): List<String> {
+    val result = mutableListOf<String>()
+    forEachFile { result.add(it) }
+    return result
+}

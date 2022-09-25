@@ -4,11 +4,13 @@ import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.getByType
-import org.sourcegrade.jagr.gradle.GraderSourceSetConfiguration
+import org.gradle.kotlin.dsl.property
+import org.sourcegrade.jagr.gradle.GraderConfiguration
 import org.sourcegrade.jagr.gradle.logGradedRubric
 import org.sourcegrade.jagr.gradle.logHistogram
 import org.sourcegrade.jagr.launcher.env.Environment
@@ -25,18 +27,21 @@ import org.sourcegrade.jagr.launcher.io.buildGradingBatch
 import org.sourcegrade.jagr.launcher.io.buildResourceContainer
 import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.createResourceContainer
+import java.io.File
 
 @Suppress("LeakingThis")
 abstract class GraderRunTask : DefaultTask(), GraderTask {
 
     @get:InputFile
-    val graderInfoFile = project.buildDir.resolve("resources/jagr/grader-info.json")
+    val graderInfoFile: Property<File> = project.objects.property<File>()
+        .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/grader-info.json") })
 
     @get:InputFile
     val submissionInfoFile = project.buildDir.resolve("resources/submit/submission-info.json")
 
     init {
-        dependsOn(sourceSetName.map(GraderWriteInfoTask.Factory::determineTaskName))
+        dependsOn("writeSubmissionInfo")
+        dependsOn(configurationName.map(GraderWriteInfoTask.Factory::determineTaskName))
         group = "jagr"
     }
 
@@ -60,7 +65,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                         .forEach { sourceSet -> sourceSet.allSource.sourceDirectories.writeToContainer(this) }
                     addResource {
                         name = "grader-info.json"
-                        graderInfoFile.inputStream().use { input ->
+                        graderInfoFile.get().inputStream().use { input ->
                             outputStream.use { output ->
                                 input.transferTo(output)
                             }
@@ -148,8 +153,8 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
 
     object Factory : GraderTask.Factory<GraderRunTask> {
         override fun determineTaskName(name: String) = "${name}Run"
-        override fun configureTask(task: GraderRunTask, project: Project, grader: GraderSourceSetConfiguration) {
-            task.description = "Runs the ${task.sourceSetName.get()} grader"
+        override fun configureTask(task: GraderRunTask, project: Project, grader: GraderConfiguration) {
+            task.description = "Runs the ${task.sourceSetNames.get()} grader"
         }
     }
 }

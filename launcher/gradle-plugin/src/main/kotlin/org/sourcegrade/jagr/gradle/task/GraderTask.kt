@@ -23,37 +23,54 @@ import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
-import org.sourcegrade.jagr.gradle.GraderSourceSetConfiguration
+import org.sourcegrade.jagr.gradle.GraderConfiguration
+import org.sourcegrade.jagr.gradle.JagrExtension
 import kotlin.reflect.KClass
 
-interface GraderTask : TargetSourceSetTask {
+interface GraderTask : TargetAssignmentTask, TargetSourceSetsTask {
+
+    @get:Input
+    val configurationName: Property<String>
 
     @get:Input
     val graderName: Property<String>
 
+    @get:Input
+    val submissionConfigurationName: Property<String>
+
+    @get:Input
+    val solutionConfigurationName: Property<String>
+
     interface Factory<T : GraderTask> {
         fun determineTaskName(name: String): String
-        fun configureTask(task: T, project: Project, grader: GraderSourceSetConfiguration)
+        fun configureTask(task: T, project: Project, grader: GraderConfiguration)
     }
 }
 
 fun <T : GraderTask> GraderTask.Factory<T>.registerTask(
     project: Project,
-    grader: GraderSourceSetConfiguration,
+    configuration: GraderConfiguration,
     type: KClass<T>,
 ): TaskProvider<T> {
-    return project.tasks.register(determineTaskName(grader.name), type) { task ->
+    val jagr = project.extensions.getByType<JagrExtension>()
+    return project.tasks.register(determineTaskName(configuration.name), type) { task ->
         task.group = "jagr"
-        task.graderName.set(grader.graderName)
-        task.sourceSetName.set(grader.name)
-        configureTask(task, project, grader)
+        task.assignmentId.set(jagr.assignmentId)
+        task.configurationName.set(configuration.name)
+        task.graderName.set(configuration.graderName)
+        task.sourceSetNames.set(configuration.sourceSetNames)
+        task.dependentConfigurationNames.set(configuration.dependentConfigurations.map { c -> c.map { it.name } })
+        task.submissionConfigurationName.set(configuration.submissionConfiguration.map { it.name })
+        task.solutionConfigurationName.set(configuration.solutionConfiguration.map { it.name })
+        configureTask(task, project, configuration)
     }
 }
 
 inline fun <reified T : GraderTask> GraderTask.Factory<T>.registerTask(
     project: Project,
-    grader: GraderSourceSetConfiguration,
+    configuration: GraderConfiguration,
 ): TaskProvider<T> {
-    return registerTask(project, grader, T::class)
+    return registerTask(project, configuration, T::class)
 }

@@ -17,20 +17,17 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.gradle
+package org.sourcegrade.jagr.gradle.task
 
-import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.Property
-import org.gradle.kotlin.dsl.listProperty
+import org.gradle.api.tasks.Input
 
-abstract class SubmissionSourceSetConfiguration(
-    name: String,
-    project: Project,
-) : AbstractSourceSetConfiguration(name, project) {
-    override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>()
-        .convention(listOf("main", "test"))
-    abstract val studentId: Property<String>
-    abstract val firstName: Property<String>
-    abstract val lastName: Property<String>
+interface TargetSourceSetsTask : Task {
+
+    @get:Input
+    val sourceSetNames: ListProperty<String>
+
+    @get:Input
+    val dependentConfigurationNames: ListProperty<String>
 }

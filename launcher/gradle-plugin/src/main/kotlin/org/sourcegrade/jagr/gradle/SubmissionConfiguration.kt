@@ -22,30 +22,15 @@ package org.sourcegrade.jagr.gradle
 import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.exclude
 import org.gradle.kotlin.dsl.listProperty
-import org.sourcegrade.jagr.launcher.VersionProvider
 
-abstract class GraderSourceSetConfiguration(
+abstract class SubmissionConfiguration(
     name: String,
     project: Project,
-) : AbstractSourceSetConfiguration(name, project) {
+) : AbstractConfiguration(name, project) {
     override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>()
-        .convention(listOf(name))
-
-    abstract val graderName: Property<String>
-
-    init {
-        project.afterEvaluate {
-            // add jagr dependency
-            it.dependencies {
-                for (sourceSet in sourceSets) {
-                    sourceSet.implementationConfigurationName("org.sourcegrade:jagr-launcher:${VersionProvider.version}") {
-                        exclude("org.jetbrains", "annotations")
-                    }
-                }
-            }
-        }
-    }
+        .convention(listOf("main", "test"))
+    abstract val studentId: Property<String>
+    abstract val firstName: Property<String>
+    abstract val lastName: Property<String>
 }
