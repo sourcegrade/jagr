@@ -15,17 +15,6 @@ dependencies {
     implementation(project(":jagr-launcher"))
 }
 
-tasks {
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "11"
-    }
-    withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        sourceCompatibility = "11"
-        targetCompatibility = "11"
-    }
-}
-
 gradlePlugin {
     plugins {
         create("jagr-gradle") {
