@@ -71,7 +71,3 @@ fun GradedRubric.logGradedRubric(jagr: Jagr) {
     }
     jagr.logger.warn("${testCycle.submission} :: $info")
 }
-
-fun createRandomBuffer(): ByteBuffer {
-    return ByteArray(1 * 3 * 224 * 224).also(Random::nextBytes).let(ByteBuffer::wrap)
-}
