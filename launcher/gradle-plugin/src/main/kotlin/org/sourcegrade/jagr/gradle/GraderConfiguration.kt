@@ -41,11 +41,12 @@ abstract class GraderConfiguration(
     abstract val graderName: Property<String>
     val parentConfiguration: Property<GraderConfiguration> = project.objects.property()
 
+    private val submissionConfigurationConvention = parentConfiguration.flatMap { it.submissionConfiguration }
+        .orElse(DefaultProvider { project.extensions.getByType<JagrExtension>().submissions.findByName("main") })
+
     val submissionConfiguration: Property<SubmissionConfiguration> = project.objects.property<SubmissionConfiguration>()
-        .convention(
-            parentConfiguration.flatMap { it.submissionConfiguration }
-                .orElse(DefaultProvider { project.extensions.getByType<JagrExtension>().submissions.findByName("main") })
-        )
+        .convention(submissionConfigurationConvention)
+
     val solutionConfiguration: Property<SubmissionConfiguration> =
         project.objects.property<SubmissionConfiguration>().convention(submissionConfiguration)
 
