@@ -66,7 +66,6 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     info = buildResourceContainerInfo {
                         name = "grader"
                     }
-                    val solutionSourceSetNames = jagrExtension.submissions[solutionConfigurationName.get()].sourceSetNames.get()
                     project.extensions
                         .getByType<SourceSetContainer>()
                         .filter { configuration.matchRecursive(it) }

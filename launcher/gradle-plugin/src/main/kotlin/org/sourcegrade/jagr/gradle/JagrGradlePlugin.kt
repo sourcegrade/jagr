@@ -18,7 +18,7 @@ class JagrGradlePlugin : Plugin<Project> {
     override fun apply(target: Project) {
         // create extensions
         val jagr = target.extensions.create<JagrExtension>("jagr")
-        // create tasks
+        // register tasks
         target.afterEvaluate { registerTasks(jagr, it) }
     }
 
