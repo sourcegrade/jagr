@@ -27,6 +27,7 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/grader-info.json") })
 
     init {
+        group = "jagr resources"
         // TODO: Depend only on compilation task from required source sets
         dependsOn("compileJava")
     }

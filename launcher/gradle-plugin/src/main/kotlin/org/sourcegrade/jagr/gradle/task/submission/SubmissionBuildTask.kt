@@ -19,6 +19,7 @@ abstract class SubmissionBuildTask : Jar(), SubmissionTask {
         .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })
 
     init {
+        group = "build"
         dependsOn(configurationName.map(SubmissionWriteInfoTask.Factory::determineTaskName))
         from(submissionInfoFile)
         val sourceSets = project.extensions.getByType<SourceSetContainer>()

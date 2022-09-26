@@ -27,6 +27,7 @@ abstract class SubmissionWriteInfoTask : DefaultTask(), SubmissionTask {
         .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })
 
     init {
+        group = "jagr resources"
         dependsOn("compileJava")
         // TODO: Cleaner way of throwing error
         setOnlyIf {

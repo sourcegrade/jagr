@@ -51,7 +51,6 @@ internal fun <T : SubmissionTask> JagrTaskFactory<T, SubmissionConfiguration>.re
 ): TaskProvider<T> {
     val jagr = project.extensions.getByType<JagrExtension>()
     return project.tasks.register(determineTaskName(configuration.name), type) { task ->
-        task.group = "jagr" // TODO: Maybe submit/submission?
         task.assignmentId.set(jagr.assignmentId)
         task.studentId.set(configuration.studentId)
         task.firstName.set(configuration.firstName)

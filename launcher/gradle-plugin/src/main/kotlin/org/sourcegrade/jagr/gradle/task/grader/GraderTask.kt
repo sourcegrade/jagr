@@ -51,7 +51,6 @@ internal fun <T : GraderTask> JagrTaskFactory<T, GraderConfiguration>.registerTa
 ): TaskProvider<T> {
     val jagr = project.extensions.getByType<JagrExtension>()
     return project.tasks.register(determineTaskName(configuration.name), type) { task ->
-        task.group = "jagr" // TODO: Maybe grader?
         task.assignmentId.set(jagr.assignmentId)
         task.configurationName.set(configuration.name)
         task.graderName.set(configuration.graderName)

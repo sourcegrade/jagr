@@ -46,6 +46,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         .value(submissionConfigurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })
 
     init {
+        group = "verification"
         dependsOn(submissionConfigurationName.map(SubmissionWriteInfoTask.Factory::determineTaskName))
         dependsOn(configurationName.map(GraderWriteInfoTask.Factory::determineTaskName))
     }

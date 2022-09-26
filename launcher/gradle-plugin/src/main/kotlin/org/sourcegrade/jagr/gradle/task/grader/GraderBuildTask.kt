@@ -20,6 +20,7 @@ abstract class GraderBuildTask : Jar(), GraderTask {
         .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/grader-info.json") })
 
     init {
+        group = "build"
         dependsOn(configurationName.map(GraderWriteInfoTask.Factory::determineTaskName))
         archiveFileName.set(graderName.map { "$it-${project.version}.jar" })
         from(graderInfoFile)
