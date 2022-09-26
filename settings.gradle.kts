@@ -1,7 +1,6 @@
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        mavenLocal() // TODO: Remove
         mavenCentral()
         maven("https://repo.spongepowered.org/repository/maven-public/")
     }
@@ -9,8 +8,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "jagr"
 
-include(":jagr-gradle")
-project(":jagr-gradle").projectDir = file("launcher/gradle-plugin")
+include(":jagr-launcher-gradle-plugin")
+project(":jagr-launcher-gradle-plugin").projectDir = file("launcher/gradle-plugin")
 
 sequenceOf(
     "core",
