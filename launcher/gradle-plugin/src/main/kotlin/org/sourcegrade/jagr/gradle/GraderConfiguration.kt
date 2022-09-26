@@ -19,31 +19,35 @@
 
 package org.sourcegrade.jagr.gradle
 
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.internal.provider.DefaultProvider
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.exclude
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.launcher.VersionProvider
 
 abstract class GraderConfiguration(
     name: String,
-    private val project: Project,
+    project: Project,
 ) : AbstractConfiguration(name, project) {
-    override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>()
-        .convention(listOf(name))
+    override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>().convention(listOf(name))
 
     abstract val graderName: Property<String>
     val parentConfiguration: Property<GraderConfiguration> = project.objects.property()
-    val submissionConfiguration: Property<SubmissionConfiguration> = project.objects
-        .property<SubmissionConfiguration>()
-        .convention(parentConfiguration.flatMap { it.submissionConfiguration })
-    open val solutionConfiguration: Property<SubmissionConfiguration> = project.objects
-        .property<SubmissionConfiguration>()
-        .convention(submissionConfiguration)
+
+    val submissionConfiguration: Property<SubmissionConfiguration> = project.objects.property<SubmissionConfiguration>()
+        .convention(
+            parentConfiguration.flatMap { it.submissionConfiguration }
+                .orElse(DefaultProvider { project.extensions.getByType<JagrExtension>().submissions.findByName("main") })
+        )
+    val solutionConfiguration: Property<SubmissionConfiguration> =
+        project.objects.property<SubmissionConfiguration>().convention(submissionConfiguration)
 
     private val compileClasspath: ConfigurableFileCollection = project.objects.fileCollection()
     private val runtimeClasspath: ConfigurableFileCollection = project.objects.fileCollection()
@@ -53,7 +57,13 @@ abstract class GraderConfiguration(
             if (parentConfiguration.isPresent) {
                 addAsDependency(parentConfiguration.get())
             }
-            addAsDependency(solutionConfiguration.get())
+            if (solutionConfiguration.isPresent) {
+                addAsDependency(solutionConfiguration.get())
+            } else {
+                throw GradleException(
+                    "Grader $name has no solution configuration and the default 'main' submission is not defined"
+                )
+            }
             for (sourceSet in sourceSets) {
                 sourceSet.compileClasspath += compileClasspath
                 sourceSet.runtimeClasspath += runtimeClasspath

@@ -23,8 +23,6 @@ import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.GradingResult
-import java.nio.ByteBuffer
-import kotlin.random.Random
 
 fun List<GradingResult>.logHistogram(jagr: Jagr) {
     val histogram = mutableMapOf<Int, Int>()
