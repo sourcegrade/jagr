@@ -59,6 +59,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
 
     private suspend fun grade() {
         val jagrExtension = project.extensions.getByType<JagrExtension>()
+        val configuration = jagrExtension.graders[configurationName.get()]
         val batch: GradingBatch = buildGradingBatch {
             addGrader(
                 buildResourceContainer {
@@ -68,7 +69,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     val solutionSourceSetNames = jagrExtension.submissions[solutionConfigurationName.get()].sourceSetNames.get()
                     project.extensions
                         .getByType<SourceSetContainer>()
-                        .filter { it.name in sourceSetNames.get() || it.name in solutionSourceSetNames }
+                        .filter { configuration.matchRecursive(it) }
                         .forEach { sourceSet -> sourceSet.allSource.sourceDirectories.writeToContainer(this) }
                     addResource {
                         name = "grader-info.json"
@@ -133,6 +134,16 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         } else {
             jagr.logger.info("Exported $rubricCount rubrics")
         }
+    }
+
+    /**
+     * Returns true if [sourceSet] is in this configuration or any parents
+     */
+    private fun GraderConfiguration.matchRecursive(sourceSet: SourceSet): Boolean {
+        val jagr = project.extensions.getByType<JagrExtension>()
+        val solutionSourceSetNames = jagr.submissions[solutionConfigurationName.get()].sourceSetNames.get()
+        return sourceSet.name in sourceSetNames.get() || sourceSet.name in solutionSourceSetNames ||
+            (parentConfiguration.isPresent && parentConfiguration.get().matchRecursive(sourceSet))
     }
 
     private fun ResourceContainer.Builder.writeSourceSet(sourceSet: SourceSet) {
