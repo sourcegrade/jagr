@@ -20,6 +20,7 @@
 package org.sourcegrade.jagr.api.testing;
 
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 import org.sourcegrade.jagr.api.rubric.RubricProvider;
 
@@ -107,5 +108,5 @@ public interface RubricConfiguration {
      *
      * @param path The path to the build script, relative to the grader resource directory
      */
-    RubricConfiguration setExportBuildScriptPath(String path);
+    RubricConfiguration setExportBuildScriptPath(@Nullable String path);
 }
