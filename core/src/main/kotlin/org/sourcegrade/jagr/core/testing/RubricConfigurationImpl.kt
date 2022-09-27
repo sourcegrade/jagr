@@ -27,10 +27,13 @@ import java.util.Collections
 class RubricConfigurationImpl : RubricConfiguration {
     private val transformers = mutableMapOf<ClassTransformerOrder, MutableList<ClassTransformer>>()
     private val fileNameSolutionOverrides = mutableListOf<String>()
+    private var exportBuildScriptPath: String? = null
     override fun getTransformers(): Map<ClassTransformerOrder, List<ClassTransformer>> =
         transformers.asSequence().map { (a, b) -> a to Collections.unmodifiableList(b) }.toMap()
 
     override fun getFileNameSolutionOverrides(): List<String> = Collections.unmodifiableList(fileNameSolutionOverrides)
+
+    override fun getExportBuildScriptPath() = exportBuildScriptPath
 
     override fun addTransformer(transformer: ClassTransformer, order: ClassTransformerOrder): RubricConfiguration {
         transformers.computeIfAbsent(order) { mutableListOf() } += transformer
@@ -39,6 +42,11 @@ class RubricConfigurationImpl : RubricConfiguration {
 
     override fun addFileNameSolutionOverride(fileName: String): RubricConfiguration {
         fileNameSolutionOverrides += fileName
+        return this
+    }
+
+    override fun setExportBuildScriptPath(path: String?): RubricConfiguration {
+        exportBuildScriptPath = path
         return this
     }
 }

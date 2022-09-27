@@ -58,6 +58,22 @@ class GradleSubmissionExporter @Inject constructor(
             name = graderJar?.info?.name ?: DEFAULT_EXPORT_NAME
         }
         writeSkeleton()
+        val buildScript = if (graderJar == null) null else {
+            graderJar.configuration.exportBuildScriptPath?.let { path -> path to graderJar.container.source.resources[path] }
+        }
+        buildScript?.second?.let { resource ->
+            addResource {
+                name = "build.gradle.kts"
+                resource.inputStream().copyTo(outputStream)
+            }
+        } ?: run {
+            if (buildScript != null) {
+                logger.error(
+                    "Build script '${buildScript.first}' specified in grader configuration does not exist, using default"
+                )
+            }
+            writeGradleResource(resource = "build.gradle.kts_", targetName = "build.gradle.kts")
+        }
         val filteredSubmissions = if (graderJar == null) {
             submissions
         } else {
@@ -110,7 +126,6 @@ class GradleSubmissionExporter @Inject constructor(
         addResource(wrapperBuilder.build())
         writeGradleResource(classLoader, resource = "gradlew")
         writeGradleResource(classLoader, resource = "gradlew.bat")
-        writeGradleResource(classLoader, resource = "build.gradle.kts_", targetName = "build.gradle.kts")
         writeGradleResource(classLoader, resource = "gradle-wrapper.properties", targetDir = "gradle/wrapper/")
     }
 
