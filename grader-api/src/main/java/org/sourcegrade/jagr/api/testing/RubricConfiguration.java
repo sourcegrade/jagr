@@ -58,7 +58,7 @@ public interface RubricConfiguration {
      *
      * @return the path to the custom export build script relative to the grader resource directory
      */
-    String getExportBuildScriptPath();
+    @Nullable String getExportBuildScriptPath();
 
     /**
      * Adds a transformer to the list of transformers to apply to every matching submission.
