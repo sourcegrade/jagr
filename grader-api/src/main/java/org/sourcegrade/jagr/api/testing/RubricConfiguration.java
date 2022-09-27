@@ -53,6 +53,13 @@ public interface RubricConfiguration {
     List<String> getFileNameSolutionOverrides();
 
     /**
+     * The path to the custom export build script relative to the grader resource directory.
+     *
+     * @return the path to the custom export build script relative to the grader resource directory
+     */
+    String getExportBuildScriptPath();
+
+    /**
      * Adds a transformer to the list of transformers to apply to every matching submission.
      *
      * @param transformer The {@link ClassTransformer} to add
@@ -93,4 +100,12 @@ public interface RubricConfiguration {
     default RubricConfiguration addFileNameSolutionOverride(Class<?> clazz) {
         return addFileNameSolutionOverride(Type.getInternalName(clazz) + ".java");
     }
+
+    /**
+     * Sets the path to the custom export build script, relative to the grader resource directory.
+     * If set to {@code null} or left unset, the default build script will be used.
+     *
+     * @param path The path to the build script, relative to the grader resource directory
+     */
+    RubricConfiguration setExportBuildScriptPath(String path);
 }

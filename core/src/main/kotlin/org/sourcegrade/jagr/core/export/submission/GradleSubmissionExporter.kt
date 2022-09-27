@@ -58,6 +58,17 @@ class GradleSubmissionExporter @Inject constructor(
             name = graderJar?.info?.name ?: DEFAULT_EXPORT_NAME
         }
         writeSkeleton()
+        if (graderJar != null && graderJar.configuration.exportBuildScriptPath != null) {
+            addResource {
+                name = "build.gradle.kts"
+                val buildScriptResourceName = graderJar.configuration.exportBuildScriptPath!!
+                graderJar.container.source.resources[buildScriptResourceName].also {
+                    it?.inputStream()?.copyTo(outputStream)
+                } ?: logger.error("Could not read custom build script: $buildScriptResourceName")
+            }
+        } else {
+            writeGradleResource(resource = "build.gradle.kts_", targetName = "build.gradle.kts")
+        }
         val filteredSubmissions = if (graderJar == null) {
             submissions
         } else {
@@ -110,7 +121,6 @@ class GradleSubmissionExporter @Inject constructor(
         addResource(wrapperBuilder.build())
         writeGradleResource(classLoader, resource = "gradlew")
         writeGradleResource(classLoader, resource = "gradlew.bat")
-        writeGradleResource(classLoader, resource = "build.gradle.kts_", targetName = "build.gradle.kts")
         writeGradleResource(classLoader, resource = "gradle-wrapper.properties", targetDir = "gradle/wrapper/")
     }
 
