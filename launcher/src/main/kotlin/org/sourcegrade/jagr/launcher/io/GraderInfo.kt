@@ -30,8 +30,8 @@ import kotlin.properties.ReadOnlyProperty
 @Serializable
 data class GraderInfo(
     val assignmentId: String,
-    val name: String,
     val jagrVersion: String,
+    val name: String,
     val sourceSets: List<SourceSetInfo>,
 ) {
     companion object Factory : SerializerFactory<GraderInfo> {
@@ -44,8 +44,8 @@ data class GraderInfo(
 
         override fun write(obj: GraderInfo, scope: SerializationScope.Output) {
             scope.output.writeUTF(obj.assignmentId)
-            scope.output.writeUTF(obj.name)
             scope.output.writeUTF(obj.jagrVersion)
+            scope.output.writeUTF(obj.name)
             scope.writeList(obj.sourceSets)
         }
     }
