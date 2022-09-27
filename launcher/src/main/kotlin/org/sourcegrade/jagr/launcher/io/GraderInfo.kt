@@ -16,18 +16,36 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:UseSerializers(serializerClasses = [SafeStringSerializer::class])
 
 package org.sourcegrade.jagr.launcher.io
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import kotlin.properties.ReadOnlyProperty
 
 /**
  * Represents the contents of a grader-info.json file.
  */
-interface GraderInfo {
-    val name: String
-    val assignmentIds: List<String>
-    val sourceSets: List<SourceSetInfo>
+@Serializable
+data class GraderInfo(
+    val assignmentId: String,
+    val name: String,
+    val sourceSets: List<SourceSetInfo>,
+) {
+    companion object Factory : SerializerFactory<GraderInfo> {
+        override fun read(scope: SerializationScope.Input) = GraderInfo(
+            scope.read(),
+            scope.input.readUTF(),
+            scope.readList(),
+        )
+
+        override fun write(obj: GraderInfo, scope: SerializationScope.Output) {
+            scope.output.writeUTF(obj.name)
+            scope.write(obj.assignmentId)
+            scope.writeList(obj.sourceSets)
+        }
+    }
 }
 
 val GraderInfo.graderFiles: List<String> by named("grader")

@@ -26,12 +26,10 @@ import org.sourcegrade.jagr.core.compiler.java.plus
 
 class FallbackRuntimeTester : RuntimeTester {
     override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
-        val info = submission.info
+        val info = (submission as JavaSubmission).submissionInfo
         val rubricProviders = grader.rubricProviders[info.assignmentId] ?: return null
         var resources = grader.container.runtimeResources
-        if (submission is JavaSubmission) {
-            resources += submission.compileResult.runtimeResources + submission.libraries
-        }
+        resources += submission.compileResult.runtimeResources + submission.libraries
         val classLoader = RuntimeClassLoader(resources)
         val notes = listOf(
             "The grading process was forcibly terminated.",
