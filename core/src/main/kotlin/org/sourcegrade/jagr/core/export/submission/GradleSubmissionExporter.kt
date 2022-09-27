@@ -58,15 +58,20 @@ class GradleSubmissionExporter @Inject constructor(
             name = graderJar?.info?.name ?: DEFAULT_EXPORT_NAME
         }
         writeSkeleton()
-        if (graderJar != null && graderJar.configuration.exportBuildScriptPath != null) {
+        val buildScript = if (graderJar == null) null else {
+            graderJar.configuration.exportBuildScriptPath?.let { path -> path to graderJar.container.source.resources[path] }
+        }
+        buildScript?.second?.let { resource ->
             addResource {
                 name = "build.gradle.kts"
-                val buildScriptResourceName = graderJar.configuration.exportBuildScriptPath!!
-                graderJar.container.source.resources[buildScriptResourceName].also {
-                    it?.inputStream()?.copyTo(outputStream)
-                } ?: logger.error("Could not read custom build script: $buildScriptResourceName")
+                resource.inputStream().copyTo(outputStream)
             }
-        } else {
+        } ?: run {
+            if (buildScript != null) {
+                logger.error(
+                    "Build script '${buildScript.first}' specified in grader configuration does not exist, using default"
+                )
+            }
             writeGradleResource(resource = "build.gradle.kts_", targetName = "build.gradle.kts")
         }
         val filteredSubmissions = if (graderJar == null) {
