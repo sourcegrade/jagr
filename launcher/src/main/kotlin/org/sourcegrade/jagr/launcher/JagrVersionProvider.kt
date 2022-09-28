@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.launcher
 
-object VersionProvider {
+object JagrVersionProvider {
     private const val VERSION_FILE = "org/sourcegrade/jagr/version"
     val version: String by lazy {
         checkNotNull(javaClass.classLoader.getResourceAsStream(VERSION_FILE)) { "Could not find version file $VERSION_FILE" }

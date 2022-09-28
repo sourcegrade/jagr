@@ -21,7 +21,7 @@ package org.sourcegrade.jagr
 
 import kotlinx.coroutines.runBlocking
 import org.sourcegrade.jagr.api.rubric.GradedRubric
-import org.sourcegrade.jagr.launcher.VersionProvider
+import org.sourcegrade.jagr.launcher.JagrVersionProvider
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.config
@@ -58,7 +58,7 @@ class StandardGrading(
     private val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
 
     fun grade(noExport: Boolean, exportOnly: Boolean) = runBlocking {
-        jagr.logger.info("Starting Jagr v${VersionProvider.version}")
+        jagr.logger.info("Starting Jagr v${JagrVersionProvider.version}")
         File(config.dir.submissions).ensure(jagr.logger)
         jagr.extrasManager.runExtras()
         val batch = buildGradingBatch {
