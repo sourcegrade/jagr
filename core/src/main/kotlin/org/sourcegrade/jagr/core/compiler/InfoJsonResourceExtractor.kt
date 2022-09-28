@@ -26,8 +26,10 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.serializer
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
+import org.sourcegrade.jagr.launcher.io.GraderInfo
 import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.ResourceContainerInfo
+import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import java.io.ByteArrayInputStream
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createType
@@ -36,9 +38,6 @@ class InfoJsonResourceExtractor<T : Any>(
     private val type: KClass<T>,
     private val targetName: String,
 ) : ResourceExtractor {
-    companion object {
-        inline operator fun <reified T : Any> invoke(targetName: String) = InfoJsonResourceExtractor(T::class, targetName)
-    }
 
     override fun extract(
         containerInfo: ResourceContainerInfo,
@@ -57,4 +56,12 @@ class InfoJsonResourceExtractor<T : Any>(
             }
         }
     }
+
+    companion object {
+        inline operator fun <reified T : Any> invoke(targetName: String) = InfoJsonResourceExtractor(T::class, targetName)
+    }
+
+    object Grader : ResourceExtractor by InfoJsonResourceExtractor<GraderInfo>("grader-info.json")
+
+    object Submission : ResourceExtractor by InfoJsonResourceExtractor<SubmissionInfo>("submission-info.json")
 }

@@ -20,7 +20,7 @@
 package org.sourcegrade.jagr.core.executor
 
 import com.google.inject.Inject
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 

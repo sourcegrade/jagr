@@ -26,12 +26,12 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.slf4j.Logger
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.launcher.env.Config
+import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import java.io.File
 import java.nio.file.FileSystems
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.bufferedWriter
 
@@ -40,7 +40,6 @@ abstract class Unpack : Extra {
     protected abstract val config: Config
     protected abstract val logger: Logger
 
-    @OptIn(ExperimentalPathApi::class)
     private fun SubmissionInfoVerification.verify() {
         if (assignmentId == null && studentId == null && firstName == null && lastName == null) return
         try {
@@ -57,7 +56,7 @@ abstract class Unpack : Extra {
                 null
             }?.use useReader@{ reader ->
                 val submissionInfo = try {
-                    Json.decodeFromString<SubmissionInfoImpl>(reader.readText())
+                    Json.decodeFromString<SubmissionInfo>(reader.readText())
                 } catch (e: SerializationException) {
                     return@useReader null
                 }
@@ -75,16 +74,18 @@ abstract class Unpack : Extra {
                             if (replaceLastName) append(" lastName(${submissionInfo.lastName} -> $lastName)")
                         }.toString()
                     )
-                    SubmissionInfoImpl(
-                        if (replaceAssignmentId) assignmentId!! else submissionInfo.assignmentId,
-                        if (replaceStudentId) studentId!! else submissionInfo.studentId,
-                        if (replaceFirstName) firstName!! else submissionInfo.firstName,
-                        if (replaceLastName) lastName!! else submissionInfo.lastName,
+                    SubmissionInfo(
+                        if (replaceAssignmentId) checkNotNull(assignmentId) else submissionInfo.assignmentId,
+                        Jagr.version,
+                        if (replaceStudentId) checkNotNull(studentId) else submissionInfo.studentId,
+                        if (replaceFirstName) checkNotNull(firstName) else submissionInfo.firstName,
+                        if (replaceLastName) checkNotNull(lastName) else submissionInfo.lastName,
                         submissionInfo.sourceSets,
                     )
                 } else return
-            } ?: SubmissionInfoImpl(
+            } ?: SubmissionInfo(
                 assignmentId = assignmentId ?: "none",
+                jagrVersion = Jagr.version,
                 studentId = studentId ?: "none",
                 firstName = firstName ?: "none",
                 lastName = lastName ?: "none",

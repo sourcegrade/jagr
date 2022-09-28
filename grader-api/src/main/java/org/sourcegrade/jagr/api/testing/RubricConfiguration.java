@@ -20,6 +20,7 @@
 package org.sourcegrade.jagr.api.testing;
 
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 import org.sourcegrade.jagr.api.rubric.RubricProvider;
 
@@ -51,6 +52,13 @@ public interface RubricConfiguration {
      * @return The files that will be overridden in the submission from the solution
      */
     List<String> getFileNameSolutionOverrides();
+
+    /**
+     * The path to the custom export build script relative to the grader resource directory.
+     *
+     * @return the path to the custom export build script relative to the grader resource directory
+     */
+    @Nullable String getExportBuildScriptPath();
 
     /**
      * Adds a transformer to the list of transformers to apply to every matching submission.
@@ -93,4 +101,12 @@ public interface RubricConfiguration {
     default RubricConfiguration addFileNameSolutionOverride(Class<?> clazz) {
         return addFileNameSolutionOverride(Type.getInternalName(clazz) + ".java");
     }
+
+    /**
+     * Sets the path to the custom export build script, relative to the grader resource directory.
+     * If set to {@code null} or left unset, the default build script will be used.
+     *
+     * @param path The path to the build script, relative to the grader resource directory
+     */
+    RubricConfiguration setExportBuildScriptPath(@Nullable String path);
 }

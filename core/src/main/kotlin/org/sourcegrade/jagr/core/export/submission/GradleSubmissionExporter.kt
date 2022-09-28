@@ -24,12 +24,11 @@ import com.google.common.reflect.ClassPath
 import com.google.inject.Inject
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.SubmissionExporter
@@ -59,10 +58,26 @@ class GradleSubmissionExporter @Inject constructor(
             name = graderJar?.info?.name ?: DEFAULT_EXPORT_NAME
         }
         writeSkeleton()
+        val buildScript = if (graderJar == null) null else {
+            graderJar.configuration.exportBuildScriptPath?.let { path -> path to graderJar.container.source.resources[path] }
+        }
+        buildScript?.second?.let { resource ->
+            addResource {
+                name = "build.gradle.kts"
+                resource.inputStream().copyTo(outputStream)
+            }
+        } ?: run {
+            if (buildScript != null) {
+                logger.error(
+                    "Build script '${buildScript.first}' specified in grader configuration does not exist, using default"
+                )
+            }
+            writeGradleResource(resource = "build.gradle.kts_", targetName = "build.gradle.kts")
+        }
         val filteredSubmissions = if (graderJar == null) {
             submissions
         } else {
-            submissions.filter { graderJar.rubricProviders.containsKey(it.info.assignmentId) }
+            submissions.filter { graderJar.rubricProviders.containsKey((it as JavaSubmission).submissionInfo.assignmentId) }
         }
         for (submission in filteredSubmissions) {
             writeSubmission(submission, graderJar)
@@ -111,7 +126,6 @@ class GradleSubmissionExporter @Inject constructor(
         addResource(wrapperBuilder.build())
         writeGradleResource(classLoader, resource = "gradlew")
         writeGradleResource(classLoader, resource = "gradlew.bat")
-        writeGradleResource(classLoader, resource = "build.gradle.kts_", targetName = "build.gradle.kts")
         writeGradleResource(classLoader, resource = "gradle-wrapper.properties", targetDir = "gradle/wrapper/")
     }
 
@@ -129,10 +143,10 @@ class GradleSubmissionExporter @Inject constructor(
 
     private fun ResourceContainer.Builder.writeSubmission(submission: Submission, graderJar: GraderJarImpl?) {
         if (submission !is JavaSubmission) return
-        val submissionName = submission.info.toString()
+        val submissionName = submission.submissionInfo.toString()
         addResource {
             name = "$submissionName/src/main/resources/submission-info.json"
-            outputStream.writer().use { it.write(Json.encodeToString(submission.info as SubmissionInfoImpl)) }
+            outputStream.writer().use { it.write(Json.encodeToString(submission.submissionInfo)) }
         }
         writeSourceFiles("$submissionName/src/main/java/", submission.compileResult.source.sourceFiles)
         writeResources("$submissionName/src/main/resources/", submission.compileResult.runtimeResources.resources)

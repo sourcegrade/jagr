@@ -21,15 +21,15 @@ junit-core = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit"
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-launcher = "org.junit.platform:junit-platform-launcher:1.9.1"
 juniversalchardet = "com.github.albfernandez:juniversalchardet:2.4.0"
-logging-api = "org.slf4j:slf4j-api:1.7.36"
+logging-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 logging-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
-logging-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
 serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0"
 
 [bundles]
 junit = ["junit-core", "junit-engine", "junit-launcher"]
 
 [plugins]
+gradle-publish = "com.gradle.plugin-publish:1.0.0"
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

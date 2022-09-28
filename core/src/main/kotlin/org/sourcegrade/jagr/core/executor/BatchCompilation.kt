@@ -20,9 +20,10 @@
 package org.sourcegrade.jagr.core.executor
 
 import com.google.inject.Inject
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.testing.ClassTransformerOrder
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.core.compiler.InfoJsonResourceExtractor
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
@@ -33,10 +34,8 @@ import org.sourcegrade.jagr.core.compiler.java.loadCompiled
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.core.compiler.submissionInfo
 import org.sourcegrade.jagr.core.parallelMapNotNull
-import org.sourcegrade.jagr.core.testing.GraderInfoImpl
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.core.transformer.CommonClassTransformer
 import org.sourcegrade.jagr.core.transformer.SubmissionVerificationTransformer
 import org.sourcegrade.jagr.core.transformer.TransformationApplier
@@ -67,7 +66,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
             commonTransformerApplier,
             libraries,
             "Grader",
-            GraderInfoImpl.Extractor,
+            InfoJsonResourceExtractor.Grader,
         ) {
             if (errors == 0) GraderJarImpl(logger, this, libraries) else null
         }
@@ -76,7 +75,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
 
         // maps assignment ids to files that should be replaced with solution files
         val replacements = submissionFileOverrides.mapValues { (assignmentId, solutionOverrides) ->
-            val gradersForAssignment = graders.filter { it.info.assignmentIds.contains(assignmentId) }
+            val gradersForAssignment = graders.filter { it.info.assignmentId == assignmentId }
             solutionOverrides.mapNotNull { solutionOverride ->
                 gradersForAssignment.firstNotNullOfOrNull { it.container.source.sourceFiles[solutionOverride] }
             }.associateBy { it.fileName }
@@ -86,7 +85,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
             submissionTransformerApplier,
             libraries,
             "Submission",
-            SubmissionInfoImpl.Extractor,
+            InfoJsonResourceExtractor.Submission,
             replacements,
         ) submissionCompile@{
             val submissionInfo = this.submissionInfo
@@ -106,7 +105,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
     private fun createTransformerApplierFromGraders(graders: List<GraderJar>): TransformationApplier {
         fun GraderJar.createApplier(order: ClassTransformerOrder): TransformationApplier =
             configuration.transformers.createApplier(order) { result ->
-                result.submissionInfo?.assignmentId?.let(info.assignmentIds::contains) == true
+                result.submissionInfo?.assignmentId == info.assignmentId
             }
 
         fun createApplier(order: ClassTransformerOrder): TransformationApplier =
@@ -120,13 +119,11 @@ class CompiledBatchFactoryImpl @Inject constructor(
     }
 
     private fun calculateSubmissionFileOverrides(graders: List<GraderJar>): Map<String, List<String>> {
-        return graders.map { graderJar ->
-            graderJar.info.assignmentIds.flatMap { assignmentId ->
-                graderJar.configuration.fileNameSolutionOverrides.map { solutionOverride ->
-                    assignmentId to solutionOverride
-                }
-            }.groupBy({ it.first }, { it.second })
-        }.fold(emptyMap()) { acc, map -> acc + map }
+        return graders.flatMap { graderJar ->
+            graderJar.configuration.fileNameSolutionOverrides.map { solutionOverride ->
+                graderJar.info.assignmentId to solutionOverride
+            }
+        }.groupBy({ it.first }, { it.second })
     }
 
     private fun <T> Sequence<ResourceContainer>.compile(

@@ -20,13 +20,13 @@
 package org.sourcegrade.jagr.core.testing
 
 import com.google.inject.Inject
+import org.apache.logging.log4j.Logger
 import org.junit.platform.commons.JUnitException
 import org.junit.platform.engine.discovery.ClassSelector
 import org.junit.platform.engine.discovery.DiscoverySelectors
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
 import org.junit.platform.launcher.core.LauncherFactory
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener
-import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
@@ -39,7 +39,7 @@ class JavaRuntimeTester @Inject constructor(
 ) : RuntimeTester {
     override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
         if (submission !is JavaSubmission) return null
-        val info = submission.info
+        val info = submission.submissionInfo
         val rubricProviders = grader.rubricProviders[info.assignmentId]
         if (rubricProviders == null) {
             logger.warn(
@@ -63,7 +63,7 @@ class JavaRuntimeTester @Inject constructor(
 
     private fun List<ClassSelector>.runJUnit(testCycle: TestCycle): JUnitResultImpl? {
         testCycleParameterResolver.value = testCycle
-        val info = testCycle.submission.info
+        val info = (testCycle.submission as JavaSubmission).submissionInfo
         logger.info("Running JUnit @ $info :: [${joinToString { it.className }}]")
         val launcher = LauncherFactory.create()
         val testPlan = try {

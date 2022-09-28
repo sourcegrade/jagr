@@ -60,7 +60,7 @@ class EclipseSubmissionExporter : SubmissionExporter.Eclipse {
         val writer = PrintWriter(outputStream, false, Charsets.UTF_8)
         writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         writer.println("<projectDescription>")
-        writer.println("\t<name>${submission.info}</name>")
+        writer.println("\t<name>${submission.submissionInfo}</name>")
         writer.println("<buildSpec>")
         writer.println("\t\t<buildCommand>")
         writer.println("\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>")

@@ -12,7 +12,6 @@ dependencies {
     implementation(libs.csv)
     implementation(libs.asm.util)
     implementation(libs.serialization)
-    implementation(libs.logging.impl)
     implementation(libs.jansi)
     implementation(libs.juniversalchardet)
     implementation(libs.configurate.core)
