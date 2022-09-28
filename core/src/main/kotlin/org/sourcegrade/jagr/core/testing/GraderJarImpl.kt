@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.core.testing
 
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.rubric.RubricForSubmission
 import org.sourcegrade.jagr.api.rubric.RubricProvider
 import org.sourcegrade.jagr.api.rubric.TestForSubmission

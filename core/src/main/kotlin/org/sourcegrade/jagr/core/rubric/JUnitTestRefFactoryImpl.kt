@@ -20,13 +20,13 @@
 package org.sourcegrade.jagr.core.rubric
 
 import com.google.inject.Inject
+import org.apache.logging.log4j.Logger
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.TestSource
 import org.junit.platform.engine.support.descriptor.ClassSource
 import org.junit.platform.engine.support.descriptor.MethodSource
 import org.junit.platform.launcher.TestIdentifier
 import org.opentest4j.AssertionFailedError
-import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.JUnitTestRef
 import java.lang.reflect.Method
 import java.util.concurrent.Callable

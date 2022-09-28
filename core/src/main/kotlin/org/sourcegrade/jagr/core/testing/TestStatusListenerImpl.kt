@@ -19,10 +19,10 @@
 
 package org.sourcegrade.jagr.core.testing
 
+import org.apache.logging.log4j.Logger
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.launcher.TestExecutionListener
 import org.junit.platform.launcher.TestIdentifier
-import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.TestStatusListener
 import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import java.util.Collections

@@ -20,7 +20,7 @@
 package org.sourcegrade.jagr.core.rubric.grader
 
 import com.google.inject.Inject
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.rubric.Grader
 
 class GraderFactoryImpl @Inject constructor(
