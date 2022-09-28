@@ -14,8 +14,6 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.GraderConfiguration
 import org.sourcegrade.jagr.gradle.JagrExtension
-import org.sourcegrade.jagr.gradle.logGradedRubric
-import org.sourcegrade.jagr.gradle.logHistogram
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.submission.SubmissionWriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Environment
@@ -32,6 +30,8 @@ import org.sourcegrade.jagr.launcher.io.buildGradingBatch
 import org.sourcegrade.jagr.launcher.io.buildResourceContainer
 import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.createResourceContainer
+import org.sourcegrade.jagr.launcher.io.logGradedRubric
+import org.sourcegrade.jagr.launcher.io.logHistogram
 import java.io.File
 
 @Suppress("LeakingThis")
@@ -59,6 +59,8 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     }
 
     private suspend fun grade() {
+        val jagr = Jagr
+        jagr.logger.info("Starting Jagr v${Jagr.version}")
         val jagrExtension = project.extensions.getByType<JagrExtension>()
         val configuration = jagrExtension.graders[configurationName.get()]
         val batch: GradingBatch = buildGradingBatch {
@@ -113,9 +115,8 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     addLibrary(createResourceContainer(it))
                 }
         }
-        val jagr = Jagr
         val queue = jagr.gradingQueueFactory.create(batch)
-        jagr.logger.warn("Executor mode 'gradle' :: expected submission: ${batch.expectedSubmissions}")
+        jagr.logger.info("Executor mode 'gradle' :: expected submission: ${batch.expectedSubmissions}")
         val executor: Executor = SyncExecutor(jagr)
         val collector = emptyCollector(jagr)
         collector.setListener { result ->

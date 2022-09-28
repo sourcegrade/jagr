@@ -18,6 +18,7 @@ import org.sourcegrade.jagr.gradle.JagrExtension
 import org.sourcegrade.jagr.gradle.SubmissionConfiguration
 import org.sourcegrade.jagr.gradle.getFiles
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
+import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.io.SourceSetInfo
 import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import java.io.File
@@ -69,6 +70,7 @@ $errors
     fun runTask() {
         val submissionInfo = SubmissionInfo(
             assignmentId.get(),
+            Jagr.version,
             studentId.get(),
             firstName.get(),
             lastName.get(),
