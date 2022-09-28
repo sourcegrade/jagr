@@ -4,11 +4,14 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.GraderConfiguration
 import org.sourcegrade.jagr.gradle.JagrExtension
@@ -21,6 +24,20 @@ import java.io.File
 
 @Suppress("LeakingThis")
 abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
+
+    @get:Input
+    val graderFiles: ListProperty<String> = project.objects.listProperty<String>().value(
+        configurationName.map { configuration ->
+            project.extensions.getByType<JagrExtension>().graders[configuration].getFilesRecursive()
+        }
+    )
+
+    @get:Input
+    val solutionFiles: ListProperty<String> = project.objects.listProperty<String>().value(
+        solutionConfigurationName.map { configuration ->
+            project.extensions.getByType<JagrExtension>().submissions[configuration].sourceSets.flatMap { it.getFiles() }
+        }
+    )
 
     @get:OutputFile
     val graderInfoFile: Property<File> = project.objects.property<File>()
@@ -37,6 +54,7 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         sourceSets.forEach { sourceSet ->
             sourceSet.forEachFile { result.add(it) }
         }
+        // technically this is a race condition, but we can't use Provider.zip because the value is not always configured
         if (parentConfiguration.isPresent) {
             result.addAll(parentConfiguration.get().getFilesRecursive())
         }
@@ -45,15 +63,12 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
 
     @TaskAction
     fun runTask() {
-        val jagr = project.extensions.getByType<JagrExtension>()
-        val graderFiles = jagr.graders[configurationName.get()].getFilesRecursive()
-        val solutionFiles = jagr.submissions[solutionConfigurationName.get()].sourceSets.flatMap { it.getFiles() }
         val graderInfo = GraderInfo(
             assignmentId.get(),
             graderName.get(),
             listOf(
-                SourceSetInfo("grader", graderFiles),
-                SourceSetInfo("solution", solutionFiles)
+                SourceSetInfo("grader", graderFiles.get()),
+                SourceSetInfo("solution", solutionFiles.get())
             ),
         )
         graderInfoFile.get().apply {

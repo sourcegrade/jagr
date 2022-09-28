@@ -5,11 +5,14 @@ import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.JagrExtension
 import org.sourcegrade.jagr.gradle.SubmissionConfiguration
@@ -21,6 +24,15 @@ import java.io.File
 
 @Suppress("LeakingThis")
 abstract class SubmissionWriteInfoTask : DefaultTask(), SubmissionTask {
+
+    @get:Input
+    val sourceSetFiles: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
+        configurationName.map { configuration ->
+            project.extensions.getByType<JagrExtension>().submissions[configuration].sourceSets.associate {
+                it.name to it.getFiles()
+            }
+        }
+    )
 
     @get:OutputFile
     val submissionInfoFile: Property<File> = project.objects.property<File>()
@@ -55,13 +67,12 @@ $errors
 
     @TaskAction
     fun runTask() {
-        val jagr = project.extensions.getByType<JagrExtension>()
         val submissionInfo = SubmissionInfo(
             assignmentId.get(),
             studentId.get(),
             firstName.get(),
             lastName.get(),
-            jagr.submissions[configurationName.get()].sourceSets.map { SourceSetInfo(it.name, it.getFiles()) },
+            sourceSetFiles.get().map { SourceSetInfo(it.key, it.value) },
         )
         submissionInfoFile.get().apply {
             parentFile.mkdirs()
