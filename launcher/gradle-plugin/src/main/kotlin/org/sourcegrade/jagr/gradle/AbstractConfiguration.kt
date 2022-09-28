@@ -27,7 +27,7 @@ import org.gradle.kotlin.dsl.getByType
 
 abstract class AbstractConfiguration(
     val name: String,
-    private val project: Project,
+    project: Project,
 ) {
     private val sourceSetContainer: SourceSetContainer = project.extensions.getByType()
     private val _sourceSets: MutableList<SourceSet> = mutableListOf()
@@ -35,7 +35,6 @@ abstract class AbstractConfiguration(
         get() = _sourceSets
 
     abstract val sourceSetNames: ListProperty<String>
-    abstract val dependentConfigurations: ListProperty<AbstractConfiguration>
 
     init {
         project.afterEvaluate {

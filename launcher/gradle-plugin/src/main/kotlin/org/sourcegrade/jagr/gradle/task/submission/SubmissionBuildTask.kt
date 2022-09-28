@@ -14,6 +14,7 @@ import java.io.File
 
 @Suppress("LeakingThis")
 abstract class SubmissionBuildTask : Jar(), SubmissionTask {
+
     @get:InputFile
     val submissionInfoFile: Property<File> = project.objects.property<File>()
         .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })

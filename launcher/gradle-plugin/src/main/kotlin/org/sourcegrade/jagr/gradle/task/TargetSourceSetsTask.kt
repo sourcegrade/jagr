@@ -31,7 +31,4 @@ interface TargetSourceSetsTask : Task {
 
     @get:Input
     val sourceSetNames: ListProperty<String>
-
-    @get:Input
-    val dependentConfigurationNames: ListProperty<String>
 }

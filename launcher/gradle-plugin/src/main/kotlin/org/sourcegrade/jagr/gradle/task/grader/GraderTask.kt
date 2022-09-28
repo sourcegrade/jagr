@@ -55,7 +55,6 @@ internal fun <T : GraderTask> JagrTaskFactory<T, GraderConfiguration>.registerTa
         task.configurationName.set(configuration.name)
         task.graderName.set(configuration.graderName)
         task.sourceSetNames.set(configuration.sourceSetNames)
-        task.dependentConfigurationNames.set(configuration.dependentConfigurations.map { c -> c.map { it.name } })
         task.submissionConfigurationName.set(configuration.submissionConfiguration.map { it.name })
         task.solutionConfigurationName.set(configuration.solutionConfiguration.map { it.name })
         configureTask(task, project, configuration)
