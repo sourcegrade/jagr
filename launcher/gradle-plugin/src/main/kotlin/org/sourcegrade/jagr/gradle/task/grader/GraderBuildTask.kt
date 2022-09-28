@@ -34,6 +34,11 @@ abstract class GraderBuildTask : Jar(), GraderTask {
         val result = mutableListOf<SourceDirectorySet>()
         sourceSets.forEach { result.add(it.allSource) }
         // technically this is a race condition, but we can't use Provider.zip because the value is not always configured
+        if (solutionConfiguration.isPresent) {
+            solutionConfiguration.get().sourceSets.asSequence()
+                .map { it.allSource }
+                .forEach { result.add(it) }
+        }
         if (parentConfiguration.isPresent) {
             result.addAll(parentConfiguration.get().getSourceDirectoriesRecursive())
         }
