@@ -25,7 +25,7 @@ import org.sourcegrade.jagr.api.rubric.RubricProvider
 import org.sourcegrade.jagr.api.rubric.TestForSubmission
 import org.sourcegrade.jagr.core.compiler.graderInfo
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoaderImpl
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.launcher.io.GraderJar
@@ -81,7 +81,7 @@ class GraderJarImpl(
         }
         val rubricProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
         val testProviders: MutableMap<String, MutableList<String>> = mutableMapOf()
-        val baseClassLoader = RuntimeClassLoader(container.runtimeResources + libraries)
+        val baseClassLoader = RuntimeClassLoaderImpl(container.runtimeResources + libraries)
         for (className in container.runtimeResources.classes.keys) {
             val clazz = baseClassLoader.loadClass(className)
             rubricProviders.putIfRubric(clazz)

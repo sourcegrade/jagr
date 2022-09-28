@@ -40,6 +40,8 @@ data class JavaSubmission(
     override fun getInfo(): String = submissionInfo.toString()
     override fun getCompileResult(): JavaCompiledContainer = compileResult
     override fun getSourceFile(fileName: String): SourceFile? = compileResult.source.sourceFiles[fileName]
+
+    @Deprecated("Deprecated in Java")
     override fun getClassNames(): Set<String> = Collections.unmodifiableSet(compileResult.runtimeResources.classes.keys)
 
     override fun toString(): String = "$submissionInfo(${compileResult.info.name})"

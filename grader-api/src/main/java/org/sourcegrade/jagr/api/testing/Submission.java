@@ -55,8 +55,13 @@ public interface Submission {
     /**
      * <b>Experimental API. May be moved in a future release.</b>
      *
+     * <p>
+     * Deprecated in favor of {@link TestCycle#getClassLoader()} and {@link RuntimeClassLoader#getClassNames()}.
+     * </p>
+     *
      * @return An immutable set of Java class names from this submission.
+     * @deprecated Use {@link RuntimeClassLoader#getClassNames()} instead.
      */
-    @ApiStatus.Experimental
+    @Deprecated(forRemoval = true)
     Set<String> getClassNames();
 }

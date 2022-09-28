@@ -19,6 +19,9 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
+import org.sourcegrade.jagr.api.testing.ClassTransformer
+import org.sourcegrade.jagr.api.testing.RuntimeClassLoader
+import org.sourcegrade.jagr.core.transformer.transform
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get
@@ -29,10 +32,10 @@ import java.net.URLStreamHandler
 import java.util.Collections
 import java.util.Enumeration
 
-class RuntimeClassLoader(
+class RuntimeClassLoaderImpl(
     private val runtimeResources: RuntimeResources,
-    parent: ClassLoader = RuntimeClassLoader::class.java.classLoader,
-) : ClassLoader(parent) {
+    parent: ClassLoader = RuntimeClassLoaderImpl::class.java.classLoader,
+) : ClassLoader(parent), RuntimeClassLoader {
 
     @Throws(ClassNotFoundException::class, ClassFormatError::class)
     override fun findClass(name: String): Class<*> {
@@ -65,10 +68,27 @@ class RuntimeClassLoader(
         return runtimeResources.resources[name]?.inputStream() ?: super.getResourceAsStream(name)
     }
 
-    companion object Factory : SerializerFactory<RuntimeClassLoader> {
-        override fun read(scope: SerializationScope.Input) = RuntimeClassLoader(scope[RuntimeResources::class])
+    override fun loadClass(name: String, vararg transformers: ClassTransformer): Class<*> {
+        return loadClass(name, transformers.asIterable())
+    }
 
-        override fun write(obj: RuntimeClassLoader, scope: SerializationScope.Output) {
+    override fun loadClass(name: String, transformers: Iterable<ClassTransformer>): Class<*> {
+        val classStream = getResourceAsStream("${name.replace('.', '/')}.class")
+            ?: throw ClassNotFoundException(name)
+        var byteCode: ByteArray = classStream.readAllBytes()
+        for (transformer in transformers) {
+            byteCode = transformer.transform(byteCode, this)
+        }
+        return defineClass(name, byteCode, 0, byteCode.size)
+    }
+
+    override fun getClassNames(): Set<String> = runtimeResources.classes.keys
+    override fun getResourceNames(): Set<String> = runtimeResources.resources.keys
+
+    companion object Factory : SerializerFactory<RuntimeClassLoaderImpl> {
+        override fun read(scope: SerializationScope.Input) = RuntimeClassLoaderImpl(scope[RuntimeResources::class])
+
+        override fun write(obj: RuntimeClassLoaderImpl, scope: SerializationScope.Output) {
         }
     }
 }

@@ -21,7 +21,7 @@ package org.sourcegrade.jagr.core.testing
 
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoaderImpl
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -35,13 +35,13 @@ import org.sourcegrade.jagr.launcher.io.writeList
 data class JavaTestCycle(
     private val rubricProviderClassNames: List<String>,
     private val submission: JavaSubmission,
-    private val classLoader: RuntimeClassLoader,
+    private val classLoader: RuntimeClassLoaderImpl,
     private var testsSucceededCount: Int = -1,
     private var testsStartedCount: Int = -1,
 ) : TestCycle {
     private var jUnitResult: TestCycle.JUnitResult? = null
     override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
-    override fun getClassLoader(): ClassLoader = classLoader
+    override fun getClassLoader(): RuntimeClassLoaderImpl = classLoader
     override fun getSubmission(): JavaSubmission = submission
     override fun getTestsSucceededCount(): Int = testsSucceededCount
     override fun getTestsStartedCount(): Int = testsStartedCount
