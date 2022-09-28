@@ -29,6 +29,7 @@ serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0"
 junit = ["junit-core", "junit-engine", "junit-launcher"]
 
 [plugins]
+gradle-publish = "com.gradle.plugin-publish:1.0.0"
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

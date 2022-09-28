@@ -8,6 +8,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "jagr"
 
+include(":jagr-launcher-gradle-plugin")
+project(":jagr-launcher-gradle-plugin").projectDir = file("launcher/gradle-plugin")
+
 sequenceOf(
     "core",
     "grader-api",
