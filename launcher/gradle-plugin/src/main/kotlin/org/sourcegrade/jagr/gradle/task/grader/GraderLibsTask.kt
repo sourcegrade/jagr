@@ -10,7 +10,7 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.sourcegrade.jagr.gradle.GraderConfiguration
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
-import org.sourcegrade.jagr.launcher.VersionProvider
+import org.sourcegrade.jagr.launcher.env.Jagr
 
 @Suppress("LeakingThis")
 abstract class GraderLibsTask : Jar(), GraderTask {
@@ -34,7 +34,7 @@ abstract class GraderLibsTask : Jar(), GraderTask {
             .first {
                 it.moduleGroup == "org.sourcegrade" &&
                     it.moduleName == "jagr-launcher" &&
-                    it.moduleVersion == VersionProvider.version
+                    it.moduleVersion == Jagr.version
             }.allModuleArtifacts
 
         (sourceSets.asSequence() + solutionName).flatMap {

@@ -18,7 +18,7 @@ import org.sourcegrade.jagr.gradle.JagrExtension
 import org.sourcegrade.jagr.gradle.forEachFile
 import org.sourcegrade.jagr.gradle.getFiles
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
-import org.sourcegrade.jagr.launcher.VersionProvider
+import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.io.GraderInfo
 import org.sourcegrade.jagr.launcher.io.SourceSetInfo
 import java.io.File
@@ -66,7 +66,7 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
     fun runTask() {
         val graderInfo = GraderInfo(
             assignmentId.get(),
-            VersionProvider.version,
+            Jagr.version,
             graderName.get(),
             listOf(
                 SourceSetInfo("grader", graderFiles.get()),

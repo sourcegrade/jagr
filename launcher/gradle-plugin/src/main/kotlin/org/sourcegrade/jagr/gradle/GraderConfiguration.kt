@@ -30,7 +30,7 @@ import org.gradle.kotlin.dsl.exclude
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
-import org.sourcegrade.jagr.launcher.VersionProvider
+import org.sourcegrade.jagr.launcher.env.Jagr
 
 abstract class GraderConfiguration(
     name: String,
@@ -72,7 +72,7 @@ abstract class GraderConfiguration(
             // add jagr dependency
             it.dependencies {
                 for (sourceSet in sourceSets) {
-                    sourceSet.implementationConfigurationName("org.sourcegrade:jagr-launcher:${VersionProvider.version}") {
+                    sourceSet.implementationConfigurationName("org.sourcegrade:jagr-launcher:${Jagr.version}") {
                         exclude("org.jetbrains", "annotations")
                     }
                 }
