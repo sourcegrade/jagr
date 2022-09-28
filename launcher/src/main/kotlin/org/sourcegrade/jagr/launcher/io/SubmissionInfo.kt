@@ -29,6 +29,7 @@ import kotlinx.serialization.UseSerializers
 @Serializable
 data class SubmissionInfo(
     val assignmentId: String,
+    val jagrVersion: String,
     val studentId: String,
     val firstName: String,
     val lastName: String,
@@ -42,11 +43,13 @@ data class SubmissionInfo(
             scope.input.readUTF(),
             scope.input.readUTF(),
             scope.input.readUTF(),
+            scope.input.readUTF(),
             scope.readList(),
         )
 
         override fun write(obj: SubmissionInfo, scope: SerializationScope.Output) {
             scope.output.writeUTF(obj.assignmentId)
+            scope.output.writeUTF(obj.jagrVersion)
             scope.output.writeUTF(obj.studentId)
             scope.output.writeUTF(obj.firstName)
             scope.output.writeUTF(obj.lastName)
