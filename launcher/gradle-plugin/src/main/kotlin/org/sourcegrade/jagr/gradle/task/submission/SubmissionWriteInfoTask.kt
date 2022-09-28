@@ -14,8 +14,8 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.property
-import org.sourcegrade.jagr.gradle.JagrExtension
-import org.sourcegrade.jagr.gradle.SubmissionConfiguration
+import org.sourcegrade.jagr.gradle.extension.JagrExtension
+import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
 import org.sourcegrade.jagr.gradle.getFiles
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.launcher.env.Jagr

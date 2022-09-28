@@ -17,7 +17,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.gradle
+package org.sourcegrade.jagr.gradle.extension
 
 import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty

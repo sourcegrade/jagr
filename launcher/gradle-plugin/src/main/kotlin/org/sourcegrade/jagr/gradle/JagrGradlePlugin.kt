@@ -3,6 +3,7 @@ package org.sourcegrade.jagr.gradle
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
+import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.task.grader.GraderBuildTask
 import org.sourcegrade.jagr.gradle.task.grader.GraderLibsTask
 import org.sourcegrade.jagr.gradle.task.grader.GraderRunTask

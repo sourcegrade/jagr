@@ -25,8 +25,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
-import org.sourcegrade.jagr.gradle.GraderConfiguration
-import org.sourcegrade.jagr.gradle.JagrExtension
+import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
+import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.TargetAssignmentTask
 import org.sourcegrade.jagr.gradle.task.TargetSourceSetsTask

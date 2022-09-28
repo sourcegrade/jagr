@@ -12,8 +12,8 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
-import org.sourcegrade.jagr.gradle.GraderConfiguration
-import org.sourcegrade.jagr.gradle.JagrExtension
+import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
+import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.submission.SubmissionWriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Environment

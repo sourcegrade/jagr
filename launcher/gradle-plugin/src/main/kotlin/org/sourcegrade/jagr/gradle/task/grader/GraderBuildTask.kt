@@ -9,8 +9,8 @@ import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
-import org.sourcegrade.jagr.gradle.GraderConfiguration
-import org.sourcegrade.jagr.gradle.JagrExtension
+import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
+import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import java.io.File
 
