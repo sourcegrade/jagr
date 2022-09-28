@@ -1,7 +1,11 @@
+import org.sourcegrade.jagr.script.JagrPublishPlugin
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
 }
+
+apply<JagrPublishPlugin>()
 
 dependencies {
     api(project(":jagr-launcher"))

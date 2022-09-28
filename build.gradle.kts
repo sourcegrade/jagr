@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.sourcegrade.jagr.script.JagrPublishPlugin
 
 @Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
@@ -76,8 +75,4 @@ allprojects {
             targetCompatibility = "11"
         }
     }
-}
-
-subprojects {
-    apply<JagrPublishPlugin>()
 }
