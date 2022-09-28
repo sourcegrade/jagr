@@ -46,7 +46,6 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
 
     init {
         group = "jagr resources"
-        // TODO: Depend only on compilation task from required source sets
         dependsOn("compileJava")
     }
 

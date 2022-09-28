@@ -42,7 +42,6 @@ abstract class SubmissionWriteInfoTask : DefaultTask(), SubmissionTask {
     init {
         group = "jagr resources"
         dependsOn("compileJava")
-        // TODO: Cleaner way of throwing error
         setOnlyIf {
             verifySubmit()
             true
