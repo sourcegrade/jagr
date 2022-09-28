@@ -36,7 +36,8 @@ abstract class GraderConfiguration(
     name: String,
     project: Project,
 ) : AbstractConfiguration(name, project) {
-    override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>().convention(listOf(name))
+    override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>()
+        .convention(listOf(name))
 
     abstract val graderName: Property<String>
     val parentConfiguration: Property<GraderConfiguration> = project.objects.property()
