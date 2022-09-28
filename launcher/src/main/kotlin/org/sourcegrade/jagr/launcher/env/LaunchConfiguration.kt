@@ -19,8 +19,8 @@
 
 package org.sourcegrade.jagr.launcher.env
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.spongepowered.configurate.CommentedConfigurationNode
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader
 import org.spongepowered.configurate.loader.ConfigurationLoader
@@ -33,6 +33,6 @@ interface LaunchConfiguration {
     object Standard : LaunchConfiguration {
         override val configurationLoader: ConfigurationLoader<CommentedConfigurationNode> =
             HoconConfigurationLoader.builder().file(File("jagr.conf")).build()
-        override val logger: Logger = LoggerFactory.getLogger("Jagr")
+        override val logger: Logger = LogManager.getLogger("Jagr")
     }
 }

@@ -20,7 +20,7 @@
 package org.sourcegrade.jagr.launcher.env
 
 import com.google.inject.Injector
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
 import org.sourcegrade.jagr.launcher.io.ExtrasManager
@@ -31,7 +31,13 @@ import kotlin.reflect.KClass
 interface Jagr {
     val injector: Injector
 
-    companion object Default : Jagr by SystemResourceJagrFactory.create()
+    companion object Default : Jagr by SystemResourceJagrFactory.create() {
+        private const val VERSION_FILE = "org/sourcegrade/jagr/version"
+        val version: String by lazy {
+            checkNotNull(Jagr::class.java.classLoader.getResourceAsStream(VERSION_FILE)) { "Could not find version file $VERSION_FILE" }
+                .bufferedReader().readLine()
+        }
+    }
 
     interface Factory {
         fun create(configuration: LaunchConfiguration = LaunchConfiguration.Standard): Jagr

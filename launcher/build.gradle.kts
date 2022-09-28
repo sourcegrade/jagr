@@ -13,7 +13,6 @@ dependencies {
     implementation(libs.configurate.hocon)
     implementation(libs.annotations)
     implementation(libs.serialization)
-    implementation(libs.logging.impl)
     implementation(libs.logging.core)
     kapt(libs.logging.core)
     implementation(kotlin("reflect"))

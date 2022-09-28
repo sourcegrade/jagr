@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.core.rubric.grader
 
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.rubric.Criterion
 import org.sourcegrade.jagr.api.rubric.GradeResult
 import org.sourcegrade.jagr.api.rubric.Grader

@@ -24,7 +24,7 @@ import com.google.common.reflect.ClassPath
 import com.google.inject.Inject
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.testing.GraderJarImpl

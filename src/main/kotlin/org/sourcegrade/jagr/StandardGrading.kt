@@ -57,6 +57,7 @@ class StandardGrading(
     private val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
 
     fun grade(noExport: Boolean, exportOnly: Boolean) = runBlocking {
+        jagr.logger.info("Starting Jagr v${Jagr.version}")
         File(config.dir.submissions).ensure(jagr.logger)
         jagr.extrasManager.runExtras()
         val batch = buildGradingBatch {

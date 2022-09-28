@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr
 
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import java.io.File
 
 fun File.ensure(logger: Logger? = null, logInfo: Boolean = true): File? {
