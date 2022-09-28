@@ -26,7 +26,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import java.io.File
