@@ -17,3 +17,12 @@ dependencies {
     kapt(libs.logging.core)
     implementation(kotlin("reflect"))
 }
+
+tasks {
+    @Suppress("UnstableApiUsage")
+    withType<ProcessResources> {
+        from(rootProject.file("version")) {
+            into("org/sourcegrade/jagr/")
+        }
+    }
+}
