@@ -50,7 +50,7 @@ class RuntimeClassLoaderImpl(
             val className = name.substring(0, name.length - 6).replace('/', '.')
             val compiledClass = runtimeResources.classes[className] ?: return super.findResource(name)
             return URL(
-                "jagrresource",
+                "jar",
                 null,
                 -1,
                 name,
