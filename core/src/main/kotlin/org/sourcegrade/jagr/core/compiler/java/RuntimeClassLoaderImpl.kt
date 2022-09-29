@@ -21,6 +21,7 @@ package org.sourcegrade.jagr.core.compiler.java
 
 import org.sourcegrade.jagr.api.testing.ClassTransformer
 import org.sourcegrade.jagr.api.testing.RuntimeClassLoader
+import org.sourcegrade.jagr.core.transformer.ClassRenamingTransformer
 import org.sourcegrade.jagr.core.transformer.transform
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -40,11 +41,31 @@ class RuntimeClassLoaderImpl(
     @Throws(ClassNotFoundException::class, ClassFormatError::class)
     override fun findClass(name: String): Class<*> {
         val compiledClass = runtimeResources.classes[name] ?: return super.findClass(name)
-        val byteCode: ByteArray = compiledClass.bytecode
-        return defineClass(name, byteCode, 0, byteCode.size)
+        val bytecode: ByteArray = compiledClass.bytecode
+        return defineClass(name, bytecode, 0, bytecode.size)
     }
 
     override fun findResource(name: String): URL? {
+        if (name.endsWith(".class")) {
+            val className = name.substring(0, name.length - 6).replace('/', '.')
+            val compiledClass = runtimeResources.classes[className] ?: return super.findResource(name)
+            return URL(
+                "jagrresource",
+                null,
+                -1,
+                name,
+                object : URLStreamHandler() {
+                    override fun openConnection(u: URL): URLConnection {
+                        return object : URLConnection(u) {
+                            override fun connect() {}
+                            override fun getInputStream(): InputStream {
+                                return compiledClass.bytecode.inputStream()
+                            }
+                        }
+                    }
+                }
+            )
+        }
         val resource: ByteArray = runtimeResources.resources[name] ?: return null
         return URL(
             null,
@@ -65,6 +86,11 @@ class RuntimeClassLoaderImpl(
     }
 
     override fun getResourceAsStream(name: String): InputStream? {
+        if (name.endsWith(".class")) {
+            val className = name.substring(0, name.length - 6).replace('/', '.')
+            val compiledClass = runtimeResources.classes[className] ?: return super.getResourceAsStream(name)
+            return compiledClass.bytecode.inputStream()
+        }
         return runtimeResources.resources[name]?.inputStream() ?: super.getResourceAsStream(name)
     }
 
@@ -73,13 +99,16 @@ class RuntimeClassLoaderImpl(
     }
 
     override fun loadClass(name: String, transformers: Iterable<ClassTransformer>): Class<*> {
-        val classStream = getResourceAsStream("${name.replace('.', '/')}.class")
-            ?: throw ClassNotFoundException(name)
-        var byteCode: ByteArray = classStream.readAllBytes()
+        val classStream = runtimeResources.classes[name]?.bytecode?.inputStream()
+            ?: getResourceAsStream("${name.replace('.', '/')}.class")
+            ?: throw ClassNotFoundException("Class $name not in submission or parent classloader")
+        var bytecode: ByteArray = classStream.readAllBytes()
         for (transformer in transformers) {
-            byteCode = transformer.transform(byteCode, this)
+            bytecode = transformer.transform(bytecode, this)
         }
-        return defineClass(name, byteCode, 0, byteCode.size)
+        val newName = "${name}_${System.nanoTime()}"
+        bytecode = ClassRenamingTransformer(name, newName).transform(bytecode, this)
+        return defineClass(newName, bytecode, 0, bytecode.size)
     }
 
     override fun getClassNames(): Set<String> = runtimeResources.classes.keys
