@@ -55,12 +55,10 @@ class RuntimeClassLoaderImpl(
                 -1,
                 name,
                 object : URLStreamHandler() {
-                    override fun openConnection(u: URL): URLConnection {
+                    override fun openConnection(u: URL?): URLConnection {
                         return object : URLConnection(u) {
-                            override fun connect() {}
-                            override fun getInputStream(): InputStream {
-                                return compiledClass.bytecode.inputStream()
-                            }
+                            override fun connect() = Unit
+                            override fun getInputStream(): InputStream = compiledClass.bytecode.inputStream()
                         }
                     }
                 }
