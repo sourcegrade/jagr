@@ -52,7 +52,7 @@ public interface TestCycle {
      *
      * @return The {@link ClassLoader} used in this test cycle
      */
-    ClassLoader getClassLoader();
+    RuntimeClassLoader getClassLoader();
 
     /**
      * The {@link Submission} used in this test cycle.
@@ -94,6 +94,7 @@ public interface TestCycle {
      */
     @ApiStatus.NonExtendable
     interface JUnitResult {
+
         /**
          * The {@link TestPlan} used to execute the tests.
          *

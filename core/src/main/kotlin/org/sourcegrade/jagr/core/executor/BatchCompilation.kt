@@ -27,7 +27,7 @@ import org.sourcegrade.jagr.core.compiler.InfoJsonResourceExtractor
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoaderImpl
 import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.loadCompiled
@@ -148,7 +148,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
         }
         val original = runtimeJarLoader.compileSources(replacedSources, libraries)
         val transformed = try {
-            val classLoader = RuntimeClassLoader(original.runtimeResources + libraries)
+            val classLoader = RuntimeClassLoaderImpl(original.runtimeResources + libraries)
             transformerApplier.transform(original, classLoader)
         } catch (e: Throwable) {
             // create a copy of the original compile result but throw out runtime resources (compiled classes and resources)

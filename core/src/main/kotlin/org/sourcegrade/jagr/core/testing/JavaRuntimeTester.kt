@@ -29,7 +29,7 @@ import org.junit.platform.launcher.core.LauncherFactory
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoaderImpl
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.core.executor.TimeoutHandler
 
@@ -48,7 +48,7 @@ class JavaRuntimeTester @Inject constructor(
             )
             return null
         }
-        val classLoader = RuntimeClassLoader(
+        val classLoader = RuntimeClassLoaderImpl(
             submission.compileResult.runtimeResources +
                 submission.libraries +
                 grader.containerWithoutSolution.runtimeResources
