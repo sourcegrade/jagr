@@ -31,14 +31,14 @@ import org.sourcegrade.jagr.launcher.io.openScope
 import org.sourcegrade.jagr.launcher.io.read
 
 data class JavaTestCycle(
-    private val rubricProviderClassName: String,
+    private val rubricProviderName: String,
     private val submission: JavaSubmission,
     private val classLoader: RuntimeClassLoaderImpl,
     private var testsSucceededCount: Int = -1,
     private var testsStartedCount: Int = -1,
 ) : TestCycle {
     private var jUnitResult: TestCycle.JUnitResult? = null
-    override fun getRubricProviderClassName(): String = rubricProviderClassName
+    override fun getRubricProviderName(): String = rubricProviderName
     override fun getClassLoader(): RuntimeClassLoaderImpl = classLoader
     override fun getSubmission(): JavaSubmission = submission
     override fun getTestsSucceededCount(): Int = testsSucceededCount
@@ -65,7 +65,7 @@ data class JavaTestCycle(
         )
 
         override fun write(obj: JavaTestCycle, scope: SerializationScope.Output) {
-            scope.output.writeUTF(obj.rubricProviderClassName)
+            scope.output.writeUTF(obj.rubricProviderName)
             scope.output.writeInt(obj.testsSucceededCount)
             scope.output.writeInt(obj.testsStartedCount)
         }

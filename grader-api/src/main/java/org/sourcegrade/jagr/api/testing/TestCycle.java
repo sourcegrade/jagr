@@ -44,7 +44,7 @@ public interface TestCycle {
      *
      * @return The class name of the rubric provider in this test cycle
      */
-    String getRubricProviderClassName();
+    String getRubricProviderName();
 
     /**
      * Every test cycle uses a unique {@link ClassLoader} that loads the grader jar's classes and the {@link Submission}'s

@@ -30,7 +30,7 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
 
     @get:Input
     @get:Optional
-    abstract val rubricClassName: Property<String>
+    abstract val rubricProviderName: Property<String>
 
     @get:Input
     val graderFiles: ListProperty<String> = project.objects.listProperty<String>().value(
@@ -67,13 +67,15 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         return result
     }
 
-    private fun GraderConfiguration.getRubricClassNameRecursive(): String {
-        return if (rubricClassName.isPresent) {
-            rubricClassName.get()
+    private fun GraderConfiguration.getRubricProviderNameRecursive(): String {
+        return if (rubricProviderName.isPresent) {
+            rubricProviderName.get()
         } else if (parentConfiguration.isPresent) {
-            parentConfiguration.get().getRubricClassNameRecursive()
+            parentConfiguration.get().getRubricProviderNameRecursive()
         } else {
-            throw GradleException("No rubric class name found for configuration $name")
+            throw GradleException(
+                "No rubricProviderName defined for grader configuration ${configurationName.get()} or its parents"
+            )
         }
     }
 
@@ -84,7 +86,7 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
             assignmentId.get(),
             Jagr.version,
             graderName.get(),
-            rubricClassName.getOrElse(jagr.graders[configurationName.get()].getRubricClassNameRecursive()),
+            rubricProviderName.getOrElse(jagr.graders[configurationName.get()].getRubricProviderNameRecursive()),
             listOf(
                 SourceSetInfo("grader", graderFiles.get()),
                 SourceSetInfo("solution", solutionFiles.get())
@@ -100,7 +102,7 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         override fun determineTaskName(name: String) = "${name}WriteGraderInfo"
         override fun configureTask(task: GraderWriteInfoTask, project: Project, configuration: GraderConfiguration) {
             task.description = "Runs the ${task.sourceSetNames.get()} grader"
-            task.rubricClassName.set(configuration.rubricClassName)
+            task.rubricProviderName.set(configuration.rubricProviderName)
         }
     }
 }

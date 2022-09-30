@@ -29,7 +29,7 @@ class FallbackTestCycle(
     private val classLoader: RuntimeClassLoaderImpl,
     private val notes: List<String>,
 ) : TestCycle {
-    override fun getRubricProviderClassName(): String = rubricProviderClassName
+    override fun getRubricProviderName(): String = rubricProviderClassName
     override fun getClassLoader(): RuntimeClassLoaderImpl = classLoader
     override fun getSubmission(): Submission = submission
     override fun getTestsSucceededCount(): Int = -1

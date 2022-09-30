@@ -49,7 +49,7 @@ class JavaRuntimeTester @Inject constructor(
                 submission.libraries +
                 grader.containerWithoutSolution.runtimeResources
         )
-        val testCycle = JavaTestCycle(grader.info.rubricClassName, submission, classLoader)
+        val testCycle = JavaTestCycle(grader.info.rubricProviderName, submission, classLoader)
         grader.testClassNames
             .map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
             .runJUnit(testCycle)

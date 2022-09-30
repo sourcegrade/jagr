@@ -34,6 +34,6 @@ class FallbackRuntimeTester : RuntimeTester {
             "The grading process was forcibly terminated.",
             "Please check if you have an infinite loop or infinite recursion.",
         )
-        return FallbackTestCycle(grader.info.rubricClassName, submission, classLoader, notes)
+        return FallbackTestCycle(grader.info.rubricProviderName, submission, classLoader, notes)
     }
 }

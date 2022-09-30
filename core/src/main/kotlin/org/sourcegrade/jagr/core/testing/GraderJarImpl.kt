@@ -76,18 +76,18 @@ class GraderJarImpl(
         var foundRubricProvider = false
         for (className in container.runtimeResources.classes.keys) {
             val clazz = baseClassLoader.loadClass(className)
-            if (clazz.name == info.rubricClassName) {
+            if (clazz.name == info.rubricProviderName) {
                 checkRubricProvider(clazz)
                 foundRubricProvider = true
             }
             testClasses.addIfTest(clazz)
         }
         if (!foundRubricProvider) {
-            error("Grader ${info.name} is missing rubric provider class ${info.rubricClassName}")
+            error("Grader ${info.name} is missing rubric provider class ${info.rubricProviderName}")
         }
         logger.info(
             "Grader ${info.name} discovered " +
-                "rubric provider ${info.rubricClassName} and " +
+                "rubric provider ${info.rubricProviderName} and " +
                 "${testClasses.size} test class${if (testClasses.size == 1) "" else "es"}"
         )
         this.testClassNames = testClasses

@@ -32,7 +32,7 @@ data class GraderInfo(
     val assignmentId: String,
     val jagrVersion: String,
     val name: String,
-    val rubricClassName: String,
+    val rubricProviderName: String,
     val sourceSets: List<SourceSetInfo>,
 ) {
     companion object Factory : SerializerFactory<GraderInfo> {
@@ -48,7 +48,7 @@ data class GraderInfo(
             scope.output.writeUTF(obj.assignmentId)
             scope.output.writeUTF(obj.jagrVersion)
             scope.output.writeUTF(obj.name)
-            scope.output.writeUTF(obj.rubricClassName)
+            scope.output.writeUTF(obj.rubricProviderName)
             scope.writeList(obj.sourceSets)
         }
     }

@@ -53,9 +53,9 @@ class RuntimeGraderImpl @Inject constructor(
     private fun TestCycle.collectResults(): Pair<GradedRubric, String>? {
         val rubricProvider = try {
             // rubric provider must first be loaded again together with submission classes
-            classLoader.loadClass(rubricProviderClassName).getConstructor().newInstance() as RubricProvider
+            classLoader.loadClass(rubricProviderName).getConstructor().newInstance() as RubricProvider
         } catch (e: Throwable) {
-            logger.error("Failed to initialize rubricProvider $rubricProviderClassName for $submission", e)
+            logger.error("Failed to initialize rubric provider $rubricProviderName for $submission", e)
             return null
         }
         val exportFileName = rubricProvider.getOutputFileName(submission) ?: submission.info.toString()
