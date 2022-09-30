@@ -32,10 +32,12 @@ data class GraderInfo(
     val assignmentId: String,
     val jagrVersion: String,
     val name: String,
+    val rubricProviderName: String,
     val sourceSets: List<SourceSetInfo>,
 ) {
     companion object Factory : SerializerFactory<GraderInfo> {
         override fun read(scope: SerializationScope.Input) = GraderInfo(
+            scope.input.readUTF(),
             scope.input.readUTF(),
             scope.input.readUTF(),
             scope.input.readUTF(),
@@ -46,6 +48,7 @@ data class GraderInfo(
             scope.output.writeUTF(obj.assignmentId)
             scope.output.writeUTF(obj.jagrVersion)
             scope.output.writeUTF(obj.name)
+            scope.output.writeUTF(obj.rubricProviderName)
             scope.writeList(obj.sourceSets)
         }
     }

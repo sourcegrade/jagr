@@ -40,11 +40,11 @@ import java.util.List;
 public interface TestCycle {
 
     /**
-     * The class names of every rubric provider in this test cycle.
+     * The class name of the rubric provider in this test cycle.
      *
-     * @return An immutable set of class names
+     * @return The class name of the rubric provider in this test cycle
      */
-    List<String> getRubricProviderClassNames();
+    String getRubricProviderName();
 
     /**
      * Every test cycle uses a unique {@link ClassLoader} that loads the grader jar's classes and the {@link Submission}'s
