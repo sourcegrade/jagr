@@ -36,7 +36,7 @@ import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.solutionFiles
 import org.sourcegrade.jagr.launcher.io.write
 
-class GraderJarImpl constructor(
+class GraderJarImpl(
     private val logger: Logger,
     val container: JavaCompiledContainer,
     libraries: RuntimeResources,

@@ -47,8 +47,8 @@ data class GraderInfo(
         override fun write(obj: GraderInfo, scope: SerializationScope.Output) {
             scope.output.writeUTF(obj.assignmentId)
             scope.output.writeUTF(obj.jagrVersion)
-            scope.output.writeUTF(obj.rubricClassName)
             scope.output.writeUTF(obj.name)
+            scope.output.writeUTF(obj.rubricClassName)
             scope.writeList(obj.sourceSets)
         }
     }
