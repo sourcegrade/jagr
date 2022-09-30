@@ -77,19 +77,23 @@ abstract class Unpack : Extra {
                     SubmissionInfo(
                         if (replaceAssignmentId) checkNotNull(assignmentId) else submissionInfo.assignmentId,
                         Jagr.version,
+                        submissionInfo.sourceSets,
+                        emptyMap(),
+                        emptyList(),
                         if (replaceStudentId) checkNotNull(studentId) else submissionInfo.studentId,
                         if (replaceFirstName) checkNotNull(firstName) else submissionInfo.firstName,
                         if (replaceLastName) checkNotNull(lastName) else submissionInfo.lastName,
-                        submissionInfo.sourceSets,
                     )
                 } else return
             } ?: SubmissionInfo(
                 assignmentId = assignmentId ?: "none",
                 jagrVersion = Jagr.version,
+                sourceSets = listOf(),
+                dependencyConfigurations = emptyMap(),
+                repositoryConfigurations = emptyList(),
                 studentId = studentId ?: "none",
                 firstName = firstName ?: "none",
                 lastName = lastName ?: "none",
-                sourceSets = listOf(),
             )
             submissionInfoPath.bufferedWriter().use { writer ->
                 writer.write(Json.encodeToString(replacedSubmissionInfo))

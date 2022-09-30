@@ -6,6 +6,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
@@ -14,6 +15,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.listProperty
+import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
@@ -28,22 +30,26 @@ import java.io.File
 @Suppress("LeakingThis")
 abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
 
+    private val primaryContainer = project.extensions.getByType<JagrExtension>().graders
+    private val submissionContainer = project.extensions.getByType<JagrExtension>().submissions
+
     @get:Input
     @get:Optional
     abstract val rubricProviderName: Property<String>
 
     @get:Input
     val graderFiles: ListProperty<String> = project.objects.listProperty<String>().value(
-        configurationName.map { configuration ->
-            project.extensions.getByType<JagrExtension>().graders[configuration].getFilesRecursive()
-        }
+        configurationName.map { c -> primaryContainer[c].getFilesRecursive() }
     )
 
     @get:Input
     val solutionFiles: ListProperty<String> = project.objects.listProperty<String>().value(
-        solutionConfigurationName.map { configuration ->
-            project.extensions.getByType<JagrExtension>().submissions[configuration].sourceSets.flatMap { it.getFiles() }
-        }
+        solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.flatMap { it.getFiles() } }
+    )
+
+    @get:Input
+    val dependencies: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
+        configurationName.map { c -> primaryContainer[c].getAllDependenciesRecursive() }
     )
 
     @get:OutputFile
@@ -67,6 +73,16 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         return result
     }
 
+    private fun GraderConfiguration.getAllDependenciesRecursive(): Map<String, List<String>> {
+        val ownDependencies = getAllDependencies("grader") +
+            solutionConfiguration.get().getAllDependencies()
+        return if (parentConfiguration.isPresent) {
+            ownDependencies + parentConfiguration.get().getAllDependenciesRecursive()
+        } else {
+            ownDependencies
+        }
+    }
+
     private fun GraderConfiguration.getRubricProviderNameRecursive(): String {
         return if (rubricProviderName.isPresent) {
             rubricProviderName.get()
@@ -81,16 +97,18 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
 
     @TaskAction
     fun runTask() {
-        val jagr = project.extensions.getByType<JagrExtension>()
+        val configuration: GraderConfiguration = primaryContainer[configurationName.get()]
         val graderInfo = GraderInfo(
             assignmentId.get(),
             Jagr.version,
-            graderName.get(),
-            rubricProviderName.getOrElse(jagr.graders[configurationName.get()].getRubricProviderNameRecursive()),
             listOf(
                 SourceSetInfo("grader", graderFiles.get()),
                 SourceSetInfo("solution", solutionFiles.get())
             ),
+            dependencies.get(),
+            emptyList(),
+            graderName.get(),
+            rubricProviderName.orNull ?: run { configuration.getRubricProviderNameRecursive() },
         )
         graderInfoFile.get().apply {
             parentFile.mkdirs()

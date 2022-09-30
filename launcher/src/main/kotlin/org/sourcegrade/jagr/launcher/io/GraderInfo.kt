@@ -29,34 +29,45 @@ import kotlin.properties.ReadOnlyProperty
  */
 @Serializable
 data class GraderInfo(
-    val assignmentId: String,
-    val jagrVersion: String,
+    override val assignmentId: String,
+    override val jagrVersion: String,
+    override val sourceSets: List<SourceSetInfo>,
+    override val dependencyConfigurations: Map<String, List<String>>,
+    override val repositoryConfigurations: List<String>,
     val name: String,
     val rubricProviderName: String,
-    val sourceSets: List<SourceSetInfo>,
-) {
+) : AssignmentArtifactInfo {
     companion object Factory : SerializerFactory<GraderInfo> {
         override fun read(scope: SerializationScope.Input) = GraderInfo(
             scope.input.readUTF(),
             scope.input.readUTF(),
-            scope.input.readUTF(),
-            scope.input.readUTF(),
             scope.readList(),
+            scope.readMap(),
+            scope.readList(),
+            scope.input.readUTF(),
+            scope.input.readUTF(),
         )
 
         override fun write(obj: GraderInfo, scope: SerializationScope.Output) {
             scope.output.writeUTF(obj.assignmentId)
             scope.output.writeUTF(obj.jagrVersion)
+            scope.writeList(obj.sourceSets)
+            scope.writeMap(obj.dependencyConfigurations)
+            scope.writeList(obj.repositoryConfigurations)
             scope.output.writeUTF(obj.name)
             scope.output.writeUTF(obj.rubricProviderName)
-            scope.writeList(obj.sourceSets)
         }
     }
 }
 
 val GraderInfo.graderFiles: List<String> by named("grader")
 
-val GraderInfo.solutionFiles: List<String> by named("solution")
+val GraderInfo.mainFiles: List<String> by named("main")
+
+val GraderInfo.testFiles: List<String> by named("test")
+
+val GraderInfo.solutionFiles: List<String>
+    get() = mainFiles + testFiles
 
 private fun named(name: String): ReadOnlyProperty<GraderInfo, List<String>> =
     ReadOnlyProperty { info, _ -> info.sourceSets.first { it.name == name }.files }

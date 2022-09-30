@@ -26,13 +26,18 @@ import java.io.File
 @Suppress("LeakingThis")
 abstract class SubmissionWriteInfoTask : DefaultTask(), SubmissionTask {
 
+    private val primaryContainer = project.extensions.getByType<JagrExtension>().submissions
+
     @get:Input
     val sourceSetFiles: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
         configurationName.map { configuration ->
-            project.extensions.getByType<JagrExtension>().submissions[configuration].sourceSets.associate {
-                it.name to it.getFiles()
-            }
+            primaryContainer[configuration].sourceSets.associate { it.name to it.getFiles() }
         }
+    )
+
+    @get:Input
+    val dependencies: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
+        configurationName.map { configuration -> primaryContainer[configuration].getAllDependencies() }
     )
 
     @get:OutputFile
@@ -70,10 +75,12 @@ $errors
         val submissionInfo = SubmissionInfo(
             assignmentId.get(),
             Jagr.version,
+            sourceSetFiles.get().map { SourceSetInfo(it.key, it.value) },
+            dependencies.get(),
+            emptyList(),
             studentId.get(),
             firstName.get(),
             lastName.get(),
-            sourceSetFiles.get().map { SourceSetInfo(it.key, it.value) },
         )
         submissionInfoFile.get().apply {
             parentFile.mkdirs()
