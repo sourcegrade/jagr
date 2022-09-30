@@ -29,7 +29,8 @@ import java.lang.annotation.Target;
 /**
  * This annotation is used to mark a class as a {@link RubricProvider} for a submission.
  *
- * @deprecated This annotation is no longer used by Jagr, the {@link RubricProvider}'s class name is provided via the generated grader-info.json
+ * @deprecated This annotation is no longer used by Jagr, the {@link RubricProvider}'s
+ * class name is provided via the generated grader-info.json
  */
 @Deprecated(forRemoval = true)
 @ApiStatus.NonExtendable
