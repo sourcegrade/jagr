@@ -77,7 +77,7 @@ class GradleSubmissionExporter @Inject constructor(
         val filteredSubmissions = if (graderJar == null) {
             submissions
         } else {
-            submissions.filter { graderJar.info.rubricProviderName == (it as JavaSubmission).submissionInfo.assignmentId }
+            submissions.filter { graderJar.info.assignmentId == (it as JavaSubmission).submissionInfo.assignmentId }
         }
         for (submission in filteredSubmissions) {
             writeSubmission(submission, graderJar)
