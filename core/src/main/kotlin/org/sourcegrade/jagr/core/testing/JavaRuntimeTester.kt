@@ -41,7 +41,10 @@ class JavaRuntimeTester @Inject constructor(
         if (submission !is JavaSubmission) return null
         val info = submission.submissionInfo
         if (info.assignmentId != grader.info.assignmentId) {
-            logger.warn("Submission $info is for assignment ${info.assignmentId} but grader is for assignment ${grader.info.assignmentId}")
+            logger.warn(
+                "Submission $info assignmentId '${info.assignmentId}' != " +
+                    "grader's ${grader.info.name} assignmentId '${grader.info.assignmentId}'"
+            )
             return null
         }
         val classLoader = RuntimeClassLoaderImpl(
