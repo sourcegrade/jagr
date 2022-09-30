@@ -40,12 +40,8 @@ class JavaRuntimeTester @Inject constructor(
     override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
         if (submission !is JavaSubmission) return null
         val info = submission.submissionInfo
-        val rubricProviders = grader.rubricProviders[info.assignmentId]
-        if (rubricProviders == null) {
-            logger.warn(
-                "Submission $info does not have any applicable rubric providers! " +
-                    "assignmentId: ${info.assignmentId}, available: ${grader.rubricProviders.keys}"
-            )
+        if (info.assignmentId != grader.info.assignmentId) {
+            logger.warn("Submission $info is for assignment ${info.assignmentId} but grader is for assignment ${grader.info.assignmentId}")
             return null
         }
         val classLoader = RuntimeClassLoaderImpl(
@@ -53,11 +49,11 @@ class JavaRuntimeTester @Inject constructor(
                 submission.libraries +
                 grader.containerWithoutSolution.runtimeResources
         )
-        val testCycle = JavaTestCycle(rubricProviders, submission, classLoader)
-        grader.testProviders[info.assignmentId]
-            ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
-            ?.runJUnit(testCycle)
-            ?.also(testCycle::setJUnitResult)
+        val testCycle = JavaTestCycle(grader.info.rubricClassName, submission, classLoader)
+        grader.testClassNames
+            .map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
+            .runJUnit(testCycle)
+            .also(testCycle::setJUnitResult)
         return testCycle
     }
 

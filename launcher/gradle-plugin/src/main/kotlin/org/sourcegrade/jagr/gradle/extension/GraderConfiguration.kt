@@ -40,6 +40,7 @@ abstract class GraderConfiguration(
         .convention(listOf(name))
 
     abstract val graderName: Property<String>
+    abstract val rubricClassName: Property<String>
     val parentConfiguration: Property<GraderConfiguration> = project.objects.property()
 
     private val submissionConfigurationConvention = parentConfiguration.flatMap { it.submissionConfiguration }
