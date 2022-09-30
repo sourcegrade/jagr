@@ -97,6 +97,21 @@ class RuntimeClassLoaderImpl(
     }
 
     override fun loadClass(name: String, transformers: Iterable<ClassTransformer>): Class<*> {
+        val transformationResult = transformClass(name, transformers)
+        val newName = "${name}_${System.nanoTime()}"
+        val bytecode = ClassRenamingTransformer(name, newName).transform(transformationResult, this)
+        return defineClass(newName, bytecode, 0, bytecode.size)
+    }
+
+    override fun visitClass(name: String, vararg transformers: ClassTransformer) {
+        visitClass(name, transformers.asIterable())
+    }
+
+    override fun visitClass(name: String, transformers: Iterable<ClassTransformer>) {
+        transformClass(name, transformers)
+    }
+
+    private fun transformClass(name: String, transformers: Iterable<ClassTransformer>): ByteArray {
         val classStream = runtimeResources.classes[name]?.bytecode?.inputStream()
             ?: getResourceAsStream("${name.replace('.', '/')}.class")
             ?: throw ClassNotFoundException("Class $name not in submission or parent classloader")
@@ -104,9 +119,7 @@ class RuntimeClassLoaderImpl(
         for (transformer in transformers) {
             bytecode = transformer.transform(bytecode, this)
         }
-        val newName = "${name}_${System.nanoTime()}"
-        bytecode = ClassRenamingTransformer(name, newName).transform(bytecode, this)
-        return defineClass(newName, bytecode, 0, bytecode.size)
+        return bytecode
     }
 
     override fun getClassNames(): Set<String> = runtimeResources.classes.keys
