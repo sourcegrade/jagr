@@ -61,6 +61,22 @@ public interface RuntimeClassLoader {
     Class<?> loadClass(String name, Iterable<? extends ClassTransformer> transformers);
 
     /**
+     * Loads and visits the class with the specified name with the provided transformers.
+     *
+     * @param name         The name of the class to load
+     * @param transformers The transformers to apply to the class
+     */
+    void visitClass(String name, ClassTransformer... transformers);
+
+    /**
+     * Loads and visits the class with the specified name with the provided transformers.
+     *
+     * @param name         The name of the class to load
+     * @param transformers The transformers to apply to the class
+     */
+    void visitClass(String name, Iterable<? extends ClassTransformer> transformers);
+
+    /**
      * The names of all classes in this submission.
      *
      * @return The names of all classes in this submission
