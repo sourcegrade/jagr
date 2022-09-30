@@ -50,19 +50,15 @@ class RuntimeGraderImpl @Inject constructor(
             .fold(emptyMap()) { a, b -> a + b }
     }
 
-    private fun TestCycle.collectResults(): Map<GradedRubric, String> {
-        val result: MutableMap<GradedRubric, String> = mutableMapOf()
-        for (rubricProviderName in rubricProviderClassNames) {
-            val rubricProvider = try {
-                // rubric provider must first be loaded again together with submission classes
-                classLoader.loadClass(rubricProviderName).getConstructor().newInstance() as RubricProvider
-            } catch (e: Throwable) {
-                logger.error("Failed to initialize rubricProvider $rubricProviderName for $submission", e)
-                continue
-            }
-            val exportFileName = rubricProvider.getOutputFileName(submission) ?: submission.info.toString()
-            result[rubricProvider.rubric.grade(this)] = exportFileName
+    private fun TestCycle.collectResults(): Pair<GradedRubric, String>? {
+        val rubricProvider = try {
+            // rubric provider must first be loaded again together with submission classes
+            classLoader.loadClass(rubricProviderName).getConstructor().newInstance() as RubricProvider
+        } catch (e: Throwable) {
+            logger.error("Failed to initialize rubric provider $rubricProviderName for $submission", e)
+            return null
         }
-        return result
+        val exportFileName = rubricProvider.getOutputFileName(submission) ?: submission.info.toString()
+        return rubricProvider.rubric.grade(this) to exportFileName
     }
 }

@@ -3,10 +3,12 @@ package org.sourcegrade.jagr.gradle.task.grader
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
@@ -25,6 +27,10 @@ import java.io.File
 
 @Suppress("LeakingThis")
 abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
+
+    @get:Input
+    @get:Optional
+    abstract val rubricProviderName: Property<String>
 
     @get:Input
     val graderFiles: ListProperty<String> = project.objects.listProperty<String>().value(
@@ -61,12 +67,26 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         return result
     }
 
+    private fun GraderConfiguration.getRubricProviderNameRecursive(): String {
+        return if (rubricProviderName.isPresent) {
+            rubricProviderName.get()
+        } else if (parentConfiguration.isPresent) {
+            parentConfiguration.get().getRubricProviderNameRecursive()
+        } else {
+            throw GradleException(
+                "No rubricProviderName defined for grader configuration ${configurationName.get()} or its parents"
+            )
+        }
+    }
+
     @TaskAction
     fun runTask() {
+        val jagr = project.extensions.getByType<JagrExtension>()
         val graderInfo = GraderInfo(
             assignmentId.get(),
             Jagr.version,
             graderName.get(),
+            rubricProviderName.getOrElse(jagr.graders[configurationName.get()].getRubricProviderNameRecursive()),
             listOf(
                 SourceSetInfo("grader", graderFiles.get()),
                 SourceSetInfo("solution", solutionFiles.get())
@@ -82,7 +102,7 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         override fun determineTaskName(name: String) = "${name}WriteGraderInfo"
         override fun configureTask(task: GraderWriteInfoTask, project: Project, configuration: GraderConfiguration) {
             task.description = "Runs the ${task.sourceSetNames.get()} grader"
-            task.assignmentId.set(project.extensions.getByType<JagrExtension>().assignmentId)
+            task.rubricProviderName.set(configuration.rubricProviderName)
         }
     }
 }
