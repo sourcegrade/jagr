@@ -2,7 +2,6 @@ package org.sourcegrade.jagr.gradle.task.submission
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.provider.MapProperty
@@ -18,21 +17,26 @@ import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
 import org.sourcegrade.jagr.gradle.getFiles
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
+import org.sourcegrade.jagr.gradle.task.WriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.io.RepositoryConfiguration
 import org.sourcegrade.jagr.launcher.io.SourceSetInfo
 import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import java.io.File
 
 @Suppress("LeakingThis")
-abstract class SubmissionWriteInfoTask : DefaultTask(), SubmissionTask {
+abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
+
+    private val primaryContainer = project.extensions.getByType<JagrExtension>().submissions
 
     @get:Input
     val sourceSetFiles: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
-        configurationName.map { configuration ->
-            project.extensions.getByType<JagrExtension>().submissions[configuration].sourceSets.associate {
-                it.name to it.getFiles()
-            }
-        }
+        configurationName.map { c -> primaryContainer[c].sourceSets.associate { it.name to it.getFiles() } }
+    )
+
+    @get:Input
+    val dependencies: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
+        configurationName.map { c -> primaryContainer[c].getAllDependencies() }
     )
 
     @get:OutputFile
@@ -70,10 +74,12 @@ $errors
         val submissionInfo = SubmissionInfo(
             assignmentId.get(),
             Jagr.version,
+            sourceSetFiles.get().map { SourceSetInfo(it.key, it.value) },
+            dependencies.get(),
+            repositories.get().map { RepositoryConfiguration(it.first, it.second) },
             studentId.get(),
             firstName.get(),
             lastName.get(),
-            sourceSetFiles.get().map { SourceSetInfo(it.key, it.value) },
         )
         submissionInfoFile.get().apply {
             parentFile.mkdirs()

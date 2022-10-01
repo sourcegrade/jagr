@@ -23,12 +23,16 @@ import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.configurationcache.extensions.capitalized
+import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 
 abstract class AbstractConfiguration(
     val name: String,
-    project: Project,
+    private val project: Project,
 ) {
+
+    private val dependencyConfiguration = DependencyConfiguration()
     private val sourceSetContainer: SourceSetContainer = project.extensions.getByType()
     private val _sourceSets: MutableList<SourceSet> = mutableListOf()
     val sourceSets: List<SourceSet>
@@ -39,9 +43,43 @@ abstract class AbstractConfiguration(
     init {
         project.afterEvaluate {
             for (sourceSetName in sourceSetNames.get()) {
-                _sourceSets.add(sourceSetContainer.maybeCreate(sourceSetName))
+                val sourceSet = sourceSetContainer.maybeCreate(sourceSetName)
+                sourceSet.initialize(it)
+                _sourceSets.add(sourceSet)
             }
         }
+    }
+
+    private fun SourceSet.initialize(project: Project) {
+        project.dependencies {
+            for ((suffix, dependencyNotations) in dependencyConfiguration.dependencies) {
+                val configurationName = "$name${suffix.capitalized()}"
+                for (dependencyNotation in dependencyNotations) {
+                    add(configurationName, dependencyNotation)
+                }
+            }
+        }
+    }
+
+    private fun getConfiguration(configurationName: String, normalizedName: String?): Pair<String, List<String>>? {
+        return project.configurations.findByName(configurationName)?.let { configuration ->
+            val dependencies = configuration.dependencies.map { "${it.group}:${it.name}:${it.version}" }
+                .takeIf { it.isNotEmpty() } ?: return null
+            (normalizedName ?: configurationName) to dependencies
+        }
+    }
+
+    @JvmOverloads
+    internal fun getAllDependencies(normalizedName: String? = null): Map<String, List<String>> {
+        return sourceSets.flatMap { sourceSet ->
+            listOfNotNull(
+                getConfiguration(sourceSet.apiConfigurationName, normalizedName?.let { "${it}Api" }),
+                getConfiguration(sourceSet.compileOnlyConfigurationName, normalizedName?.let { "${it}CompileOnly" }),
+                getConfiguration(sourceSet.compileOnlyApiConfigurationName, normalizedName?.let { "${it}CompileOnlyApi" }),
+                getConfiguration(sourceSet.implementationConfigurationName, normalizedName?.let { "${it}Implementation" }),
+                getConfiguration(sourceSet.runtimeOnlyConfigurationName, normalizedName?.let { "${it}RuntimeOnly" }),
+            )
+        }.toMap()
     }
 
     fun from(vararg sourceSetNames: String) {
@@ -49,4 +87,6 @@ abstract class AbstractConfiguration(
             this.sourceSetNames.add(sourceSetName)
         }
     }
+
+    fun configureDependencies(block: DependencyConfiguration.() -> Unit) = dependencyConfiguration.block()
 }

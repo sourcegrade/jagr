@@ -28,32 +28,38 @@ import kotlinx.serialization.UseSerializers
  */
 @Serializable
 data class SubmissionInfo(
-    val assignmentId: String,
-    val jagrVersion: String,
+    override val assignmentId: String,
+    override val jagrVersion: String,
+    override val sourceSets: List<SourceSetInfo>,
+    override val dependencyConfigurations: Map<String, List<String>>,
+    override val repositoryConfigurations: List<RepositoryConfiguration>,
     val studentId: String,
     val firstName: String,
     val lastName: String,
-    val sourceSets: List<SourceSetInfo>,
-) {
+) : AssignmentArtifactInfo {
     override fun toString(): String = "${assignmentId}_${studentId}_${lastName}_$firstName"
 
     companion object Factory : SerializerFactory<SubmissionInfo> {
         override fun read(scope: SerializationScope.Input) = SubmissionInfo(
             scope.input.readUTF(),
             scope.input.readUTF(),
-            scope.input.readUTF(),
-            scope.input.readUTF(),
-            scope.input.readUTF(),
             scope.readList(),
+            scope.readMap(),
+            scope.readList(),
+            scope.input.readUTF(),
+            scope.input.readUTF(),
+            scope.input.readUTF(),
         )
 
         override fun write(obj: SubmissionInfo, scope: SerializationScope.Output) {
             scope.output.writeUTF(obj.assignmentId)
             scope.output.writeUTF(obj.jagrVersion)
+            scope.writeList(obj.sourceSets)
+            scope.writeMap(obj.dependencyConfigurations)
+            scope.writeList(obj.repositoryConfigurations)
             scope.output.writeUTF(obj.studentId)
             scope.output.writeUTF(obj.firstName)
             scope.output.writeUTF(obj.lastName)
-            scope.writeList(obj.sourceSets)
         }
     }
 }
