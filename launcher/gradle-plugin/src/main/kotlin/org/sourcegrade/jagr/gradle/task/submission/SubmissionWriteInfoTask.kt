@@ -31,14 +31,12 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
 
     @get:Input
     val sourceSetFiles: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
-        configurationName.map { configuration ->
-            primaryContainer[configuration].sourceSets.associate { it.name to it.getFiles() }
-        }
+        configurationName.map { c -> primaryContainer[c].sourceSets.associate { it.name to it.getFiles() } }
     )
 
     @get:Input
     val dependencies: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
-        configurationName.map { configuration -> primaryContainer[configuration].getAllDependencies() }
+        configurationName.map { c -> primaryContainer[c].getAllDependencies() }
     )
 
     @get:OutputFile
