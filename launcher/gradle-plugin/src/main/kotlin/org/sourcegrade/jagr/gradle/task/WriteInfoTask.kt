@@ -20,6 +20,7 @@
 package org.sourcegrade.jagr.gradle.task
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.internal.GradleInternal
 import org.gradle.api.provider.ListProperty
@@ -31,10 +32,10 @@ abstract class WriteInfoTask : DefaultTask() {
     @get:Input
     @Suppress("UnstableApiUsage")
     val repositories: ListProperty<Pair<String, String>> = project.objects.listProperty<Pair<String, String>>().value(
-        (project.gradle as GradleInternal).settings
-            .dependencyResolutionManagement
-            .repositories
-            .filterIsInstance<MavenArtifactRepository>()
-            .map { it.name to it.url.toString() }
+        (project.gradle as GradleInternal).settings.dependencyResolutionManagement.repositories.mapToPairs() +
+            project.repositories.mapToPairs()
     )
+
+    private fun RepositoryHandler.mapToPairs(): List<Pair<String, String>> =
+        filterIsInstance<MavenArtifactRepository>().map { it.name to it.url.toString() }
 }
