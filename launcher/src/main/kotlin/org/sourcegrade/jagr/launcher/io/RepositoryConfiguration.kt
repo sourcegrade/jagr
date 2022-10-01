@@ -19,10 +19,23 @@
 
 package org.sourcegrade.jagr.launcher.io
 
-interface AssignmentArtifactInfo {
-    val assignmentId: String
-    val jagrVersion: String
-    val sourceSets: List<SourceSetInfo>
-    val dependencyConfigurations: Map<String, List<String>>
-    val repositoryConfigurations: List<RepositoryConfiguration>
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class RepositoryConfiguration(
+    val name: String,
+    val url: String,
+) {
+
+    companion object Factory : SerializerFactory<RepositoryConfiguration> {
+        override fun read(scope: SerializationScope.Input) = RepositoryConfiguration(
+            scope.input.readUTF(),
+            scope.input.readUTF(),
+        )
+
+        override fun write(obj: RepositoryConfiguration, scope: SerializationScope.Output) {
+            scope.output.writeUTF(obj.name)
+            scope.output.writeUTF(obj.url)
+        }
+    }
 }

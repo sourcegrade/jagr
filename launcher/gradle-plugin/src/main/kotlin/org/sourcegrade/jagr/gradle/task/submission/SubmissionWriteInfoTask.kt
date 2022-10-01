@@ -2,7 +2,6 @@ package org.sourcegrade.jagr.gradle.task.submission
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.provider.MapProperty
@@ -18,13 +17,15 @@ import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
 import org.sourcegrade.jagr.gradle.getFiles
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
+import org.sourcegrade.jagr.gradle.task.WriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.io.RepositoryConfiguration
 import org.sourcegrade.jagr.launcher.io.SourceSetInfo
 import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import java.io.File
 
 @Suppress("LeakingThis")
-abstract class SubmissionWriteInfoTask : DefaultTask(), SubmissionTask {
+abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
 
     private val primaryContainer = project.extensions.getByType<JagrExtension>().submissions
 
@@ -77,7 +78,7 @@ $errors
             Jagr.version,
             sourceSetFiles.get().map { SourceSetInfo(it.key, it.value) },
             dependencies.get(),
-            emptyList(),
+            repositories.get().map { RepositoryConfiguration(it.first, it.second) },
             studentId.get(),
             firstName.get(),
             lastName.get(),

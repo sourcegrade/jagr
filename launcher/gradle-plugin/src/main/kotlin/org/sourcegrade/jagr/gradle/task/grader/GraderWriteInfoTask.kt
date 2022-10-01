@@ -2,7 +2,6 @@ package org.sourcegrade.jagr.gradle.task.grader
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
@@ -22,13 +21,15 @@ import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.forEachFile
 import org.sourcegrade.jagr.gradle.getFiles
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
+import org.sourcegrade.jagr.gradle.task.WriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.io.GraderInfo
+import org.sourcegrade.jagr.launcher.io.RepositoryConfiguration
 import org.sourcegrade.jagr.launcher.io.SourceSetInfo
 import java.io.File
 
 @Suppress("LeakingThis")
-abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
+abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
 
     private val primaryContainer = project.extensions.getByType<JagrExtension>().graders
     private val submissionContainer = project.extensions.getByType<JagrExtension>().submissions
@@ -43,8 +44,8 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
     )
 
     @get:Input
-    val solutionFiles: ListProperty<String> = project.objects.listProperty<String>().value(
-        solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.flatMap { it.getFiles() } }
+    val solutionFiles: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
+        solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.associate { it.name to it.getFiles() } }
     )
 
     @get:Input
@@ -101,12 +102,10 @@ abstract class GraderWriteInfoTask : DefaultTask(), GraderTask {
         val graderInfo = GraderInfo(
             assignmentId.get(),
             Jagr.version,
-            listOf(
-                SourceSetInfo("grader", graderFiles.get()),
-                SourceSetInfo("solution", solutionFiles.get())
-            ),
+            listOf(SourceSetInfo("grader", graderFiles.get())) +
+                solutionFiles.get().map { SourceSetInfo(it.key, it.value) },
             dependencies.get(),
-            emptyList(),
+            repositories.get().map { RepositoryConfiguration(it.first, it.second) },
             graderName.get(),
             rubricProviderName.orNull ?: run { configuration.getRubricProviderNameRecursive() },
         )

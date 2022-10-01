@@ -17,12 +17,24 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.launcher.io
+package org.sourcegrade.jagr.gradle.task
 
-interface AssignmentArtifactInfo {
-    val assignmentId: String
-    val jagrVersion: String
-    val sourceSets: List<SourceSetInfo>
-    val dependencyConfigurations: Map<String, List<String>>
-    val repositoryConfigurations: List<RepositoryConfiguration>
+import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.gradle.api.internal.GradleInternal
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.tasks.Input
+import org.gradle.kotlin.dsl.listProperty
+
+abstract class WriteInfoTask : DefaultTask() {
+
+    @get:Input
+    @Suppress("UnstableApiUsage")
+    val repositories: ListProperty<Pair<String, String>> = project.objects.listProperty<Pair<String, String>>().value(
+        (project.gradle as GradleInternal).settings
+            .dependencyResolutionManagement
+            .repositories
+            .filterIsInstance<MavenArtifactRepository>()
+            .map { it.name to it.url.toString() }
+    )
 }

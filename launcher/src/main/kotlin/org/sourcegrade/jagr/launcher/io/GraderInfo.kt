@@ -33,7 +33,7 @@ data class GraderInfo(
     override val jagrVersion: String,
     override val sourceSets: List<SourceSetInfo>,
     override val dependencyConfigurations: Map<String, List<String>>,
-    override val repositoryConfigurations: List<String>,
+    override val repositoryConfigurations: List<RepositoryConfiguration>,
     val name: String,
     val rubricProviderName: String,
 ) : AssignmentArtifactInfo {
