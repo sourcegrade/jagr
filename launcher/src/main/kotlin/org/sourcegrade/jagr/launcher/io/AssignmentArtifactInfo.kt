@@ -23,6 +23,6 @@ interface AssignmentArtifactInfo {
     val assignmentId: String
     val jagrVersion: String
     val sourceSets: List<SourceSetInfo>
-    val dependencyConfigurations: Map<String, List<String>>
+    val dependencyConfigurations: Map<String, Set<String>>
     val repositoryConfigurations: List<RepositoryConfiguration>
 }

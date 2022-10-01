@@ -32,7 +32,7 @@ data class GraderInfo(
     override val assignmentId: String,
     override val jagrVersion: String,
     override val sourceSets: List<SourceSetInfo>,
-    override val dependencyConfigurations: Map<String, List<String>>,
+    override val dependencyConfigurations: Map<String, Set<String>>,
     override val repositoryConfigurations: List<RepositoryConfiguration>,
     val name: String,
     val rubricProviderName: String,
@@ -60,14 +60,14 @@ data class GraderInfo(
     }
 }
 
-val GraderInfo.graderFiles: List<String> by named("grader")
+val GraderInfo.graderFiles: Set<String> by named("grader")
 
-val GraderInfo.mainFiles: List<String> by named("main")
+val GraderInfo.mainFiles: Set<String> by named("main")
 
-val GraderInfo.testFiles: List<String> by named("test")
+val GraderInfo.testFiles: Set<String> by named("test")
 
-val GraderInfo.solutionFiles: List<String>
+val GraderInfo.solutionFiles: Set<String>
     get() = mainFiles + testFiles
 
-private fun named(name: String): ReadOnlyProperty<GraderInfo, List<String>> =
-    ReadOnlyProperty { info, _ -> info.sourceSets.first { it.name == name }.files }
+private fun named(name: String): ReadOnlyProperty<GraderInfo, Set<String>> =
+    ReadOnlyProperty { info, _ -> info.sourceSets.first { it.name == name }.files.flatMapTo(mutableSetOf()) { it.value } }

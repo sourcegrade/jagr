@@ -21,18 +21,18 @@ package org.sourcegrade.jagr.gradle
 
 import org.gradle.api.tasks.SourceSet
 
-internal fun SourceSet.forEachFile(action: (String) -> Unit) {
-    return allSource.files.forEach { file ->
-        allSource.srcDirs.asSequence()
-            .map(file::relativeTo)
-            .reduce { a, b -> if (a.path.length < b.path.length) a else b }
-            .path
-            .apply(action)
+internal fun SourceSet.forEachFile(action: (directorySet: String, fileName: String) -> Unit) {
+    for (directorySet in allSource.sourceDirectories) {
+        for (file in directorySet.walkTopDown()) {
+            if (file.isFile) {
+                action(directorySet.name, file.relativeTo(directorySet).path)
+            }
+        }
     }
 }
 
-internal fun SourceSet.getFiles(): List<String> {
-    val result = mutableListOf<String>()
-    forEachFile { result.add(it) }
+internal fun SourceSet.getFiles(): Map<String, Set<String>> {
+    val result = mutableMapOf<String, MutableSet<String>>()
+    forEachFile { directorySet, fileName -> result.computeIfAbsent(directorySet) { mutableSetOf() }.add(fileName) }
     return result
 }

@@ -61,18 +61,18 @@ abstract class AbstractConfiguration(
         }
     }
 
-    private fun getConfiguration(configurationName: String, normalizedName: String?): Pair<String, List<String>>? {
+    private fun getConfiguration(configurationName: String, normalizedName: String?): Pair<String, Set<String>>? {
         return project.configurations.findByName(configurationName)?.let { configuration ->
-            val dependencies = configuration.dependencies.map { "${it.group}:${it.name}:${it.version}" }
+            val dependencies = configuration.dependencies.mapTo(mutableSetOf()) { "${it.group}:${it.name}:${it.version}" }
                 .takeIf { it.isNotEmpty() } ?: return null
             (normalizedName ?: configurationName) to dependencies
         }
     }
 
     @JvmOverloads
-    internal fun getAllDependencies(normalizedName: String? = null): Map<String, List<String>> {
+    internal fun getAllDependencies(normalizedName: String? = null): Map<String, Set<String>> {
         return sourceSets.flatMap { sourceSet ->
-            listOfNotNull(
+            setOfNotNull(
                 getConfiguration(sourceSet.apiConfigurationName, normalizedName?.let { "${it}Api" }),
                 getConfiguration(sourceSet.compileOnlyConfigurationName, normalizedName?.let { "${it}CompileOnly" }),
                 getConfiguration(sourceSet.compileOnlyApiConfigurationName, normalizedName?.let { "${it}CompileOnlyApi" }),
