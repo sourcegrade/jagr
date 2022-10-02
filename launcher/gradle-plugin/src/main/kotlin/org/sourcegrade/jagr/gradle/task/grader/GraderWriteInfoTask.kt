@@ -65,9 +65,7 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
         val result = mutableMapOf<String, MutableSet<String>>()
         sourceSets.forEach { sourceSet ->
             sourceSet.forEachFile { directorySet, fileName ->
-                result.computeIfAbsent(directorySet) { mutableSetOf() }.let { list ->
-                    if (fileName !in list) list.add(fileName)
-                }
+                result.computeIfAbsent(directorySet) { mutableSetOf() }.add(fileName)
             }
         }
         // technically this is a race condition, but we can't use Provider.zip because the value is not always configured
