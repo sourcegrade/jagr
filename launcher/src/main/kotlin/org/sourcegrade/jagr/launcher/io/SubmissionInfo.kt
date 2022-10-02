@@ -31,7 +31,7 @@ data class SubmissionInfo(
     override val assignmentId: String,
     override val jagrVersion: String,
     override val sourceSets: List<SourceSetInfo>,
-    override val dependencyConfigurations: Map<String, List<String>>,
+    override val dependencyConfigurations: Map<String, Set<String>>,
     override val repositoryConfigurations: List<RepositoryConfiguration>,
     val studentId: String,
     val firstName: String,

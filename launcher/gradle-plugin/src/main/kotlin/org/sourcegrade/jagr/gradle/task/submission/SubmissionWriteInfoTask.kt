@@ -30,14 +30,12 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
     private val primaryContainer = project.extensions.getByType<JagrExtension>().submissions
 
     @get:Input
-    val sourceSetFiles: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
-        configurationName.map { c -> primaryContainer[c].sourceSets.associate { it.name to it.getFiles() } }
-    )
+    val files: MapProperty<String, Map<String, Set<String>>> = project.objects.mapProperty<String, Map<String, Set<String>>>()
+        .value(configurationName.map { c -> primaryContainer[c].sourceSets.associate { it.name to it.getFiles() } })
 
     @get:Input
-    val dependencies: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
-        configurationName.map { c -> primaryContainer[c].getAllDependencies() }
-    )
+    val dependencies: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>()
+        .value(configurationName.map { c -> primaryContainer[c].getAllDependencies() })
 
     @get:OutputFile
     val submissionInfoFile: Property<File> = project.objects.property<File>()
@@ -74,7 +72,7 @@ $errors
         val submissionInfo = SubmissionInfo(
             assignmentId.get(),
             Jagr.version,
-            sourceSetFiles.get().map { SourceSetInfo(it.key, it.value) },
+            files.get().map { SourceSetInfo(it.key, it.value) },
             dependencies.get(),
             repositories.get().map { RepositoryConfiguration(it.first, it.second) },
             studentId.get(),

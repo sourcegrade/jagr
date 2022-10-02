@@ -50,8 +50,8 @@ class GraderJarImpl(
      */
     override val testClassNames: List<String>
 
-    private val graderFiles = info.graderFiles.toSet()
-    private val solutionFiles = info.solutionFiles.toSet()
+    private val graderFiles = info.graderFiles
+    private val solutionFiles = info.solutionFiles
 
     val containerWithoutSolution = container.copy(
         source = container.source.copy(

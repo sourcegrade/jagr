@@ -4,7 +4,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -13,7 +12,6 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
@@ -39,17 +37,18 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
     abstract val rubricProviderName: Property<String>
 
     @get:Input
-    val graderFiles: ListProperty<String> = project.objects.listProperty<String>().value(
+    val graderFiles: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>().value(
         configurationName.map { c -> primaryContainer[c].getFilesRecursive() }
     )
 
     @get:Input
-    val solutionFiles: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
-        solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.associate { it.name to it.getFiles() } }
-    )
+    val solutionFiles: MapProperty<String, Map<String, Set<String>>> =
+        project.objects.mapProperty<String, Map<String, Set<String>>>().value(
+            solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.associate { it.name to it.getFiles() } }
+        )
 
     @get:Input
-    val dependencies: MapProperty<String, List<String>> = project.objects.mapProperty<String, List<String>>().value(
+    val dependencies: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>().value(
         configurationName.map { c -> primaryContainer[c].getAllDependenciesRecursive() }
     )
 
@@ -62,19 +61,23 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
         dependsOn("compileJava")
     }
 
-    private fun GraderConfiguration.getFilesRecursive(): List<String> {
-        val result = mutableListOf<String>()
+    private fun GraderConfiguration.getFilesRecursive(): Map<String, Set<String>> {
+        val result = mutableMapOf<String, MutableSet<String>>()
         sourceSets.forEach { sourceSet ->
-            sourceSet.forEachFile { result.add(it) }
+            sourceSet.forEachFile { directorySet, fileName ->
+                result.computeIfAbsent(directorySet) { mutableSetOf() }.add(fileName)
+            }
         }
         // technically this is a race condition, but we can't use Provider.zip because the value is not always configured
         if (parentConfiguration.isPresent) {
-            result.addAll(parentConfiguration.get().getFilesRecursive())
+            parentConfiguration.get().getFilesRecursive().forEach { (directorySet, files) ->
+                result.computeIfAbsent(directorySet) { mutableSetOf() }.addAll(files)
+            }
         }
         return result
     }
 
-    private fun GraderConfiguration.getAllDependenciesRecursive(): Map<String, List<String>> {
+    private fun GraderConfiguration.getAllDependenciesRecursive(): Map<String, Set<String>> {
         val ownDependencies = getAllDependencies("grader") +
             solutionConfiguration.get().getAllDependencies()
         return if (parentConfiguration.isPresent) {

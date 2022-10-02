@@ -24,14 +24,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SourceSetInfo(
     val name: String,
-    val files: List<String>,
+    val files: Map<String, Set<String>>,
 ) {
     companion object Factory : SerializerFactory<SourceSetInfo> {
-        override fun read(scope: SerializationScope.Input) = SourceSetInfo(scope.input.readUTF(), scope.readList())
+        override fun read(scope: SerializationScope.Input) = SourceSetInfo(scope.input.readUTF(), scope.readMap())
 
         override fun write(obj: SourceSetInfo, scope: SerializationScope.Output) {
             scope.output.writeUTF(obj.name)
-            scope.writeList(obj.files)
+            scope.writeMap(obj.files)
         }
     }
 }
