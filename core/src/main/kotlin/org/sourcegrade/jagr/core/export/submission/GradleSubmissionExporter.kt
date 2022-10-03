@@ -22,8 +22,6 @@ package org.sourcegrade.jagr.core.export.submission
 import com.google.common.collect.FluentIterable
 import com.google.common.reflect.ClassPath
 import com.google.inject.Inject
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
@@ -144,12 +142,27 @@ class GradleSubmissionExporter @Inject constructor(
     private fun ResourceContainer.Builder.writeSubmission(submission: Submission, graderJar: GraderJarImpl?) {
         if (submission !is JavaSubmission) return
         val submissionName = submission.submissionInfo.toString()
-        addResource {
-            name = "$submissionName/src/main/resources/submission-info.json"
-            outputStream.writer().use { it.write(Json.encodeToString(submission.submissionInfo)) }
+        for (sourceSet in submission.submissionInfo.sourceSets) {
+            sourceSet.files.asSequence()
+                .flatMap { (directorySet, files) -> files.map { directorySet to it } }
+                .forEach { (directorySet, fileName) ->
+                    if (fileName == "submission-info.json") {
+                        return@forEach
+                    }
+                    addResource {
+                        name = "$submissionName/src/${sourceSet.name}/${directorySet}/$fileName"
+                        if (directorySet == "resources") {
+                            submission.compileResult.runtimeResources.resources[fileName]
+                                ?.also { resource -> outputStream.writeBytes(resource) }
+                                ?: logger.error("Resource $fileName not found in submission $submissionName")
+                        } else {
+                            submission.compileResult.source.sourceFiles[fileName]
+                                ?.also { sourceFile -> outputStream.writer().use { it.write(sourceFile.content) } }
+                                ?: logger.error("Source file $fileName not found in submission $submissionName")
+                        }
+                    }
+                }
         }
-        writeSourceFiles("$submissionName/src/main/java/", submission.compileResult.source.sourceFiles)
-        writeResources("$submissionName/src/main/resources/", submission.compileResult.runtimeResources.resources)
         if (graderJar != null) {
             writeSourceFiles("$submissionName/src/test/java/", graderJar.containerWithoutSolution.source.sourceFiles)
             writeResources("$submissionName/src/test/resources/", graderJar.containerWithoutSolution.runtimeResources.resources)
