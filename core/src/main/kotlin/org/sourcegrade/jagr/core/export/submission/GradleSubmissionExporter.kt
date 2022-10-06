@@ -207,11 +207,11 @@ class GradleSubmissionExporter @Inject constructor(
                     }
                     if (submissionDeps.isNotEmpty()) {
                         """
-                            /*
-                             * ATTENTION:
-                             * the following dependencies were added manually by the student
-                             * you may uncomment the following lines to add them to the compilation classpath
-                             */
+                        /*
+                         * ATTENTION:
+                         * the following dependencies were added manually by the student
+                         * you may uncomment the following lines to add them to the compilation classpath
+                         */
                         """.trimIndent().prependIndent(" ".repeat(8)).also { printer.println(it) }
                         for (submissionDep in submissionDeps) {
                             printer.println("//        $submissionDep")
