@@ -130,13 +130,32 @@ class GradleSubmissionExporter @Inject constructor(
 
     private fun ResourceContainer.Builder.writeSettings(graderName: String, submissions: List<Submission>) = addResource {
         name = "settings.gradle.kts"
-        PrintWriter(outputStream, false, Charsets.UTF_8).use {
-            it.appendLine("rootProject.name = \"$graderName\"")
+        PrintWriter(outputStream, false, Charsets.UTF_8).use { printer ->
+            """
+                dependencyResolutionManagement {
+                    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+                    repositories {
+                        mavenLocal()
+                        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                        mavenCentral()
+                    }
+                }
+
+                pluginManagement {
+                    repositories {
+                        mavenLocal()
+                        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                        mavenCentral()
+                        gradlePluginPortal()
+                    }
+                }
+            """.trimIndent().also { printer.println(it)}
+            printer.appendLine("rootProject.name = \"$graderName\"")
             submissions.forEach { submission ->
-                it.appendLine("include(\"${submission.info}\")")
+                printer.appendLine("include(\"${submission.info}\")")
             }
-            it.appendLine()
-            it.flush()
+            printer.appendLine()
+            printer.flush()
         }
     }
 
@@ -164,6 +183,9 @@ class GradleSubmissionExporter @Inject constructor(
                             studentId.set("${info.studentId}")
                             firstName.set("${info.firstName}")
                             lastName.set("${info.lastName}")
+                            configureDependencies {
+                                implementation("org.tudalgo:fopbot:0.4.0-SNAPSHOT")
+                            }
                         }
                     }
                 """.trimIndent().also { printer.println(it) }
