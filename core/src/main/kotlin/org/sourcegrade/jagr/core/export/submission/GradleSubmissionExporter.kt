@@ -130,13 +130,32 @@ class GradleSubmissionExporter @Inject constructor(
 
     private fun ResourceContainer.Builder.writeSettings(graderName: String, submissions: List<Submission>) = addResource {
         name = "settings.gradle.kts"
-        PrintWriter(outputStream, false, Charsets.UTF_8).use {
-            it.appendLine("rootProject.name = \"$graderName\"")
+        PrintWriter(outputStream, false, Charsets.UTF_8).use { printer ->
+            """
+                dependencyResolutionManagement {
+                    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+                    repositories {
+                        mavenLocal()
+                        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                        mavenCentral()
+                    }
+                }
+
+                pluginManagement {
+                    repositories {
+                        mavenLocal()
+                        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                        mavenCentral()
+                        gradlePluginPortal()
+                    }
+                }
+            """.trimIndent().also { printer.println(it) }
+            printer.appendLine("rootProject.name = \"$graderName\"")
             submissions.forEach { submission ->
-                it.appendLine("include(\"${submission.info}\")")
+                printer.appendLine("include(\"${submission.info}\")")
             }
-            it.appendLine()
-            it.flush()
+            printer.appendLine()
+            printer.flush()
         }
     }
 
@@ -147,12 +166,11 @@ class GradleSubmissionExporter @Inject constructor(
         if (graderJar != null) {
             writeFiles(
                 submissionName,
-                // TODO: Optimize with set maybe
                 graderJar.info.sourceSets.filter { a -> submission.submissionInfo.sourceSets.none { b -> a.name == b.name } },
                 graderJar.containerWithoutSolution.source
             )
         }
-        val info = submission.submissionInfo
+        val sInfo = submission.submissionInfo
         addResource {
             name = "$submissionName/build.gradle.kts"
             PrintWriter(outputStream, false, Charsets.UTF_8).use { printer ->
@@ -161,25 +179,47 @@ class GradleSubmissionExporter @Inject constructor(
                     assignmentId.set("h00")
                     submissions {
                         val main by creating {
-                            studentId.set("${info.studentId}")
-                            firstName.set("${info.firstName}")
-                            lastName.set("${info.lastName}")
+                            studentId.set("${sInfo.studentId}")
+                            firstName.set("${sInfo.firstName}")
+                            lastName.set("${sInfo.lastName}")
                         }
                     }
                 """.trimIndent().also { printer.println(it) }
-
                 if (graderJar != null) {
-                    val ginfo = graderJar.info
+                    val gInfo = graderJar.info
                     """
                     graders {
                         val grader by creating {
-                            graderName.set("${ginfo.name}")
-                            rubricProviderName.set("${ginfo.rubricProviderName}")
+                            graderName.set("${gInfo.name}")
+                            rubricProviderName.set("${gInfo.rubricProviderName}")
                         }
                     }
-                """.trimIndent().prependIndent("    ").also { printer.println(it) }
+                    """.trimIndent().prependIndent(" ".repeat(4)).also { printer.println(it) }
                 }
-                printer.println("}")
+                printer.println("}\n")
+                val graderDeps = graderJar?.info?.dependencyConfigurations?.formatDependencies() ?: emptySet()
+                val submissionDeps = sInfo.dependencyConfigurations.formatDependencies() - graderDeps
+                if (graderDeps.isNotEmpty() || submissionDeps.isNotEmpty()) {
+                    printer.println("dependencies {")
+                    printer.println("    project.afterEvaluate {")
+                    for (graderDep in graderDeps) {
+                        printer.println("        $graderDep")
+                    }
+                    if (submissionDeps.isNotEmpty()) {
+                        """
+                            /*
+                             * ATTENTION:
+                             * the following dependencies were added manually by the student
+                             * you may uncomment the following lines to add them to the compilation classpath
+                             */
+                        """.trimIndent().prependIndent(" ".repeat(8)).also { printer.println(it) }
+                        for (submissionDep in submissionDeps) {
+                            printer.println("//        $submissionDep")
+                        }
+                    }
+                    printer.println("    }")
+                    printer.println("}")
+                }
             }
         }
     }
@@ -210,6 +250,11 @@ class GradleSubmissionExporter @Inject constructor(
                     }
                 }
         }
+    }
+
+    private fun Map<String, Set<String>>.formatDependencies(): Set<String> {
+        return flatMap { (sourceSet, dependencies) -> dependencies.associateBy { sourceSet }.toList() }
+            .mapTo(mutableSetOf()) { "${it.first}(\"${it.second}\")" }
     }
 
     companion object {
