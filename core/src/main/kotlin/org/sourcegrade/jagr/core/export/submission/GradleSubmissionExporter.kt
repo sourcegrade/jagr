@@ -148,7 +148,7 @@ class GradleSubmissionExporter @Inject constructor(
             writeFiles(
                 submissionName,
                 // TODO: Optimize with set maybe
-                graderJar.info.sourceSets.filter { a -> submission.submissionInfo.sourceSets.any { b -> a.name == b.name } },
+                graderJar.info.sourceSets.filter { a -> submission.submissionInfo.sourceSets.none { b -> a.name == b.name } },
                 graderJar.containerWithoutSolution.source
             )
         }
