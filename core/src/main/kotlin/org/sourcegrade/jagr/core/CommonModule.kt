@@ -34,6 +34,7 @@ import org.sourcegrade.jagr.core.executor.GradingQueueFactoryImpl
 import org.sourcegrade.jagr.core.executor.TimeoutHandler
 import org.sourcegrade.jagr.core.export.rubric.GermanCSVExporter
 import org.sourcegrade.jagr.core.export.rubric.MoodleJSONExporter
+import org.sourcegrade.jagr.core.export.rubric.PrettyHTMLExporter
 import org.sourcegrade.jagr.core.export.submission.EclipseSubmissionExporter
 import org.sourcegrade.jagr.core.export.submission.GradleSubmissionExporter
 import org.sourcegrade.jagr.core.extra.ExtrasManagerImpl
@@ -75,6 +76,7 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
         bind(ExtrasManager::class.java).to(ExtrasManagerImpl::class.java)
         bind(GradedRubricExporter.CSV::class.java).to(GermanCSVExporter::class.java)
         bind(GradedRubricExporter.HTML::class.java).to(MoodleJSONExporter::class.java)
+        bind(GradedRubricExporter.Moodle::class.java).to(PrettyHTMLExporter::class.java)
         bind(Grader.Factory::class.java).to(GraderFactoryImpl::class.java)
         bind(GradeResult.Factory::class.java).to(GradeResultFactoryImpl::class.java)
         bind(GradingQueue.Factory::class.java).to(GradingQueueFactoryImpl::class.java)
@@ -89,6 +91,7 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
         bind(SubmissionExporter.Eclipse::class.java).to(EclipseSubmissionExporter::class.java)
         bind(SubmissionExporter.Gradle::class.java).to(GradleSubmissionExporter::class.java)
         bind(TestCycleResolver.Internal::class.java).to(TestCycleParameterResolver::class.java)
+
 
         with(configuration.configurationLoader) {
             load().let { root ->
