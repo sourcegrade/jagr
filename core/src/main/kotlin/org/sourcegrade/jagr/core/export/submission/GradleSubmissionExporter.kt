@@ -152,6 +152,36 @@ class GradleSubmissionExporter @Inject constructor(
                 graderJar.containerWithoutSolution.source
             )
         }
+        val info = submission.submissionInfo
+        addResource {
+            name = "$submissionName/build.gradle.kts"
+            PrintWriter(outputStream, false, Charsets.UTF_8).use { printer ->
+                """
+                jagr {
+                    assignmentId.set("h00")
+                    submissions {
+                        val main by creating {
+                            studentId.set("${info.studentId}")
+                            firstName.set("${info.firstName}")
+                            lastName.set("${info.lastName}")
+                        }
+                    }
+                """.trimIndent().also { printer.println(it) }
+
+                if (graderJar != null) {
+                    val ginfo = graderJar.info
+                    """
+                    graders {
+                        val grader by creating {
+                            graderName.set("${ginfo.name}")
+                            rubricProviderName.set("${ginfo.rubricProviderName}")
+                        }
+                    }
+                """.trimIndent().prependIndent("    ").also { printer.println(it) }
+                }
+                printer.println("}")
+            }
+        }
     }
 
     private fun ResourceContainer.Builder.writeFiles(
