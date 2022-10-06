@@ -23,12 +23,13 @@ import com.google.common.collect.FluentIterable
 import com.google.common.reflect.ClassPath
 import com.google.inject.Inject
 import org.apache.logging.log4j.Logger
-import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.core.compiler.java.JavaSourceContainer
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
+import org.sourcegrade.jagr.launcher.io.SourceSetInfo
 import org.sourcegrade.jagr.launcher.io.SubmissionExporter
 import org.sourcegrade.jagr.launcher.io.addResource
 import org.sourcegrade.jagr.launcher.io.buildResourceContainer
@@ -142,7 +143,23 @@ class GradleSubmissionExporter @Inject constructor(
     private fun ResourceContainer.Builder.writeSubmission(submission: Submission, graderJar: GraderJarImpl?) {
         if (submission !is JavaSubmission) return
         val submissionName = submission.submissionInfo.toString()
-        for (sourceSet in submission.submissionInfo.sourceSets) {
+        writeFiles(submissionName, submission.submissionInfo.sourceSets, submission.compileResult.source)
+        if (graderJar != null) {
+            writeFiles(
+                submissionName,
+                // TODO: Optimize with set maybe
+                graderJar.info.sourceSets.filter { a -> submission.submissionInfo.sourceSets.any { b -> a.name == b.name } },
+                graderJar.containerWithoutSolution.source
+            )
+        }
+    }
+
+    private fun ResourceContainer.Builder.writeFiles(
+        submissionName: String,
+        sourceSets: List<SourceSetInfo>,
+        source: JavaSourceContainer,
+    ) {
+        for (sourceSet in sourceSets) {
             sourceSet.files.asSequence()
                 .flatMap { (directorySet, files) -> files.map { directorySet to it } }
                 .forEach { (directorySet, fileName) ->
@@ -150,40 +167,18 @@ class GradleSubmissionExporter @Inject constructor(
                         return@forEach
                     }
                     addResource {
-                        name = "$submissionName/src/${sourceSet.name}/${directorySet}/$fileName"
+                        name = "$submissionName/src/${sourceSet.name}/$directorySet/$fileName"
                         if (directorySet == "resources") {
-                            submission.compileResult.runtimeResources.resources[fileName]
+                            source.resources[fileName]
                                 ?.also { resource -> outputStream.writeBytes(resource) }
                                 ?: logger.error("Resource $fileName not found in submission $submissionName")
                         } else {
-                            submission.compileResult.source.sourceFiles[fileName]
+                            source.sourceFiles[fileName]
                                 ?.also { sourceFile -> outputStream.writer().use { it.write(sourceFile.content) } }
                                 ?: logger.error("Source file $fileName not found in submission $submissionName")
                         }
                     }
                 }
-        }
-        if (graderJar != null) {
-            writeSourceFiles("$submissionName/src/test/java/", graderJar.containerWithoutSolution.source.sourceFiles)
-            writeResources("$submissionName/src/test/resources/", graderJar.containerWithoutSolution.runtimeResources.resources)
-        }
-    }
-
-    private fun ResourceContainer.Builder.writeSourceFiles(prefix: String, sourceFiles: Map<String, SourceFile>) {
-        for ((fileName, sourceFile) in sourceFiles) {
-            addResource {
-                name = prefix + fileName
-                outputStream.writer().use { it.write(sourceFile.content) }
-            }
-        }
-    }
-
-    private fun ResourceContainer.Builder.writeResources(prefix: String, resources: Map<String, ByteArray>) {
-        for ((fileName, resource) in resources) {
-            addResource {
-                name = prefix + fileName
-                outputStream.writeBytes(resource)
-            }
         }
     }
 
