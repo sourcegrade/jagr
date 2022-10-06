@@ -132,23 +132,23 @@ class GradleSubmissionExporter @Inject constructor(
         name = "settings.gradle.kts"
         PrintWriter(outputStream, false, Charsets.UTF_8).use { printer ->
             """
-                dependencyResolutionManagement {
-                    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-                    repositories {
-                        mavenLocal()
-                        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
-                        mavenCentral()
-                    }
+            dependencyResolutionManagement {
+                repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+                repositories {
+                    mavenLocal()
+                    maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                    mavenCentral()
                 }
+            }
 
-                pluginManagement {
-                    repositories {
-                        mavenLocal()
-                        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
-                        mavenCentral()
-                        gradlePluginPortal()
-                    }
+            pluginManagement {
+                repositories {
+                    mavenLocal()
+                    maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                    mavenCentral()
+                    gradlePluginPortal()
                 }
+            }
             """.trimIndent().also { printer.println(it) }
             printer.appendLine("rootProject.name = \"$graderName\"")
             submissions.forEach { submission ->
