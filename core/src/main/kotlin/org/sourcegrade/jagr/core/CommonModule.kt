@@ -89,13 +89,7 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
         bind(SubmissionExporter.Eclipse::class.java).to(EclipseSubmissionExporter::class.java)
         bind(SubmissionExporter.Gradle::class.java).to(GradleSubmissionExporter::class.java)
         bind(TestCycleResolver.Internal::class.java).to(TestCycleParameterResolver::class.java)
-
-        with(configuration.configurationLoader) {
-            load().let { root ->
-                if (root.empty()) Config().also { root.set(it).also(::save) }
-                else root[Config::class.java]
-            }.also(bind(Config::class.java)::toInstance)
-        }
+        bind(Config::class.java).toInstance(configuration.config)
 
         requestStaticInjection(
             ClassTransformer.FactoryProvider::class.java,
