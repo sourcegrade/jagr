@@ -32,7 +32,7 @@ data class Config(
 )
 
 @ConfigSerializable
-class Dir(
+data class Dir(
     @field:Comment("Runtime dependencies for submissions")
     var libs: String = "libs",
     @field:Comment("Rubrics export directory")
@@ -46,7 +46,7 @@ class Dir(
 )
 
 @ConfigSerializable
-class Executor(
+data class Executor(
     @field:Comment(
         """
 The maximum amount of concurrency to use for grading.
@@ -100,22 +100,23 @@ invocations of checkTimeout() will result in an AssertionFailedError
 )
 
 @ConfigSerializable
-class Extras(
+data class Extras(
     val moodleUnpack: MoodleUnpack = MoodleUnpack(),
 ) {
     @ConfigSerializable
-    class MoodleUnpack : Extra() {
-        val assignmentIdRegex = ".*Abgabe.*(?<assignmentId>[0-9]{2}).*[.]zip"
-        val studentRegex: String = ".* - (?<studentId>([a-z]{2}[0-9]{2}[a-z]{4})|([a-z]+_[a-z]+))/submissions/.*[.]jar"
-    }
+    data class MoodleUnpack(
+        override val enabled: Boolean = true,
+        val assignmentIdRegex: String = ".*Abgabe.*(?<assignmentId>[0-9]{2}).*[.]zip",
+        val studentRegex: String = ".* - (?<studentId>([a-z]{2}[0-9]{2}[a-z]{4})|([a-z]+_[a-z]+))/submissions/.*[.]jar",
+    ) : Extra
 
-    abstract class Extra {
-        val enabled: Boolean = true
+    interface Extra {
+        val enabled: Boolean
     }
 }
 
 @ConfigSerializable
-class Transformers(
+data class Transformers(
     val timeout: TimeoutTransformer = TimeoutTransformer(),
 ) {
     interface Transformer {
