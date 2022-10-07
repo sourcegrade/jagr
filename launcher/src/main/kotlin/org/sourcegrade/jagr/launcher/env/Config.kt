@@ -24,7 +24,7 @@ import org.spongepowered.configurate.objectmapping.meta.Comment
 
 @ConfigSerializable
 data class Config(
-    @Comment("The locations of the following directories may be configured here")
+    @field:Comment("The locations of the following directories may be configured here")
     val dir: Dir = Dir(),
     val executor: Executor = Executor(),
     val extras: Extras = Extras(),
@@ -33,21 +33,21 @@ data class Config(
 
 @ConfigSerializable
 class Dir(
-    @Comment("Runtime dependencies for submissions")
+    @field:Comment("Runtime dependencies for submissions")
     var libs: String = "libs",
-    @Comment("Rubrics export directory")
+    @field:Comment("Rubrics export directory")
     var rubrics: String = "rubrics",
-    @Comment("Submissions ingest directory")
+    @field:Comment("Submissions ingest directory")
     var submissions: String = "submissions",
-    @Comment("Submission export directory")
+    @field:Comment("Submission export directory")
     var submissionsExport: String = "submissions-export",
-    @Comment("Grader jar ingest directory")
+    @field:Comment("Grader jar ingest directory")
     var graders: String = "graders",
 )
 
 @ConfigSerializable
 class Executor(
-    @Comment(
+    @field:Comment(
         """
 The maximum amount of concurrency to use for grading.
 For a given concurrency n, Jagr will ensure that a maximum of n threads or processes are used concurrently that actively run
@@ -55,7 +55,7 @@ submission code.
 """
     )
     val concurrency: Int = 4,
-    @Comment(
+    @field:Comment(
         """
 The executor mode to use. The following options are available:
 - "single" ::
@@ -78,7 +78,7 @@ The executor mode to use. The following options are available:
 """
     )
     val mode: String = "process",
-    @Comment(
+    @field:Comment(
         """
 The grading thread's maximum permitted elapsed userTime in milliseconds since the last timeout before an
 AssertionFailedError is thrown. If a thread's userTime satisfies
@@ -87,7 +87,7 @@ the current userTime is stored for comparison later, and an AssertionFailedError
 """
     )
     val timeoutIndividual: Long = 10_000L,
-    @Comment(
+    @field:Comment(
         """
 The grading thread's maximum permitted elapsed userTime in milliseconds (from thread start) before an
 AssertionFailedError is thrown. If a thread's userTime satisfies

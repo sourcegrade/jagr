@@ -14,6 +14,7 @@ dependencies {
     apiProject(project, "jagr-grader-api")
     api(libs.coroutines)
     implementation(libs.configurate.hocon)
+    implementation(libs.configurate.kotlin)
     implementation(libs.annotations)
     implementation(libs.serialization)
     implementation(libs.logging.core)

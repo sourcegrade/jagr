@@ -22,6 +22,7 @@ package org.sourcegrade.jagr.launcher.env
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader
+import org.spongepowered.configurate.kotlin.objectMapperFactory
 import java.io.File
 
 interface LaunchConfiguration {
@@ -32,6 +33,11 @@ interface LaunchConfiguration {
         override val config: Config by lazy {
             val loader = HoconConfigurationLoader.builder()
                 .file(File("jagr.conf"))
+                .defaultOptions { options ->
+                    options.serializers { builder ->
+                        builder.registerAnnotatedObjects(objectMapperFactory())
+                    }
+                }
                 .build()
             val result: Config? = loader.load().let { root ->
                 if (root.empty()) {
