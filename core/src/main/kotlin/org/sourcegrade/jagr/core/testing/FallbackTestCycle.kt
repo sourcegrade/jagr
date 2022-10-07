@@ -21,16 +21,16 @@ package org.sourcegrade.jagr.core.testing
 
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoaderImpl
 
 class FallbackTestCycle(
-    private val rubricProviderClassNames: List<String>,
+    private val rubricProviderClassName: String,
     private val submission: Submission,
-    private val classLoader: RuntimeClassLoader,
+    private val classLoader: RuntimeClassLoaderImpl,
     private val notes: List<String>,
 ) : TestCycle {
-    override fun getRubricProviderClassNames(): List<String> = rubricProviderClassNames
-    override fun getClassLoader(): ClassLoader = classLoader
+    override fun getRubricProviderName(): String = rubricProviderClassName
+    override fun getClassLoader(): RuntimeClassLoaderImpl = classLoader
     override fun getSubmission(): Submission = submission
     override fun getTestsSucceededCount(): Int = -1
     override fun getTestsStartedCount(): Int = -1

@@ -19,20 +19,40 @@
 
 package org.sourcegrade.jagr.launcher.env
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.spongepowered.configurate.CommentedConfigurationNode
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader
-import org.spongepowered.configurate.loader.ConfigurationLoader
+import org.spongepowered.configurate.kotlin.objectMapperFactory
 import java.io.File
 
 interface LaunchConfiguration {
-    val configurationLoader: ConfigurationLoader<CommentedConfigurationNode>
+    val config: Config
     val logger: Logger
 
     object Standard : LaunchConfiguration {
-        override val configurationLoader: ConfigurationLoader<CommentedConfigurationNode> =
-            HoconConfigurationLoader.builder().file(File("jagr.conf")).build()
-        override val logger: Logger = LoggerFactory.getLogger("Jagr")
+        override val config: Config by lazy {
+            val loader = HoconConfigurationLoader.builder()
+                .file(File("jagr.conf"))
+                .defaultOptions { options ->
+                    options.serializers { builder ->
+                        builder.registerAnnotatedObjects(objectMapperFactory())
+                    }
+                }
+                .build()
+            val result: Config? = loader.load().let { root ->
+                if (root.empty()) {
+                    val config = Config()
+                    root.set(config)
+                    loader.save(root)
+                    config
+                } else {
+                    root[Config::class.java]
+                }
+            }
+            checkNotNull(result) { "Failed to load configuration" }
+        }
+        override val logger: Logger by lazy {
+            LogManager.getLogger("Jagr")
+        }
     }
 }

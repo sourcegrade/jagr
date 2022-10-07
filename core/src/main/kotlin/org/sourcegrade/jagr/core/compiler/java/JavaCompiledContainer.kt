@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.core.compiler.java
 
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.testing.CompileResult
 import org.sourcegrade.jagr.core.compiler.ResourceCollector
 import org.sourcegrade.jagr.core.compiler.RuntimeContainer

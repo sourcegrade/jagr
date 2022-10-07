@@ -20,23 +20,22 @@
 package org.sourcegrade.jagr.core.executor
 
 import com.google.inject.Inject
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.testing.ClassTransformerOrder
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.core.compiler.InfoJsonResourceExtractor
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoaderImpl
 import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.loadCompiled
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.core.compiler.submissionInfo
 import org.sourcegrade.jagr.core.parallelMapNotNull
-import org.sourcegrade.jagr.core.testing.GraderInfoImpl
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.core.transformer.CommonClassTransformer
 import org.sourcegrade.jagr.core.transformer.SubmissionVerificationTransformer
 import org.sourcegrade.jagr.core.transformer.TransformationApplier
@@ -70,8 +69,8 @@ class CompiledBatchFactoryImpl @Inject constructor(
         val graders: List<GraderJarImpl> = batch.graders.compile(
             commonTransformerApplier,
             libraries,
-            "grader",
-            GraderInfoImpl.Extractor,
+            "Grader",
+            InfoJsonResourceExtractor.Grader,
         ) {
             if (errors == 0) GraderJarImpl(logger, this, libraries) else null
         }
@@ -80,7 +79,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
 
         // maps assignment ids to files that should be replaced with solution files
         val replacements = submissionFileOverrides.mapValues { (assignmentId, solutionOverrides) ->
-            val gradersForAssignment = graders.filter { it.info.assignmentIds.contains(assignmentId) }
+            val gradersForAssignment = graders.filter { it.info.assignmentId == assignmentId }
             solutionOverrides.mapNotNull { solutionOverride ->
                 gradersForAssignment.firstNotNullOfOrNull { it.container.source.sourceFiles[solutionOverride] }
             }.associateBy { it.fileName }
@@ -89,13 +88,13 @@ class CompiledBatchFactoryImpl @Inject constructor(
         val submissions: List<Submission> = batch.submissions.compile(
             submissionTransformerApplier,
             libraries,
-            "submission",
-            SubmissionInfoImpl.Extractor,
+            "Submission",
+            InfoJsonResourceExtractor.Submission,
             replacements,
         ) submissionCompile@{
             val submissionInfo = this.submissionInfo
             if (submissionInfo == null) {
-                logger.error("${info.name} does not have a submission-info.json! Skipping...")
+                logger.error("Submission container ${info.name} does not have a submission-info.json! Skipping...")
                 return@submissionCompile null
             }
             JavaSubmission(submissionInfo, this, libraries)
@@ -110,7 +109,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
     private fun createTransformerApplierFromGraders(graders: List<GraderJar>): TransformationApplier {
         fun GraderJar.createApplier(order: ClassTransformerOrder): TransformationApplier =
             configuration.transformers.createApplier(order) { result ->
-                result.submissionInfo?.assignmentId?.let(info.assignmentIds::contains) == true
+                result.submissionInfo?.assignmentId == info.assignmentId
             }
 
         fun createApplier(order: ClassTransformerOrder): TransformationApplier =
@@ -124,13 +123,11 @@ class CompiledBatchFactoryImpl @Inject constructor(
     }
 
     private fun calculateSubmissionFileOverrides(graders: List<GraderJar>): Map<String, List<String>> {
-        return graders.map { graderJar ->
-            graderJar.info.assignmentIds.flatMap { assignmentId ->
-                graderJar.configuration.fileNameSolutionOverrides.map { solutionOverride ->
-                    assignmentId to solutionOverride
-                }
-            }.groupBy({ it.first }, { it.second })
-        }.fold(emptyMap()) { acc, map -> acc + map }
+        return graders.flatMap { graderJar ->
+            graderJar.configuration.fileNameSolutionOverrides.map { solutionOverride ->
+                graderJar.info.assignmentId to solutionOverride
+            }
+        }.groupBy({ it.first }, { it.second })
     }
 
     private fun <T> Sequence<ResourceContainer>.compile(
@@ -155,7 +152,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
         }
         val original = runtimeJarLoader.compileSources(replacedSources, libraries)
         val transformed = try {
-            val classLoader = RuntimeClassLoader(original.runtimeResources + libraries)
+            val classLoader = RuntimeClassLoaderImpl(original.runtimeResources + libraries)
             transformerApplier.transform(original, classLoader)
         } catch (e: Throwable) {
             // create a copy of the original compile result but throw out runtime resources (compiled classes and resources)
@@ -185,15 +182,21 @@ class CompiledBatchFactoryImpl @Inject constructor(
         with(transformed) {
             printMessages(
                 logger,
-                { "$containerType ${info.name} has $warnings warnings and $errors errors!" },
-            ) { "$containerType ${info.name} has $warnings warnings!" }
-            try {
-                constructor()?.apply { logger.info("Loaded $containerType ${it.info.name}") }
-                    ?: run { logger.error("Failed to load $containerType ${it.info.name}"); null }
+                lazyError = { "$containerType ${info.name} has $warnings warnings and $errors errors" },
+                lazyWarning = { "$containerType ${info.name} has $warnings warnings" },
+            )
+            val result = try {
+                constructor()
             } catch (e: Exception) {
-                logger.error("An error occurred loading $containerType ${it.info.name}", e)
-                null
+                logger.error("$containerType container ${info.name} failed to invoke constructor", e)
+                return@with null
             }
+            if (result == null) {
+                logger.error("$containerType container ${info.name} failed to load")
+            } else {
+                logger.info("$containerType container ${info.name} loaded")
+            }
+            result
         }
     }
 }

@@ -19,8 +19,8 @@
 package org.sourcegrade.jagr.core.executor
 
 import com.google.inject.Inject
+import org.apache.logging.log4j.Logger
 import org.opentest4j.AssertionFailedError
-import org.slf4j.Logger
 import org.sourcegrade.jagr.core.executor.TimeoutHandler.checkTimeout
 import org.sourcegrade.jagr.core.transformer.CommonClassTransformer
 import org.sourcegrade.jagr.launcher.env.Config

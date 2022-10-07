@@ -1,7 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jlleitschuh.gradle.ktlint.KtlintExtension
-import org.sourcegrade.jagr.script.JagrPublishPlugin
 
 @Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
@@ -10,7 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.kapt) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.shadow)
-    id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
+    alias(libs.plugins.style)
 }
 
 dependencies {
@@ -58,7 +56,7 @@ val projectVersion = file("version").readLines().first()
 project.extra["apiVersion"] = projectVersion.replace(".[0-9]+(?=($|-SANDBOX-SNAPSHOT))".toRegex(), "")
 
 allprojects {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    apply(plugin = "org.sourcegrade.style")
 
     group = "org.sourcegrade"
     version = projectVersion
@@ -66,10 +64,6 @@ allprojects {
     project.findProperty("buildNumber")
         ?.takeIf { version.toString().contains("SNAPSHOT") }
         ?.also { version = version.toString().replace("SNAPSHOT", "RC$it") }
-
-    configure<KtlintExtension> {
-        enableExperimentalRules.set(true)
-    }
 
     tasks {
         withType<KotlinCompile> {
@@ -81,8 +75,4 @@ allprojects {
             targetCompatibility = "11"
         }
     }
-}
-
-subprojects {
-    apply<JagrPublishPlugin>()
 }

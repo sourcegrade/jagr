@@ -28,7 +28,8 @@ object SystemResourceJagrFactory : Jagr.Factory {
     override fun create(configuration: LaunchConfiguration): Jagr {
         javaClass.getResourceAsStream(RESOURCE_NAME).use {
             checkNotNull(it) { "Could not find resource $RESOURCE_NAME" }
-            return Json.decodeFromString<JagrJson>(it.bufferedReader().readText()).toJagr(configuration)
+            val json = Json.decodeFromString<JagrJson>(it.bufferedReader().readText())
+            return DeferredJagr(json, configuration)
         }
     }
 }

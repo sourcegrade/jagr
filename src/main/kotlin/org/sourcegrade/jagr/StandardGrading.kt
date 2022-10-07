@@ -41,6 +41,8 @@ import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
 import org.sourcegrade.jagr.launcher.io.SubmissionExporter
 import org.sourcegrade.jagr.launcher.io.buildGradingBatch
 import org.sourcegrade.jagr.launcher.io.export
+import org.sourcegrade.jagr.launcher.io.logGradedRubric
+import org.sourcegrade.jagr.launcher.io.logHistogram
 import org.sourcegrade.jagr.launcher.io.writeAsDirIn
 import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
@@ -57,6 +59,7 @@ class StandardGrading(
     private val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
 
     fun grade(noExport: Boolean, exportOnly: Boolean) = runBlocking {
+        jagr.logger.info("Starting Jagr v${Jagr.version}")
         File(config.dir.submissions).ensure(jagr.logger)
         jagr.extrasManager.runExtras()
         val batch = buildGradingBatch {

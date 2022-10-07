@@ -1,6 +1,10 @@
+import org.sourcegrade.jagr.script.JagrPublishPlugin
+
 plugins {
     `java-library`
 }
+
+apply<JagrPublishPlugin>()
 
 val apiVersion: String by rootProject
 version = apiVersion

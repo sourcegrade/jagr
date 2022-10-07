@@ -1,3 +1,6 @@
+import org.sourcegrade.jagr.script.JagrPublishPlugin
+import org.sourcegrade.jagr.script.apiProject
+
 plugins {
     kotlin("jvm")
     kotlin("kapt")
@@ -5,19 +8,25 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
+apply<JagrPublishPlugin>()
+
 dependencies {
-    // force release version of API on release to prevent transitive dependency on snapshot version of API
-    if (version.toString().endsWith("SNAPSHOT") || version.toString().endsWith(".0")) {
-        api(project(":jagr-grader-api"))
-    } else {
-        api("org.sourcegrade:jagr-grader-api:${rootProject.extra["apiVersion"]}")
-    }
+    apiProject(project, "jagr-grader-api")
     api(libs.coroutines)
     implementation(libs.configurate.hocon)
+    implementation(libs.configurate.kotlin)
     implementation(libs.annotations)
     implementation(libs.serialization)
-    implementation(libs.logging.impl)
     implementation(libs.logging.core)
     kapt(libs.logging.core)
     implementation(kotlin("reflect"))
+}
+
+tasks {
+    @Suppress("UnstableApiUsage")
+    withType<ProcessResources> {
+        from(rootProject.file("version")) {
+            into("org/sourcegrade/jagr/")
+        }
+    }
 }

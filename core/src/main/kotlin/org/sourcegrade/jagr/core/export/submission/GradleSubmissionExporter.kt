@@ -22,16 +22,14 @@ package org.sourcegrade.jagr.core.export.submission
 import com.google.common.collect.FluentIterable
 import com.google.common.reflect.ClassPath
 import com.google.inject.Inject
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import org.slf4j.Logger
-import org.sourcegrade.jagr.api.testing.SourceFile
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.core.compiler.java.JavaSourceContainer
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
+import org.sourcegrade.jagr.launcher.io.SourceSetInfo
 import org.sourcegrade.jagr.launcher.io.SubmissionExporter
 import org.sourcegrade.jagr.launcher.io.addResource
 import org.sourcegrade.jagr.launcher.io.buildResourceContainer
@@ -59,10 +57,26 @@ class GradleSubmissionExporter @Inject constructor(
             name = graderJar?.info?.name ?: DEFAULT_EXPORT_NAME
         }
         writeSkeleton()
+        val buildScript = if (graderJar == null) null else {
+            graderJar.configuration.exportBuildScriptPath?.let { path -> path to graderJar.container.source.resources[path] }
+        }
+        buildScript?.second?.let { resource ->
+            addResource {
+                name = "build.gradle.kts"
+                resource.inputStream().copyTo(outputStream)
+            }
+        } ?: run {
+            if (buildScript != null) {
+                logger.error(
+                    "Build script '${buildScript.first}' specified in grader configuration does not exist, using default"
+                )
+            }
+            writeGradleResource(resource = "build.gradle.kts_", targetName = "build.gradle.kts")
+        }
         val filteredSubmissions = if (graderJar == null) {
             submissions
         } else {
-            submissions.filter { graderJar.rubricProviders.containsKey(it.info.assignmentId) }
+            submissions.filter { graderJar.info.assignmentId == (it as JavaSubmission).submissionInfo.assignmentId }
         }
         for (submission in filteredSubmissions) {
             writeSubmission(submission, graderJar)
@@ -111,53 +125,136 @@ class GradleSubmissionExporter @Inject constructor(
         addResource(wrapperBuilder.build())
         writeGradleResource(classLoader, resource = "gradlew")
         writeGradleResource(classLoader, resource = "gradlew.bat")
-        writeGradleResource(classLoader, resource = "build.gradle.kts_", targetName = "build.gradle.kts")
         writeGradleResource(classLoader, resource = "gradle-wrapper.properties", targetDir = "gradle/wrapper/")
     }
 
     private fun ResourceContainer.Builder.writeSettings(graderName: String, submissions: List<Submission>) = addResource {
         name = "settings.gradle.kts"
-        PrintWriter(outputStream, false, Charsets.UTF_8).use {
-            it.appendLine("rootProject.name = \"$graderName\"")
-            submissions.forEach { submission ->
-                it.appendLine("include(\"${submission.info}\")")
+        PrintWriter(outputStream, false, Charsets.UTF_8).use { printer ->
+            """
+            dependencyResolutionManagement {
+                repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+                repositories {
+                    mavenLocal()
+                    maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                    mavenCentral()
+                }
             }
-            it.appendLine()
-            it.flush()
+
+            pluginManagement {
+                repositories {
+                    mavenLocal()
+                    maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                    mavenCentral()
+                    gradlePluginPortal()
+                }
+            }
+            """.trimIndent().also { printer.println(it) }
+            printer.appendLine("rootProject.name = \"$graderName\"")
+            submissions.forEach { submission ->
+                printer.appendLine("include(\"${submission.info}\")")
+            }
+            printer.flush()
         }
     }
 
     private fun ResourceContainer.Builder.writeSubmission(submission: Submission, graderJar: GraderJarImpl?) {
         if (submission !is JavaSubmission) return
-        val submissionName = submission.info.toString()
-        addResource {
-            name = "$submissionName/src/main/resources/submission-info.json"
-            outputStream.writer().use { it.write(Json.encodeToString(submission.info as SubmissionInfoImpl)) }
-        }
-        writeSourceFiles("$submissionName/src/main/java/", submission.compileResult.source.sourceFiles)
-        writeResources("$submissionName/src/main/resources/", submission.compileResult.runtimeResources.resources)
+        val submissionName = submission.submissionInfo.toString()
+        writeFiles(submissionName, submission.submissionInfo.sourceSets, submission.compileResult.source)
         if (graderJar != null) {
-            writeSourceFiles("$submissionName/src/test/java/", graderJar.containerWithoutSolution.source.sourceFiles)
-            writeResources("$submissionName/src/test/resources/", graderJar.containerWithoutSolution.runtimeResources.resources)
+            writeFiles(
+                submissionName,
+                graderJar.info.sourceSets.filter { a -> submission.submissionInfo.sourceSets.none { b -> a.name == b.name } },
+                graderJar.containerWithoutSolution.source
+            )
         }
-    }
-
-    private fun ResourceContainer.Builder.writeSourceFiles(prefix: String, sourceFiles: Map<String, SourceFile>) {
-        for ((fileName, sourceFile) in sourceFiles) {
-            addResource {
-                name = prefix + fileName
-                outputStream.writer().use { it.write(sourceFile.content) }
+        val sInfo = submission.submissionInfo
+        addResource {
+            name = "$submissionName/build.gradle.kts"
+            PrintWriter(outputStream, false, Charsets.UTF_8).use { printer ->
+                """
+                jagr {
+                    assignmentId.set("h00")
+                    submissions {
+                        val main by creating {
+                            studentId.set("${sInfo.studentId}")
+                            firstName.set("${sInfo.firstName}")
+                            lastName.set("${sInfo.lastName}")
+                        }
+                    }
+                """.trimIndent().also { printer.println(it) }
+                if (graderJar != null) {
+                    val gInfo = graderJar.info
+                    """
+                    graders {
+                        val grader by creating {
+                            graderName.set("${gInfo.name}")
+                            rubricProviderName.set("${gInfo.rubricProviderName}")
+                        }
+                    }
+                    """.trimIndent().prependIndent(" ".repeat(4)).also { printer.println(it) }
+                }
+                printer.println("}\n")
+                val graderDeps = graderJar?.info?.dependencyConfigurations?.formatDependencies() ?: emptySet()
+                val submissionDeps = sInfo.dependencyConfigurations.formatDependencies() - graderDeps
+                if (graderDeps.isNotEmpty() || submissionDeps.isNotEmpty()) {
+                    printer.println("dependencies {")
+                    printer.println("    project.afterEvaluate {")
+                    for (graderDep in graderDeps) {
+                        printer.println("        $graderDep")
+                    }
+                    if (submissionDeps.isNotEmpty()) {
+                        """
+                        /*
+                         * ATTENTION:
+                         * the following dependencies were added manually by the student
+                         * you may uncomment the following lines to add them to the compilation classpath
+                         */
+                        """.trimIndent().prependIndent(" ".repeat(8)).also { printer.println(it) }
+                        for (submissionDep in submissionDeps) {
+                            printer.println("//        $submissionDep")
+                        }
+                    }
+                    printer.println("    }")
+                    printer.println("}")
+                }
             }
         }
     }
 
-    private fun ResourceContainer.Builder.writeResources(prefix: String, resources: Map<String, ByteArray>) {
-        for ((fileName, resource) in resources) {
-            addResource {
-                name = prefix + fileName
-                outputStream.writeBytes(resource)
-            }
+    private fun ResourceContainer.Builder.writeFiles(
+        submissionName: String,
+        sourceSets: List<SourceSetInfo>,
+        source: JavaSourceContainer,
+    ) {
+        for (sourceSet in sourceSets) {
+            sourceSet.files.asSequence()
+                .flatMap { (directorySet, files) -> files.map { directorySet to it } }
+                .forEach { (directorySet, fileName) ->
+                    if (fileName == "submission-info.json") {
+                        return@forEach
+                    }
+                    addResource {
+                        name = "$submissionName/src/${sourceSet.name}/$directorySet/$fileName"
+                        if (directorySet == "resources") {
+                            source.resources[fileName]
+                                ?.also { resource -> outputStream.writeBytes(resource) }
+                                ?: logger.error("Resource $fileName not found in submission $submissionName")
+                        } else {
+                            source.sourceFiles[fileName]
+                                ?.also { sourceFile -> outputStream.writer().use { it.write(sourceFile.content) } }
+                                ?: logger.error("Source file $fileName not found in submission $submissionName")
+                        }
+                    }
+                }
         }
+    }
+
+    private fun Map<String, Set<String>>.formatDependencies(): Set<String> {
+        return flatMap { (sourceSet, dependencies) -> dependencies.associateBy { sourceSet }.toList() }
+            .filter { (_, dep) -> !dep.contains("org.sourcegrade:jagr-launcher") }
+            .mapTo(mutableSetOf()) { "\"${it.first}\"(\"${it.second}\")" }
     }
 
     companion object {

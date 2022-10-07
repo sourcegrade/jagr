@@ -24,25 +24,26 @@ import com.google.inject.Injector
 import kotlinx.serialization.Serializable
 import kotlin.reflect.full.primaryConstructor
 
-private data class JagrImpl(override val injector: Injector) : Jagr
+internal class DeferredJagr(val json: JagrJson, val configuration: LaunchConfiguration) : Jagr {
+    override val injector: Injector by lazy {
+        val modules = json.moduleFactories.map {
+            coerceClass<ModuleFactory>(it).kotlin.run {
+                (objectInstance ?: primaryConstructor!!.call()).create(configuration)
+            }
+        }.toTypedArray()
+        Guice.createInjector(*modules)
+    }
+
+    override fun toString(): String = "DeferredJagr"
+}
 
 @Serializable
-data class JagrJson(
+internal data class JagrJson(
     /**
      * guice modules to bind
      */
     val moduleFactories: List<String>,
 )
-
-fun JagrJson.toJagr(configuration: LaunchConfiguration): Jagr {
-    val modules = moduleFactories.map {
-        coerceClass<ModuleFactory>(it).kotlin.run {
-            (objectInstance ?: primaryConstructor!!.call()).create(configuration)
-        }
-    }.toTypedArray()
-    val injector = Guice.createInjector(*modules)
-    return JagrImpl(injector)
-}
 
 private inline fun <reified T : Any> coerceClass(implementation: String): Class<out T> {
     return Class.forName(implementation).asSubclass(T::class.java)

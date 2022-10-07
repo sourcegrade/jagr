@@ -16,29 +16,26 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-@file:UseSerializers(serializerClasses = [SafeStringSerializer::class])
 
-package org.sourcegrade.jagr.core.testing
+package org.sourcegrade.jagr.launcher.io
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
-import org.sourcegrade.jagr.launcher.io.SerializationScope
-import org.sourcegrade.jagr.launcher.io.SerializerFactory
-import org.sourcegrade.jagr.launcher.io.SourceSetInfo
-import org.sourcegrade.jagr.launcher.io.readList
-import org.sourcegrade.jagr.launcher.io.writeList
 
 @Serializable
-data class SourceSetInfoImpl(
-    override val name: String,
-    override val files: List<String>,
-) : SourceSetInfo {
-    companion object Factory : SerializerFactory<SourceSetInfoImpl> {
-        override fun read(scope: SerializationScope.Input) = SourceSetInfoImpl(scope.input.readUTF(), scope.readList())
+data class RepositoryConfiguration(
+    val name: String,
+    val url: String,
+) {
 
-        override fun write(obj: SourceSetInfoImpl, scope: SerializationScope.Output) {
+    companion object Factory : SerializerFactory<RepositoryConfiguration> {
+        override fun read(scope: SerializationScope.Input) = RepositoryConfiguration(
+            scope.input.readUTF(),
+            scope.input.readUTF(),
+        )
+
+        override fun write(obj: RepositoryConfiguration, scope: SerializationScope.Output) {
             scope.output.writeUTF(obj.name)
-            scope.writeList(obj.files)
+            scope.output.writeUTF(obj.url)
         }
     }
 }
