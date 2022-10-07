@@ -32,6 +32,7 @@ import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.env.Transformers
 
 abstract class GraderConfiguration(
     name: String,
@@ -104,5 +105,9 @@ abstract class GraderConfiguration(
 
     fun parent(configuration: GraderConfiguration) {
         parentConfiguration.set(configuration)
+    }
+
+    fun disableTimeouts() {
+        config.set(Config(transformers = Transformers(timeout = Transformers.TimeoutTransformer(enabled = false))))
     }
 }

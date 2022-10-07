@@ -28,7 +28,7 @@ internal class GradleLaunchConfiguration(override val config: Config) : LaunchCo
     override val logger: Logger by lazy {
         Configurator.initialize(
             "console-only",
-            "log4j-console-only.xml"
+            "log4j2-console-only.xml"
         ).getLogger("jagr")
     }
 }
