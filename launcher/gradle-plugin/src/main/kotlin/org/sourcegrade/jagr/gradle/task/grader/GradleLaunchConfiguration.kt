@@ -23,19 +23,8 @@ import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.core.config.Configurator
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.LaunchConfiguration
-import org.sourcegrade.jagr.launcher.env.Transformers
 
-internal object GradleLaunchConfiguration : LaunchConfiguration {
-    override val config: Config by lazy {
-        // TODO: Configure via jagr extension
-        Config(
-            transformers = Transformers(
-                timeout = Transformers.TimeoutTransformer(
-                    enabled = false
-                )
-            )
-        )
-    }
+internal class GradleLaunchConfiguration(override val config: Config) : LaunchConfiguration {
     override val logger: Logger by lazy {
         Configurator.initialize(
             "console-only",
