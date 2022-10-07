@@ -49,7 +49,6 @@ import org.sourcegrade.jagr.core.testing.RuntimeGraderImpl
 import org.sourcegrade.jagr.core.testing.RuntimeTester
 import org.sourcegrade.jagr.core.testing.TestCycleParameterResolver
 import org.sourcegrade.jagr.core.transformer.ClassTransformerFactoryImpl
-import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.LaunchConfiguration
 import org.sourcegrade.jagr.launcher.env.ModuleFactory
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
@@ -89,13 +88,6 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
         bind(SubmissionExporter.Eclipse::class.java).to(EclipseSubmissionExporter::class.java)
         bind(SubmissionExporter.Gradle::class.java).to(GradleSubmissionExporter::class.java)
         bind(TestCycleResolver.Internal::class.java).to(TestCycleParameterResolver::class.java)
-
-        with(configuration.configurationLoader) {
-            load().let { root ->
-                if (root.empty()) Config().also { root.set(it).also(::save) }
-                else root[Config::class.java]
-            }.also(bind(Config::class.java)::toInstance)
-        }
 
         requestStaticInjection(
             ClassTransformer.FactoryProvider::class.java,

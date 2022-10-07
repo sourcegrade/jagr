@@ -18,6 +18,7 @@ import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.submission.SubmissionWriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.env.SystemResourceJagrFactory
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.Executor
@@ -59,7 +60,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     }
 
     private suspend fun grade() {
-        val jagr = Jagr
+        val jagr = SystemResourceJagrFactory.create(GradleLaunchConfiguration)
         jagr.logger.info("Starting Jagr v${Jagr.version}")
         val jagrExtension = project.extensions.getByType<JagrExtension>()
         val configuration = jagrExtension.graders[configurationName.get()]

@@ -11,6 +11,7 @@ plugins {
 dependencies {
     implementation(gradleKotlinDsl())
     implementation(libs.serialization)
+    implementation(libs.logging.core)
     runtimeOnly(project(":jagr-core"))
     implementation(project(":jagr-launcher"))
 }
