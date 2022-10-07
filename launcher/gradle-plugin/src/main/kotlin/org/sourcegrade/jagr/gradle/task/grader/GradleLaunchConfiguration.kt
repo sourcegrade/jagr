@@ -19,13 +19,16 @@
 
 package org.sourcegrade.jagr.gradle.task.grader
 
-import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.apache.logging.log4j.core.config.Configurator
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.LaunchConfiguration
 
 internal class GradleLaunchConfiguration(override val config: Config) : LaunchConfiguration {
     override val logger: Logger by lazy {
-        LogManager.getLogger("jagr")
+        Configurator.initialize(
+            "console-only",
+            "log4j2-console-only.xml"
+        ).getLogger("jagr")
     }
 }
