@@ -1,8 +1,8 @@
 <div align="center">
     <img src="logo.svg" align="float" width="75%">
+    <h2>Just another grader</h2>
 </div>
 
-**Java AutoGrader, implemented in Kotlin**
 
 ## Setup
 
