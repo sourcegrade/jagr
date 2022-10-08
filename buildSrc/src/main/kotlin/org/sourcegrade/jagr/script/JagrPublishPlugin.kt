@@ -76,10 +76,10 @@ class JagrPublishPlugin : Plugin<Project> {
                             }
                         }
                         developers {
-                            developer {
-                                id.set("alexstaeding")
-                                name.set("Alexander Staeding")
-                            }
+                            rootProject.file("authors").readLines()
+                                .asSequence()
+                                .map { it.split(",") }
+                                .forEach { (_id, _name) -> developer { id.set(_id); name.set(_name) } }
                         }
                     }
                 }
