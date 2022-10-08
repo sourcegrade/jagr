@@ -1,4 +1,4 @@
-# Jagr
+![jagr logo](logo.svg "Jagr")
 
 **Java AutoGrader, implemented in Kotlin**
 
