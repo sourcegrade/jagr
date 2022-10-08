@@ -54,6 +54,11 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
     }
 
     private fun StringBuilder.pageStart() {
+        append("<!DOCTYPE html>")
+        append("<head>")
+        append("""<meta charset="utf-8">""")
+        append("</head>")
+        append("<html>")
         append("""<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">""")
         append("<body>")
         append("""<div class="container">""")
@@ -62,6 +67,7 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
     private fun StringBuilder.pageEnd() {
         append("</div>")
         append("</body>")
+        append("</html>")
     }
 
     private fun StringBuilder.tableEntries(r: GradedRubric) {
