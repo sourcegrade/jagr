@@ -23,15 +23,7 @@ import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.Executor
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
-import org.sourcegrade.jagr.launcher.io.GradingBatch
-import org.sourcegrade.jagr.launcher.io.ResourceContainer
-import org.sourcegrade.jagr.launcher.io.addResource
-import org.sourcegrade.jagr.launcher.io.buildGradingBatch
-import org.sourcegrade.jagr.launcher.io.buildResourceContainer
-import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
-import org.sourcegrade.jagr.launcher.io.createResourceContainer
-import org.sourcegrade.jagr.launcher.io.logGradedRubric
-import org.sourcegrade.jagr.launcher.io.logHistogram
+import org.sourcegrade.jagr.launcher.io.*
 import java.io.File
 
 @Suppress("LeakingThis")
@@ -57,6 +49,8 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
             grade()
         }
     }
+
+    private val exporter = Jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
 
     private suspend fun grade() {
         val jagr = Jagr
@@ -119,8 +113,14 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         jagr.logger.info("Executor mode 'gradle' :: expected submission: ${batch.expectedSubmissions}")
         val executor: Executor = SyncExecutor(jagr)
         val collector = emptyCollector(jagr)
+        val rubricPath = project.buildDir.resolve("rubrics")
         collector.setListener { result ->
-            result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
+            result.rubrics.keys.forEach {
+                it.logGradedRubric(jagr)
+                val resource = exporter.export(it)
+                resource.name
+                resource.writeIn(rubricPath)
+            }
         }
         collector.allocate(queue)
         executor.schedule(queue)
@@ -135,6 +135,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         } else {
             jagr.logger.info("Exported $rubricCount rubrics")
         }
+        jagr.logger.info("See rubric at ${rubricPath.absolutePath}/result.html")
     }
 
     /**
