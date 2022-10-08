@@ -35,7 +35,7 @@ import org.sourcegrade.jagr.launcher.io.buildResource
 
 class MoodleJSONExporter @Inject constructor(
     private val logger: Logger,
-) : GradedRubricExporter.HTML {
+) : GradedRubricExporter.Moodle {
     override fun export(gradedRubric: GradedRubric): Resource {
         val json = MoodleJSON(
             (gradedRubric.testCycle.submission as JavaSubmission).submissionInfo,
