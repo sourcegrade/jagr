@@ -86,7 +86,6 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
     private fun StringBuilder.tableBodyStart() = append("<tbody>")
     private fun StringBuilder.tableBodyEnd() = append("<tbody>")
 
-
     private fun StringBuilder.tableEntry(r: GradedCriterion) {
         rowStart()
         if (r.hasChildCriteria()) {
