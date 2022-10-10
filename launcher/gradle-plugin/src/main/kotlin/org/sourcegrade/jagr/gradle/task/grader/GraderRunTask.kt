@@ -16,8 +16,10 @@ import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.submission.SubmissionWriteInfoTask
+import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.env.SystemResourceJagrFactory
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.Executor
@@ -53,6 +55,16 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         dependsOn(configurationName.map(GraderWriteInfoTask.Factory::determineTaskName))
     }
 
+    private fun GraderConfiguration.getConfigRecursive(): Config {
+        return if (config.isPresent) {
+            config.get()
+        } else if (parentConfiguration.isPresent) {
+            parentConfiguration.get().getConfigRecursive()
+        } else {
+            Config()
+        }
+    }
+
     @TaskAction
     fun runTask() {
         runBlocking {
@@ -64,10 +76,10 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     private val exporterMoodle = Jagr.injector.getInstance(GradedRubricExporter.Moodle::class.java)
 
     private suspend fun grade() {
-        val jagr = Jagr
-        jagr.logger.info("Starting Jagr v${Jagr.version}")
         val jagrExtension = project.extensions.getByType<JagrExtension>()
         val configuration = jagrExtension.graders[configurationName.get()]
+        val jagr = SystemResourceJagrFactory.create(GradleLaunchConfiguration(configuration.getConfigRecursive()))
+        jagr.logger.info("Starting Jagr v${Jagr.version}")
         val batch: GradingBatch = buildGradingBatch {
             addGrader(
                 buildResourceContainer {

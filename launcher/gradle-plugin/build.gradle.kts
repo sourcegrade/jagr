@@ -1,4 +1,4 @@
-
+import org.sourcegrade.jagr.script.JagrPublishPlugin
 
 @Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
@@ -8,9 +8,12 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+apply<JagrPublishPlugin>()
+
 dependencies {
     implementation(gradleKotlinDsl())
     implementation(libs.serialization)
+    implementation(libs.logging.core)
     runtimeOnly(project(":jagr-core"))
     implementation(project(":jagr-launcher"))
 }
