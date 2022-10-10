@@ -6,6 +6,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
@@ -48,6 +49,10 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     @get:InputFile
     val submissionInfoFile: Property<File> = project.objects.property<File>()
         .value(submissionConfigurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })
+
+    @get:OutputDirectory
+    val rubricOutputDir: Property<File> = project.objects.property<File>()
+        .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/rubrics/") })
 
     init {
         group = "verification"
@@ -136,14 +141,13 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         jagr.logger.info("Executor mode 'gradle' :: expected submission: ${batch.expectedSubmissions}")
         val executor: Executor = SyncExecutor(jagr)
         val collector = emptyCollector(jagr)
-        val rubricPath = project.buildDir.resolve("rubrics")
         collector.setListener { result ->
             result.rubrics.keys.forEach {
                 it.logGradedRubric(jagr)
                 val resource = exporterHTML.export(it)
-                resource.writeIn(rubricPath)
+                resource.writeIn(rubricOutputDir.get())
                 val moodleResource = exporterMoodle.export(it)
-                moodleResource.writeIn(rubricPath)
+                moodleResource.writeIn(rubricOutputDir.get())
             }
         }
         collector.allocate(queue)
@@ -159,7 +163,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         } else {
             jagr.logger.info("Exported $rubricCount rubrics")
         }
-        jagr.logger.info("See rubric at ${rubricPath.absolutePath}/result.html")
+        jagr.logger.info("See rubric at ${rubricOutputDir.get().absolutePath}/result.html")
     }
 
     /**
