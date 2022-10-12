@@ -35,7 +35,6 @@ public static final Criterion H1_1 = Criterion.builder()
 Make sure your JUnit test classes are annotated as follows, or they wont run:
 
 ```java
-
 @TestForSubmission
 public class Test {
 ```
@@ -75,7 +74,7 @@ public class H03_RubricProvider implements RubricProvider {
 ## Running Jagr
 
 To run Jagr, download and place the desired compiled release of Jagr from
-[releases](https://github.com/SourceGrade/Jagr/releases) in a (preferably empty) directory.
+[releases](https://github.com/sourcegrade/jagr/releases) in a (preferably empty) directory.
 Then either run the following command in a terminal of your choice (or write a batch/bash script that you can double-click)
 
 ```bash
