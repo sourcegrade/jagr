@@ -12,7 +12,7 @@ This project's compiled, source and javadoc jars are hosted on [sonatype](https:
 Releases are available from `mavenCentral()` and snapshots from the maven
 repository `https://s01.oss.sonatype.org/content/repositories/snapshots`.
 
-Follow [this guide](https://docs.sourcegrade.org/development/getting-started/gradle-setup/) to create a Jagr project.
+Follow [this guide](https://docs.sourcegrade.org/development/getting-started/gradle-setup/) to set up your gradle buildscript.
 
 ## Usage
 
