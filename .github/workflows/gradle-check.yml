@@ -7,7 +7,7 @@ on:
       - master
       - dev-*
 jobs:
-  check:
+  gradle-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
