@@ -9,12 +9,12 @@ import org.sourcegrade.jagr.api.testing.ClassTransformer
 
 class InjectSuperclassTransformer(
     targetName: String,
-    newSuperClassName: String,
+    superName: String,
 ) : ClassTransformer {
     // normalize names
     private val targetName = targetName.replace('.', '/')
-    private val newSuperClassName = newSuperClassName.replace('.', '/')
-    private val name = "$targetName-new-super-$newSuperClassName"
+    private val superName = superName.replace('.', '/')
+    private val name = "$targetName-new-super-$superName"
     override fun getName(): String = name
 
     override fun transform(reader: ClassReader, writer: ClassWriter) {
@@ -26,7 +26,7 @@ class InjectSuperclassTransformer(
     }
 
     private inner class InjectingCV(classVisitor: ClassVisitor?) : ClassVisitor(Opcodes.ASM9, classVisitor) {
-        lateinit var oldSuperClassName: String
+        lateinit var oldSuperName: String
         override fun visit(
             version: Int,
             access: Int,
@@ -35,8 +35,8 @@ class InjectSuperclassTransformer(
             superName: String,
             interfaces: Array<String>,
         ) {
-            oldSuperClassName = superName
-            super.visit(version, access, name, signature, newSuperClassName, interfaces)
+            oldSuperName = superName
+            super.visit(version, access, name, signature, this@InjectSuperclassTransformer.superName, interfaces)
         }
 
         override fun visitMethod(
@@ -52,7 +52,7 @@ class InjectSuperclassTransformer(
             methodVisitor: MethodVisitor?,
         ) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
 
-            var visitedSuperConstructor = false
+            private var visitedSuperConstructor = false
 
             /**
              * Checks if the insn is a super() call in the constructor of the target class
@@ -62,7 +62,7 @@ class InjectSuperclassTransformer(
                     opcode == Opcodes.INVOKESPECIAL &&
                     methodName == "<init>" &&
                     name == "<init>" &&
-                    owner == oldSuperClassName
+                    owner == oldSuperName
                 if (result) {
                     visitedSuperConstructor = true
                 }
@@ -70,10 +70,10 @@ class InjectSuperclassTransformer(
             }
 
             override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String?, isInterface: Boolean) {
-                if ((owner == oldSuperClassName && opcode == Opcodes.INVOKESPECIAL && name != "<init>") ||
+                if ((owner == oldSuperName && opcode == Opcodes.INVOKESPECIAL && name != "<init>") ||
                     isSuperInsn(opcode, owner, name)
                 ) {
-                    super.visitMethodInsn(opcode, newSuperClassName, name, descriptor, isInterface)
+                    super.visitMethodInsn(opcode, superName, name, descriptor, isInterface)
                 } else {
                     super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
                 }
