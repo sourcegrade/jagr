@@ -25,6 +25,7 @@ import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.Executor
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
+import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.addResource
@@ -34,6 +35,7 @@ import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.createResourceContainer
 import org.sourcegrade.jagr.launcher.io.logGradedRubric
 import org.sourcegrade.jagr.launcher.io.logHistogram
+import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
 
 @Suppress("LeakingThis")
@@ -69,6 +71,9 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
             grade()
         }
     }
+
+    private val exporterHTML = Jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
+    private val exporterMoodle = Jagr.injector.getInstance(GradedRubricExporter.Moodle::class.java)
 
     private suspend fun grade() {
         val jagrExtension = project.extensions.getByType<JagrExtension>()
@@ -131,8 +136,16 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         jagr.logger.info("Executor mode 'gradle' :: expected submission: ${batch.expectedSubmissions}")
         val executor: Executor = SyncExecutor(jagr)
         val collector = emptyCollector(jagr)
+        // TODO: Properly configure task output
+        val rubricOutputDir = project.buildDir.resolve("resources/jagr/${configurationName.get()}/rubrics/")
         collector.setListener { result ->
-            result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
+            result.rubrics.keys.forEach {
+                it.logGradedRubric(jagr)
+                val resource = exporterHTML.export(it)
+                resource.writeIn(rubricOutputDir)
+                val moodleResource = exporterMoodle.export(it)
+                moodleResource.writeIn(rubricOutputDir)
+            }
         }
         collector.allocate(queue)
         executor.schedule(queue)
@@ -147,6 +160,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         } else {
             jagr.logger.info("Exported $rubricCount rubrics")
         }
+        jagr.logger.info("See rubric at file://${rubricOutputDir.absolutePath}/result.html")
     }
 
     /**
