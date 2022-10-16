@@ -10,6 +10,12 @@ plugins {
 
 apply<JagrPublishPlugin>()
 
+tasks {
+    withType<PublishToMavenRepository> {
+        onlyIf { project.version.toString().endsWith("-SNAPSHOT") }
+    }
+}
+
 dependencies {
     implementation(gradleKotlinDsl())
     implementation(libs.serialization)
