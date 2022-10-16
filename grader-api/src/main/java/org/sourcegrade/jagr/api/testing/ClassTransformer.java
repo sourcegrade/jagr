@@ -34,6 +34,17 @@ import org.objectweb.asm.ClassWriter;
 public interface ClassTransformer {
 
     /**
+     * Transforms the given target class so that it directly extends the provided new superclass.
+     *
+     * @param targetName The class to transform
+     * @param superName  The new superclass
+     * @return The transformer
+     */
+    static ClassTransformer injectSuperclass(String targetName, String superName) {
+        return FactoryProvider.factory.injectSuperclass(targetName, superName);
+    }
+
+    /**
      * Creates a transformer that replaces all method invocations and field accesses targeting {@code original} with
      * invocations and accesses targeting {@code replacement}.
      *
@@ -78,6 +89,8 @@ public interface ClassTransformer {
 
     @ApiStatus.Internal
     interface Factory {
+        ClassTransformer injectSuperclass(String targetName, String superName);
+
         ClassTransformer replacement(Class<?> replacement, Class<?> original);
     }
 }
