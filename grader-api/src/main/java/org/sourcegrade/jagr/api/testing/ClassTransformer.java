@@ -36,6 +36,10 @@ public interface ClassTransformer {
     /**
      * Transforms the given target class so that it directly extends the provided new superclass.
      *
+     * <p>
+     * The new superclass should extend the old superclass of the target class.
+     * </p>
+     *
      * @param targetName The class to transform
      * @param superName  The new superclass
      * @return The transformer
