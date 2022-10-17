@@ -85,6 +85,15 @@ abstract class GraderConfiguration(
         }
     }
 
+    internal fun getSourceSetNamesRecursive(): Set<String> {
+        val result = mutableSetOf<String>()
+        result.addAll(sourceSetNames.get())
+        if (parentConfiguration.isPresent) {
+            result.addAll(parentConfiguration.get().getSourceSetNamesRecursive())
+        }
+        return result
+    }
+
     private fun addAsDependency(configuration: AbstractConfiguration) {
         // add parent configuration as dependency
         for (sourceSet in configuration.sourceSets) {
