@@ -118,8 +118,17 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     }
                 }
             )
-            project.configurations.asSequence()
-                .filter { it.isCanBeResolved && it.name.contains("compile", ignoreCase = true) }
+            val sourceSetContainer = project.extensions.getByType<SourceSetContainer>()
+            val allSourceSets: Set<String> = configuration.getSourceSetNamesRecursive() +
+                jagrExtension.submissions[solutionConfigurationName.get()].sourceSetNames.get()
+            sourceSetContainer.asSequence()
+                .filter { it.name in allSourceSets }
+                .flatMap {
+                    sequenceOf(
+                        project.configurations[it.runtimeClasspathConfigurationName],
+                        project.configurations[it.compileClasspathConfigurationName],
+                    )
+                }
                 .flatMap { it.resolvedConfiguration.resolvedArtifacts }
                 .filter {
                     !(
