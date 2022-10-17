@@ -3,6 +3,7 @@ package org.sourcegrade.jagr.gradle
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.get
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.task.grader.GraderBuildTask
 import org.sourcegrade.jagr.gradle.task.grader.GraderLibsTask
@@ -24,11 +25,13 @@ class JagrGradlePlugin : Plugin<Project> {
     }
 
     private fun registerTasks(jagr: JagrExtension, target: Project) {
+        val checkTask = target.tasks["check"]
         for (grader in jagr.graders) {
             GraderBuildTask.Factory.registerTask(target, grader)
             GraderLibsTask.Factory.registerTask(target, grader)
             GraderWriteInfoTask.Factory.registerTask(target, grader)
             GraderRunTask.Factory.registerTask(target, grader)
+            checkTask.dependsOn(GraderRunTask.Factory.determineTaskName(grader.name))
         }
         for (submission in jagr.submissions) {
             SubmissionBuildTask.Factory.registerTask(target, submission)
