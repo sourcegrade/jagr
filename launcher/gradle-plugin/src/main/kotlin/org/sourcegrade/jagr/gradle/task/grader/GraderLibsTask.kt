@@ -18,7 +18,7 @@ abstract class GraderLibsTask : Jar(), GraderTask {
     init {
         group = "build"
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        archiveFileName.set(graderName.map { "$it-libs.jar" })
+        archiveFileName.set(graderName.map { "$it-${project.version}-libs.jar" })
         from(
             sourceSetNames.zip(solutionConfigurationName) { names, solution ->
                 createRuntimeDependencyProvider(names, solution).toList()
