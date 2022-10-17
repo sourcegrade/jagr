@@ -54,9 +54,6 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         group = "verification"
         dependsOn(submissionConfigurationName.map(SubmissionWriteInfoTask.Factory::determineTaskName))
         dependsOn(configurationName.map(GraderWriteInfoTask.Factory::determineTaskName))
-        project.tasks.getByName("check") { checkTask ->
-            checkTask.dependsOn(name)
-        }
     }
 
     private fun GraderConfiguration.getConfigRecursive(): Config {
