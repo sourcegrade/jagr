@@ -2,6 +2,7 @@ package org.sourcegrade.jagr.gradle.task.grader
 
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
@@ -53,6 +54,9 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         group = "verification"
         dependsOn(submissionConfigurationName.map(SubmissionWriteInfoTask.Factory::determineTaskName))
         dependsOn(configurationName.map(GraderWriteInfoTask.Factory::determineTaskName))
+        project.tasks.getByName("check") { checkTask ->
+            checkTask.dependsOn(name)
+        }
     }
 
     private fun GraderConfiguration.getConfigRecursive(): Config {
@@ -147,8 +151,12 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         val collector = emptyCollector(jagr)
         // TODO: Properly configure task output
         val rubricOutputDir = project.buildDir.resolve("resources/jagr/${configurationName.get()}/rubrics/")
+        var failed = false
         collector.setListener { result ->
             result.rubrics.keys.forEach {
+                if (it.grade.minPoints < it.rubric.maxPoints) {
+                    failed = true
+                }
                 it.logGradedRubric(jagr)
                 val resource = exporterHTML.export(it)
                 resource.writeIn(rubricOutputDir)
@@ -169,7 +177,11 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         } else {
             jagr.logger.info("Exported $rubricCount rubrics")
         }
-        jagr.logger.info("See rubric at file://${rubricOutputDir.absolutePath}/result.html")
+        val rubricLocation = "file://${rubricOutputDir.absolutePath}/result.html"
+        jagr.logger.info("See rubric at $rubricLocation")
+        if (failed) {
+            throw GradleException("Grading failed! See the rubric at $rubricLocation")
+        }
     }
 
     /**
