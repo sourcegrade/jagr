@@ -25,7 +25,7 @@ internal fun SourceSet.forEachFile(action: (directorySet: String, fileName: Stri
     for (directorySet in allSource.sourceDirectories) {
         for (file in directorySet.walkTopDown()) {
             if (file.isFile) {
-                action(directorySet.name, file.relativeTo(directorySet).path)
+                action(directorySet.name, file.relativeTo(directorySet).invariantSeparatorsPath)
             }
         }
     }
