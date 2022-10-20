@@ -38,6 +38,7 @@ import org.sourcegrade.jagr.launcher.io.logGradedRubric
 import org.sourcegrade.jagr.launcher.io.logHistogram
 import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
+import java.net.URI
 
 @Suppress("LeakingThis")
 abstract class GraderRunTask : DefaultTask(), GraderTask {
@@ -174,7 +175,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         } else {
             jagr.logger.info("Exported $rubricCount rubrics")
         }
-        val rubricLocation = "file://${rubricOutputDir.absolutePath}/result.html"
+        val rubricLocation = URI("file", "", rubricOutputDir.toURI().path + "result.html", null, null).toString()
         jagr.logger.info("See rubric at $rubricLocation")
         if (failed) {
             throw GradleException("Grading failed! See the rubric at $rubricLocation")
