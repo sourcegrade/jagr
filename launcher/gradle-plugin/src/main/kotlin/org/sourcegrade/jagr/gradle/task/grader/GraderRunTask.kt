@@ -90,7 +90,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     project.extensions
                         .getByType<SourceSetContainer>()
                         .filter { configuration.matchRecursive(it) }
-                        .forEach { sourceSet -> sourceSet.allSource.sourceDirectories.writeToContainer(this) }
+                        .forEach { writeSourceSet(it) }
                     addResource {
                         name = "grader-info.json"
                         graderInfoFile.get().inputStream().use { input ->
@@ -191,18 +191,14 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
             (parentConfiguration.isPresent && parentConfiguration.get().matchRecursive(sourceSet))
     }
 
-    private fun ResourceContainer.Builder.writeSourceSet(sourceSet: SourceSet) {
-        sourceSet
-            .allSource
-            .sourceDirectories
-            .writeToContainer(this)
-    }
+    private fun ResourceContainer.Builder.writeSourceSet(sourceSet: SourceSet) =
+        sourceSet.allSource.sourceDirectories.writeToContainer(this)
 
     private fun FileCollection.writeToContainer(builder: ResourceContainer.Builder) {
         forEach { sourceDirectory ->
             sourceDirectory.walk().filter { it.isFile }.forEach { file ->
                 builder.addResource {
-                    name = file.relativeTo(sourceDirectory).path
+                    name = file.relativeTo(sourceDirectory).invariantSeparatorsPath
                     file.inputStream().use { input ->
                         outputStream.use { output ->
                             input.transferTo(output)
