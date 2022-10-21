@@ -95,9 +95,8 @@ class JUnitTestRefFactoryImpl @Inject constructor(
         override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
             val applicableTestResults = testResults
                 .filter { (identifier, _) -> testSource == identifier.source.orElse(null) }
-                .flatMap { (identifier, _) ->
-                    testResults.filter { (id, _) -> id.uniqueId.startsWith(identifier.uniqueId) }.values
-                }
+                .map { (identifier, _) -> identifier }
+                .flatMap { testResults.filter { (id, _) -> id.uniqueId.startsWith(it.uniqueId) }.values }
 
             return if (applicableTestResults.isEmpty()) {
                 TestExecutionResult.failed(TestNotFoundError())
