@@ -93,9 +93,12 @@ class JUnitTestRefFactoryImpl @Inject constructor(
         inner class TestNotFoundError : AssertionFailedError("Test result not found")
 
         override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
-            val applicableTestResults: List<TestExecutionResult> = testResults
+            val applicableTestResults = testResults
                 .filter { (identifier, _) -> testSource == identifier.source.orElse(null) }
-                .map { (_, result) -> result }
+                .flatMap { (identifier, _) ->
+                    testResults.filter { (id, _) -> id.uniqueId.startsWith(identifier.uniqueId) }.values
+                }
+
             return if (applicableTestResults.isEmpty()) {
                 TestExecutionResult.failed(TestNotFoundError())
             } else {
