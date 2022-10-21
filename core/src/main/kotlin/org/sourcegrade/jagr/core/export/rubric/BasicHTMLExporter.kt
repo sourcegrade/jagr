@@ -17,7 +17,7 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
 
     override fun export(gradedRubric: GradedRubric): Resource {
         val builder = StringBuilder()
-        builder.pageStart()
+        builder.pageStart("Grading Result")
         builder.table(gradedRubric)
         builder.pageEnd()
         return buildResource {
@@ -54,11 +54,12 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
         tableEnd()
     }
 
-    private fun StringBuilder.pageStart() {
+    private fun StringBuilder.pageStart(title: String) {
         append("<html>")
         append("<head>")
         append("""<meta charset="utf-8">""")
         append("""<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">""")
+        append("<title>$title</title>")
         append("</head>")
         append("<body>")
         append("""<div class="container">""")
@@ -93,14 +94,15 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
             titleEntry(r.criterion.range())
             titleEntry(r.grade.range())
             titleEntry(r.comments())
+            rowEnd()
             r.childCriteria.forEach { this.tableEntry(it) }
         } else {
             entry("""${badge((++criterionCounter).toString())} ${r.description()}""")
             entry(r.criterion.range())
             entry(r.grade.range(), classes = r.rowClasses())
             entry(r.comments())
+            rowEnd()
         }
-        rowEnd()
     }
 
     private fun badge(text: String): String = """<span class="badge">$text</span>"""
