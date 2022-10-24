@@ -59,7 +59,7 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
         append("<head>")
         append("""<meta charset="utf-8">""")
         append("""<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">""")
-        append("<title>$title</title>")
+        append("<title>${title.escaped()}</title>")
         append("</head>")
         append("<body>")
         append("""<div class="container">""")
@@ -109,7 +109,7 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
 
     private fun PointRange.range(): String = PointRange.toString(this)
 
-    private fun GradedCriterion.description(): String = criterion.shortDescription
+    private fun GradedCriterion.description(): String = criterion.shortDescription.escaped()
 
     private fun GradedCriterion.comments(): String {
         return grade.comments.filter { it.isNotBlank() }.joinToString(separator = "<br>") { it.escaped() }
@@ -151,8 +151,6 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
             .replace(Regex("(?<!\\\\)>"), "&gt;")
             .replace("\\<", "<")
             .replace("\\>", ">")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
             .replace("\n", "<br>")
     }
 }
