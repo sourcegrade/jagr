@@ -147,6 +147,8 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
 
     private fun String.escaped(): String {
         return this
+            .replace(Regex("(?<!\\\\)<"), "&lt;")
+            .replace(Regex("(?<!\\\\)>"), "&gt;")
             .replace("\\<", "<")
             .replace("\\>", ">")
             .replace("<", "&lt;")
