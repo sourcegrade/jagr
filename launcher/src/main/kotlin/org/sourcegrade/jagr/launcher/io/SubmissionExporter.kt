@@ -34,4 +34,4 @@ interface SubmissionExporter {
     interface Eclipse : SubmissionExporter
 }
 
-fun SubmissionExporter.export(queue: GradingQueue) = export(queue.graders, queue.submissions)
+fun SubmissionExporter.export(queue: GradingQueue) = export(queue.grader, queue.submissions)

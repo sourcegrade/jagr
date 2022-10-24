@@ -36,7 +36,7 @@ interface RuntimeGrader {
 
 fun GradingRequest.grade(gradingFun: (List<GraderJar>, Submission) -> Map<GradedRubric, String>): GradingResult {
     val startedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
-    val rubrics = gradingFun(graders, submission)
+    val rubrics = gradingFun(grader, submission)
     val finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
     return GradingResult(startedUtc, finishedUtc, this, rubrics)
 }

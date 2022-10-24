@@ -36,7 +36,7 @@ class GradingQueueImpl(
     private val compiledBatch: CompiledBatch,
 ) : GradingQueue {
 
-    override val graders: List<GraderJar> get() = compiledBatch.graders
+    override val grader: List<GraderJar> get() = compiledBatch.graders
     override val submissions: List<Submission> get() = compiledBatch.submissions
 
     private val submissionIterator: Iterator<Submission> = submissions.iterator()
@@ -62,7 +62,7 @@ class GradingQueueImpl(
                 null
             } else if (submissionIterator.hasNext()) {
                 _remaining.getAndDecrement()
-                GradingRequestImpl(submissionIterator.next(), graders, compiledBatch.libraries)
+                GradingRequestImpl(submissionIterator.next(), grader, compiledBatch.libraries)
             } else {
                 finishedUtc = OffsetDateTime.now(ZoneOffset.UTC).toInstant()
                 null

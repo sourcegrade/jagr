@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 interface GradingQueue {
 
-    val graders: List<GraderJar>
+    val grader: GraderJar
 
     val submissions: List<Submission>
 
@@ -60,7 +60,7 @@ interface GradingQueue {
 fun GradingRequest.toGradingQueue(): GradingQueue = SingletonGradingQueue(this)
 
 private class SingletonGradingQueue(private val job: GradingRequest) : GradingQueue {
-    override val graders: List<GraderJar> = job.graders
+    override val grader: List<GraderJar> = job.grader
     override val submissions: List<Submission> = listOf(job.submission)
     override val total: Int = 1
     override val remaining: Int

@@ -26,28 +26,29 @@ import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.keyOf
-import org.sourcegrade.jagr.launcher.io.readList
+import org.sourcegrade.jagr.launcher.io.read
 import org.sourcegrade.jagr.launcher.io.readScoped
+import org.sourcegrade.jagr.launcher.io.write
 import org.sourcegrade.jagr.launcher.io.writeList
 import org.sourcegrade.jagr.launcher.io.writeScoped
 
 data class GradingRequestImpl(
     override val submission: Submission,
-    override val graders: List<GraderJar>,
+    override val grader: GraderJar,
     val libraries: RuntimeResources,
 ) : GradingRequest {
     companion object Factory : SerializerFactory.Scoped<GradingRequestImpl> {
         override fun read(scope: SerializationScope.Input): GradingRequestImpl {
             return GradingRequestImpl(
                 scope.readScoped(),
-                scope.readList(),
+                scope.read(),
                 scope[RuntimeResources.base],
             )
         }
 
         override fun write(obj: GradingRequestImpl, scope: SerializationScope.Output) {
             scope.writeScoped(obj.submission)
-            scope.writeList(obj.graders)
+            scope.write(obj.grader)
         }
 
         override fun readScoped(scope: SerializationScope.Input): GradingRequestImpl {
