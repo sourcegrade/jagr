@@ -23,6 +23,7 @@ import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.listProperty
+import org.gradle.kotlin.dsl.property
 
 abstract class SubmissionConfiguration(
     name: String,
@@ -33,4 +34,9 @@ abstract class SubmissionConfiguration(
     abstract val studentId: Property<String>
     abstract val firstName: Property<String>
     abstract val lastName: Property<String>
+    val checkCompilation: Property<Boolean> = project.objects.property<Boolean>().convention(true)
+
+    fun skipCompilationCheck() {
+        checkCompilation.set(false)
+    }
 }
