@@ -77,7 +77,10 @@ internal class TestStatusListenerImpl(
     private class ContainerFailedError(
         failedChildren: Map<TestIdentifier, TestExecutionResult>,
     ) : AssertionFailedError(
-        "There were failing tests in this container:\n" +
-            failedChildren.entries.joinToString("\n") { (identifier, result) -> "$identifier: $result" }
+        failedChildren.entries.first().value.throwable.orElse(null)?.message + when (failedChildren.size) {
+            1 -> ""
+            2 -> "\n\nthere is 1 more failing test"
+            else -> "\n\nthere are ${failedChildren.size - 1} more failing tests"
+        }
     )
 }
