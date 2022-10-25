@@ -58,7 +58,6 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
 
     init {
         group = "jagr resources"
-        // TODO: Allow grader tasks without compileJava?
         dependsOn(
             solutionConfigurationName
                 .flatMap { c -> submissionContainer[c].checkCompilation }
