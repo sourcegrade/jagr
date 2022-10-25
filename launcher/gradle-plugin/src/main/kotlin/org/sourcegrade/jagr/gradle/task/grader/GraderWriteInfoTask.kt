@@ -58,7 +58,11 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
 
     init {
         group = "jagr resources"
-        dependsOn("compileJava")
+        dependsOn(
+            solutionConfigurationName
+                .flatMap { c -> submissionContainer[c].checkCompilation }
+                .map { if (it) "compileJava" else emptyList<String>() }
+        )
     }
 
     private fun GraderConfiguration.getFilesRecursive(): Map<String, Set<String>> {
