@@ -33,13 +33,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface TestForSubmission {
-
-    /**
-     * The assignment id of the submission.
-     *
-     * @return The assignment id of the submission
-     * @deprecated No longer read by Jagr, the assignmentId is provided via the generated grader-info.json
-     */
-    @Deprecated(forRemoval = true)
-    String value() default "";
 }
