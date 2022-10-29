@@ -16,6 +16,8 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
     private var criterionCounter = 0
 
     override fun export(gradedRubric: GradedRubric): Resource {
+        cellCounter = 0
+        criterionCounter = 0
         val builder = StringBuilder()
         builder.pageStart()
         builder.table(gradedRubric)
