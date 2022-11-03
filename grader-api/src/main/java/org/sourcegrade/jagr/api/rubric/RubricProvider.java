@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -23,6 +23,13 @@ import org.jetbrains.annotations.Nullable;
 import org.sourcegrade.jagr.api.testing.RubricConfiguration;
 import org.sourcegrade.jagr.api.testing.Submission;
 
+/**
+ * Used to provide a {@link Rubric} for a submission.
+ *
+ * <p>
+ * Implementation must be annotated with {@link RubricForSubmission} in order to be discovered.
+ * </p>
+ */
 public interface RubricProvider {
 
     /**
@@ -31,8 +38,6 @@ public interface RubricProvider {
      * <pre><code>
      * assignmentId + "_Rubric_" + studentLastName + "_" + studentFirstName
      * </code></pre>
-     * <p>
-     * If there are multiple rubrics with conflicting names, a number will be added on the end
      */
     default @Nullable String getOutputFileName(Submission submission) {
         return null;

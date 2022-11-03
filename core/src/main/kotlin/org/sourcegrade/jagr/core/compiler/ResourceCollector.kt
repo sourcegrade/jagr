@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -19,8 +19,8 @@
 
 package org.sourcegrade.jagr.core.compiler
 
-import org.sourcegrade.jagr.core.testing.GraderInfoImpl
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
+import org.sourcegrade.jagr.launcher.io.GraderInfo
+import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 
@@ -30,9 +30,9 @@ interface ResourceCollector {
 
 inline fun <reified T : Any> ResourceCollector.get() = get(T::class)
 
-val ProcessedContainer.submissionInfo: SubmissionInfoImpl? by collected()
+val ProcessedContainer.submissionInfo: SubmissionInfo? by collected()
 
-val ProcessedContainer.graderInfo: GraderInfoImpl? by collected()
+val ProcessedContainer.graderInfo: GraderInfo? by collected()
 
 private inline fun <reified T : Any> collected(): ReadOnlyProperty<ProcessedContainer, T?> =
     ReadOnlyProperty { e, _ -> e.resourceCollector.get() }

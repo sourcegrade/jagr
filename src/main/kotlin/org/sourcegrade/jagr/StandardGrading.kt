@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -41,6 +41,8 @@ import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
 import org.sourcegrade.jagr.launcher.io.SubmissionExporter
 import org.sourcegrade.jagr.launcher.io.buildGradingBatch
 import org.sourcegrade.jagr.launcher.io.export
+import org.sourcegrade.jagr.launcher.io.logGradedRubric
+import org.sourcegrade.jagr.launcher.io.logHistogram
 import org.sourcegrade.jagr.launcher.io.writeAsDirIn
 import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
@@ -57,6 +59,7 @@ class StandardGrading(
     private val htmlExporter = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
 
     fun grade(noExport: Boolean, exportOnly: Boolean) = runBlocking {
+        jagr.logger.info("Starting Jagr v${Jagr.version}")
         File(config.dir.submissions).ensure(jagr.logger)
         jagr.extrasManager.runExtras()
         val batch = buildGradingBatch {
@@ -72,8 +75,8 @@ class StandardGrading(
             jagr.logger.info("Only exporting, finished!")
             return@runBlocking
         }
-        jagr.logger.info("Expected submission: ${batch.expectedSubmissions}")
         val mode = config.executor.mode
+        jagr.logger.info("Executor mode '$mode' :: expected submission: ${batch.expectedSubmissions}")
         val executor = if (mode == "single") {
             SyncExecutor(jagr)
         } else {

@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -60,7 +60,7 @@ class EclipseSubmissionExporter : SubmissionExporter.Eclipse {
         val writer = PrintWriter(outputStream, false, Charsets.UTF_8)
         writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         writer.println("<projectDescription>")
-        writer.println("\t<name>${submission.info}</name>")
+        writer.println("\t<name>${submission.submissionInfo}</name>")
         writer.println("<buildSpec>")
         writer.println("\t\t<buildCommand>")
         writer.println("\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>")

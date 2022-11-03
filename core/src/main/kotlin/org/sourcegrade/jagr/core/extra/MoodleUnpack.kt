@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -20,7 +20,7 @@
 package org.sourcegrade.jagr.core.extra
 
 import com.google.inject.Inject
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.launcher.env.Config
 import java.io.File
 import java.util.zip.ZipEntry
@@ -34,7 +34,7 @@ class MoodleUnpack @Inject constructor(
     override val name: String = "moodle-unpack"
     override fun run() {
         val submissions = File(config.dir.submissions)
-        val studentIdRegex = Regex(config.extras.moodleUnpack.studentIdRegex)
+        val studentRegex = Regex(config.extras.moodleUnpack.studentRegex)
         val unpackedFiles: MutableList<SubmissionInfoVerification> = mutableListOf()
         for (candidate in submissions.listFiles { _, t -> t.endsWith(".zip") }!!) {
             logger.info("extra($name) :: Discovered candidate zip $candidate")
@@ -46,9 +46,9 @@ class MoodleUnpack @Inject constructor(
                 ?.let { "h$it" }
                 ?: "none"
             for (entry in zipFile.entries()) {
-                if (!entry.name.endsWith(".jar")) continue
+                val matcher = studentRegex.matchEntire(entry.name) ?: continue
                 try {
-                    unpackedFiles += zipFile.unpackEntry(entry.name.split("/"), entry, submissions, studentIdRegex, assignmentId)
+                    unpackedFiles += zipFile.unpackEntry(entry, submissions, assignmentId, matcher)
                 } catch (e: Throwable) {
                     logger.info("extra($name) :: Unable to unpack entry ${entry.name} in candidate $candidate", e)
                 }
@@ -58,14 +58,13 @@ class MoodleUnpack @Inject constructor(
     }
 
     private fun ZipFile.unpackEntry(
-        path: List<String>,
         entry: ZipEntry,
         directory: File,
-        studentIdRegex: Regex,
         assignmentId: String,
+        matcher: MatchResult,
     ): SubmissionInfoVerification {
-        val studentId = path[0].split(" - ").run { this[size - 1] }.takeIf { studentIdRegex.matches(it) }
-        val fileName = "$studentId-${path[path.size - 1]}"
+        val studentId = matcher.groups["studentId"]?.value
+        val fileName = "$assignmentId-$studentId.jar"
         if (studentId == null) {
             logger.warn("extra(moodle-unpack) :: Unpacking unknown studentId in file $fileName")
         } else {

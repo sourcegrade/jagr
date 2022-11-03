@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -24,6 +24,5 @@ import org.sourcegrade.jagr.api.testing.RubricConfiguration
 interface GraderJar {
     val info: GraderInfo
     val configuration: RubricConfiguration
-    val rubricProviders: Map<String, List<String>>
-    val testProviders: Map<String, List<String>>
+    val testClassNames: List<String>
 }

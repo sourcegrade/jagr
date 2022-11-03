@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -26,10 +26,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * This annotation is used to mark a class as a test for a submission.
+ */
 @ApiStatus.NonExtendable
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface TestForSubmission {
 
-    String value();
+    /**
+     * The assignment id of the submission.
+     *
+     * @return The assignment id of the submission
+     * @deprecated No longer read by Jagr, the assignmentId is provided via the generated grader-info.json
+     */
+    @Deprecated(forRemoval = true)
+    String value() default "";
 }

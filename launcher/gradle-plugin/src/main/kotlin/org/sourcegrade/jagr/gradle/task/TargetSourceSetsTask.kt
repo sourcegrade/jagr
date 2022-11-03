@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -17,21 +17,18 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api.testing;
+package org.sourcegrade.jagr.gradle.task
 
-import org.jetbrains.annotations.ApiStatus;
+import org.gradle.api.Task
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 
-/**
- * Represents the contents of a submission-info.json file
- */
-@ApiStatus.NonExtendable
-public interface SubmissionInfo {
+interface TargetSourceSetsTask : Task {
 
-    String getAssignmentId();
+    @get:Input
+    val configurationName: Property<String>
 
-    String getStudentId();
-
-    String getFirstName();
-
-    String getLastName();
+    @get:Input
+    val sourceSetNames: ListProperty<String>
 }

@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -91,12 +91,20 @@ class CriterionImpl(
     override fun getPeers(): List<CriterionImpl> = peersKt
     override fun getChildCriteria(): List<CriterionImpl> = childCriteria
     override fun grade(testCycle: TestCycle): GradedCriterion {
-        val graderResult = GradeResult.clamped(grader?.grade(testCycle, this) ?: GradeResult.ofNone(), this)
+        val graderResult = GradeResult.clamped(
+            grader?.grade(testCycle, this)
+                ?: GradeResult.of(this, "No grader provided"),
+            this
+        )
         if (childCriteria.isEmpty()) {
             return GradedCriterionImpl(testCycle, graderResult, this)
         }
         val childGraded = childCriteria.map { it.grade(testCycle) }
-        val gradeResult = childGraded.asSequence().map(Graded::getGrade).sum().clamped(this)
+        val gradeResult = childGraded.asSequence()
+            .map(Graded::getGrade)
+            .sum()
+            .withoutComments()
+            .clamped(this)
         return GradedCriterionImpl(testCycle, gradeResult, this, childGraded)
     }
 

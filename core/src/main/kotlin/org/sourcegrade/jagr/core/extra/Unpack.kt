@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -26,12 +26,12 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.slf4j.Logger
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.launcher.env.Config
+import org.sourcegrade.jagr.launcher.env.Jagr
+import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import java.io.File
 import java.nio.file.FileSystems
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.bufferedWriter
 
@@ -40,7 +40,6 @@ abstract class Unpack : Extra {
     protected abstract val config: Config
     protected abstract val logger: Logger
 
-    @OptIn(ExperimentalPathApi::class)
     private fun SubmissionInfoVerification.verify() {
         if (assignmentId == null && studentId == null && firstName == null && lastName == null) return
         try {
@@ -57,7 +56,7 @@ abstract class Unpack : Extra {
                 null
             }?.use useReader@{ reader ->
                 val submissionInfo = try {
-                    Json.decodeFromString<SubmissionInfoImpl>(reader.readText())
+                    Json.decodeFromString<SubmissionInfo>(reader.readText())
                 } catch (e: SerializationException) {
                     return@useReader null
                 }
@@ -75,20 +74,26 @@ abstract class Unpack : Extra {
                             if (replaceLastName) append(" lastName(${submissionInfo.lastName} -> $lastName)")
                         }.toString()
                     )
-                    SubmissionInfoImpl(
-                        if (replaceAssignmentId) assignmentId!! else submissionInfo.assignmentId,
-                        if (replaceStudentId) studentId!! else submissionInfo.studentId,
-                        if (replaceFirstName) firstName!! else submissionInfo.firstName,
-                        if (replaceLastName) lastName!! else submissionInfo.lastName,
+                    SubmissionInfo(
+                        if (replaceAssignmentId) checkNotNull(assignmentId) else submissionInfo.assignmentId,
+                        Jagr.version,
                         submissionInfo.sourceSets,
+                        submissionInfo.dependencyConfigurations,
+                        submissionInfo.repositoryConfigurations,
+                        if (replaceStudentId) checkNotNull(studentId) else submissionInfo.studentId,
+                        if (replaceFirstName) checkNotNull(firstName) else submissionInfo.firstName,
+                        if (replaceLastName) checkNotNull(lastName) else submissionInfo.lastName,
                     )
                 } else return
-            } ?: SubmissionInfoImpl(
+            } ?: SubmissionInfo(
                 assignmentId = assignmentId ?: "none",
+                jagrVersion = Jagr.version,
+                sourceSets = listOf(),
+                dependencyConfigurations = emptyMap(),
+                repositoryConfigurations = emptyList(),
                 studentId = studentId ?: "none",
                 firstName = firstName ?: "none",
                 lastName = lastName ?: "none",
-                sourceSets = listOf(),
             )
             submissionInfoPath.bufferedWriter().use { writer ->
                 writer.write(Json.encodeToString(replacedSubmissionInfo))

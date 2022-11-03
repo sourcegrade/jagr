@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -20,7 +20,7 @@
 package org.sourcegrade.jagr.core.testing
 
 import com.google.inject.Inject
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.rubric.RubricProvider
 import org.sourcegrade.jagr.api.testing.Submission
@@ -50,19 +50,15 @@ class RuntimeGraderImpl @Inject constructor(
             .fold(emptyMap()) { a, b -> a + b }
     }
 
-    private fun TestCycle.collectResults(): Map<GradedRubric, String> {
-        val result: MutableMap<GradedRubric, String> = mutableMapOf()
-        for (rubricProviderName in rubricProviderClassNames) {
-            val rubricProvider = try {
-                // rubric provider must first be loaded again together with submission classes
-                classLoader.loadClass(rubricProviderName).getConstructor().newInstance() as RubricProvider
-            } catch (e: Throwable) {
-                logger.error("Failed to initialize rubricProvider $rubricProviderName for $submission", e)
-                continue
-            }
-            val exportFileName = rubricProvider.getOutputFileName(submission) ?: submission.info.toString()
-            result[rubricProvider.rubric.grade(this)] = exportFileName
+    private fun TestCycle.collectResults(): Pair<GradedRubric, String>? {
+        val rubricProvider = try {
+            // rubric provider must first be loaded again together with submission classes
+            classLoader.loadClass(rubricProviderName).getConstructor().newInstance() as RubricProvider
+        } catch (e: Throwable) {
+            logger.error("Failed to initialize rubric provider $rubricProviderName for $submission", e)
+            return null
         }
-        return result
+        val exportFileName = rubricProvider.getOutputFileName(submission) ?: submission.info.toString()
+        return rubricProvider.rubric.grade(this) to exportFileName
     }
 }

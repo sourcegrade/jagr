@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -20,7 +20,7 @@
 package org.sourcegrade.jagr.core.compiler.java
 
 import com.google.inject.Inject
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.core.compiler.ResourceCollectorImpl
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.RuntimeContainer

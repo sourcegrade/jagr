@@ -1,21 +1,20 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jlleitschuh.gradle.ktlint.KtlintExtension
-import org.sourcegrade.jagr.script.JagrPublishPlugin
 
+@Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     application
-    kotlin("jvm")
-    id("com.github.johnrengelman.shadow")
-    id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.kapt) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.style)
 }
-
-val cliktVersion: String by project
 
 dependencies {
     runtimeOnly(project("jagr-core"))
     implementation(project("jagr-launcher"))
-    implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
+    implementation(libs.clikt)
 }
 
 application {
@@ -53,25 +52,18 @@ tasks {
     }
 }
 
-project.extra["apiVersion"] = "0.4-SNAPSHOT"
+val projectVersion = file("version").readLines().first()
+project.extra["apiVersion"] = projectVersion.replace(".[0-9]+(?=($|-SNAPSHOT))".toRegex(), "")
 
 allprojects {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    apply(plugin = "org.sourcegrade.style")
 
     group = "org.sourcegrade"
-    version = "0.4.0-SNAPSHOT"
+    version = projectVersion
 
     project.findProperty("buildNumber")
         ?.takeIf { version.toString().contains("SNAPSHOT") }
         ?.also { version = version.toString().replace("SNAPSHOT", "RC$it") }
-
-    repositories {
-        mavenCentral()
-    }
-
-    configure<KtlintExtension> {
-        enableExperimentalRules.set(true)
-    }
 
     tasks {
         withType<KotlinCompile> {
@@ -83,8 +75,4 @@ allprojects {
             targetCompatibility = "11"
         }
     }
-}
-
-subprojects {
-    apply<JagrPublishPlugin>()
 }

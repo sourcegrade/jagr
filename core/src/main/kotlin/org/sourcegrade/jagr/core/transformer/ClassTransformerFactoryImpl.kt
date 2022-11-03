@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -22,7 +22,10 @@ package org.sourcegrade.jagr.core.transformer
 import org.sourcegrade.jagr.api.testing.ClassTransformer
 
 class ClassTransformerFactoryImpl : ClassTransformer.Factory {
-    override fun replacement(replacement: Class<*>, original: Class<*>): ClassTransformer {
-        return ReplacementTransformer(replacement.kotlin, original.kotlin)
-    }
+
+    override fun injectSuperclass(targetName: String, superName: String): ClassTransformer =
+        InjectSuperclassTransformer(targetName, superName)
+
+    override fun replacement(replacement: Class<*>, original: Class<*>): ClassTransformer =
+        ReplacementTransformer(replacement.kotlin, original.kotlin)
 }

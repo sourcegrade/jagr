@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -20,16 +20,16 @@
 package org.sourcegrade.jagr.core.testing
 
 import com.google.inject.Inject
+import org.apache.logging.log4j.Logger
 import org.junit.platform.commons.JUnitException
 import org.junit.platform.engine.discovery.ClassSelector
 import org.junit.platform.engine.discovery.DiscoverySelectors
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
 import org.junit.platform.launcher.core.LauncherFactory
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener
-import org.slf4j.Logger
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoaderImpl
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.core.executor.TimeoutHandler
 
@@ -39,24 +39,30 @@ class JavaRuntimeTester @Inject constructor(
 ) : RuntimeTester {
     override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
         if (submission !is JavaSubmission) return null
-        val info = submission.info
-        val rubricProviders = grader.rubricProviders[info.assignmentId] ?: return null
-        val classLoader = RuntimeClassLoader(
+        val info = submission.submissionInfo
+        if (info.assignmentId != grader.info.assignmentId) {
+            logger.warn(
+                "Submission $info assignmentId '${info.assignmentId}' != " +
+                    "grader's ${grader.info.name} assignmentId '${grader.info.assignmentId}'"
+            )
+            return null
+        }
+        val classLoader = RuntimeClassLoaderImpl(
             submission.compileResult.runtimeResources +
                 submission.libraries +
                 grader.containerWithoutSolution.runtimeResources
         )
-        val testCycle = JavaTestCycle(rubricProviders, submission, classLoader)
-        grader.testProviders[info.assignmentId]
-            ?.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
-            ?.runJUnit(testCycle)
-            ?.also(testCycle::setJUnitResult)
+        val testCycle = JavaTestCycle(grader.info.rubricProviderName, submission, classLoader)
+        grader.testClassNames
+            .map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
+            .runJUnit(testCycle)
+            .also(testCycle::setJUnitResult)
         return testCycle
     }
 
     private fun List<ClassSelector>.runJUnit(testCycle: TestCycle): JUnitResultImpl? {
         testCycleParameterResolver.value = testCycle
-        val info = testCycle.submission.info
+        val info = (testCycle.submission as JavaSubmission).submissionInfo
         logger.info("Running JUnit @ $info :: [${joinToString { it.className }}]")
         val launcher = LauncherFactory.create()
         val testPlan = try {
@@ -81,6 +87,7 @@ class JavaRuntimeTester @Inject constructor(
             val summaryListener = SummaryGeneratingListener()
             val statusListener = TestStatusListenerImpl(logger)
             TimeoutHandler.setClassNames(map { it.className })
+            TimeoutHandler.resetTimeout()
             launcher.execute(testPlan, summaryListener, statusListener)
             // if total timeout has been reached, reset so that the rubric provider doesn't throw an error
             TimeoutHandler.disableTimeout()

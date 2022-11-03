@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -24,10 +24,18 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.List;
 
 /**
- * Something that has criterion children
+ * Something that has criterion children.
+ *
+ * @see Criterion
+ * @see Rubric
  */
 @ApiStatus.NonExtendable
 public interface CriterionHolder<C> {
 
+    /**
+     * The criterion children of this CriterionHolder.
+     *
+     * @return The criterion children of this CriterionHolder
+     */
     List<? extends C> getChildCriteria();
 }

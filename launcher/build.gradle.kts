@@ -1,3 +1,6 @@
+import org.sourcegrade.jagr.script.JagrPublishPlugin
+import org.sourcegrade.jagr.script.apiProject
+
 plugins {
     kotlin("jvm")
     kotlin("kapt")
@@ -5,29 +8,25 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
-version = "0.4.0-SNAPSHOT"
-
-val configurateVersion: String by project
-val guiceVersion: String by project
-val jetbrainsAnnotationsVersion: String by project
-val kotlinxSerializationVersion: String by project
-val log4jVersion: String by project
-val slf4jVersion: String by project
+apply<JagrPublishPlugin>()
 
 dependencies {
-    api(project(":jagr-grader-api"))
-    api("com.google.inject:guice:$guiceVersion")
-    api("org.slf4j:slf4j-api:$slf4jVersion")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
-    api("org.spongepowered:configurate-hocon:$configurateVersion")
-    implementation("org.jetbrains:annotations:$jetbrainsAnnotationsVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$kotlinxSerializationVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
-    implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
-    kapt("org.apache.logging.log4j:log4j-core:$log4jVersion")
-    implementation("org.fusesource.jansi:jansi:2.3.1")
-    implementation("com.github.albfernandez:juniversalchardet:2.4.0")
+    apiProject(project, "jagr-grader-api")
+    api(libs.coroutines)
+    implementation(libs.configurate.hocon)
+    implementation(libs.configurate.kotlin)
+    implementation(libs.annotations)
+    implementation(libs.serialization)
+    implementation(libs.logging.core)
+    kapt(libs.logging.core)
     implementation(kotlin("reflect"))
+}
+
+tasks {
+    @Suppress("UnstableApiUsage")
+    withType<ProcessResources> {
+        from(rootProject.file("version")) {
+            into("org/sourcegrade/jagr/")
+        }
+    }
 }

@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -24,40 +24,104 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.sourcegrade.jagr.api.testing.TestCycle;
 
+/**
+ * A functional interface used by Jagr to determine the points for a given {@link TestCycle} and {@link Criterion}.
+ *
+ * <p>
+ * There are two base implementations {@link #testAwareBuilder()} and {@link #descendingPriority(Grader...)} or it may be
+ * implemented directly for more fine-grained control.
+ * </p>
+ */
 @FunctionalInterface
 public interface Grader {
 
+    /**
+     * Creates a new {@link TestAwareBuilder} that can be used to build a {@link Grader} that uses test results to determine
+     * the points.
+     *
+     * @return A new {@link TestAwareBuilder}
+     */
     static TestAwareBuilder testAwareBuilder() {
         return FactoryProvider.factory.testAwareBuilder();
     }
 
+    /**
+     * Creates a new {@link Grader} that uses the given {@link GradedCriterion}s in descending priority order.
+     *
+     * @param graders The {@link GradedCriterion}s in descending priority order
+     * @return A new {@link Grader}
+     */
     static Grader descendingPriority(Grader... graders) {
         return FactoryProvider.factory.descendingPriority(graders);
     }
 
+    /**
+     * The grading function determines points for a given {@link TestCycle} and {@link Criterion}.
+     *
+     * @param testCycle The {@link TestCycle} used to grade
+     * @param criterion The {@link Criterion} used to grade
+     * @return A {@link GradeResult} resulting from the grading process
+     */
     GradeResult grade(TestCycle testCycle, Criterion criterion);
 
+    /**
+     * A builder used to create {@link Grader}s.
+     *
+     * @param <B> The builder type
+     */
     @ApiStatus.NonExtendable
     interface Builder<B extends Builder<B>> {
 
+        /**
+         * Gives maximum points if this grader passes.
+         *
+         * @return {@code this}
+         */
         default B pointsPassedMax() {
             return pointsPassed((ignored, criterion) -> GradeResult.ofMax(criterion));
         }
 
+        /**
+         * Gives minimum points if this grader passes.
+         *
+         * @return {@code this}
+         */
         default B pointsPassedMin() {
             return pointsPassed((ignored, criterion) -> GradeResult.ofMin(criterion));
         }
 
+        /**
+         * Sets the grader that should be used to determine the points if this grader passes.
+         *
+         * @param grader The grader that should be used to determine the points if this grader passes
+         * @return {@code this}
+         */
         B pointsPassed(@Nullable Grader grader);
 
+        /**
+         * Gives maximum points if this grader fails.
+         *
+         * @return {@code this}
+         */
         default B pointsFailedMax() {
             return pointsFailed((ignored, criterion) -> GradeResult.ofMax(criterion));
         }
 
+        /**
+         * Gives minimum points if this grader fails.
+         *
+         * @return {@code this}
+         */
         default B pointsFailedMin() {
             return pointsFailed((ignored, criterion) -> GradeResult.ofMin(criterion));
         }
 
+        /**
+         * Sets the grader that should be used to determine the points if this grader fails.
+         *
+         * @param grader The grader that should be used to determine the points if this grader fails
+         * @return {@code this}
+         */
         B pointsFailed(@Nullable Grader grader);
 
         /**
@@ -69,25 +133,72 @@ public interface Grader {
          */
         B commentIfFailed(@Nullable String comment);
 
+        /**
+         * Builds the {@link Grader} that was configured by this builder.
+         *
+         * @return A new {@link Grader}
+         */
         Grader build();
     }
 
     /**
-     * Builds a grader that uses JUnit to determine a grade
+     * Builds a grader that uses JUnit to determine a grade.
      */
     @ApiStatus.NonExtendable
     interface TestAwareBuilder extends Builder<TestAwareBuilder> {
 
+        /**
+         * Requires that the provided {@code testRef} passes.
+         *
+         * <p>
+         * This method may be invoked several times on the same builder to stack effects.
+         * </p>
+         *
+         * @param testRef The test to require
+         * @return {@code this}
+         */
         default TestAwareBuilder requirePass(JUnitTestRef testRef) {
             return requirePass(testRef, null);
         }
 
+        /**
+         * Requires that the provided {@code testRef} passes.
+         *
+         * <p>
+         * This method may be invoked several times on the same builder to stack effects.
+         * </p>
+         *
+         * @param testRef The test to require
+         * @param comment The comment to write in the exported rubric if this test fails
+         * @return {@code this}
+         */
         TestAwareBuilder requirePass(JUnitTestRef testRef, @Nullable String comment);
 
+        /**
+         * Requires that the provided {@code testRef} fails.
+         *
+         * <p>
+         * This method may be invoked several times on the same builder to stack effects.
+         * </p>
+         *
+         * @param testRef The test to require
+         * @return {@code this}
+         */
         default TestAwareBuilder requireFail(JUnitTestRef testRef) {
             return requireFail(testRef, null);
         }
 
+        /**
+         * Requires that the provided {@code testRef} fails.
+         *
+         * <p>
+         * This method may be invoked several times on the same builder to stack effects.
+         * </p>
+         *
+         * @param testRef The test to require
+         * @param comment The comment to write in the exported rubric if this test passes
+         * @return {@code this}
+         */
         TestAwareBuilder requireFail(JUnitTestRef testRef, @Nullable String comment);
     }
 

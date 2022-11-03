@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -23,14 +23,37 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 
+/**
+ * The result from the compilation of a container.
+ */
 @ApiStatus.NonExtendable
 public interface CompileResult {
 
+    /**
+     * The messages produced by the compiler.
+     *
+     * @return The messages produced by the compiler
+     */
     List<String> getMessages();
 
+    /**
+     * The number of warnings that were produced by the compiler.
+     *
+     * @return The number of warnings that were produced by the compiler
+     */
     int getWarningCount();
 
+    /**
+     * The number of errors that were produced by the compiler.
+     *
+     * @return The number of errors that were produced by the compiler
+     */
     int getErrorCount();
 
+    /**
+     * The number of messages that are neither warnings nor errors produced by the compiler.
+     *
+     * @return The number of messages that are neither warnings nor errors produced by the compiler
+     */
     int getOtherCount();
 }

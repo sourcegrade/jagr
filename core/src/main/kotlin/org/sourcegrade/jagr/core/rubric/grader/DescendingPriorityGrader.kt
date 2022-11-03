@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.core.rubric.grader
 
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.rubric.Criterion
 import org.sourcegrade.jagr.api.rubric.GradeResult
 import org.sourcegrade.jagr.api.rubric.Grader
@@ -34,7 +34,7 @@ class DescendingPriorityGrader(
     override fun grade(testCycle: TestCycle, criterion: Criterion): GradeResult {
         // quick exit if only 0 or 1 grader
         if (graders.isEmpty()) {
-            return GradeResult.ofNone()
+            return GradeResult.of(criterion)
         }
         if (graders.size == 1) {
             return graders[0].grade(testCycle, criterion)

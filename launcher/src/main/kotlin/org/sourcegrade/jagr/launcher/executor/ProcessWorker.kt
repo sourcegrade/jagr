@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -27,8 +27,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.core.LogEvent
-import org.slf4j.Logger
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
@@ -86,7 +86,12 @@ class ProcessWorker(
         checkBoot()
         status = WorkerStatus.RUNNING
         coroutineScope.launch {
-            sendRequest(job.request)
+            try {
+                sendRequest(job.request)
+            } catch (e: Exception) {
+                jagr.logger.error("Failed to send request to child process", e)
+                return@launch
+            }
             job.gradeCatching(jagr, ::receiveResult)
             status = WorkerStatus.FINISHED
             removeActive(this@ProcessWorker)

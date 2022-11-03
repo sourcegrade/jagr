@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -24,7 +24,15 @@ import org.junit.platform.launcher.TestIdentifier;
 
 import java.util.Map;
 
+/**
+ * Used to store test results from JUnit.
+ */
 public interface TestStatusListener {
 
+    /**
+     * Returns the test results that were collected from JUnit.
+     *
+     * @return The test results that were collected from JUnit
+     */
     Map<TestIdentifier, TestExecutionResult> getTestResults();
 }

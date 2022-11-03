@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -21,8 +21,16 @@ package org.sourcegrade.jagr.api.rubric;
 
 import org.jetbrains.annotations.ApiStatus;
 
+/**
+ * A {@link Criterion} that has been graded.
+ */
 @ApiStatus.NonExtendable
 public interface GradedCriterion extends Graded, CriterionHolder<GradedCriterion> {
 
+    /**
+     * Returns the {@link Criterion} that was used to create this graded criterion.
+     *
+     * @return The {@link Criterion} that was used to create this graded criterion
+     */
     Criterion getCriterion();
 }

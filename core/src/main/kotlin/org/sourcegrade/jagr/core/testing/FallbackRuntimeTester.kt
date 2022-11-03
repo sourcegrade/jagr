@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -21,23 +21,19 @@ package org.sourcegrade.jagr.core.testing
 
 import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.api.testing.TestCycle
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoaderImpl
 import org.sourcegrade.jagr.core.compiler.java.plus
 
 class FallbackRuntimeTester : RuntimeTester {
     override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
-        val info = submission.info
-        val rubricProviders = grader.rubricProviders[info.assignmentId] ?: return null
+        submission as JavaSubmission
         var resources = grader.container.runtimeResources
-        if (submission is JavaSubmission) {
-            resources += submission.compileResult.runtimeResources + submission.libraries
-        }
-        val classLoader = RuntimeClassLoader(resources)
+        resources += submission.compileResult.runtimeResources + submission.libraries
+        val classLoader = RuntimeClassLoaderImpl(resources)
         val notes = listOf(
             "The grading process was forcibly terminated.",
             "Please check if you have an infinite loop or infinite recursion.",
-            "Contact your tutor if you have any questions.",
         )
-        return FallbackTestCycle(rubricProviders, submission, classLoader, notes)
+        return FallbackTestCycle(grader.info.rubricProviderName, submission, classLoader, notes)
     }
 }

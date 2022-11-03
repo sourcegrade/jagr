@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -24,20 +24,44 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
+/**
+ * A student submission to be graded.
+ */
 @ApiStatus.NonExtendable
 public interface Submission {
 
-    SubmissionInfo getInfo();
+    /**
+     * The info of the submission.
+     *
+     * @return The info of the submission
+     */
+    String getInfo();
 
+    /**
+     * The {@link CompileResult} of the submission.
+     *
+     * @return The {@link CompileResult} of the submission
+     */
     CompileResult getCompileResult();
 
+    /**
+     * The {@link SourceFile} for the given file name.
+     *
+     * @param fileName The name of the file to return
+     * @return The {@link SourceFile} for the given file name
+     */
     @Nullable SourceFile getSourceFile(String fileName);
 
     /**
      * <b>Experimental API. May be moved in a future release.</b>
      *
+     * <p>
+     * Deprecated in favor of {@link TestCycle#getClassLoader()} and {@link RuntimeClassLoader#getClassNames()}.
+     * </p>
+     *
      * @return An immutable set of Java class names from this submission.
+     * @deprecated Use {@link RuntimeClassLoader#getClassNames()} instead.
      */
-    @ApiStatus.Experimental
+    @Deprecated(forRemoval = true)
     Set<String> getClassNames();
 }

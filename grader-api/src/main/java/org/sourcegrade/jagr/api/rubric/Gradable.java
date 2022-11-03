@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -23,7 +23,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.sourcegrade.jagr.api.testing.TestCycle;
 
 /**
- * Something that can be graded via a {@link TestCycle}
+ * Something that can be graded via a {@link TestCycle}.
  *
  * @param <G> The resulting graded type
  */
@@ -47,7 +47,7 @@ public interface Gradable<G extends Graded> extends PointRange {
     int getMaxPoints();
 
     /**
-     * Grade the provided {@link TestCycle}
+     * Grade the provided {@link TestCycle}.
      */
     G grade(TestCycle testCycle);
 }

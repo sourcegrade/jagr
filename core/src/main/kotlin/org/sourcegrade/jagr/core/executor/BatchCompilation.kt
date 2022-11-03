@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -20,28 +20,28 @@
 package org.sourcegrade.jagr.core.executor
 
 import com.google.inject.Inject
-import org.slf4j.Logger
+import org.apache.logging.log4j.Logger
+import org.sourcegrade.jagr.api.testing.ClassTransformerOrder
 import org.sourcegrade.jagr.api.testing.Submission
+import org.sourcegrade.jagr.core.compiler.InfoJsonResourceExtractor
 import org.sourcegrade.jagr.core.compiler.ResourceExtractor
 import org.sourcegrade.jagr.core.compiler.java.JavaCompiledContainer
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceFile
-import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoader
+import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoaderImpl
 import org.sourcegrade.jagr.core.compiler.java.RuntimeJarLoader
 import org.sourcegrade.jagr.core.compiler.java.RuntimeResources
 import org.sourcegrade.jagr.core.compiler.java.loadCompiled
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.core.compiler.submissionInfo
 import org.sourcegrade.jagr.core.parallelMapNotNull
-import org.sourcegrade.jagr.core.testing.GraderInfoImpl
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.core.transformer.CommonClassTransformer
 import org.sourcegrade.jagr.core.transformer.SubmissionVerificationTransformer
 import org.sourcegrade.jagr.core.transformer.TransformationApplier
 import org.sourcegrade.jagr.core.transformer.applierOf
+import org.sourcegrade.jagr.core.transformer.createApplier
 import org.sourcegrade.jagr.core.transformer.plus
-import org.sourcegrade.jagr.core.transformer.useWhen
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
@@ -65,8 +65,8 @@ class CompiledBatchFactoryImpl @Inject constructor(
         val graders: List<GraderJarImpl> = batch.graders.compile(
             commonTransformerApplier,
             libraries,
-            "grader",
-            GraderInfoImpl.Extractor,
+            "Grader",
+            InfoJsonResourceExtractor.Grader,
         ) {
             if (errors == 0) GraderJarImpl(logger, this, libraries) else null
         }
@@ -75,7 +75,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
 
         // maps assignment ids to files that should be replaced with solution files
         val replacements = submissionFileOverrides.mapValues { (assignmentId, solutionOverrides) ->
-            val gradersForAssignment = graders.filter { it.info.assignmentIds.contains(assignmentId) }
+            val gradersForAssignment = graders.filter { it.info.assignmentId == assignmentId }
             solutionOverrides.mapNotNull { solutionOverride ->
                 gradersForAssignment.firstNotNullOfOrNull { it.container.source.sourceFiles[solutionOverride] }
             }.associateBy { it.fileName }
@@ -84,13 +84,13 @@ class CompiledBatchFactoryImpl @Inject constructor(
         val submissions: List<Submission> = batch.submissions.compile(
             submissionTransformerApplier,
             libraries,
-            "submission",
-            SubmissionInfoImpl.Extractor,
+            "Submission",
+            InfoJsonResourceExtractor.Submission,
             replacements,
         ) submissionCompile@{
             val submissionInfo = this.submissionInfo
             if (submissionInfo == null) {
-                logger.error("${info.name} does not have a submission-info.json! Skipping...")
+                logger.error("Submission container ${info.name} does not have a submission-info.json! Skipping...")
                 return@submissionCompile null
             }
             JavaSubmission(submissionInfo, this, libraries)
@@ -103,22 +103,27 @@ class CompiledBatchFactoryImpl @Inject constructor(
      * submissions only if the grader contains a rubric for it
      */
     private fun createTransformerApplierFromGraders(graders: List<GraderJar>): TransformationApplier {
-        val base = applierOf(SubmissionVerificationTransformer(), commonClassTransformer)
-        return graders.map { graderJar ->
-            graderJar.configuration.transformers useWhen { result ->
-                result.submissionInfo?.assignmentId?.let(graderJar.info.assignmentIds::contains) == true
+        fun GraderJar.createApplier(order: ClassTransformerOrder): TransformationApplier =
+            configuration.transformers.createApplier(order) { result ->
+                result.submissionInfo?.assignmentId == info.assignmentId
             }
-        }.fold(base) { a, b -> a + b }
+
+        fun createApplier(order: ClassTransformerOrder): TransformationApplier =
+            graders.map { it.createApplier(order) }.fold(applierOf()) { a, b -> a + b }
+
+        return sequenceOf(
+            createApplier(ClassTransformerOrder.PRE),
+            applierOf(SubmissionVerificationTransformer(), commonClassTransformer),
+            createApplier(ClassTransformerOrder.DEFAULT),
+        ).reduce { a, b -> a + b }
     }
 
     private fun calculateSubmissionFileOverrides(graders: List<GraderJar>): Map<String, List<String>> {
-        return graders.map { graderJar ->
-            graderJar.info.assignmentIds.flatMap { assignmentId ->
-                graderJar.configuration.fileNameSolutionOverrides.map { solutionOverride ->
-                    assignmentId to solutionOverride
-                }
-            }.groupBy({ it.first }, { it.second })
-        }.fold(emptyMap()) { acc, map -> acc + map }
+        return graders.flatMap { graderJar ->
+            graderJar.configuration.fileNameSolutionOverrides.map { solutionOverride ->
+                graderJar.info.assignmentId to solutionOverride
+            }
+        }.groupBy({ it.first }, { it.second })
     }
 
     private fun <T> Sequence<ResourceContainer>.compile(
@@ -143,7 +148,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
         }
         val original = runtimeJarLoader.compileSources(replacedSources, libraries)
         val transformed = try {
-            val classLoader = RuntimeClassLoader(original.runtimeResources + libraries)
+            val classLoader = RuntimeClassLoaderImpl(original.runtimeResources + libraries)
             transformerApplier.transform(original, classLoader)
         } catch (e: Throwable) {
             // create a copy of the original compile result but throw out runtime resources (compiled classes and resources)
@@ -156,15 +161,21 @@ class CompiledBatchFactoryImpl @Inject constructor(
         with(transformed) {
             printMessages(
                 logger,
-                { "$containerType ${info.name} has $warnings warnings and $errors errors!" },
-            ) { "$containerType ${info.name} has $warnings warnings!" }
-            try {
-                constructor()?.apply { logger.info("Loaded $containerType ${it.info.name}") }
-                    ?: run { logger.error("Failed to load $containerType ${it.info.name}"); null }
+                lazyError = { "$containerType ${info.name} has $warnings warnings and $errors errors" },
+                lazyWarning = { "$containerType ${info.name} has $warnings warnings" },
+            )
+            val result = try {
+                constructor()
             } catch (e: Exception) {
-                logger.error("An error occurred loading $containerType ${it.info.name}", e)
-                null
+                logger.error("$containerType container ${info.name} failed to invoke constructor", e)
+                return@with null
             }
+            if (result == null) {
+                logger.error("$containerType container ${info.name} failed to load")
+            } else {
+                logger.info("$containerType container ${info.name} loaded")
+            }
+            result
         }
     }
 }

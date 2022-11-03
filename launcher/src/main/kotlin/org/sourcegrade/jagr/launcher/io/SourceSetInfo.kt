@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -19,7 +19,22 @@
 
 package org.sourcegrade.jagr.launcher.io
 
-interface SourceSetInfo {
-    val name: String
-    val files: List<String>
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class SourceSetInfo(
+    val name: String,
+    val files: Map<String, Set<String>>,
+) {
+    companion object Factory : SerializerFactory<SourceSetInfo> {
+        override fun read(scope: SerializationScope.Input) = SourceSetInfo(
+            scope.input.readUTF(),
+            scope.readMap(valueSerializer = SetSerializerFactory(SerializerFactory.get(scope.jagr))),
+        )
+
+        override fun write(obj: SourceSetInfo, scope: SerializationScope.Output) {
+            scope.output.writeUTF(obj.name)
+            scope.writeMap(obj.files, valueSerializer = SetSerializerFactory(SerializerFactory.get(scope.jagr)))
+        }
+    }
 }

@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -25,7 +25,6 @@ import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.api.rubric.Rubric
 import org.sourcegrade.jagr.api.testing.Submission
-import org.sourcegrade.jagr.api.testing.SubmissionInfo
 import org.sourcegrade.jagr.api.testing.TestCycle
 import org.sourcegrade.jagr.core.compiler.ResourceCollector
 import org.sourcegrade.jagr.core.compiler.ResourceCollectorImpl
@@ -38,7 +37,6 @@ import org.sourcegrade.jagr.core.rubric.RubricImpl
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
 import org.sourcegrade.jagr.core.testing.JavaTestCycle
-import org.sourcegrade.jagr.core.testing.SubmissionInfoImpl
 import org.sourcegrade.jagr.launcher.executor.GradingRequest
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -55,7 +53,6 @@ class SerializationFactoryLocatorImpl : SerializerFactory.Locator {
         GradingRequest::class -> GradingRequestImpl
         ResourceCollector::class -> ResourceCollectorImpl
         Submission::class -> JavaSubmission
-        SubmissionInfo::class -> SubmissionInfoImpl
         TestCycle::class -> JavaTestCycle
         else -> null
     } as SerializerFactory<T>?

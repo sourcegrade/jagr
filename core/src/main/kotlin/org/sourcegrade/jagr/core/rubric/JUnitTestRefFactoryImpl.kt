@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021 Alexander Staeding
- *   Copyright (C) 2021 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -20,13 +20,13 @@
 package org.sourcegrade.jagr.core.rubric
 
 import com.google.inject.Inject
+import org.apache.logging.log4j.Logger
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.TestSource
 import org.junit.platform.engine.support.descriptor.ClassSource
 import org.junit.platform.engine.support.descriptor.MethodSource
 import org.junit.platform.launcher.TestIdentifier
 import org.opentest4j.AssertionFailedError
-import org.slf4j.Logger
 import org.sourcegrade.jagr.api.rubric.JUnitTestRef
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
@@ -57,7 +57,6 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     }
 
     override fun ofClass(clazz: Class<*>): JUnitTestRef = Default(ClassSource.from(clazz))
-    override fun ofMethod(method: Method): JUnitTestRef = Default(MethodSource.from(method))
 
     override fun ofClass(clazzSupplier: Callable<Class<*>>): JUnitTestRef {
         return try {
@@ -67,6 +66,8 @@ class JUnitTestRefFactoryImpl @Inject constructor(
             JUnitNoOpTestRef
         }
     }
+
+    override fun ofMethod(method: Method): JUnitTestRef = Default(MethodSource.from(method))
 
     override fun ofMethod(methodSupplier: Callable<Method>): JUnitTestRef {
         return try {
@@ -92,12 +93,28 @@ class JUnitTestRefFactoryImpl @Inject constructor(
         inner class TestNotFoundError : AssertionFailedError("Test result not found")
 
         override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
-            for ((identifier, result) in testResults) {
-                if (testSource == identifier.source.orElse(null)) {
-                    return result
+            val applicableTestResults: Map<TestIdentifier, TestExecutionResult> = testResults
+                .filter { (id, _) -> testSource == id.source.orElse(null) }
+                .toMap()
+            if (applicableTestResults.isEmpty()) {
+                return TestExecutionResult.failed(TestNotFoundError())
+            } else {
+                // first search for a failed container, then a failed child test
+                val failedContainer = applicableTestResults.entries.find { (id, result) ->
+                    result.status == TestExecutionResult.Status.FAILED && id.type.isContainer
+                }
+                if (failedContainer != null) {
+                    return failedContainer.value
+                }
+                val failedTests = applicableTestResults.entries.filter { (_, result) ->
+                    result.status == TestExecutionResult.Status.FAILED
+                }
+                return if (failedTests.isNotEmpty()) {
+                    failedTests.first().value
+                } else {
+                    TestExecutionResult.successful()
                 }
             }
-            return TestExecutionResult.failed(TestNotFoundError())
         }
     }
 
