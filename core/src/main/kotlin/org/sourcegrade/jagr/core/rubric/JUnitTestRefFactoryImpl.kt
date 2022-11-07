@@ -35,27 +35,6 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     private val logger: Logger,
 ) : JUnitTestRef.Factory {
 
-    companion object {
-        fun Array<out JUnitTestRef>.execute(
-            testResults: Map<TestIdentifier, TestExecutionResult>,
-            exceptionSupplier: (String) -> Throwable,
-            predicate: (List<TestExecutionResult>) -> Boolean,
-        ): TestExecutionResult {
-            val notSuccessful = asSequence()
-                .map { it[testResults] }
-                .filter { it.status != TestExecutionResult.Status.SUCCESSFUL }
-                .toList()
-            return if (predicate(notSuccessful)) {
-                notSuccessful.asSequence()
-                    .map { it.throwable.orElse(null) }
-                    .filter { it != null }
-                    .joinToString { "${it::class.simpleName} :: ${it.message} " }
-                    .let(exceptionSupplier)
-                    .let(TestExecutionResult::failed)
-            } else TestExecutionResult.successful()
-        }
-    }
-
     override fun ofClass(clazz: Class<*>): JUnitTestRef = Default(ClassSource.from(clazz))
 
     override fun ofClass(clazzSupplier: Callable<Class<*>>): JUnitTestRef {
@@ -141,6 +120,26 @@ class JUnitTestRefFactoryImpl @Inject constructor(
             } else {
                 TestExecutionResult.successful()
             }
+        }
+    }
+
+    companion object {
+        fun Array<out JUnitTestRef>.execute(
+            testResults: Map<TestIdentifier, TestExecutionResult>,
+            exceptionSupplier: (String) -> Throwable,
+            predicate: (List<TestExecutionResult>) -> Boolean,
+        ): TestExecutionResult {
+            val notSuccessful = asSequence()
+                .map { it[testResults] }
+                .filter { it.status != TestExecutionResult.Status.SUCCESSFUL }
+                .toList()
+            return if (predicate(notSuccessful)) {
+                notSuccessful.asSequence()
+                    .filter { it.throwable.isPresent }
+                    .joinToString("\n") { it.throwable.orElse(null)?.message ?: "" }
+                    .let(exceptionSupplier)
+                    .let(TestExecutionResult::failed)
+            } else TestExecutionResult.successful()
         }
     }
 }
