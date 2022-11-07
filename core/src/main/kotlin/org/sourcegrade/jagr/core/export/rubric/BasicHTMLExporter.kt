@@ -16,8 +16,10 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
     private var criterionCounter = 0
 
     override fun export(gradedRubric: GradedRubric): Resource {
+        cellCounter = 0
+        criterionCounter = 0
         val builder = StringBuilder()
-        builder.pageStart("Grading Result")
+        builder.pageStart()
         builder.table(gradedRubric)
         builder.pageEnd()
         return buildResource {
@@ -54,12 +56,11 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
         tableEnd()
     }
 
-    private fun StringBuilder.pageStart(title: String) {
+    private fun StringBuilder.pageStart() {
         append("<html>")
         append("<head>")
         append("""<meta charset="utf-8">""")
         append("""<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">""")
-        append("<title>${title.escaped()}</title>")
         append("</head>")
         append("<body>")
         append("""<div class="container">""")
