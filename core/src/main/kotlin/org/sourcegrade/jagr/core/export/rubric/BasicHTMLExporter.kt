@@ -50,7 +50,7 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
         titleEntry("Gesamt")
         titleEntry(rubric.rubric.range())
         titleEntry(rubric.grade.range())
-        titleEntry()
+        titleEntry(rubric.grade.comments.joinToString("<br>") { "<p>$it</p>" })
         rowEnd()
         tableBodyEnd()
         tableEnd()

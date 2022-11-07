@@ -117,6 +117,15 @@ inline fun <reified T : Any> SerializationScope.Output.writeList(
     elementSerializer: SerializerFactory<T> = SerializerFactory.get(jagr),
 ) = ListSerializerFactory(elementSerializer).write(obj, this)
 
+inline fun <reified T : Any> SerializationScope.Input.readSet(
+    elementSerializer: SerializerFactory<T> = SerializerFactory.get(jagr),
+): Set<T> = SetSerializerFactory(elementSerializer).read(this)
+
+inline fun <reified T : Any> SerializationScope.Output.writeSet(
+    obj: Set<T>,
+    elementSerializer: SerializerFactory<T> = SerializerFactory.get(jagr),
+) = SetSerializerFactory(elementSerializer).write(obj, this)
+
 inline fun <reified K : Any, reified V : Any> SerializationScope.Input.readMap(
     keySerializer: SerializerFactory<K> = SerializerFactory.get(jagr),
     valueSerializer: SerializerFactory<V> = SerializerFactory.get(jagr),
@@ -154,6 +163,7 @@ internal object StringSerializerFactory : SerializerFactory<String> {
 }
 
 /* === Decomposing serializers === */
+// TODO: Extract from file
 
 class ListSerializerFactory<T : Any>(
     private val elementSerializer: SerializerFactory<T>,
@@ -162,6 +172,20 @@ class ListSerializerFactory<T : Any>(
         (0 until scope.input.readInt()).map { elementSerializer.read(scope) }
 
     override fun write(obj: List<T>, scope: SerializationScope.Output) {
+        scope.output.writeInt(obj.size)
+        for (element in obj) {
+            elementSerializer.write(element, scope)
+        }
+    }
+}
+
+class SetSerializerFactory<T : Any>(
+    private val elementSerializer: SerializerFactory<T>,
+) : SerializerFactory<Set<T>> {
+    override fun read(scope: SerializationScope.Input): Set<T> =
+        (0 until scope.input.readInt()).map { elementSerializer.read(scope) }.toSet()
+
+    override fun write(obj: Set<T>, scope: SerializationScope.Output) {
         scope.output.writeInt(obj.size)
         for (element in obj) {
             elementSerializer.write(element, scope)
