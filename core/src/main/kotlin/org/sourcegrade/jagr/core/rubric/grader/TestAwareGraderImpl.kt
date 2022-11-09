@@ -22,13 +22,12 @@ package org.sourcegrade.jagr.core.rubric.grader
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.TestExecutionResult.Status.FAILED
 import org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL
-import org.opentest4j.AssertionFailedError
 import org.sourcegrade.jagr.api.rubric.Criterion
 import org.sourcegrade.jagr.api.rubric.GradeResult
 import org.sourcegrade.jagr.api.rubric.Grader
 import org.sourcegrade.jagr.api.rubric.JUnitTestRef
 import org.sourcegrade.jagr.api.testing.TestCycle
-import java.lang.reflect.InvocationTargetException
+import org.sourcegrade.jagr.core.rubric.message
 
 class TestAwareGraderImpl(
     private val graderPassed: Grader,
@@ -61,20 +60,4 @@ class TestAwareGraderImpl(
         requireFail.must { it.status == FAILED }?.also { return it }
         return graderPassed.grade(testCycle, criterion)
     }
-
-    private val TestExecutionResult.message: String?
-        get() = throwable.orElse(null)?.run {
-            when (this) {
-                is AssertionFailedError,
-                -> message.toString()
-                // students should not see an invocation target exception
-                // it's better to show the actual exception thrown from their code
-                is InvocationTargetException,
-                -> cause?.prettyMessage
-                else -> prettyMessage
-            }
-        }
-
-    private val Throwable.prettyMessage
-        get() = "${this::class.simpleName}: $message @ ${stackTrace.firstOrNull()}"
 }
