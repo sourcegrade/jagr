@@ -8,7 +8,7 @@ internal val TestExecutionResult.message: String?
     get() = throwable.orElse(null)?.run {
         when (this) {
             is AssertionFailedError,
-            -> "foo" + message.toString()
+            -> message.toString()
             // students should not see an invocation target exception
             // it's better to show the actual exception thrown from their code
             is InvocationTargetException,
