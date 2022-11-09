@@ -134,9 +134,9 @@ class JUnitTestRefFactoryImpl @Inject constructor(
                 .filter { it.status != TestExecutionResult.Status.SUCCESSFUL }
                 .toList()
             return if (predicate(notSuccessful)) {
-                notSuccessful.asSequence()
-                    .filter { it.throwable.isPresent }
-                    .joinToString("\n") { it.throwable.orElse(null)?.message ?: "" }
+                notSuccessful
+                    .first { it.throwable.isPresent }
+                    .let { it.throwable.orElse(null)?.message ?: "" }
                     .let(exceptionSupplier)
                     .let(TestExecutionResult::failed)
             } else TestExecutionResult.successful()
