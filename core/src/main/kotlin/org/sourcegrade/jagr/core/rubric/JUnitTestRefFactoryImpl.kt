@@ -136,9 +136,7 @@ class JUnitTestRefFactoryImpl @Inject constructor(
             return if (predicate(notSuccessful)) {
                 notSuccessful
                     .first { it.throwable.isPresent }
-                    .let { it.throwable.orElse(null)?.message ?: "" }
-                    .let(exceptionSupplier)
-                    .let(TestExecutionResult::failed)
+                    .let { TestExecutionResult.failed(it.throwable.get()) }
             } else TestExecutionResult.successful()
         }
     }
