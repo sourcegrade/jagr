@@ -74,14 +74,13 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         }
     }
 
-    private val exporterHTML = Jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
-    private val exporterMoodle = Jagr.injector.getInstance(GradedRubricExporter.Moodle::class.java)
-
     private suspend fun grade() {
         val jagrExtension = project.extensions.getByType<JagrExtension>()
         val configuration = jagrExtension.graders[configurationName.get()]
         val jagr = SystemResourceJagrFactory.create(GradleLaunchConfiguration(configuration.getConfigRecursive()))
         jagr.logger.info("Starting Jagr v${Jagr.version}")
+        val exporterHTML = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
+        val exporterMoodle = jagr.injector.getInstance(GradedRubricExporter.Moodle::class.java)
         val batch: GradingBatch = buildGradingBatch {
             addGrader(
                 buildResourceContainer {
