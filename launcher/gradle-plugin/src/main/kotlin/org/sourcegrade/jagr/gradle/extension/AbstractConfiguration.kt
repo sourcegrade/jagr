@@ -20,7 +20,7 @@
 package org.sourcegrade.jagr.gradle.extension
 
 import org.gradle.api.Project
-import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.dependencies
@@ -33,24 +33,26 @@ abstract class AbstractConfiguration(
 ) {
 
     private val dependencyConfiguration = DependencyConfiguration()
-    private val sourceSetContainer: SourceSetContainer = project.extensions.getByType()
     private val _sourceSets: MutableList<SourceSet> = mutableListOf()
     val sourceSets: List<SourceSet>
         get() = _sourceSets
 
-    abstract val sourceSetNames: ListProperty<String>
+    abstract val sourceSetNames: SetProperty<String>
 
     init {
-        project.afterEvaluate {
-            for (sourceSetName in sourceSetNames.get()) {
-                val sourceSet = sourceSetContainer.maybeCreate(sourceSetName)
-                sourceSet.initialize(it)
+        project.afterEvaluate { proj ->
+            for ((projectName, sourceSetName) in sourceSetNames.get().associate { it.split(":").zipWithNext().single() }) {
+                val sourceSet = proj.sourceSetContainer.maybeCreate(sourceSetName)
                 _sourceSets.add(sourceSet)
             }
+            initialize(proj)
         }
     }
 
-    private fun SourceSet.initialize(project: Project) {
+    private val Project.sourceSetContainer: SourceSetContainer
+        get() = extensions.getByType()
+
+    private fun initialize(project: Project) {
         project.dependencies {
             for ((suffix, dependencyNotations) in dependencyConfiguration.dependencies) {
                 val configurationName = if (name == "main") suffix else {
@@ -86,7 +88,14 @@ abstract class AbstractConfiguration(
 
     fun from(vararg sourceSetNames: String) {
         for (sourceSetName in sourceSetNames) {
-            this.sourceSetNames.add(sourceSetName)
+            this.sourceSetNames.add(":$sourceSetName")
+        }
+    }
+
+    fun fromProject(path: String, vararg sourceSetNames: String) {
+        val project = project.project(path)
+        for (sourceSetName in sourceSetNames) {
+            this.sourceSetNames.add("${project.path}:$sourceSetName")
         }
     }
 
