@@ -47,7 +47,9 @@ class TestAwareGraderImpl(
                 if (testExecutionResult == null || !predicate(testExecutionResult)) {
                     failed = true
                     // a comment supplied to requirePass or requireFail overrides the default comment from the result's throwable
-                    (comment ?: testExecutionResult?.message)?.also { comments += it }
+                    if (comments.isEmpty()) {
+                        (comment ?: testExecutionResult?.message)?.also { comments += it }
+                    }
                 }
             }
             return if (failed) {
