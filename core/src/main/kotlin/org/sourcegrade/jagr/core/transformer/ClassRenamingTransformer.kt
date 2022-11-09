@@ -85,8 +85,8 @@ class ClassRenamingTransformer(
 
             override fun visitFrame(type: Int, numLocal: Int, local: Array<out Any>, numStack: Int, stack: Array<out Any>) {
                 // local and stack frames must be updated to reflect the new classname
-                val newLocal = local.map { if (it is String && it == oldName) newName else it }.toTypedArray()
-                val newStack = stack.map { if (it is String && it == oldName) newName else it }.toTypedArray()
+                val newLocal = Array(local.size) { i -> local[i].let { if (it == oldName) newName else it } }
+                val newStack = Array(stack.size) { i -> stack[i].let { if (it == oldName) newName else it } }
                 super.visitFrame(type, numLocal, newLocal, numStack, newStack)
             }
         }
