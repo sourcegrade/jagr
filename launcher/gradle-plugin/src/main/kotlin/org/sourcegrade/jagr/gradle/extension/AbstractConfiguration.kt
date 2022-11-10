@@ -23,9 +23,9 @@ import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
+import java.util.Locale
 
 abstract class AbstractConfiguration(
     val name: String,
@@ -53,7 +53,9 @@ abstract class AbstractConfiguration(
     private fun SourceSet.initialize(project: Project) {
         project.dependencies {
             for ((suffix, dependencyNotations) in dependencyConfiguration.dependencies) {
-                val configurationName = if (name == "main") suffix else "$name${suffix.capitalized()}"
+                val configurationName = if (name == "main") suffix else {
+                    "$name${suffix.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }}"
+                }
                 for (dependencyNotation in dependencyNotations) {
                     add(configurationName, dependencyNotation)
                 }

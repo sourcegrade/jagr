@@ -30,7 +30,6 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
 import java.net.URI
@@ -58,7 +57,7 @@ class JagrPublishPlugin : Plugin<Project> {
                 }
             }
             publications {
-                create<MavenPublication>("maven") {
+                val mainPublication = create<MavenPublication>("maven") {
                     from(components["java"])
                     pom {
                         name.set("jagr")
@@ -77,17 +76,17 @@ class JagrPublishPlugin : Plugin<Project> {
                             }
                         }
                         developers {
-                            developer {
-                                id.set("alexstaeding")
-                                name.set("Alexander Staeding")
-                            }
+                            rootProject.file("authors").readLines()
+                                .asSequence()
+                                .map { it.split(",") }
+                                .forEach { (_id, _name) -> developer { id.set(_id); name.set(_name) } }
                         }
                     }
                 }
+                extensions.configure<SigningExtension> {
+                    sign(mainPublication)
+                }
             }
-        }
-        extensions.configure<SigningExtension> {
-            sign(extensions.getByType<PublishingExtension>().publications)
         }
     }
 }

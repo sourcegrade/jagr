@@ -2,6 +2,7 @@ package org.sourcegrade.jagr.gradle.task.grader
 
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
@@ -25,6 +26,7 @@ import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.Executor
 import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
+import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.addResource
@@ -34,7 +36,9 @@ import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.createResourceContainer
 import org.sourcegrade.jagr.launcher.io.logGradedRubric
 import org.sourcegrade.jagr.launcher.io.logHistogram
+import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
+import java.net.URI
 
 @Suppress("LeakingThis")
 abstract class GraderRunTask : DefaultTask(), GraderTask {
@@ -75,6 +79,8 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         val configuration = jagrExtension.graders[configurationName.get()]
         val jagr = SystemResourceJagrFactory.create(GradleLaunchConfiguration(configuration.getConfigRecursive()))
         jagr.logger.info("Starting Jagr v${Jagr.version}")
+        val exporterHTML = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
+        val exporterMoodle = jagr.injector.getInstance(GradedRubricExporter.Moodle::class.java)
         val batch: GradingBatch = buildGradingBatch {
             addGrader(
                 buildResourceContainer {
@@ -84,7 +90,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     project.extensions
                         .getByType<SourceSetContainer>()
                         .filter { configuration.matchRecursive(it) }
-                        .forEach { sourceSet -> sourceSet.allSource.sourceDirectories.writeToContainer(this) }
+                        .forEach { writeSourceSet(it) }
                     addResource {
                         name = "grader-info.json"
                         graderInfoFile.get().inputStream().use { input ->
@@ -113,8 +119,17 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     }
                 }
             )
-            project.configurations.asSequence()
-                .filter { it.isCanBeResolved && it.name.contains("compile", ignoreCase = true) }
+            val sourceSetContainer = project.extensions.getByType<SourceSetContainer>()
+            val allSourceSets: Set<String> = configuration.getSourceSetNamesRecursive() +
+                jagrExtension.submissions[solutionConfigurationName.get()].sourceSetNames.get()
+            sourceSetContainer.asSequence()
+                .filter { it.name in allSourceSets }
+                .flatMap {
+                    sequenceOf(
+                        project.configurations[it.runtimeClasspathConfigurationName],
+                        project.configurations[it.compileClasspathConfigurationName],
+                    )
+                }
                 .flatMap { it.resolvedConfiguration.resolvedArtifacts }
                 .filter {
                     !(
@@ -131,8 +146,20 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         jagr.logger.info("Executor mode 'gradle' :: expected submission: ${batch.expectedSubmissions}")
         val executor: Executor = SyncExecutor(jagr)
         val collector = emptyCollector(jagr)
+        // TODO: Properly configure task output
+        val rubricOutputDir = project.buildDir.resolve("resources/jagr/${configurationName.get()}/rubrics/")
+        var failed = false
         collector.setListener { result ->
-            result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
+            result.rubrics.keys.forEach {
+                if (it.grade.minPoints < it.rubric.maxPoints) {
+                    failed = true
+                }
+                it.logGradedRubric(jagr)
+                val resource = exporterHTML.export(it)
+                resource.writeIn(rubricOutputDir)
+                val moodleResource = exporterMoodle.export(it)
+                moodleResource.writeIn(rubricOutputDir)
+            }
         }
         collector.allocate(queue)
         executor.schedule(queue)
@@ -147,6 +174,11 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         } else {
             jagr.logger.info("Exported $rubricCount rubrics")
         }
+        val rubricLocation = URI("file", "", rubricOutputDir.toURI().path + "result.html", null, null).toString()
+        jagr.logger.info("See rubric at $rubricLocation")
+        if (failed) {
+            throw GradleException("Grading failed! See the rubric at $rubricLocation")
+        }
     }
 
     /**
@@ -159,18 +191,14 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
             (parentConfiguration.isPresent && parentConfiguration.get().matchRecursive(sourceSet))
     }
 
-    private fun ResourceContainer.Builder.writeSourceSet(sourceSet: SourceSet) {
-        sourceSet
-            .allSource
-            .sourceDirectories
-            .writeToContainer(this)
-    }
+    private fun ResourceContainer.Builder.writeSourceSet(sourceSet: SourceSet) =
+        sourceSet.allSource.sourceDirectories.writeToContainer(this)
 
     private fun FileCollection.writeToContainer(builder: ResourceContainer.Builder) {
         forEach { sourceDirectory ->
             sourceDirectory.walk().filter { it.isFile }.forEach { file ->
                 builder.addResource {
-                    name = file.relativeTo(sourceDirectory).path
+                    name = file.relativeTo(sourceDirectory).invariantSeparatorsPath
                     file.inputStream().use { input ->
                         outputStream.use { output ->
                             input.transferTo(output)

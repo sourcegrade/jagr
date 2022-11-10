@@ -25,4 +25,5 @@ interface GradedRubricExporter {
     fun export(gradedRubric: GradedRubric): Resource
     interface CSV : GradedRubricExporter
     interface HTML : GradedRubricExporter
+    interface Moodle : GradedRubricExporter
 }

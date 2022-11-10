@@ -32,6 +32,7 @@ import org.sourcegrade.jagr.api.testing.ClassTransformer
 import org.sourcegrade.jagr.api.testing.extension.TestCycleResolver
 import org.sourcegrade.jagr.core.executor.GradingQueueFactoryImpl
 import org.sourcegrade.jagr.core.executor.TimeoutHandler
+import org.sourcegrade.jagr.core.export.rubric.BasicHTMLExporter
 import org.sourcegrade.jagr.core.export.rubric.GermanCSVExporter
 import org.sourcegrade.jagr.core.export.rubric.MoodleJSONExporter
 import org.sourcegrade.jagr.core.export.submission.EclipseSubmissionExporter
@@ -74,7 +75,8 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
         bind(CriterionHolderPointCalculator.Factory::class.java).to(CriterionHolderPointCalculatorFactoryImpl::class.java)
         bind(ExtrasManager::class.java).to(ExtrasManagerImpl::class.java)
         bind(GradedRubricExporter.CSV::class.java).to(GermanCSVExporter::class.java)
-        bind(GradedRubricExporter.HTML::class.java).to(MoodleJSONExporter::class.java)
+        bind(GradedRubricExporter.HTML::class.java).to(BasicHTMLExporter::class.java)
+        bind(GradedRubricExporter.Moodle::class.java).to(MoodleJSONExporter::class.java)
         bind(Grader.Factory::class.java).to(GraderFactoryImpl::class.java)
         bind(GradeResult.Factory::class.java).to(GradeResultFactoryImpl::class.java)
         bind(GradingQueue.Factory::class.java).to(GradingQueueFactoryImpl::class.java)

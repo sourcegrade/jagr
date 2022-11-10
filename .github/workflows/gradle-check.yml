@@ -1,15 +1,13 @@
-name: CI
+name: Gradle Check
 on:
+  workflow_dispatch:
+  pull_request:
   push:
     branches:
       - master
       - dev-*
-  pull_request:
-    branches:
-      - master
-      - dev-*
 jobs:
-  check:
+  gradle-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

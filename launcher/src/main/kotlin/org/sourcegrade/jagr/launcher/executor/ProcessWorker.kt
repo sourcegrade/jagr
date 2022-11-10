@@ -78,7 +78,12 @@ class ProcessWorker(
         check(this.job == null) { "Worker already has a job!" }
         status = WorkerStatus.RUNNING
         coroutineScope.launch {
-            sendRequest(job.request)
+            try {
+                sendRequest(job.request)
+            } catch (e: Exception) {
+                jagr.logger.error("Failed to send request to child process", e)
+                return@launch
+            }
             job.gradeCatching(jagr, ::receiveResult)
             status = WorkerStatus.FINISHED
             removeActive(this@ProcessWorker)

@@ -44,7 +44,7 @@ data class SubmissionInfo(
             scope.input.readUTF(),
             scope.input.readUTF(),
             scope.readList(),
-            scope.readMap(),
+            scope.readMap(valueSerializer = SetSerializerFactory(SerializerFactory.get(scope.jagr))),
             scope.readList(),
             scope.input.readUTF(),
             scope.input.readUTF(),
@@ -55,7 +55,7 @@ data class SubmissionInfo(
             scope.output.writeUTF(obj.assignmentId)
             scope.output.writeUTF(obj.jagrVersion)
             scope.writeList(obj.sourceSets)
-            scope.writeMap(obj.dependencyConfigurations)
+            scope.writeMap(obj.dependencyConfigurations, valueSerializer = SetSerializerFactory(SerializerFactory.get(scope.jagr)))
             scope.writeList(obj.repositoryConfigurations)
             scope.output.writeUTF(obj.studentId)
             scope.output.writeUTF(obj.firstName)

@@ -53,7 +53,7 @@ tasks {
 }
 
 val projectVersion = file("version").readLines().first()
-project.extra["apiVersion"] = projectVersion.replace(".[0-9]+(?=($|-SANDBOX-SNAPSHOT))".toRegex(), "")
+project.extra["apiVersion"] = projectVersion.replace("\\.[1-9]\\d*-SANDBOX-SNAPSHOT|\\.0|\\.\\d*\$".toRegex(), "")
 
 allprojects {
     apply(plugin = "org.sourcegrade.style")

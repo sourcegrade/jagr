@@ -35,27 +35,6 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     private val logger: Logger,
 ) : JUnitTestRef.Factory {
 
-    companion object {
-        fun Array<out JUnitTestRef>.execute(
-            testResults: Map<TestIdentifier, TestExecutionResult>,
-            exceptionSupplier: (String) -> Throwable,
-            predicate: (List<TestExecutionResult>) -> Boolean,
-        ): TestExecutionResult {
-            val notSuccessful = asSequence()
-                .map { it[testResults] }
-                .filter { it.status != TestExecutionResult.Status.SUCCESSFUL }
-                .toList()
-            return if (predicate(notSuccessful)) {
-                notSuccessful.asSequence()
-                    .map { it.throwable.orElse(null) }
-                    .filter { it != null }
-                    .joinToString { "${it::class.simpleName} :: ${it.message} " }
-                    .let(exceptionSupplier)
-                    .let(TestExecutionResult::failed)
-            } else TestExecutionResult.successful()
-        }
-    }
-
     override fun ofClass(clazz: Class<*>): JUnitTestRef = Default(ClassSource.from(clazz))
 
     override fun ofClass(clazzSupplier: Callable<Class<*>>): JUnitTestRef {
@@ -93,27 +72,39 @@ class JUnitTestRefFactoryImpl @Inject constructor(
         inner class TestNotFoundError : AssertionFailedError("Test result not found")
 
         override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
-            for ((identifier, result) in testResults) {
-                if (testSource == identifier.source.orElse(null)) {
-                    return result
+            val applicableTestResults: Map<TestIdentifier, TestExecutionResult> = testResults
+                .filter { (id, _) -> testSource == id.source.orElse(null) }
+                .toMap()
+            if (applicableTestResults.isEmpty()) {
+                return TestExecutionResult.failed(TestNotFoundError())
+            } else {
+                // first search for a failed container, then a failed child test
+                val failedContainer = applicableTestResults.entries.find { (id, result) ->
+                    result.status == TestExecutionResult.Status.FAILED && id.type.isContainer
+                }
+                if (failedContainer != null) {
+                    return failedContainer.value
+                }
+                val failedTests = applicableTestResults.entries.filter { (_, result) ->
+                    result.status == TestExecutionResult.Status.FAILED
+                }
+                return if (failedTests.isNotEmpty()) {
+                    failedTests.first().value
+                } else {
+                    TestExecutionResult.successful()
                 }
             }
-            return TestExecutionResult.failed(TestNotFoundError())
         }
     }
 
     class And(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
-        class AndFailedError(message: String) : AssertionFailedError(message)
-
         override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
-            testRefs.execute(testResults, ::AndFailedError, Collection<*>::isNotEmpty)
+            testRefs.execute(testResults, Collection<*>::isNotEmpty)
     }
 
     class Or(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
-        class OrFailedError(message: String) : AssertionFailedError(message)
-
         override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
-            testRefs.execute(testResults, ::OrFailedError) { it.size == testRefs.size }
+            testRefs.execute(testResults) { it.size == testRefs.size }
     }
 
     class Not(private val testRef: JUnitTestRef) : JUnitTestRef {
@@ -125,6 +116,23 @@ class JUnitTestRefFactoryImpl @Inject constructor(
             } else {
                 TestExecutionResult.successful()
             }
+        }
+    }
+
+    companion object {
+        fun Array<out JUnitTestRef>.execute(
+            testResults: Map<TestIdentifier, TestExecutionResult>,
+            predicate: (List<TestExecutionResult>) -> Boolean,
+        ): TestExecutionResult {
+            val notSuccessful = asSequence()
+                .map { it[testResults] }
+                .filter { it.status != TestExecutionResult.Status.SUCCESSFUL }
+                .toList()
+            return if (predicate(notSuccessful)) {
+                notSuccessful
+                    .first { it.throwable.isPresent }
+                    .let { TestExecutionResult.failed(it.throwable.get()) }
+            } else TestExecutionResult.successful()
         }
     }
 }
