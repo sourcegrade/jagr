@@ -60,7 +60,8 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
         if (errors.isNotEmpty()) {
             throw GradleException(
                 """
-There were some errors preparing your submission. The following required properties were not set:
+There were some errors preparing your submission, please check your Gradle buildscript (e.g. build.gradle.kts).
+The following required properties were not set:
 $errors
 """
             )
