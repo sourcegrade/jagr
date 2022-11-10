@@ -133,14 +133,10 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
     }
 
     private fun GradedCriterion.rowClasses(): List<String> {
-        return if (grade.minPoints == criterion.maxPoints) {
-            listOf("table-success")
-        } else if (grade.minPoints != criterion.minPoints) {
-            listOf("table-warning")
-        } else if (grade.minPoints == criterion.minPoints) {
-            listOf("table-danger")
-        } else {
-            listOf()
+        return when {
+            grade.minPoints == criterion.maxPoints -> listOf("table-success")
+            grade.maxPoints == criterion.minPoints -> listOf("table-danger")
+            else -> listOf("table-warning")
         }
     }
 
