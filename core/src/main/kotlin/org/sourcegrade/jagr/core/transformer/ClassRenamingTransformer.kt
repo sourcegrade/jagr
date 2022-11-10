@@ -66,6 +66,7 @@ class ClassRenamingTransformer(
 
         private inner class RenamingMV(methodVisitor: MethodVisitor?) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
             override fun visitTypeInsn(opcode: Int, type: String?) {
+                // type insns targeting the old classname must be renamed
                 if (type == oldName) {
                     super.visitTypeInsn(opcode, newName)
                 } else {
