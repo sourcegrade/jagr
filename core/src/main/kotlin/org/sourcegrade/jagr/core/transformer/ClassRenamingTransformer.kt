@@ -56,10 +56,13 @@ class ClassRenamingTransformer(
         override fun visitMethod(
             access: Int,
             name: String?,
-            descriptor: String?,
+            descriptor: String,
             signature: String?,
             exceptions: Array<out String>?,
-        ): MethodVisitor = RenamingMV(super.visitMethod(access, name, descriptor, signature, exceptions))
+        ): MethodVisitor {
+            val newDescriptor = descriptor.replace(oldName, newName)
+            return RenamingMV(super.visitMethod(access, name, newDescriptor, signature, exceptions))
+        }
 
         private inner class RenamingMV(methodVisitor: MethodVisitor?) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
             override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
@@ -78,6 +81,13 @@ class ClassRenamingTransformer(
                 } else {
                     super.visitFieldInsn(opcode, owner, name, descriptor)
                 }
+            }
+
+            override fun visitFrame(type: Int, numLocal: Int, local: Array<out Any>, numStack: Int, stack: Array<out Any>) {
+                // local and stack frames must be updated to reflect the new classname
+                val newLocal = Array(local.size) { i -> local[i].let { if (it == oldName) newName else it } }
+                val newStack = Array(stack.size) { i -> stack[i].let { if (it == oldName) newName else it } }
+                super.visitFrame(type, numLocal, newLocal, numStack, newStack)
             }
         }
     }

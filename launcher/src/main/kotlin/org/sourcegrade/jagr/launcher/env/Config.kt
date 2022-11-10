@@ -106,7 +106,7 @@ data class Extras(
     @ConfigSerializable
     data class MoodleUnpack(
         override val enabled: Boolean = true,
-        val assignmentIdRegex: String = ".*Abgabe.*(?<assignmentId>[0-9]{2}).*[.]zip",
+        val assignmentIdRegex: String = ".*Abgabe[^0-9]*(?<assignmentId>[0-9]{1,2}).*[.]zip",
         val studentRegex: String = ".* - (?<studentId>([a-z]{2}[0-9]{2}[a-z]{4})|([a-z]+_[a-z]+))/submissions/.*[.]jar",
     ) : Extra
 
