@@ -32,7 +32,7 @@ public static final Criterion H1_1 = Criterion.builder()
     .build();
 ```
 
-Make sure your JUnit test classes are annotated as follows, or they wont run:
+Make sure your JUnit test classes are annotated as follows, or they won't run:
 
 ```java
 @TestForSubmission
