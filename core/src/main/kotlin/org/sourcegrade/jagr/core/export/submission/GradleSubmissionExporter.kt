@@ -78,12 +78,12 @@ class GradleSubmissionExporter @Inject constructor(
                     """
                     plugins {
                         java
-                        id("org.sourcegrade.jagr.gradle-plugin") version "${Jagr.version}"
+                        id("org.sourcegrade.jagr-gradle") version "${Jagr.version}"
                     }
                     allprojects {
                         apply(plugin = "java")
                         apply(plugin = "application")
-                        apply(plugin = "org.sourcegrade.jagr.gradle-plugin")
+                        apply(plugin = "org.sourcegrade.jagr-gradle")
                         java {
                             sourceCompatibility = JavaVersion.VERSION_17
                             targetCompatibility = JavaVersion.VERSION_17
