@@ -27,6 +27,7 @@ import org.sourcegrade.jagr.api.testing.Submission
 import org.sourcegrade.jagr.core.compiler.java.JavaSourceContainer
 import org.sourcegrade.jagr.core.testing.GraderJarImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
+import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.SourceSetInfo
@@ -71,7 +72,26 @@ class GradleSubmissionExporter @Inject constructor(
                     "Build script '${buildScript.first}' specified in grader configuration does not exist, using default"
                 )
             }
-            writeGradleResource(resource = "build.gradle.kts_", targetName = "build.gradle.kts")
+            addResource {
+                name = "build.gradle.kts"
+                PrintWriter(outputStream).use { printer ->
+                    """
+                    plugins {
+                        java
+                        id("org.sourcegrade.jagr.gradle-plugin") version "${Jagr.version}"
+                    }
+                    allprojects {
+                        apply(plugin = "java")
+                        apply(plugin = "application")
+                        apply(plugin = "org.sourcegrade.jagr.gradle-plugin")
+                        java {
+                            sourceCompatibility = JavaVersion.VERSION_17
+                            targetCompatibility = JavaVersion.VERSION_17
+                        }
+                    }
+                    """.trimIndent().also { printer.println(it) }
+                }
+            }
         }
         val filteredSubmissions = if (graderJar == null) {
             submissions
