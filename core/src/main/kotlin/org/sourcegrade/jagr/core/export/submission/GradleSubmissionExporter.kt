@@ -276,7 +276,6 @@ class GradleSubmissionExporter @Inject constructor(
             .flatMap { (sourceSet, dependencies) -> dependencies.map { sourceSet to it } }
             .filter { (_, dep) -> !dep.contains("org.sourcegrade:jagr-launcher") }
             .mapTo(mutableSetOf()) { "\"${it.first}\"(\"${it.second}\")" }
-            .toSet()
     }
 
     companion object {
