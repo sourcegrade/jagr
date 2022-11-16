@@ -151,7 +151,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         var failed = false
         collector.setListener { result ->
             result.rubrics.keys.forEach {
-                if (it.grade.minPoints < it.rubric.maxPoints) {
+                if (it.grade.maxPoints < it.rubric.maxPoints) {
                     failed = true
                 }
                 it.logGradedRubric(jagr)
