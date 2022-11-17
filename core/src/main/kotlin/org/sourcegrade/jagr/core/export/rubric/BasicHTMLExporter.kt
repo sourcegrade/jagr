@@ -23,7 +23,7 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
         builder.table(gradedRubric)
         builder.pageEnd()
         return buildResource {
-            name = "result.html"
+            name = "${gradedRubric.testCycle.submission.info}.html"
             outputStream.bufferedWriter().use { it.write(builder.toString()) }
         }
     }
@@ -98,7 +98,10 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
             rowEnd()
             r.childCriteria.forEach { this.tableEntry(it) }
         } else {
-            entry("""${badge((++criterionCounter).toString())} ${r.description()}""")
+            entry(
+                """${badge((++criterionCounter).toString())} ${
+                    r.description()}"""
+            )
             entry(r.criterion.range())
             entry(r.grade.range(), classes = r.rowClasses())
             entry(r.comments())
