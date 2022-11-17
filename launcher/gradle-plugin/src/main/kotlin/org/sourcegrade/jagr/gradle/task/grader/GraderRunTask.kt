@@ -148,17 +148,14 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         val collector = emptyCollector(jagr)
         // TODO: Properly configure task output
         val rubricOutputDir = project.buildDir.resolve("resources/jagr/${configurationName.get()}/rubrics/")
-        var failed = false
-        val rubricNames = mutableListOf<String>()
+        val rubrics = mutableMapOf<String, Boolean>()
         collector.setListener { result ->
             result.rubrics.keys.forEach {
-                if (it.grade.minPoints < it.rubric.maxPoints) {
-                    failed = true
-                }
                 it.logGradedRubric(jagr)
                 val resource = exporterHTML.export(it)
                 resource.writeIn(rubricOutputDir)
-                rubricNames.add(resource.name)
+                // whether the given rubric failed
+                rubrics[resource.name] = it.grade.minPoints < it.rubric.maxPoints
                 val moodleResource = exporterMoodle.export(it)
                 moodleResource.writeIn(rubricOutputDir)
             }
@@ -170,16 +167,21 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         collector.withGradingFinished { gradingFinished ->
             gradingFinished.logHistogram(jagr)
         }
-        if (rubricNames.size == 0) {
+        if (rubrics.isEmpty()) {
             jagr.logger.warn("No rubrics!")
         } else {
-            jagr.logger.info("Exported ${rubricNames.size} rubrics")
-            rubricNames.forEach { name ->
+            jagr.logger.info("Exported ${rubrics.size} rubrics")
+            rubrics.forEach { (name, failed) ->
                 val rubricLocation = URI("file", "", rubricOutputDir.toURI().path + name, null, null).toString()
-                jagr.logger.info("See rubric at $rubricLocation")
-                if (failed) {
-                    throw GradleException("Grading failed! See the rubric at $rubricLocation")
-                }
+                jagr.logger.info("See rubric at $rubricLocation ${if (failed) " (failed)" else ""}")
+            }
+            if (rubrics.any { (_, failed) -> failed }) {
+                throw GradleException(
+                    """
+                    Grading completed with the following failed rubrics:
+                    ${rubrics.filter { (_, failed) -> failed }.keys.joinToString("\n")}
+                    """.trimIndent()
+                )
             }
         }
     }
