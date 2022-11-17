@@ -155,7 +155,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                 val resource = exporterHTML.export(it)
                 resource.writeIn(rubricOutputDir)
                 // whether the given rubric failed
-                rubrics[resource.name] = it.grade.minPoints < it.rubric.maxPoints
+                rubrics[resource.name] = it.grade.maxPoints < it.rubric.maxPoints
                 val moodleResource = exporterMoodle.export(it)
                 moodleResource.writeIn(rubricOutputDir)
             }
