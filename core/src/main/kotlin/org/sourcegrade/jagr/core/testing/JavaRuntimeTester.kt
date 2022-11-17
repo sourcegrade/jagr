@@ -24,6 +24,8 @@ import org.apache.logging.log4j.Logger
 import org.junit.platform.commons.JUnitException
 import org.junit.platform.engine.discovery.ClassSelector
 import org.junit.platform.engine.discovery.DiscoverySelectors
+import org.junit.platform.launcher.TestExecutionListener
+import org.junit.platform.launcher.TestIdentifier
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
 import org.junit.platform.launcher.core.LauncherFactory
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener
@@ -32,10 +34,12 @@ import org.sourcegrade.jagr.api.testing.TestCycle
 import org.sourcegrade.jagr.core.compiler.java.RuntimeClassLoaderImpl
 import org.sourcegrade.jagr.core.compiler.java.plus
 import org.sourcegrade.jagr.core.executor.TimeoutHandler
+import org.sourcegrade.jagr.launcher.env.Config
 
 class JavaRuntimeTester @Inject constructor(
     private val logger: Logger,
     private val testCycleParameterResolver: TestCycleParameterResolver,
+    private val config: Config,
 ) : RuntimeTester {
     override fun createTestCycle(grader: GraderJarImpl, submission: Submission): TestCycle? {
         if (submission !is JavaSubmission) return null
@@ -86,11 +90,19 @@ class JavaRuntimeTester @Inject constructor(
         return try {
             val summaryListener = SummaryGeneratingListener()
             val statusListener = TestStatusListenerImpl(logger)
-            TimeoutHandler.setClassNames(map { it.className })
-            TimeoutHandler.resetTimeout()
-            launcher.execute(testPlan, summaryListener, statusListener)
-            // if total timeout has been reached, reset so that the rubric provider doesn't throw an error
-            TimeoutHandler.disableTimeout()
+            if (config.transformers.timeout.enabled) {
+                val timeoutListener = object : TestExecutionListener {
+                    override fun executionStarted(testIdentifier: TestIdentifier) {
+                        TimeoutHandler.resetTimeout()
+                    }
+                }
+                TimeoutHandler.setClassNames(map { it.className })
+                launcher.execute(testPlan, summaryListener, statusListener, timeoutListener)
+                // disable so that the rubric provider doesn't throw an error
+                TimeoutHandler.disableTimeout()
+            } else {
+                launcher.execute(testPlan, summaryListener, statusListener)
+            }
             statusListener.logLinkageErrors(info)
             JUnitResultImpl(testPlan, summaryListener, statusListener)
         } catch (e: Throwable) {
