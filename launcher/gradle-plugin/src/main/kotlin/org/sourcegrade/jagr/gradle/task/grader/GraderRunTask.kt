@@ -36,6 +36,7 @@ import org.sourcegrade.jagr.launcher.io.buildResourceContainer
 import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.createResourceContainer
 import org.sourcegrade.jagr.launcher.io.logGradedRubric
+import org.sourcegrade.jagr.launcher.io.logHistogram
 import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
 import java.net.URI
@@ -167,6 +168,9 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         executor.schedule(queue)
         executor.start(collector)
         Environment.cleanupMainProcess()
+        collector.withGradingFinished { gradingFinished ->
+            gradingFinished.logHistogram(jagr)
+        }
         if (rubricResources.size == 0) {
             jagr.logger.warn("No rubrics!")
         } else {
