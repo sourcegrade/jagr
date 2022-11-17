@@ -22,6 +22,7 @@ package org.sourcegrade.jagr.core.transformer
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.sourcegrade.jagr.api.testing.ClassTransformer
@@ -53,6 +54,11 @@ class ClassRenamingTransformer(
             interfaces: Array<String>,
         ) = super.visit(version, access, newName, signature, superName, interfaces)
 
+        override fun visitField(access: Int, name: String, descriptor: String, signature: String?, value: Any?): FieldVisitor {
+            val newDescriptor = descriptor.replace(oldName, newName)
+            return super.visitField(access, name, newDescriptor, signature, value)
+        }
+
         override fun visitMethod(
             access: Int,
             name: String?,
@@ -65,22 +71,27 @@ class ClassRenamingTransformer(
         }
 
         private inner class RenamingMV(methodVisitor: MethodVisitor?) : MethodVisitor(Opcodes.ASM9, methodVisitor) {
-            override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
-                // insns targeting the old classname must be renamed
-                if (owner == oldName) {
-                    super.visitMethodInsn(opcode, newName, name, descriptor, isInterface)
+            override fun visitTypeInsn(opcode: Int, type: String?) {
+                // type insns targeting the old classname must be renamed
+                if (type == oldName) {
+                    super.visitTypeInsn(opcode, newName)
                 } else {
-                    super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
+                    super.visitTypeInsn(opcode, type)
                 }
             }
 
-            override fun visitFieldInsn(opcode: Int, owner: String?, name: String?, descriptor: String?) {
+            override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
+                // insns targeting the old classname must be renamed
+                val newOwner = if (owner == oldName) newName else owner
+                val newDescriptor = descriptor.replace(oldName, newName)
+                super.visitMethodInsn(opcode, newOwner, name, newDescriptor, isInterface)
+            }
+
+            override fun visitFieldInsn(opcode: Int, owner: String, name: String, descriptor: String) {
                 // GETFIELDs and PUTFIELDs targeting the old classname must be renamed
-                if (opcode == Opcodes.GETFIELD || opcode == Opcodes.PUTFIELD) {
-                    super.visitFieldInsn(opcode, newName, name, descriptor)
-                } else {
-                    super.visitFieldInsn(opcode, owner, name, descriptor)
-                }
+                val newOwner = if (owner == oldName) newName else owner
+                val newDescriptor = descriptor.replace(oldName, newName)
+                super.visitFieldInsn(opcode, newOwner, name, newDescriptor)
             }
 
             override fun visitFrame(type: Int, numLocal: Int, local: Array<out Any>, numStack: Int, stack: Array<out Any>) {

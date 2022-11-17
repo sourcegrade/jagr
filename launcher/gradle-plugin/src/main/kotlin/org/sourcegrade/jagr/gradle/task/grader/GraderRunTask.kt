@@ -173,12 +173,12 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
             jagr.logger.info("Exported ${rubrics.size} rubrics")
             rubrics.forEach { (name, failed) ->
                 val rubricLocation = URI("file", "", rubricOutputDir.toURI().path + name, null, null).toString()
-                jagr.logger.info("See rubric at $rubricLocation ${if (failed) " (failed)" else ""}")
+                jagr.logger.info("See the rubric at $rubricLocation ${if (failed) " (failed)" else ""}")
             }
             if (rubrics.any { (_, failed) -> failed }) {
                 throw GradleException(
                     """
-                    Grading completed with the following failed rubrics:
+                    Grading completed with failing tests! See the rubric${if (rubrics.size == 1) "" else "s"} at::
                     ${rubrics.filter { (_, failed) -> failed }.keys.joinToString("\n")}
                     """.trimIndent()
                 )
