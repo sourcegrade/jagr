@@ -98,7 +98,7 @@ class JavaRuntimeTester @Inject constructor(
                 }
                 TimeoutHandler.setClassNames(map { it.className })
                 launcher.execute(testPlan, summaryListener, statusListener, timeoutListener)
-                // if total timeout has been reached, reset so that the rubric provider doesn't throw an error
+                // disable so that the rubric provider doesn't throw an error
                 TimeoutHandler.disableTimeout()
             } else {
                 launcher.execute(testPlan, summaryListener, statusListener)
