@@ -28,7 +28,6 @@ import org.sourcegrade.jagr.launcher.executor.SyncExecutor
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.GradingBatch
-import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.addResource
 import org.sourcegrade.jagr.launcher.io.buildGradingBatch
@@ -150,7 +149,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         // TODO: Properly configure task output
         val rubricOutputDir = project.buildDir.resolve("resources/jagr/${configurationName.get()}/rubrics/")
         var failed = false
-        val rubricResources = mutableListOf<Resource>()
+        val rubricNames = mutableListOf<String>()
         collector.setListener { result ->
             result.rubrics.keys.forEach {
                 if (it.grade.minPoints < it.rubric.maxPoints) {
@@ -159,7 +158,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                 it.logGradedRubric(jagr)
                 val resource = exporterHTML.export(it)
                 resource.writeIn(rubricOutputDir)
-                rubricResources.add(resource)
+                rubricNames.add(resource.name)
                 val moodleResource = exporterMoodle.export(it)
                 moodleResource.writeIn(rubricOutputDir)
             }
@@ -171,12 +170,12 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         collector.withGradingFinished { gradingFinished ->
             gradingFinished.logHistogram(jagr)
         }
-        if (rubricResources.size == 0) {
+        if (rubricNames.size == 0) {
             jagr.logger.warn("No rubrics!")
         } else {
-            jagr.logger.info("Exported ${rubricResources.size} rubrics")
-            rubricResources.forEach {
-                val rubricLocation = URI("file", "", rubricOutputDir.toURI().path + it.name, null, null).toString()
+            jagr.logger.info("Exported ${rubricNames.size} rubrics")
+            rubricNames.forEach { name ->
+                val rubricLocation = URI("file", "", rubricOutputDir.toURI().path + name, null, null).toString()
                 jagr.logger.info("See rubric at $rubricLocation")
                 if (failed) {
                     throw GradleException("Grading failed! See the rubric at $rubricLocation")
