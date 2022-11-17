@@ -23,7 +23,7 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
         builder.table(gradedRubric)
         builder.pageEnd()
         return buildResource {
-            name = "result.html"
+            name = "${gradedRubric.testCycle.submission.info}.html"
             outputStream.bufferedWriter().use { it.write(builder.toString()) }
         }
     }
