@@ -98,10 +98,7 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
             rowEnd()
             r.childCriteria.forEach { this.tableEntry(it) }
         } else {
-            entry(
-                """${badge((++criterionCounter).toString())} ${
-                    r.description()}"""
-            )
+            entry("""${badge((++criterionCounter).toString())} ${r.description()}""")
             entry(r.criterion.range())
             entry(r.grade.range(), classes = r.rowClasses())
             entry(r.comments())
