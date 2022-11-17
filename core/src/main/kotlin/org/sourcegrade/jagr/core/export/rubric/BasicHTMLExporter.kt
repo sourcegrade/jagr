@@ -89,19 +89,22 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
     private fun StringBuilder.tableBodyEnd() = append("</tbody>")
 
     private fun StringBuilder.tableEntry(r: GradedCriterion) {
+        val codeTagRegex = "\\[\\[\\[(?<code>.*?)]]]".toRegex()
+        val codeTagTransform: (MatchResult) -> CharSequence = { "<code>${it.groups["code"]?.value}</code>" }
+
         rowStart()
         if (r.hasChildCriteria()) {
-            titleEntry(r.description())
+            titleEntry(r.description().replace(codeTagRegex, codeTagTransform))
             titleEntry(r.criterion.range())
             titleEntry(r.grade.range())
-            titleEntry(r.comments())
+            titleEntry(r.comments().replace(codeTagRegex, codeTagTransform))
             rowEnd()
             r.childCriteria.forEach { this.tableEntry(it) }
         } else {
-            entry("""${badge((++criterionCounter).toString())} ${r.description()}""")
+            entry("""${badge((++criterionCounter).toString())} ${r.description().replace(codeTagRegex, codeTagTransform)}""")
             entry(r.criterion.range())
             entry(r.grade.range(), classes = r.rowClasses())
-            entry(r.comments())
+            entry(r.comments().replace(codeTagRegex, codeTagTransform))
             rowEnd()
         }
     }
