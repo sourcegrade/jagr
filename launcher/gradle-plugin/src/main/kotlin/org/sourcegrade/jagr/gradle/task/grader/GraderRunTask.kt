@@ -167,19 +167,21 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         collector.withGradingFinished { gradingFinished ->
             gradingFinished.logHistogram(jagr)
         }
+        fun String.toRubricLink() =
+            URI("file", "", rubricOutputDir.toURI().path + this, null, null).toString()
         if (rubrics.isEmpty()) {
             jagr.logger.warn("No rubrics!")
         } else {
-            jagr.logger.info("Exported ${rubrics.size} rubrics")
+            jagr.logger.info("Exported ${rubrics.size} rubrics:")
             rubrics.forEach { (name, failed) ->
-                val rubricLocation = URI("file", "", rubricOutputDir.toURI().path + name, null, null).toString()
-                jagr.logger.info("See the rubric at $rubricLocation ${if (failed) " (failed)" else ""}")
+                val rubricLink = name.toRubricLink()
+                jagr.logger.info(" > $rubricLink ${if (failed) " (failed)" else ""}")
             }
             if (rubrics.any { (_, failed) -> failed }) {
                 throw GradleException(
                     """
-                    Grading completed with failing tests! See the rubric${if (rubrics.size == 1) "" else "s"} at::
-                    ${rubrics.filter { (_, failed) -> failed }.keys.joinToString("\n")}
+                    Grading completed with failing tests! See the rubric${if (rubrics.size == 1) "" else "s"} at:
+                    ${rubrics.filter { (_, failed) -> failed }.keys.joinToString("\n") { " > ${it.toRubricLink()}" }}
                     """.trimIndent()
                 )
             }
