@@ -175,9 +175,9 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
             jagr.logger.info("Exported $rubricCount rubrics")
         }
         val rubricLocation = URI("file", "", rubricOutputDir.toURI().path + "result.html", null, null).toString()
-        jagr.logger.info("See rubric at $rubricLocation")
+        jagr.logger.info("See the rubric at $rubricLocation")
         if (failed) {
-            throw GradleException("Grading failed! See the rubric at $rubricLocation")
+            throw GradleException("Grading completed with failing tests! See the rubric at $rubricLocation")
         }
     }
 
