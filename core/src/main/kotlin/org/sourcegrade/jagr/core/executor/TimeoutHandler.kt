@@ -67,7 +67,7 @@ object TimeoutHandler {
             return
         }
         val currentThread = Thread.currentThread()
-        val userTime = mxBean.getThreadUserTime(currentThread.id) / 1000000
+        val userTime = mxBean.getThreadUserTime(currentThread.id) / 1_000_000L
         if (lastTimeout == 0L) {
             this.lastTimeout.get().set(userTime)
         } else if (userTime > timeoutTotal) {
