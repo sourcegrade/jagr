@@ -70,17 +70,16 @@ object TimeoutHandler {
         val userTime = mxBean.getThreadUserTime(currentThread.id) / 1000000
         if (lastTimeout == 0L) {
             this.lastTimeout.get().set(userTime)
+        } else if (userTime > timeoutTotal) {
+            val timeoutLocation = getTimeoutLocation()
+            logger.error("Total timeout after " + timeoutTotal + "ms @ " + currentThread.name, timeoutLocation)
+            throw AssertionFailedError("Total timeout after " + timeoutTotal + "ms")
         } else if (userTime - lastTimeout > timeoutIndividual) {
             val timeoutLocation = getTimeoutLocation()
-            if (userTime > timeoutTotal) {
-                logger.error("Total timeout after " + timeoutTotal + "ms @ " + currentThread.name, timeoutLocation)
-                throw AssertionFailedError("Total timeout after " + timeoutTotal + "ms")
-            } else {
-                logger.error("Timeout after " + timeoutIndividual + "ms @ " + currentThread.name, timeoutLocation)
-                // reset LAST_TIMEOUT so that the next JUnit test doesn't immediately fail
-                this.lastTimeout.get().set(userTime)
-                throw AssertionFailedError("Timeout after " + timeoutIndividual + "ms")
-            }
+            logger.error("Timeout after " + timeoutIndividual + "ms @ " + currentThread.name, timeoutLocation)
+            // reset LAST_TIMEOUT so that the next checkTimeout() invocation doesn't immediately fail
+            this.lastTimeout.get().set(userTime)
+            throw AssertionFailedError("Timeout after " + timeoutIndividual + "ms")
         }
     }
 
