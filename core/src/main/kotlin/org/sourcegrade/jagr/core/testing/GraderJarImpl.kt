@@ -108,19 +108,10 @@ class GraderJarImpl(
         rubricProvider.configure(configuration)
     }
 
-    @Suppress("DEPRECATION")
     private fun MutableList<String>.addIfTest(clazz: Class<*>) {
         val annotation = clazz.getAnnotation(TestForSubmission::class.java) ?: return
         add(clazz.name)
-        if (annotation.value.isNotBlank() && annotation.value != clazz.name) {
-            logger.warn(
-                "Grader ${info.name} test class ${clazz.name} " +
-                    "has a non-blank value ${annotation.value} in @TestForSubmission and it does not match " +
-                    "the grader's assignmentId ${info.assignmentId}"
-            )
-            logger.warn("Providing a value to @TestForSubmission is deprecated and will be removed in a future version")
-        }
-        logger.debug("Grader ${info.name} discovered test provider ${clazz.name} for assignment ${annotation.value}")
+        logger.debug("Grader ${info.name} discovered test provider ${clazz.name} for assignment ${info.assignmentId}")
     }
 
     override fun toString(): String = info.name

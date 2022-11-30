@@ -149,15 +149,14 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         val collector = emptyCollector(jagr)
         // TODO: Properly configure task output
         val rubricOutputDir = project.buildDir.resolve("resources/jagr/${configurationName.get()}/rubrics/")
-        var failed = false
+        val rubrics = mutableMapOf<String, Boolean>()
         collector.setListener { result ->
             result.rubrics.keys.forEach {
-                if (it.grade.maxPoints < it.rubric.maxPoints) {
-                    failed = true
-                }
                 it.logGradedRubric(jagr)
                 val resource = exporterHTML.export(it)
                 resource.writeIn(rubricOutputDir)
+                // whether the given rubric failed
+                rubrics[resource.name] = it.grade.maxPoints < it.rubric.maxPoints
                 val moodleResource = exporterMoodle.export(it)
                 moodleResource.writeIn(rubricOutputDir)
             }
@@ -166,19 +165,27 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         executor.schedule(queue)
         executor.start(collector)
         Environment.cleanupMainProcess()
-        val rubricCount = collector.withGradingFinished { gradingFinished ->
+        collector.withGradingFinished { gradingFinished ->
             gradingFinished.logHistogram(jagr)
-            gradingFinished.sumOf { it.rubrics.size }
         }
-        if (rubricCount == 0) {
+        fun String.toRubricLink() =
+            URI("file", "", rubricOutputDir.toURI().path + this, null, null).toString()
+        if (rubrics.isEmpty()) {
             jagr.logger.warn("No rubrics!")
         } else {
-            jagr.logger.info("Exported $rubricCount rubrics")
-        }
-        val rubricLocation = URI("file", "", rubricOutputDir.toURI().path + "result.html", null, null).toString()
-        jagr.logger.info("See the rubric at $rubricLocation")
-        if (failed) {
-            throw GradleException("Grading completed with failing tests! See the rubric at $rubricLocation")
+            jagr.logger.info("Exported ${rubrics.size} rubrics:")
+            rubrics.forEach { (name, failed) ->
+                val rubricLink = name.toRubricLink()
+                jagr.logger.info(" > $rubricLink ${if (failed) " (failed)" else ""}")
+            }
+            if (rubrics.any { (_, failed) -> failed }) {
+                throw GradleException(
+                    """
+                    Grading completed with failing tests! See the rubric${if (rubrics.size == 1) "" else "s"} at:
+                    ${rubrics.filter { (_, failed) -> failed }.keys.joinToString("\n") { " > ${it.toRubricLink()}" }}
+                    """.trimIndent()
+                )
+            }
         }
     }
 
