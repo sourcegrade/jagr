@@ -90,6 +90,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     project.extensions
                         .getByType<SourceSetContainer>()
                         .filter { configuration.matchRecursive(it) }
+                        .sortedByDescending { getRecursiveDepthOfSourceSet(configuration, it, 0) }
                         .forEach { writeSourceSet(it) }
                     addResource {
                         name = "grader-info.json"
@@ -189,6 +190,19 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         val solutionSourceSetNames = jagr.submissions[solutionConfigurationName.get()].sourceSetNames.get()
         return sourceSet.name in sourceSetNames.get() || sourceSet.name in solutionSourceSetNames ||
             (parentConfiguration.isPresent && parentConfiguration.get().matchRecursive(sourceSet))
+    }
+
+    /**
+     * Returns the recursive depth of the [sourceSet] in the parent configurations of the given [graderConfiguration] starting with [depth]
+     */
+    private fun getRecursiveDepthOfSourceSet(graderConfiguration: GraderConfiguration, sourceSet: SourceSet, depth: Int): Int {
+        if (graderConfiguration.sourceSetNames.get().contains(sourceSet.name)) {
+            return depth
+        }
+        if (graderConfiguration.parentConfiguration.isPresent) {
+            return getRecursiveDepthOfSourceSet(graderConfiguration.parentConfiguration.get(), sourceSet, depth + 1)
+        }
+        return -1
     }
 
     private fun ResourceContainer.Builder.writeSourceSet(sourceSet: SourceSet) =
