@@ -26,10 +26,12 @@ abstract class SubmissionBuildTask : Jar(), SubmissionTask {
         val sourceSets = project.extensions.getByType<SourceSetContainer>()
         from(sourceSetNames.map { names -> names.map { name -> sourceSets[name].allSource } })
         archiveFileName.set(
-            assignmentId.zip(lastName) { assignmentId, lastName ->
-                "$assignmentId-$lastName"
+            assignmentId.zip(studentId) { assignmentId, studentId ->
+                "$assignmentId-$studentId"
             }.zip(firstName) { left, firstName ->
-                "$left-$firstName-submission"
+                "$left-$firstName"
+            }.zip(lastName) { left, lastName ->
+                "$left-$lastName-submission"
             }.zip(archiveExtension) { left, extension ->
                 "$left.$extension"
             }
