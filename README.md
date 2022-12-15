@@ -10,7 +10,7 @@ It is designed to accept graders and submissions created with the `jagr-gradle` 
 
 This project's compiled, source and javadoc jars are hosted on [sonatype](https://s01.oss.sonatype.org).  
 Releases are available from `mavenCentral()` and snapshots from the maven
-repository `https://s01.oss.sonatype.org/content/repositories/snapshots`.
+repository [here](https://s01.oss.sonatype.org/content/repositories/snapshots).
 
 Follow [this guide](https://docs.sourcegrade.org/development/getting-started/gradle-setup/) to set up your gradle buildscript.
 
