@@ -84,7 +84,7 @@ java -jar Jagr-VERSION.jar
 Alternatively, you may run Jagr in-IDE via the Gradle `runShadow` task (the standard `run` task does not work).  
 The working directory used is `build/run`.  
 
-The following directories have should been created:
+The following directories should have been created:
 
 ```
 ./graders // input folder for grader jars (tests and rubric providers)
