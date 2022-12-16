@@ -8,7 +8,8 @@ It is designed to accept graders and submissions created with the `jagr-gradle` 
 
 ## Setup
 
-This project's compiled, source and javadoc jars are hosted on [sonatype](https://s01.oss.sonatype.org).<br>
+This project's compiled, source and javadoc jars are hosted on [sonatype](https://s01.oss.sonatype.org).
+
 Releases are available from `mavenCentral()` and snapshots from the maven
 repository `maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")`.
 
@@ -74,14 +75,16 @@ public class H03_RubricProvider implements RubricProvider {
 ## Running Jagr
 
 To run Jagr, download the desired compiled release of Jagr from
-[releases](https://github.com/sourcegrade/jagr/releases) and place it in a (preferably empty) directory of your choice.<br>
+[releases](https://github.com/sourcegrade/jagr/releases) and place it in a (preferably empty) directory of your choice.
+
 Then either run the following command in a terminal of your choice (or write a batch/bash script that you can execute):
 
 ```bash
 java -jar Jagr-VERSION.jar
 ```
 
-Alternatively, you may run Jagr in-IDE via the Gradle `runShadow` task (the standard `run` task does not work).<br>
+Alternatively, you may run Jagr in-IDE via the Gradle `runShadow` task (the standard `run` task does not work).
+
 The working directory used is `build/run`.
 
 The following directories should have been created:
