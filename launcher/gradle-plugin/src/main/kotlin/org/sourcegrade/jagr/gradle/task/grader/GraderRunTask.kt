@@ -38,7 +38,6 @@ import org.sourcegrade.jagr.launcher.io.logGradedRubric
 import org.sourcegrade.jagr.launcher.io.logHistogram
 import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
-import java.net.URI
 
 @Suppress("LeakingThis")
 abstract class GraderRunTask : DefaultTask(), GraderTask {
@@ -168,8 +167,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         collector.withGradingFinished { gradingFinished ->
             gradingFinished.logHistogram(jagr)
         }
-        fun String.toRubricLink() =
-            URI("file", "", rubricOutputDir.toURI().path + this, null, null).toString()
+        fun String.toRubricLink() = rubricOutputDir.toURI().resolve(this).toString()
         if (rubrics.isEmpty()) {
             jagr.logger.warn("No rubrics!")
         } else {
