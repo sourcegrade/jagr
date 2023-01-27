@@ -20,6 +20,7 @@ dependencies {
     implementation(gradleKotlinDsl())
     implementation(libs.serialization)
     implementation(libs.logging.core)
+    implementation("de.undercouch:gradle-download-task:${libs.plugins.download.get().version}")
     runtimeOnly(project(":jagr-core"))
     implementation(project(":jagr-launcher"))
 }

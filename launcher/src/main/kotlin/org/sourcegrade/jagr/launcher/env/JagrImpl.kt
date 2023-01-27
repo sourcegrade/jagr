@@ -21,17 +21,27 @@ package org.sourcegrade.jagr.launcher.env
 
 import com.google.inject.Guice
 import com.google.inject.Injector
+import com.google.inject.Module
+import com.google.inject.util.Modules
 import kotlinx.serialization.Serializable
 import kotlin.reflect.full.primaryConstructor
 
-internal class DeferredJagr(val json: JagrJson, val configuration: LaunchConfiguration) : Jagr {
+internal class DeferredJagr(
+    val json: JagrJson,
+    val configuration: LaunchConfiguration,
+    private val moduleOverride: Module? = null,
+) : Jagr {
     override val injector: Injector by lazy {
         val modules = json.moduleFactories.map {
             coerceClass<ModuleFactory>(it).kotlin.run {
                 (objectInstance ?: primaryConstructor!!.call()).create(configuration)
             }
-        }.toTypedArray()
-        Guice.createInjector(*modules)
+        }
+        if (moduleOverride == null) {
+            Guice.createInjector(modules)
+        } else {
+            Guice.createInjector(Modules.override(modules).with(moduleOverride))
+        }
     }
 
     override fun toString(): String = "DeferredJagr"

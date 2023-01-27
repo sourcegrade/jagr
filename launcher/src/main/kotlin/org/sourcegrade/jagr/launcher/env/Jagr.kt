@@ -23,6 +23,7 @@ import com.google.inject.Injector
 import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
+import org.sourcegrade.jagr.launcher.executor.RuntimeInvoker
 import org.sourcegrade.jagr.launcher.io.ExtrasManager
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import kotlin.properties.ReadOnlyProperty
@@ -49,6 +50,7 @@ val Jagr.extrasManager: ExtrasManager by injected()
 val Jagr.gradingQueueFactory: GradingQueue.Factory by injected()
 val Jagr.logger: Logger by injected()
 val Jagr.runtimeGrader: RuntimeGrader by injected()
+val Jagr.runtimeInvoker: RuntimeInvoker by injected()
 val Jagr.serializerFactoryLocator: SerializerFactory.Locator by injected()
 
 internal operator fun <T : Any> Jagr.get(type: KClass<T>): T = injector.getInstance(type.java)

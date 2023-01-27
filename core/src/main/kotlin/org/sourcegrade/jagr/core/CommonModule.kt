@@ -55,6 +55,7 @@ import org.sourcegrade.jagr.launcher.env.LaunchConfiguration
 import org.sourcegrade.jagr.launcher.env.ModuleFactory
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
+import org.sourcegrade.jagr.launcher.executor.RuntimeInvoker
 import org.sourcegrade.jagr.launcher.io.ExtrasManager
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
@@ -87,6 +88,7 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
         with(Multibinder.newSetBinder(binder(), RuntimeTester::class.java)) {
             addBinding().to(JavaRuntimeTester::class.java)
         }
+        bind(RuntimeInvoker::class.java).toInstance(configuration.runtimeInvoker)
         bind(SerializerFactory.Locator::class.java).to(SerializationFactoryLocatorImpl::class.java)
         bind(SubmissionExporter.Eclipse::class.java).to(EclipseSubmissionExporter::class.java)
         bind(SubmissionExporter.Gradle::class.java).to(GradleSubmissionExporter::class.java)
