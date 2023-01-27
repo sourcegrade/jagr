@@ -39,7 +39,11 @@ import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
 import java.io.ObjectInputStream
+import java.net.URL
+import java.nio.channels.Channels
 import kotlin.reflect.KFunction2
 
 class ProcessWorker(
@@ -51,15 +55,59 @@ class ProcessWorker(
     override var status: WorkerStatus = WorkerStatus.PREPARING
     override var userTime: Long = 0
 
-    private val jagrLocation: String = File(javaClass.protectionDomain.codeSource.location.toURI()).path
+    //    private val jagrLocation: String = File(javaClass.protectionDomain.codeSource.location.toURI()).path
+    private val runtimeConfiguration: RuntimeConfiguration = RuntimeConfiguration.Standard
+    private val gradleTaskConfiguration = runtimeConfiguration.config
 
     private val process: Process = ProcessBuilder()
-        .command("java", "-Dlog4j.configurationFile=log4j2-child.xml", "-jar", jagrLocation, "--child")
+        .command(
+            "java",
+            "-Dlog4j.configurationFile=log4j2-child.xml",
+            gradleTaskConfiguration.jvmArgs,
+            "-jar",
+            gradleTaskConfiguration.jagrJar,
+            "--child"
+        )
         .start()
 
     private val coroutineScope = CoroutineScope(processIODispatcher)
 
+    private fun downloadFile(url: URL, outputFileName: String) {
+        url.openStream().use {
+            Channels.newChannel(it).use { rbc ->
+                FileOutputStream(outputFileName).use { fos ->
+                    fos.channel.transferFrom(rbc, 0, Long.MAX_VALUE)
+                }
+            }
+        }
+    }
+
     init {
+        runtimeConfiguration.logger.info("Starting worker process")
+        // check for jagr jar
+
+        // if not found, check for  downloadIfMissing flag, if true, download it if not throw exception
+        if(File(gradleTaskConfiguration.jagrJar).exists().not())
+        {
+            if (gradleTaskConfiguration.downloadIfMissing) {
+                val url = gradleTaskConfiguration.jagrDownloadURL
+                val destination = gradleTaskConfiguration.jagrJar
+                val destinationPath = File(destination).parentFile
+                if (destinationPath.exists().not()) {
+                    destinationPath.mkdirs()
+                }
+                val downloadFile = File(destination)
+                if (downloadFile.exists().not()) {
+                    downloadFile.createNewFile()
+                }
+                val downloadUrl = URL(url)
+                downloadFile(downloadUrl, destination)
+            } else {
+                throw FileNotFoundException("Jagr jar not found at ${gradleTaskConfiguration.jagrJar}")
+            }
+
+        }
+
         status = WorkerStatus.READY
     }
 

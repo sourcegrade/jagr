@@ -23,9 +23,7 @@ import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.SystemResourceJagrFactory
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
-import org.sourcegrade.jagr.launcher.executor.Executor
-import org.sourcegrade.jagr.launcher.executor.SyncExecutor
-import org.sourcegrade.jagr.launcher.executor.emptyCollector
+import org.sourcegrade.jagr.launcher.executor.*
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
@@ -145,7 +143,10 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         }
         val queue = jagr.gradingQueueFactory.create(batch)
         jagr.logger.info("Executor mode 'gradle' :: expected submission: ${batch.expectedSubmissions}")
-        val executor: Executor = SyncExecutor(jagr)
+        val executor: Executor =
+            MultiWorkerExecutor.Factory {
+                workerPoolFactory = ProcessWorkerPool.Factory { concurrency = 1 }
+            }.create(jagr)
         val collector = emptyCollector(jagr)
         // TODO: Properly configure task output
         val rubricOutputDir = project.buildDir.resolve("resources/jagr/${configurationName.get()}/rubrics/")
