@@ -33,5 +33,5 @@ abstract class JagrDownloadExtension @Inject constructor(
     val sourceUrl: Property<String> = objectFactory.property<String>()
         .convention(jagrVersion.map { "https://github.com/sourcegrade/jagr/releases/download/v$it/Jagr-$it.jar" })
     val destName: Property<String> = objectFactory.property<String>()
-        .convention(jagrVersion.map { "Jagr-${Jagr.version}.jar" })
+        .convention(jagrVersion.map { "Jagr-$it.jar" })
 }
