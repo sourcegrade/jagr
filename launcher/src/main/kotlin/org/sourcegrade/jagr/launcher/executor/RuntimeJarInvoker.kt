@@ -25,9 +25,9 @@ import kotlin.io.path.pathString
 
 class RuntimeJarInvoker(
     private val jagrLocation: Path = Paths.get(RuntimeJarInvoker::class.java.protectionDomain.codeSource.location.toURI()),
+    private val jvmArgs: List<String> = emptyList(),
 ) : RuntimeInvoker {
-
     override fun createRuntime(): Process = ProcessBuilder()
-        .command("java", "-Dlog4j.configurationFile=log4j2-child.xml", "-jar", jagrLocation.pathString, "--child")
+        .command("java", "-Dlog4j.configurationFile=log4j2-child.xml", *jvmArgs.toTypedArray(), "-jar", jagrLocation.pathString, "--child")
         .start()
 }

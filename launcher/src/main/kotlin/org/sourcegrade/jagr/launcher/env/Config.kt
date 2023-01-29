@@ -57,6 +57,13 @@ submission code.
     val concurrency: Int = 4,
     @field:Comment(
         """
+The JVM arguments to use for grading. These arguments are passed to the JVM that runs the grading code.
+This only applies to the "process" mode, as the "thread" and "single" modes do not spawn a new JVM.
+        """
+    )
+    val jvmArgs: List<String> = listOf(),
+    @field:Comment(
+        """
 The executor mode to use. The following options are available:
 - "single" ::
   Runs every TestCycle consecutively in the main thread. This mode does not create any extra processes or threads for grading.
