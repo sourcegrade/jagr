@@ -29,7 +29,7 @@ import java.nio.file.Path
 
 internal class GradleLaunchConfiguration(
     override val config: Config,
-    private val jagrJar: Path,
+    jagrJar: Path,
 ) : LaunchConfiguration {
     override val logger: Logger by lazy {
         Configurator.initialize(
@@ -37,5 +37,5 @@ internal class GradleLaunchConfiguration(
             "log4j2-console-only.xml"
         ).getLogger("jagr")
     }
-    override val runtimeInvoker: RuntimeInvoker = RuntimeJarInvoker(jagrJar)
+    override val runtimeInvoker: RuntimeInvoker = RuntimeJarInvoker(jagrJar, config.executor.jvmArgs)
 }
