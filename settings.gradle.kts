@@ -15,6 +15,7 @@ sequenceOf(
     "core",
     "grader-api",
     "launcher",
+    "worker",
 ).forEach {
     val project = ":jagr-$it"
     include(project)
