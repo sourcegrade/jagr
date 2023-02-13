@@ -32,12 +32,9 @@ gradlePlugin {
             displayName = "Jagr Gradle Plugin"
             description = "Gradle plugin for running the Jagr AutoGrader"
             implementationClass = "org.sourcegrade.jagr.gradle.JagrGradlePlugin"
+            tags.set(listOf("jagr", "assignment", "submission", "grading"))
         }
     }
-}
-
-pluginBundle {
-    website = "https://www.sourcegrade.org"
-    vcsUrl = "https://github.com/sourcegrade/jagr"
-    tags = listOf("jagr", "assignment", "submission", "grading")
+    website.set("https://www.sourcegrade.org")
+    vcsUrl.set("https://github.com/sourcegrade/jagr")
 }
