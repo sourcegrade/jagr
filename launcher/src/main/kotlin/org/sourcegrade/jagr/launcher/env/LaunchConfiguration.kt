@@ -21,6 +21,8 @@ package org.sourcegrade.jagr.launcher.env
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.sourcegrade.jagr.launcher.executor.RuntimeInvoker
+import org.sourcegrade.jagr.launcher.executor.RuntimeJarInvoker
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader
 import org.spongepowered.configurate.kotlin.objectMapperFactory
 import java.io.File
@@ -28,6 +30,7 @@ import java.io.File
 interface LaunchConfiguration {
     val config: Config
     val logger: Logger
+    val runtimeInvoker: RuntimeInvoker
 
     object Standard : LaunchConfiguration {
         override val config: Config by lazy {
@@ -54,5 +57,6 @@ interface LaunchConfiguration {
         override val logger: Logger by lazy {
             LogManager.getLogger("Jagr")
         }
+        override val runtimeInvoker: RuntimeInvoker = RuntimeJarInvoker()
     }
 }

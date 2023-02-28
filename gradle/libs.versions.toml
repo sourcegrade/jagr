@@ -2,20 +2,20 @@
 asm = "9.4"
 configurate = "4.1.2"
 junit = "5.9.2"
-kotlin = "1.8.0"
-log4j = "2.19.0"
+kotlin = "1.8.10"
+log4j = "2.20.0"
 
 [libraries]
-annotations = "org.jetbrains:annotations:23.0.0"
+annotations = "org.jetbrains:annotations:24.0.0"
 apiguardian = "org.apiguardian:apiguardian-api:1.1.2"
 asm-core = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
-clikt = "com.github.ajalt.clikt:clikt:3.5.1"
+clikt = "com.github.ajalt.clikt:clikt:3.5.2"
 configurate-core = { module = "org.spongepowered:configurate-extra-kotlin", version.ref = "configurate" }
 configurate-hocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate" }
 configurate-kotlin = { module = "org.spongepowered:configurate-extra-kotlin", version.ref = "configurate" }
 coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
-csv = "org.apache.commons:commons-csv:1.9.0"
+csv = "org.apache.commons:commons-csv:1.10.0"
 guice = "com.google.inject:guice:5.1.0"
 jansi = "org.fusesource.jansi:jansi:2.4.0"
 junit-core = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
@@ -24,15 +24,16 @@ junit-launcher = "org.junit.platform:junit-platform-launcher:1.9.2"
 juniversalchardet = "com.github.albfernandez:juniversalchardet:2.4.0"
 logging-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 logging-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
+serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0"
 
 [bundles]
 junit = ["junit-core", "junit-engine", "junit-launcher"]
 
 [plugins]
+download = "de.undercouch.download:5.3.1"
 gradle-publish = "com.gradle.plugin-publish:1.1.0"
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-shadow = { id = "com.github.johnrengelman.shadow", version = "7.1.2" }
+shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.0" }
 style = { id = "org.sourcegrade.style", version = "2.1.0" }
