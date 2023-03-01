@@ -3,6 +3,9 @@ plugins {
     id("jagr-publish")
 }
 
+apply<JagrPublishPlugin>()
+apply<JagrSignPlugin>()
+
 tasks {
     withType<PublishToMavenRepository> {
         // check if rootProject version ends with .0 or .0-SNAPSHOT

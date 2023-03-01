@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
     id("jagr-publish")
+    // signing done by gradle-publish plugin
 }
 
 tasks {

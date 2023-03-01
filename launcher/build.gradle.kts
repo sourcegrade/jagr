@@ -6,6 +6,7 @@ plugins {
     kotlin("plugin.serialization")
     id("com.github.johnrengelman.shadow")
     id("jagr-publish")
+    id("jagr-sign")
 }
 
 dependencies {

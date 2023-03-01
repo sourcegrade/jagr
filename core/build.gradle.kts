@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     id("jagr-publish")
+    id("jagr-sign")
 }
 
 dependencies {

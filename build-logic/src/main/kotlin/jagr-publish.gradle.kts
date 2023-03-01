@@ -3,7 +3,6 @@ import java.net.URI
 plugins {
     java
     `maven-publish`
-    signing
 }
 
 extensions.configure<JavaPluginExtension> {
@@ -24,7 +23,7 @@ extensions.configure<PublishingExtension> {
         }
     }
     publications {
-        val mainPublication = create<MavenPublication>("maven") {
+        register<MavenPublication>("maven") {
             from(components["java"])
             pom {
                 name.set("jagr")
@@ -49,9 +48,6 @@ extensions.configure<PublishingExtension> {
                         .forEach { (_id, _name) -> developer { id.set(_id); name.set(_name) } }
                 }
             }
-        }
-        extensions.configure<SigningExtension> {
-            sign(mainPublication)
         }
     }
 }
