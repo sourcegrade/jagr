@@ -17,25 +17,34 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.gradle.task.grader
+package org.sourcegrade.jagr.gradle.task
 
-import org.apache.logging.log4j.Logger
-import org.apache.logging.log4j.core.config.Configurator
-import org.sourcegrade.jagr.launcher.env.Config
-import org.sourcegrade.jagr.launcher.env.LaunchConfiguration
-import org.sourcegrade.jagr.launcher.executor.RuntimeInvoker
-import org.sourcegrade.jagr.launcher.executor.RuntimeJarInvoker
+import de.undercouch.gradle.tasks.download.Download
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.pathString
 
-internal class GradleLaunchConfiguration(
-    override val config: Config,
-    jagrJar: Path,
-) : LaunchConfiguration {
-    override val logger: Logger by lazy {
-        Configurator.initialize(
-            "console-only",
-            "log4j2-console-only.xml"
-        ).getLogger("jagr")
+@Suppress("LeakingThis")
+abstract class JagrDownloadTask : Download() {
+
+    @get:Input
+    abstract val sourceUrl: Property<String>
+
+    @get:Input
+    abstract val destName: Property<String>
+
+    init {
+        group = "jagr resources"
+        src(sourceUrl)
+        dest(destName.map { JAGR_CACHE.resolve(it).pathString })
+        overwrite(false)
     }
-    override val runtimeInvoker: RuntimeInvoker = RuntimeJarInvoker(jagrJar, config.executor.jvmArgs)
+
+    companion object {
+        internal val JAGR_HOME: Path = Path(System.getProperty("user.home")).resolve(".jagr").createDirectories()
+        internal val JAGR_CACHE: Path = JAGR_HOME.resolve("cache").createDirectories()
+    }
 }

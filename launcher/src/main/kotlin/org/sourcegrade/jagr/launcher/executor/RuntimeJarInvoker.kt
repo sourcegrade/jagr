@@ -17,25 +17,25 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.gradle.task.grader
+package org.sourcegrade.jagr.launcher.executor
 
-import org.apache.logging.log4j.Logger
-import org.apache.logging.log4j.core.config.Configurator
-import org.sourcegrade.jagr.launcher.env.Config
-import org.sourcegrade.jagr.launcher.env.LaunchConfiguration
-import org.sourcegrade.jagr.launcher.executor.RuntimeInvoker
-import org.sourcegrade.jagr.launcher.executor.RuntimeJarInvoker
 import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.pathString
 
-internal class GradleLaunchConfiguration(
-    override val config: Config,
-    jagrJar: Path,
-) : LaunchConfiguration {
-    override val logger: Logger by lazy {
-        Configurator.initialize(
-            "console-only",
-            "log4j2-console-only.xml"
-        ).getLogger("jagr")
+class RuntimeJarInvoker(
+    private val jagrLocation: Path = Paths.get(RuntimeJarInvoker::class.java.protectionDomain.codeSource.location.toURI()),
+    private val jvmArgs: List<String> = emptyList(),
+) : RuntimeInvoker {
+
+    private val commands: List<String> = buildList(5 + jvmArgs.size) {
+        add("java")
+        add("-Dlog4j.configurationFile=log4j2-child.xml")
+        addAll(jvmArgs)
+        add("-jar")
+        add(jagrLocation.pathString)
+        add("--child")
     }
-    override val runtimeInvoker: RuntimeInvoker = RuntimeJarInvoker(jagrJar, config.executor.jvmArgs)
+
+    override fun createRuntime(): Process = ProcessBuilder().command(commands).start()
 }
