@@ -11,12 +11,6 @@ plugins {
     alias(libs.plugins.style)
 }
 
-val foo = ":foo"
-val bar = "bar:foo"
-
-println("Foo: ${foo.split(":")}")
-println("Bar: ${bar.split(":")}")
-
 dependencies {
     runtimeOnly(project("jagr-core"))
     implementation(project("jagr-launcher"))
