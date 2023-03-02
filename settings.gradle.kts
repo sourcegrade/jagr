@@ -7,6 +7,14 @@ dependencyResolutionManagement {
     }
 }
 
+pluginManagement {
+    includeBuild("build-logic")
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = "jagr"
 
 include(":jagr-launcher-gradle-plugin")
