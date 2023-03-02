@@ -1,10 +1,8 @@
 plugins {
     `java-library`
     id("jagr-publish")
+    id("jagr-sign")
 }
-
-apply<JagrPublishPlugin>()
-apply<JagrSignPlugin>()
 
 tasks {
     withType<PublishToMavenRepository> {
