@@ -1,14 +1,12 @@
-import org.sourcegrade.jagr.script.JagrPublishPlugin
-
 @Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     `java-gradle-plugin`
     alias(libs.plugins.gradle.publish)
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
+    id("jagr-publish")
+    // signing done by gradle-publish plugin
 }
-
-apply<JagrPublishPlugin>()
 
 tasks {
     withType<PublishToMavenRepository> {
