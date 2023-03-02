@@ -21,16 +21,12 @@ package org.sourcegrade.jagr.gradle.extension
 
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.SetProperty
 import org.gradle.kotlin.dsl.property
-import org.gradle.kotlin.dsl.setProperty
 
 abstract class SubmissionConfiguration(
     name: String,
     project: Project,
-) : AbstractConfiguration(name, project) {
-    override val sourceSetNames: SetProperty<String> = project.objects.setProperty<String>()
-        .convention(listOf("main", "test"))
+) : AbstractConfiguration(name, project, setOf("main", "test")) {
     abstract val studentId: Property<String>
     abstract val firstName: Property<String>
     abstract val lastName: Property<String>

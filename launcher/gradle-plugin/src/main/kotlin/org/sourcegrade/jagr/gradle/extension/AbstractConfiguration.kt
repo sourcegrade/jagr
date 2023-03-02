@@ -25,25 +25,41 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.setProperty
 import java.util.Locale
 
 abstract class AbstractConfiguration(
     val name: String,
     private val project: Project,
+    private val sourceSetNamesConvention: Set<String>,
 ) {
 
     private val dependencyConfiguration = DependencyConfiguration()
+
     private val _sourceSets: MutableList<SourceSet> = mutableListOf()
     val sourceSets: List<SourceSet>
         get() = _sourceSets
 
-    abstract val sourceSetNames: SetProperty<String>
+    private val _sourceSetNames: MutableMap<String, SetProperty<String>> =
+        mutableMapOf("" to project.objects.setProperty<String>().convention(sourceSetNamesConvention))
+    val sourceSetNames: Map<String, SetProperty<String>>
+        get() = _sourceSetNames
+
+
+    fun initializeSourceSetNames(projectPath: String): SetProperty<String> {
+        val baseNames = project.objects.setProperty<String>().convention(sourceSetNamesConvention)
+        _sourceSetNames[projectPath] = baseNames
+        return baseNames
+    }
 
     init {
         project.afterEvaluate { proj ->
-            for ((projectName, sourceSetName) in sourceSetNames.get().associate { it.split(":").zipWithNext().single() }) {
-                val sourceSet = proj.sourceSetContainer.maybeCreate(sourceSetName)
-                _sourceSets.add(sourceSet)
+            sourceSetNames.forEach { (projectPath, names) ->
+                names.get().forEach { name ->
+                    val sourceSet = proj.project(projectPath).sourceSetContainer.maybeCreate(name)
+                    println("Adding source set $name from $projectPath")
+                    _sourceSets.add(sourceSet)
+                }
             }
             initialize(proj)
         }
@@ -87,16 +103,25 @@ abstract class AbstractConfiguration(
     }
 
     fun from(vararg sourceSetNames: String) {
-        for (sourceSetName in sourceSetNames) {
-            this.sourceSetNames.add(":$sourceSetName")
-        }
+        checkNotNull(_sourceSetNames[""]) { "SourceSets set for root project should have already been defined" }
+            .addAll(*sourceSetNames)
     }
 
-    fun fromProject(path: String, vararg sourceSetNames: String) {
-        val project = project.project(path)
-        for (sourceSetName in sourceSetNames) {
-            this.sourceSetNames.add("${project.path}:$sourceSetName")
-        }
+    /**
+     * Adds the default source sets from the given project for the given configuration type.
+     *
+     * For example, using this method from a submission configuration will add the `main` and `test` source sets from the given project.
+     */
+    fun from(otherProject: Project) {
+        _sourceSetNames.computeIfAbsent(otherProject.path) { project.objects.setProperty<String>().convention(sourceSetNamesConvention) }
+    }
+
+    /**
+     * Adds the given source sets from the given project.
+     */
+    fun from(otherProject: Project, vararg sourceSetNames: String) {
+        _sourceSetNames.computeIfAbsent(otherProject.path) { project.objects.setProperty<String>().convention(sourceSetNamesConvention) }
+            .addAll(*sourceSetNames)
     }
 
     fun configureDependencies(block: DependencyConfiguration.() -> Unit) = dependencyConfiguration.block()
