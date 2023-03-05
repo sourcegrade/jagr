@@ -1,4 +1,3 @@
-import org.sourcegrade.jagr.script.JagrPublishPlugin
 import org.sourcegrade.jagr.script.apiProject
 
 plugins {
@@ -6,9 +5,9 @@ plugins {
     kotlin("kapt")
     kotlin("plugin.serialization")
     id("com.github.johnrengelman.shadow")
+    id("jagr-publish")
+    id("jagr-sign")
 }
-
-apply<JagrPublishPlugin>()
 
 dependencies {
     apiProject(project, "jagr-grader-api")
