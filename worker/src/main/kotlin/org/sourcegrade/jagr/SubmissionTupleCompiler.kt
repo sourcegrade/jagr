@@ -15,7 +15,6 @@ import org.sourcegrade.jagr.core.transformer.*
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 
-
 class SubmissionTupleCompiler @Inject constructor(
     private val logger: Logger,
     private val runtimeJarLoader: RuntimeJarLoader,

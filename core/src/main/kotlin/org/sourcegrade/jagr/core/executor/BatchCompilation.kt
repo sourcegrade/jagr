@@ -58,9 +58,9 @@ class CompiledBatchFactoryImpl @Inject constructor(
     private val runtimeJarLoader: RuntimeJarLoader,
     private val commonClassTransformer: CommonClassTransformer,
 ) {
-
     fun compile(batch: GradingBatch): CompiledBatch {
         val libraries = runtimeJarLoader.loadCompiled(batch.libraries)
+
         val commonTransformerApplier = applierOf(commonClassTransformer)
         val graders: List<GraderJarImpl> = batch.graders.compile(
             commonTransformerApplier,
@@ -70,6 +70,7 @@ class CompiledBatchFactoryImpl @Inject constructor(
         ) {
             if (errors == 0) GraderJarImpl(logger, this, libraries) else null
         }
+
         val submissionTransformerApplier = createTransformerApplierFromGraders(graders)
         val submissionFileOverrides = calculateSubmissionFileOverrides(graders)
 

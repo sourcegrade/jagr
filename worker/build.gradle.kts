@@ -1,7 +1,9 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 import org.sourcegrade.jagr.script.JagrPublishPlugin
 import org.sourcegrade.jagr.script.apiProject
 
 plugins {
+    application
     kotlin("jvm")
     kotlin("kapt")
     kotlin("plugin.serialization")
@@ -23,6 +25,42 @@ dependencies {
     kapt(libs.logging.core)
     implementation(kotlin("reflect"))
 }
+
+application {
+    mainClass.set("org.sourcegrade.jagr.MainKt")
+}
+
+tasks {
+    val runDir = File("build/run")
+    named<JavaExec>("run") {
+        doFirst {
+            error("Use runShadow instead")
+        }
+    }
+    named<JavaExec>("runShadow") {
+        doFirst {
+            runDir.mkdirs()
+        }
+        workingDir = runDir
+    }
+    jar {
+        enabled = false
+    }
+    shadowJar {
+        transform(Log4j2PluginsCacheFileTransformer::class.java)
+        from("gradlew") {
+            into("org/gradle")
+        }
+        from("gradlew.bat") {
+            into("org/gradle")
+        }
+        from("gradle/wrapper/gradle-wrapper.properties") {
+            into("org/gradle")
+        }
+        archiveFileName.set("Jagr-${project.version}.jar")
+    }
+}
+
 
 tasks {
     @Suppress("UnstableApiUsage")

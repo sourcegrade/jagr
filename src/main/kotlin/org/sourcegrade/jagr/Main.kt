@@ -45,6 +45,7 @@ class MainCommand : CliktCommand() {
     private val noExport by option("--no-export", "-n").flag()
     private val exportOnly by option("--export-only", "-e").flag()
     private val progress by option("--progress").choice("rainbow", "xmas")
+
     override fun run() {
         if (child) {
             Environment.initializeChildProcess()
