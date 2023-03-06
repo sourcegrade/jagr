@@ -136,7 +136,7 @@ class RuntimeJarLoader @Inject constructor(
                 messages,
                 warnings,
                 errors,
-                other
+                other,
             )
         }
         return JavaCompiledContainer(source, newRuntimeResources)

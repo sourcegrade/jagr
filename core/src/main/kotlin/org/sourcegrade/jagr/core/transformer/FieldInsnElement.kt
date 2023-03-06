@@ -40,7 +40,9 @@ data class FieldInsnElement(
             return BytecodeElement.Replacer {
                 if (it.descriptor.contains(Type.getDescriptor(original.java))) {
                     it.withSurrogate(original, surrogate)
-                } else null
+                } else {
+                    null
+                }
             }
         }
     }

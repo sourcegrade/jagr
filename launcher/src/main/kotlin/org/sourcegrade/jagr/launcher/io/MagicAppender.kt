@@ -40,7 +40,7 @@ import java.io.Serializable
     name = "MagicAppender",
     category = Core.CATEGORY_NAME,
     elementType = Appender.ELEMENT_TYPE,
-    printObject = true
+    printObject = true,
 )
 class MagicAppender private constructor(
     name: String,

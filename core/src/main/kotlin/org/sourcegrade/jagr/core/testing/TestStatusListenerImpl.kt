@@ -81,6 +81,6 @@ internal class TestStatusListenerImpl(
             1 -> ""
             2 -> "\n\nthere is 1 more failing test"
             else -> "\n\nthere are ${failedChildren.size - 1} more failing tests"
-        }
+        },
     )
 }

@@ -46,7 +46,7 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
         dependsOn(
             configurationName
                 .flatMap { c -> primaryContainer[c].checkCompilation }
-                .map { if (it) "compileJava" else emptyList<String>() }
+                .map { if (it) "compileJava" else emptyList<String>() },
         )
         setOnlyIf {
             verifySubmit()
@@ -67,7 +67,7 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
 There were some errors preparing your submission, please check your Gradle buildscript (e.g. build.gradle.kts).
 The following required properties were not set:
 $errors
-"""
+""",
             )
         }
     }

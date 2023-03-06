@@ -132,7 +132,9 @@ class JUnitTestRefFactoryImpl @Inject constructor(
                 notSuccessful
                     .first { it.throwable.isPresent }
                     .let { TestExecutionResult.failed(it.throwable.get()) }
-            } else TestExecutionResult.successful()
+            } else {
+                TestExecutionResult.successful()
+            }
         }
     }
 }

@@ -76,7 +76,7 @@ internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollec
                 gradingFinished,
                 total,
                 remaining,
-            )
+            ),
         )
     }
 
@@ -110,8 +110,10 @@ internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollec
     }
 
     override suspend fun <T> startBlock(block: suspend (MutableRubricCollector.StartBlock) -> T): T = mutex.withLock {
-        block(object : MutableRubricCollector.StartBlock {
-            override fun start(request: GradingRequest): GradingJob = startDirect(request)
-        })
+        block(
+            object : MutableRubricCollector.StartBlock {
+                override fun start(request: GradingRequest): GradingJob = startDirect(request)
+            },
+        )
     }
 }

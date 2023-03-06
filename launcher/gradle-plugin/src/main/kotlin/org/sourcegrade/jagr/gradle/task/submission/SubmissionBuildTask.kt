@@ -3,10 +3,8 @@ package org.sourcegrade.jagr.gradle.task.submission
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
 import org.sourcegrade.jagr.gradle.extension.getSourceSet
@@ -34,7 +32,7 @@ abstract class SubmissionBuildTask : Jar(), SubmissionTask {
                 "$left-$lastName-submission"
             }.zip(archiveExtension) { left, extension ->
                 "$left.$extension"
-            }
+            },
         )
     }
 

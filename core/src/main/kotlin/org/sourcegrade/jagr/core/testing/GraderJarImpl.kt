@@ -62,7 +62,7 @@ class GraderJarImpl(
             // whitelist file from grader
             classes = container.runtimeResources.classes.filter { it.value.source?.fileName in graderFiles },
             resources = container.runtimeResources.resources.filterKeys { it in graderFiles },
-        )
+        ),
     )
 
     init {
@@ -88,7 +88,7 @@ class GraderJarImpl(
         logger.info(
             "Grader ${info.name} discovered " +
                 "rubric provider ${info.rubricProviderName} and " +
-                "${testClasses.size} test class${if (testClasses.size == 1) "" else "es"}"
+                "${testClasses.size} test class${if (testClasses.size == 1) "" else "es"}",
         )
         this.testClassNames = testClasses
     }

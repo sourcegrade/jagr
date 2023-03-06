@@ -31,14 +31,14 @@ import org.sourcegrade.jagr.launcher.io.SubmissionInfo
 import org.sourcegrade.jagr.launcher.io.buildResource
 
 class MoodleJSONExporter @Inject constructor(
-    private val exporterHTML: GradedRubricExporter.HTML
+    private val exporterHTML: GradedRubricExporter.HTML,
 ) : GradedRubricExporter.Moodle {
 
     override fun export(gradedRubric: GradedRubric): Resource {
         val json = MoodleJSON(
             (gradedRubric.testCycle.submission as JavaSubmission).submissionInfo,
             gradedRubric.grade.minPoints,
-            exporterHTML.export(gradedRubric).getInputStream().bufferedReader().readText()
+            exporterHTML.export(gradedRubric).getInputStream().bufferedReader().readText(),
         )
         val jsonString = Json.encodeToString(json)
         return buildResource {

@@ -23,7 +23,7 @@ abstract class GraderLibsTask : Jar(), GraderTask {
             configurationName.map {
                 project.extensions.getByType<JagrExtension>().graders[it]
                     .getRuntimeDependenciesRecursive().toList()
-            }
+            },
         )
     }
 
@@ -51,7 +51,7 @@ abstract class GraderLibsTask : Jar(), GraderTask {
                     logger.error(
                         "WARNING: Version mismatch for ${artifact.moduleVersion.id.group}:${artifact.moduleVersion.id.name} " +
                             "(local ${artifact.moduleVersion.id.version} != Jagr's ${matchingJagrArtifact.moduleVersion.id.version}). " +
-                            "This dependency will not be included in the libs jar but will instead be used from Jagr at runtime."
+                            "This dependency will not be included in the libs jar but will instead be used from Jagr at runtime.",
                     )
                 }
             }

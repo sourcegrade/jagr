@@ -48,7 +48,7 @@ private class TransformerApplierImpl(private val transformer: ClassTransformer) 
     override fun transform(result: JavaCompiledContainer, classLoader: ClassLoader): JavaCompiledContainer = result.copy(
         runtimeResources = result.runtimeResources.copy(
             classes = transformer.transform(result.runtimeResources.classes, classLoader),
-        )
+        ),
     )
 }
 
