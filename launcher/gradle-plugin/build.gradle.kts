@@ -25,7 +25,7 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        create("jagr-gradle") {
+        register("jagr-gradle") {
             id = "org.sourcegrade.jagr-gradle"
             displayName = "Jagr Gradle Plugin"
             description = "Gradle plugin for running the Jagr AutoGrader"
