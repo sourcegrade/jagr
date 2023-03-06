@@ -33,7 +33,7 @@ abstract class WriteInfoTask : DefaultTask() {
     @Suppress("UnstableApiUsage")
     val repositories: ListProperty<Pair<String, String>> = project.objects.listProperty<Pair<String, String>>().value(
         (project.gradle as GradleInternal).settings.dependencyResolutionManagement.repositories.mapToPairs() +
-            project.repositories.mapToPairs()
+            project.repositories.mapToPairs(),
     )
 
     private fun RepositoryHandler.mapToPairs(): List<Pair<String, String>> =

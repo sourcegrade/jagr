@@ -61,7 +61,7 @@ class RuntimeClassLoaderImpl(
                             override fun getInputStream(): InputStream = compiledClass.bytecode.inputStream()
                         }
                     }
-                }
+                },
             )
         }
         val resource: ByteArray = runtimeResources.resources[name] ?: return null
@@ -75,7 +75,7 @@ class RuntimeClassLoaderImpl(
                         override fun getInputStream(): InputStream = resource.inputStream()
                     }
                 }
-            }
+            },
         )
     }
 

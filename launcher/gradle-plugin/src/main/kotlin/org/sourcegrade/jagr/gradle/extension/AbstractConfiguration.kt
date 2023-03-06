@@ -53,7 +53,9 @@ abstract class AbstractConfiguration(
     private fun SourceSet.initialize(project: Project) {
         project.dependencies {
             for ((suffix, dependencyNotations) in dependencyConfiguration.dependencies) {
-                val configurationName = if (name == "main") suffix else {
+                val configurationName = if (name == "main") {
+                    suffix
+                } else {
                     "$name${suffix.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }}"
                 }
                 for (dependencyNotation in dependencyNotations) {

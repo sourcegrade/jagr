@@ -67,7 +67,7 @@ abstract class GraderConfiguration(
                 addAsDependency(solutionConfiguration.get())
             } else {
                 throw GradleException(
-                    "Grader $name has no solution configuration and the default 'main' submission is not defined"
+                    "Grader $name has no solution configuration and the default 'main' submission is not defined",
                 )
             }
             for (sourceSet in sourceSets) {

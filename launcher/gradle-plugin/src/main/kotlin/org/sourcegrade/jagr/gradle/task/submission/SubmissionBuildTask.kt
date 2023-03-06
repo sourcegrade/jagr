@@ -34,7 +34,7 @@ abstract class SubmissionBuildTask : Jar(), SubmissionTask {
                 "$left-$lastName-submission"
             }.zip(archiveExtension) { left, extension ->
                 "$left.$extension"
-            }
+            },
         )
     }
 

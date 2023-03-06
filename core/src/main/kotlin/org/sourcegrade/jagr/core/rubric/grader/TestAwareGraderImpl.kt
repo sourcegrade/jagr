@@ -56,7 +56,9 @@ class TestAwareGraderImpl(
                 // general comment goes after more specific test comments
                 commentIfFailed?.also { comments += it }
                 GradeResult.withComments(graderFailed.grade(testCycle, criterion), comments)
-            } else null
+            } else {
+                null
+            }
         }
         requirePass.must { it.status == SUCCESSFUL }?.also { return it }
         requireFail.must { it.status == FAILED }?.also { return it }

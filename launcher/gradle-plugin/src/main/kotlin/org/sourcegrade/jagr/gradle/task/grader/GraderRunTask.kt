@@ -109,7 +109,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                             }
                         }
                     }
-                }
+                },
             )
             addSubmission(
                 buildResourceContainer {
@@ -127,7 +127,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                             }
                         }
                     }
-                }
+                },
             )
             val sourceSetContainer = project.extensions.getByType<SourceSetContainer>()
             val allSourceSets: Set<String> = configuration.getSourceSetNamesRecursive() +
@@ -194,7 +194,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     """
                     Grading completed with failing tests! See the rubric${if (rubrics.size == 1) "" else "s"} at:
                     ${rubrics.filter { (_, failed) -> failed }.keys.joinToString("\n") { " > ${it.toRubricLink()}" }}
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }
         }
@@ -248,7 +248,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
             task.jagrJar.set(
                 project.extensions.getByType<JagrExtension>()
                     .extensions.getByType<JagrDownloadExtension>()
-                    .destName.map { JagrDownloadTask.JAGR_CACHE.resolve(it) }
+                    .destName.map { JagrDownloadTask.JAGR_CACHE.resolve(it) },
             )
         }
     }

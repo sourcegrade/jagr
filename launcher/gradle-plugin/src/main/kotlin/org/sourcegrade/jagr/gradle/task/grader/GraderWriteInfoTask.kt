@@ -38,18 +38,18 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
 
     @get:Input
     val graderFiles: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>().value(
-        configurationName.map { c -> primaryContainer[c].getFilesRecursive() }
+        configurationName.map { c -> primaryContainer[c].getFilesRecursive() },
     )
 
     @get:Input
     val solutionFiles: MapProperty<String, Map<String, Set<String>>> =
         project.objects.mapProperty<String, Map<String, Set<String>>>().value(
-            solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.associate { it.name to it.getFiles() } }
+            solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.associate { it.name to it.getFiles() } },
         )
 
     @get:Input
     val dependencies: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>().value(
-        configurationName.map { c -> primaryContainer[c].getAllDependenciesRecursive() }
+        configurationName.map { c -> primaryContainer[c].getAllDependenciesRecursive() },
     )
 
     @get:OutputFile
@@ -61,7 +61,7 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
         dependsOn(
             solutionConfigurationName
                 .flatMap { c -> submissionContainer[c].checkCompilation }
-                .map { if (it) "compileJava" else emptyList<String>() }
+                .map { if (it) "compileJava" else emptyList<String>() },
         )
     }
 
@@ -98,7 +98,7 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
             parentConfiguration.get().getRubricProviderNameRecursive()
         } else {
             throw GradleException(
-                "No rubricProviderName defined for grader configuration ${configurationName.get()} or its parents"
+                "No rubricProviderName defined for grader configuration ${configurationName.get()} or its parents",
             )
         }
     }

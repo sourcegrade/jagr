@@ -32,7 +32,9 @@ internal abstract class AbstractSerializationScope : SerializationScope {
     private fun <T : Any> getInjected(key: SerializationScope.Key<T>): T? {
         return if (key.name == null) {
             jagr.injector.getExistingBinding(Key.get(key.type.java))?.run { provider.get() }
-        } else null
+        } else {
+            null
+        }
     }
 
     override fun <T : Any> get(key: SerializationScope.Key<T>): T {

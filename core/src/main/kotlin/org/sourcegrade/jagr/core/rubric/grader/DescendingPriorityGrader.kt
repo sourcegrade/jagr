@@ -55,7 +55,7 @@ class DescendingPriorityGrader(
 Descending priority grader for submission ${testCycle.submission.info} has surpassed point limits
 minPoints $minPoints should be >= ${criterion.minPoints} and maxPoints $maxPoints should be <= ${criterion.maxPoints}
 for criterion ${criterion.shortDescription}! This is caused by a misconfigured rubric provider!
-""".trim().replace('\n', ' ')
+""".trim().replace('\n', ' '),
             )
         }
         return GradeResult.clamped(GradeResultImpl(maxPoints, minPoints, comments), criterion)

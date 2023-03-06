@@ -58,7 +58,9 @@ class GradleSubmissionExporter @Inject constructor(
             name = graderJar?.info?.name ?: DEFAULT_EXPORT_NAME
         }
         writeSkeleton()
-        val buildScript = if (graderJar == null) null else {
+        val buildScript = if (graderJar == null) {
+            null
+        } else {
             graderJar.configuration.exportBuildScriptPath?.let { path -> path to graderJar.container.source.resources[path] }
         }
         buildScript?.second?.let { resource ->
@@ -69,7 +71,7 @@ class GradleSubmissionExporter @Inject constructor(
         } ?: run {
             if (buildScript != null) {
                 logger.error(
-                    "Build script '${buildScript.first}' specified in grader configuration does not exist, using default"
+                    "Build script '${buildScript.first}' specified in grader configuration does not exist, using default",
                 )
             }
             addResource {
@@ -186,7 +188,7 @@ class GradleSubmissionExporter @Inject constructor(
             writeFiles(
                 submissionName,
                 graderJar.info.sourceSets.filter { a -> submission.submissionInfo.sourceSets.none { b -> a.name == b.name } },
-                graderJar.containerWithoutSolution.source
+                graderJar.containerWithoutSolution.source,
             )
         }
         val sInfo = submission.submissionInfo
