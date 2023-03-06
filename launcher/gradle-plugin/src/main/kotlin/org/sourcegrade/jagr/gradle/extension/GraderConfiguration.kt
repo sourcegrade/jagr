@@ -86,11 +86,11 @@ abstract class GraderConfiguration(
         }
     }
 
-    internal fun getSourceSetNamesRecursive(): Map<String, Set<String>> {
-        val result = mutableMapOf<String, Set<String>>()
-        result.putAll(sourceSetNames.mapValues { (_, v) -> v.get() })
+    internal fun getSourceSetNamesRecursive(): Set<ProjectSourceSetTuple> {
+        val result = mutableSetOf<ProjectSourceSetTuple>()
+        result.addAll(sourceSetNames.get())
         if (parentConfiguration.isPresent) {
-            result.mergeAll(parentConfiguration.get().getSourceSetNamesRecursive())
+            result.addAll(parentConfiguration.get().getSourceSetNamesRecursive())
         }
         return result
     }

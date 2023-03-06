@@ -9,6 +9,7 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
+import org.sourcegrade.jagr.gradle.extension.getSourceSet
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import java.io.File
 
@@ -23,8 +24,7 @@ abstract class SubmissionBuildTask : Jar(), SubmissionTask {
         group = "build"
         dependsOn(configurationName.map(SubmissionWriteInfoTask.Factory::determineTaskName))
         from(submissionInfoFile)
-        val sourceSets = project.extensions.getByType<SourceSetContainer>()
-        from(sourceSetNames.map { names -> names.map { name -> sourceSets[name].allSource } })
+        from(sourceSetNames.map { all -> all.map { it.getSourceSet(project).allSource } })
         archiveFileName.set(
             assignmentId.zip(studentId) { assignmentId, studentId ->
                 "$assignmentId-$studentId"

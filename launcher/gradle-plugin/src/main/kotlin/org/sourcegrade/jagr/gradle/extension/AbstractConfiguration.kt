@@ -40,26 +40,16 @@ abstract class AbstractConfiguration(
     val sourceSets: List<SourceSet>
         get() = _sourceSets
 
-    private val _sourceSetNames: MutableMap<String, SetProperty<String>> =
-        mutableMapOf("" to project.objects.setProperty<String>().convention(sourceSetNamesConvention))
-    val sourceSetNames: Map<String, SetProperty<String>>
-        get() = _sourceSetNames
-
-
-    fun initializeSourceSetNames(projectPath: String): SetProperty<String> {
-        val baseNames = project.objects.setProperty<String>().convention(sourceSetNamesConvention)
-        _sourceSetNames[projectPath] = baseNames
-        return baseNames
-    }
+    val sourceSetNames: SetProperty<ProjectSourceSetTuple> = project.objects.setProperty<ProjectSourceSetTuple>()
+        .convention(ProjectSourceSetTuple.fromSourceSetNames("", sourceSetNamesConvention))
 
     init {
         project.afterEvaluate { proj ->
-            sourceSetNames.forEach { (projectPath, names) ->
-                names.get().forEach { name ->
-                    val sourceSet = proj.project(projectPath).sourceSetContainer.maybeCreate(name)
-                    println("Adding source set $name from $projectPath")
-                    _sourceSets.add(sourceSet)
-                }
+            sourceSetNames.get().forEach { (projectPath, name) ->
+                println("Trying to add source set $name from '$projectPath'")
+                val sourceSet = proj.relative(projectPath).sourceSetContainer.maybeCreate(name)
+                _sourceSets.add(sourceSet)
+                println("Added source set $name from '$projectPath'")
             }
             initialize(proj)
         }
@@ -103,8 +93,7 @@ abstract class AbstractConfiguration(
     }
 
     fun from(vararg sourceSetNames: String) {
-        checkNotNull(_sourceSetNames[""]) { "SourceSets set for root project should have already been defined" }
-            .addAll(*sourceSetNames)
+        this.sourceSetNames.addAll(ProjectSourceSetTuple.fromSourceSetNames("", sourceSetNames.asSequence()))
     }
 
     /**
@@ -113,15 +102,14 @@ abstract class AbstractConfiguration(
      * For example, using this method from a submission configuration will add the `main` and `test` source sets from the given project.
      */
     fun from(otherProject: Project) {
-        _sourceSetNames.computeIfAbsent(otherProject.path) { project.objects.setProperty<String>().convention(sourceSetNamesConvention) }
+        this.sourceSetNames.addAll(ProjectSourceSetTuple.fromSourceSetNames(otherProject.path, sourceSetNamesConvention))
     }
 
     /**
      * Adds the given source sets from the given project.
      */
     fun from(otherProject: Project, vararg sourceSetNames: String) {
-        _sourceSetNames.computeIfAbsent(otherProject.path) { project.objects.setProperty<String>().convention(sourceSetNamesConvention) }
-            .addAll(*sourceSetNames)
+        this.sourceSetNames.addAll(ProjectSourceSetTuple.fromSourceSetNames(otherProject.path, sourceSetNames.asSequence()))
     }
 
     fun configureDependencies(block: DependencyConfiguration.() -> Unit) = dependencyConfiguration.block()
