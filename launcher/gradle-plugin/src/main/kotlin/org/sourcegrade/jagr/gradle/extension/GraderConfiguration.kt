@@ -95,6 +95,15 @@ abstract class GraderConfiguration(
         return result
     }
 
+    internal fun getSolutionSourceSetNamesRecursive(): Set<ProjectSourceSetTuple> {
+        val result = mutableSetOf<ProjectSourceSetTuple>()
+        result.addAll(solutionConfiguration.get().sourceSetNames.get())
+        if (parentConfiguration.isPresent) {
+            result.addAll(parentConfiguration.get().getSolutionSourceSetNamesRecursive())
+        }
+        return result
+    }
+
     private fun addAsDependency(configuration: AbstractConfiguration) {
         // add parent configuration as dependency
         for (sourceSet in configuration.sourceSets) {

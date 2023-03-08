@@ -46,10 +46,8 @@ abstract class AbstractConfiguration(
     init {
         project.afterEvaluate { proj ->
             sourceSetNames.get().forEach { (projectPath, name) ->
-                println("Trying to add source set $name from '$projectPath'")
                 val sourceSet = proj.relative(projectPath).sourceSetContainer.maybeCreate(name)
                 _sourceSets.add(sourceSet)
-                println("Added source set $name from '$projectPath'")
             }
             initialize(proj)
         }

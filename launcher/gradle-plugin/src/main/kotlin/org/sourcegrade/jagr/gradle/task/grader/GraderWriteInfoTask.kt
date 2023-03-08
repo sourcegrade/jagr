@@ -44,7 +44,21 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
     @get:Input
     val solutionFiles: MapProperty<String, Map<String, Set<String>>> =
         project.objects.mapProperty<String, Map<String, Set<String>>>().value(
-            solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.associate { it.name to it.getFiles() } },
+            solutionConfigurationName.map { c ->
+                submissionContainer[c].sourceSets
+                    .asSequence().map { it.name to it.getFiles() }
+                    .fold(mutableMapOf<String, Map<String, Set<String>>>()) { acc, (sourceSetName, sourceSetDir) ->
+                        acc.also {
+                            it.merge(sourceSetName, sourceSetDir) { a, b ->
+                                (a.asSequence() + b.asSequence()).fold(mutableMapOf()) { map, (name, files) ->
+                                    map.also { m ->
+                                        m.merge(name, files) { a, b -> a + b }
+                                    }
+                                }
+                            }
+                        }
+                    }
+            },
         )
 
     @get:Input

@@ -42,6 +42,7 @@ import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.createResourceContainer
 import org.sourcegrade.jagr.launcher.io.logGradedRubric
 import org.sourcegrade.jagr.launcher.io.logHistogram
+import org.sourcegrade.jagr.launcher.io.writeAsDirIn
 import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
 import java.net.URI
@@ -147,7 +148,8 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                 info = buildResourceContainerInfo {
                     name = "grader"
                 }
-                configuration.getSourceSetNamesRecursive().map { (projectPath, sourceSetName) ->
+                val allSourceSets = configuration.getSourceSetNamesRecursive() + configuration.getSolutionSourceSetNamesRecursive()
+                allSourceSets.map { (projectPath, sourceSetName) ->
                     projectPath to checkNotNull(project.relative(projectPath).extensions.getByType<SourceSetContainer>()[sourceSetName])
                 }.sortedByDescending { (projectPath, sourceSet) ->
                     getRecursiveDepthOfSourceSet(configuration, ProjectSourceSetTuple(projectPath, sourceSet.name), 0)
