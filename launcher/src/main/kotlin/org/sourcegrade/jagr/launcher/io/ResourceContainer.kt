@@ -21,6 +21,7 @@ package org.sourcegrade.jagr.launcher.io
 
 import java.io.File
 import java.io.InputStream
+import java.util.Base64
 
 interface ResourceContainer : Sequence<Resource> {
     val info: ResourceContainerInfo
@@ -78,6 +79,13 @@ fun createResourceContainer(file: File): ResourceContainer = when (file.extensio
     "jar",
     -> ZipResourceContainer(file)
     else -> throw IllegalArgumentException("Could not an appropriate resource container for $file")
+}
+
+fun createResourceContainerFromZipBase64(name: String, base64: String): ResourceContainer {
+    return createResourceContainer(
+        name,
+        Base64.getDecoder().wrap(base64.byteInputStream())
+    )
 }
 
 fun ResourceContainer.writeAsDirIn(dir: File) {
