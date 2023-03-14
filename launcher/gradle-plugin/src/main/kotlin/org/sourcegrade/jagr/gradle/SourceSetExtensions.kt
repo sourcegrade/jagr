@@ -36,3 +36,17 @@ internal fun SourceSet.getFiles(): Map<String, Set<String>> {
     forEachFile { directorySet, fileName -> result.computeIfAbsent(directorySet) { mutableSetOf() }.add(fileName) }
     return result
 }
+
+fun List<SourceSet>.mergeSourceSets(): Map<String, Map<String, Set<String>>> {
+    return asSequence()
+        .map { it.name to it.getFiles() }
+        .fold(mutableMapOf()) { acc, (sourceSetName, sourceSetDir) ->
+            acc.merge(sourceSetName, sourceSetDir) { a, b ->
+                (a.asSequence() + b.asSequence()).fold(mutableMapOf()) { map, (name, files) ->
+                    map.merge(name, files) { x, y -> x + y }
+                    map
+                }
+            }
+            acc
+        }
+}

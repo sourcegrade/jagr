@@ -18,6 +18,7 @@ import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.forEachFile
 import org.sourcegrade.jagr.gradle.getFiles
+import org.sourcegrade.jagr.gradle.mergeSourceSets
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.WriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Jagr
@@ -37,34 +38,16 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
     abstract val rubricProviderName: Property<String>
 
     @get:Input
-    val graderFiles: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>().value(
-        configurationName.map { c -> primaryContainer[c].getFilesRecursive() },
-    )
+    val graderFiles: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>()
+        .value(configurationName.map { c -> primaryContainer[c].getFilesRecursive() })
 
     @get:Input
-    val solutionFiles: MapProperty<String, Map<String, Set<String>>> =
-        project.objects.mapProperty<String, Map<String, Set<String>>>().value(
-            solutionConfigurationName.map { c ->
-                submissionContainer[c].sourceSets
-                    .asSequence().map { it.name to it.getFiles() }
-                    .fold(mutableMapOf<String, Map<String, Set<String>>>()) { acc, (sourceSetName, sourceSetDir) ->
-                        acc.also {
-                            it.merge(sourceSetName, sourceSetDir) { a, b ->
-                                (a.asSequence() + b.asSequence()).fold(mutableMapOf()) { map, (name, files) ->
-                                    map.also { m ->
-                                        m.merge(name, files) { a, b -> a + b }
-                                    }
-                                }
-                            }
-                        }
-                    }
-            },
-        )
+    val solutionFiles: MapProperty<String, Map<String, Set<String>>> = project.objects.mapProperty<String, Map<String, Set<String>>>()
+        .value(solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.mergeSourceSets() })
 
     @get:Input
-    val dependencies: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>().value(
-        configurationName.map { c -> primaryContainer[c].getAllDependenciesRecursive() },
-    )
+    val dependencies: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>()
+        .value(configurationName.map { c -> primaryContainer[c].getAllDependenciesRecursive() })
 
     @get:OutputFile
     val graderInfoFile: Property<File> = project.objects.property<File>()
