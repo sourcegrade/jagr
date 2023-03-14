@@ -17,6 +17,8 @@ import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrDownloadExtension
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
+import org.sourcegrade.jagr.gradle.extension.ProjectSourceSetTuple
+import org.sourcegrade.jagr.gradle.extension.relative
 import org.sourcegrade.jagr.gradle.task.JagrDownloadTask
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.submission.SubmissionWriteInfoTask
@@ -90,68 +92,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         jagr.logger.info("Starting Jagr v${Jagr.version}")
         val exporterHTML = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
         val exporterMoodle = jagr.injector.getInstance(GradedRubricExporter.Moodle::class.java)
-        val batch: GradingBatch = buildGradingBatch {
-            addGrader(
-                buildResourceContainer {
-                    info = buildResourceContainerInfo {
-                        name = "grader"
-                    }
-                    project.extensions
-                        .getByType<SourceSetContainer>()
-                        .filter { configuration.matchRecursive(it) }
-                        .sortedByDescending { getRecursiveDepthOfSourceSet(configuration, it, 0) }
-                        .forEach { writeSourceSet(it) }
-                    addResource {
-                        name = "grader-info.json"
-                        graderInfoFile.get().inputStream().use { input ->
-                            outputStream.use { output ->
-                                input.transferTo(output)
-                            }
-                        }
-                    }
-                },
-            )
-            addSubmission(
-                buildResourceContainer {
-                    info = buildResourceContainerInfo {
-                        name = "submission"
-                    }
-                    for (sourceSet in jagrExtension.submissions[submissionConfigurationName.get()].sourceSets) {
-                        writeSourceSet(sourceSet)
-                    }
-                    addResource {
-                        name = "submission-info.json"
-                        submissionInfoFile.get().inputStream().use { input ->
-                            outputStream.use { output ->
-                                input.transferTo(output)
-                            }
-                        }
-                    }
-                },
-            )
-            val sourceSetContainer = project.extensions.getByType<SourceSetContainer>()
-            val allSourceSets: Set<String> = configuration.getSourceSetNamesRecursive() +
-                jagrExtension.submissions[solutionConfigurationName.get()].sourceSetNames.get()
-            sourceSetContainer.asSequence()
-                .filter { it.name in allSourceSets }
-                .flatMap {
-                    sequenceOf(
-                        project.configurations[it.runtimeClasspathConfigurationName],
-                        project.configurations[it.compileClasspathConfigurationName],
-                    )
-                }
-                .flatMap { it.resolvedConfiguration.resolvedArtifacts }
-                .filter {
-                    !(
-                        it.id.componentIdentifier.displayName.startsWith("org.sourcegrade") &&
-                            it.id.componentIdentifier.displayName.contains("jagr")
-                        )
-                }
-                .map { it.file }
-                .forEach {
-                    addLibrary(createResourceContainer(it))
-                }
-        }
+        val batch: GradingBatch = createGradingBatch(jagrExtension, configuration)
         val queue = jagr.gradingQueueFactory.create(batch)
         jagr.logger.info("Executor mode 'gradle' :: expected submission: ${batch.expectedSubmissions}")
         val executor: Executor = MultiWorkerExecutor.Factory {
@@ -200,25 +141,83 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         }
     }
 
-    /**
-     * Returns true if [sourceSet] is in this configuration or any parents
-     */
-    private fun GraderConfiguration.matchRecursive(sourceSet: SourceSet): Boolean {
-        val jagr = project.extensions.getByType<JagrExtension>()
-        val solutionSourceSetNames = jagr.submissions[solutionConfigurationName.get()].sourceSetNames.get()
-        return sourceSet.name in sourceSetNames.get() || sourceSet.name in solutionSourceSetNames ||
-            (parentConfiguration.isPresent && parentConfiguration.get().matchRecursive(sourceSet))
+    private fun createGradingBatch(jagrExtension: JagrExtension, configuration: GraderConfiguration) = buildGradingBatch {
+        addGrader(
+            buildResourceContainer {
+                info = buildResourceContainerInfo {
+                    name = "grader"
+                }
+                val allSourceSets = configuration.getSourceSetNamesRecursive() + configuration.getSolutionSourceSetNamesRecursive()
+                allSourceSets.map { (projectPath, sourceSetName) ->
+                    projectPath to checkNotNull(project.relative(projectPath).extensions.getByType<SourceSetContainer>()[sourceSetName])
+                }.sortedByDescending { (projectPath, sourceSet) ->
+                    getRecursiveDepthOfSourceSet(configuration, ProjectSourceSetTuple(projectPath, sourceSet.name), 0)
+                }.forEach { (_, sourceSet) -> writeSourceSet(sourceSet) }
+                addResource {
+                    name = "grader-info.json"
+                    graderInfoFile.get().inputStream().use { input ->
+                        outputStream.use { output ->
+                            input.transferTo(output)
+                        }
+                    }
+                }
+            },
+        )
+        addSubmission(
+            buildResourceContainer {
+                info = buildResourceContainerInfo {
+                    name = "submission"
+                }
+                for (sourceSet in jagrExtension.submissions[submissionConfigurationName.get()].sourceSets) {
+                    writeSourceSet(sourceSet)
+                }
+                addResource {
+                    name = "submission-info.json"
+                    submissionInfoFile.get().inputStream().use { input ->
+                        outputStream.use { output ->
+                            input.transferTo(output)
+                        }
+                    }
+                }
+            },
+        )
+        val allSourceSets: Set<ProjectSourceSetTuple> = configuration.getSourceSetNamesRecursive() +
+            jagrExtension.submissions[solutionConfigurationName.get()].sourceSetNames.get()
+        allSourceSets.map { (projectPath, sourceSetName) ->
+            project.relative(projectPath).let { it to checkNotNull(it.extensions.getByType<SourceSetContainer>()[sourceSetName]) }
+        }.flatMap { (project, sourceSet) ->
+            sequenceOf(
+                project.configurations[sourceSet.runtimeClasspathConfigurationName],
+                project.configurations[sourceSet.compileClasspathConfigurationName],
+            ).requireNoNulls()
+        }
+            .flatMap { it.resolvedConfiguration.resolvedArtifacts }
+            .filter {
+                !(
+                    it.id.componentIdentifier.displayName.startsWith("org.sourcegrade") &&
+                        it.id.componentIdentifier.displayName.contains("jagr")
+                    )
+            }.filter { artifact ->
+                // TODO: This is not the best way to exclude modules from the project itself from the libs jar
+                project.name != artifact.moduleVersion.id.group
+            }
+            .map { it.file }
+            .forEach { addLibrary(createResourceContainer(it)) }
     }
 
     /**
-     * Returns the recursive depth of the [sourceSet] in the parent configurations of the given [graderConfiguration] starting with [depth]
+     * Returns the recursive depth of the [sourceSetName] in the parent configurations of the given [graderConfiguration] starting with [depth]
      */
-    private fun getRecursiveDepthOfSourceSet(graderConfiguration: GraderConfiguration, sourceSet: SourceSet, depth: Int): Int {
-        if (graderConfiguration.sourceSetNames.get().contains(sourceSet.name)) {
+    private fun getRecursiveDepthOfSourceSet(
+        graderConfiguration: GraderConfiguration,
+        projectSourceSetTuple: ProjectSourceSetTuple,
+        depth: Int,
+    ): Int {
+        if (projectSourceSetTuple in graderConfiguration.getSourceSetNamesRecursive()) {
             return depth
         }
         if (graderConfiguration.parentConfiguration.isPresent) {
-            return getRecursiveDepthOfSourceSet(graderConfiguration.parentConfiguration.get(), sourceSet, depth + 1)
+            return getRecursiveDepthOfSourceSet(graderConfiguration.parentConfiguration.get(), projectSourceSetTuple, depth + 1)
         }
         return -1
     }

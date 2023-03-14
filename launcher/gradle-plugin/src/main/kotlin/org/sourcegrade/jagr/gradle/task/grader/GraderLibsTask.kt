@@ -39,6 +39,9 @@ abstract class GraderLibsTask : Jar(), GraderTask {
 
         (sourceSets.asSequence() + solutionConfiguration.get().sourceSets).flatMap {
             project.configurations[it.runtimeClasspathConfigurationName].resolvedConfiguration.resolvedArtifacts
+        }.filter { artifact ->
+            // TODO: This is not the best way to exclude modules from the project itself from the libs jar
+            project.name != artifact.moduleVersion.id.group
         }.forEach { artifact ->
             val matchingJagrArtifact: ResolvedArtifact? = jagrArtifacts.firstOrNull { jagrArtifact ->
                 artifact.moduleVersion.id.group == jagrArtifact.moduleVersion.id.group &&

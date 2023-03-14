@@ -20,37 +20,43 @@
 package org.sourcegrade.jagr.gradle.extension
 
 import org.gradle.api.Project
-import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.setProperty
 import java.util.Locale
 
 abstract class AbstractConfiguration(
     val name: String,
     private val project: Project,
+    private val sourceSetNamesConvention: Set<String>,
 ) {
 
     private val dependencyConfiguration = DependencyConfiguration()
-    private val sourceSetContainer: SourceSetContainer = project.extensions.getByType()
+
     private val _sourceSets: MutableList<SourceSet> = mutableListOf()
     val sourceSets: List<SourceSet>
         get() = _sourceSets
 
-    abstract val sourceSetNames: ListProperty<String>
+    val sourceSetNames: SetProperty<ProjectSourceSetTuple> = project.objects.setProperty<ProjectSourceSetTuple>()
+        .convention(ProjectSourceSetTuple.fromSourceSetNames("", sourceSetNamesConvention))
 
     init {
-        project.afterEvaluate {
-            for (sourceSetName in sourceSetNames.get()) {
-                val sourceSet = sourceSetContainer.maybeCreate(sourceSetName)
-                sourceSet.initialize(it)
+        project.afterEvaluate { proj ->
+            sourceSetNames.get().forEach { (projectPath, name) ->
+                val sourceSet = proj.relative(projectPath).sourceSetContainer.maybeCreate(name)
                 _sourceSets.add(sourceSet)
             }
+            initialize(proj)
         }
     }
 
-    private fun SourceSet.initialize(project: Project) {
+    private val Project.sourceSetContainer: SourceSetContainer
+        get() = extensions.getByType()
+
+    private fun initialize(project: Project) {
         project.dependencies {
             for ((suffix, dependencyNotations) in dependencyConfiguration.dependencies) {
                 val configurationName = if (name == "main") {
@@ -87,9 +93,23 @@ abstract class AbstractConfiguration(
     }
 
     fun from(vararg sourceSetNames: String) {
-        for (sourceSetName in sourceSetNames) {
-            this.sourceSetNames.add(sourceSetName)
-        }
+        this.sourceSetNames.addAll(ProjectSourceSetTuple.fromSourceSetNames("", sourceSetNames.asSequence()))
+    }
+
+    /**
+     * Adds the default source sets from the given project for the given configuration type.
+     *
+     * For example, using this method from a submission configuration will add the `main` and `test` source sets from the given project.
+     */
+    fun from(otherProject: Project) {
+        this.sourceSetNames.addAll(ProjectSourceSetTuple.fromSourceSetNames(otherProject.path, sourceSetNamesConvention))
+    }
+
+    /**
+     * Adds the given source sets from the given project.
+     */
+    fun from(otherProject: Project, vararg sourceSetNames: String) {
+        this.sourceSetNames.addAll(ProjectSourceSetTuple.fromSourceSetNames(otherProject.path, sourceSetNames.asSequence()))
     }
 
     fun configureDependencies(block: DependencyConfiguration.() -> Unit) = dependencyConfiguration.block()

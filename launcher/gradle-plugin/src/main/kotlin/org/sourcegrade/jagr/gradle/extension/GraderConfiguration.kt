@@ -23,12 +23,10 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.internal.provider.DefaultProvider
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.exclude
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.Jagr
@@ -37,10 +35,7 @@ import org.sourcegrade.jagr.launcher.env.Transformers
 abstract class GraderConfiguration(
     name: String,
     project: Project,
-) : AbstractConfiguration(name, project) {
-    override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>()
-        .convention(listOf(name))
-
+) : AbstractConfiguration(name, project, setOf(name)) {
     abstract val graderName: Property<String>
     abstract val rubricProviderName: Property<String>
     abstract val config: Property<Config>
@@ -85,11 +80,26 @@ abstract class GraderConfiguration(
         }
     }
 
-    internal fun getSourceSetNamesRecursive(): Set<String> {
-        val result = mutableSetOf<String>()
+    private fun <K, V> MutableMap<K, Set<V>>.mergeAll(other: Map<K, Set<V>>) {
+        other.forEach { (key, value) ->
+            merge(key, value) { a, b -> a + b }
+        }
+    }
+
+    internal fun getSourceSetNamesRecursive(): Set<ProjectSourceSetTuple> {
+        val result = mutableSetOf<ProjectSourceSetTuple>()
         result.addAll(sourceSetNames.get())
         if (parentConfiguration.isPresent) {
             result.addAll(parentConfiguration.get().getSourceSetNamesRecursive())
+        }
+        return result
+    }
+
+    internal fun getSolutionSourceSetNamesRecursive(): Set<ProjectSourceSetTuple> {
+        val result = mutableSetOf<ProjectSourceSetTuple>()
+        result.addAll(solutionConfiguration.get().sourceSetNames.get())
+        if (parentConfiguration.isPresent) {
+            result.addAll(parentConfiguration.get().getSolutionSourceSetNamesRecursive())
         }
         return result
     }
