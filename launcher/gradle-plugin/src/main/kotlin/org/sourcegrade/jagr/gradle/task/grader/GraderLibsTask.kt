@@ -45,7 +45,10 @@ abstract class GraderLibsTask : Jar(), GraderTask {
                     artifact.moduleVersion.id.name == jagrArtifact.moduleVersion.id.name
             }
             if (matchingJagrArtifact == null) {
-                yield(project.zipTree(artifact.file))
+                // TODO: This is not the best way to exclude modules from the project itself from the libs jar
+                if (project.name != artifact.moduleVersion.id.group) {
+                    yield(project.zipTree(artifact.file))
+                }
             } else {
                 if (artifact.moduleVersion.id.version != matchingJagrArtifact.moduleVersion.id.version) {
                     logger.error(
