@@ -17,7 +17,6 @@ import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.forEachFile
-import org.sourcegrade.jagr.gradle.getFiles
 import org.sourcegrade.jagr.gradle.mergeSourceSets
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.WriteInfoTask
