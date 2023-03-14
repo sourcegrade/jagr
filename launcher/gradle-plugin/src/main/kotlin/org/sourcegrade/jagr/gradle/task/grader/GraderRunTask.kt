@@ -197,6 +197,9 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                     it.id.componentIdentifier.displayName.startsWith("org.sourcegrade") &&
                         it.id.componentIdentifier.displayName.contains("jagr")
                     )
+            }.filter { artifact ->
+                // TODO: This is not the best way to exclude modules from the project itself from the libs jar
+                project.name != artifact.moduleVersion.id.group
             }
             .map { it.file }
             .forEach { addLibrary(createResourceContainer(it)) }
