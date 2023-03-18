@@ -5,14 +5,14 @@ import org.sourcegrade.jagr.core.compiler.RuntimeContainer
 import org.sourcegrade.jagr.launcher.io.GraderJar
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 
-class SubmissionTuple(
+class GradingSubmissionTuple(
     val grader: ResourceContainer,
     val submission: ResourceContainer,
     val library: ResourceContainer,
 )
 
 class CompiledSubmissionTuple(
-    val submissionTuple: SubmissionTuple,
+    val submissionTuple: GradingSubmissionTuple,
     val grader: GraderJar,
     val submission: Submission,
     val library: RuntimeContainer,

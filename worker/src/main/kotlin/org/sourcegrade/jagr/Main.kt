@@ -1,37 +1,25 @@
 package org.sourcegrade.jagr
 
+import com.google.common.io.ByteStreams
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import org.sourcegrade.jagr.api.rubric.GradedRubric
 import org.sourcegrade.jagr.launcher.env.Jagr
-import org.sourcegrade.jagr.launcher.env.config
 import org.sourcegrade.jagr.launcher.env.runtimeGrader
 import org.sourcegrade.jagr.launcher.io.*
-import java.io.File
+import java.io.ByteArrayOutputStream
+import java.util.*
 
-fun grade(
-    grader: ResourceContainer,
-    submission: ResourceContainer,
-    lib: ResourceContainer
-): String {
+fun grade(submission: GradingSubmissionTuple): GradedRubric {
     val compiler = Jagr.injector.getInstance(SubmissionTupleCompiler::class.java)
+    val compiled = compiler.compile(submission)
 
-    val submissionTuple = SubmissionTuple(
-        grader = grader,
-        submission = submission,
-        library = lib,
-    )
-
-    val compiled = compiler.compile(submissionTuple)
-
-    val gradingSchema = Jagr.runtimeGrader.grade(
-        listOf(compiled.grader),
+    return Jagr.runtimeGrader.grade(
+        compiled.grader,
         compiled.submission
     )
-
-    return Jagr.injector.getInstance(GradedRubricExporter.HTML::class.java).export(gradingSchema.keys.first())
-        .getInputStream().reader().readText()
 }
 
 fun gradeBase64(
@@ -39,11 +27,27 @@ fun gradeBase64(
     submission: String,
     lib: String,
 ): String {
-    return grade(
+    val gradingSubmission = GradingSubmissionTuple(
         grader = createResourceContainerFromZipBase64("grader", grader),
         submission = createResourceContainerFromZipBase64("submission", submission),
-        lib = createResourceContainerFromZipBase64("library", lib),
+        library = createResourceContainerFromZipBase64("library", lib),
     )
+
+    val graded = grade(
+        submission = gradingSubmission,
+    )
+
+    val outputStream = ByteArrayOutputStream(8192)
+    val output = ByteStreams.newDataOutput(outputStream)
+
+    openScope(output, Jagr) {
+        SerializerFactory.get<GradedRubric>().write(
+            graded,
+            this
+        )
+    }
+
+    return Base64.getEncoder().encodeToString(outputStream.toByteArray())
 }
 
 @Serializable
@@ -55,23 +59,21 @@ data class SubmissionTupleInput(
 
 @Serializable
 data class Output(
-    val result: String,
+    val gradedRubric: String,
 )
 
 fun main() {
     val input = Json.decodeFromStream<SubmissionTupleInput>(System.`in`)
-    val output = Output(
-        result = gradeBase64(
-            grader = input.grader,
-            submission = input.submission,
-            lib = input.library,
-        ),
-    )
-    Json.encodeToStream(output, System.out)
 
-    /*gradeBase64(
-        grader = File("./worker/mount/grader.bin").readText(),
-        submission = File("./worker/mount/submission.bin").readText(),
-        lib = File("./worker/mount/library.bin").readText(),
-    )*/
+    val result = gradeBase64(
+        grader = input.grader,
+        submission = input.submission,
+        lib = input.library,
+    )
+
+    val output = Output(
+        gradedRubric = result,
+    )
+
+    Json.encodeToStream(output, System.out)
 }

@@ -30,18 +30,26 @@ import org.sourcegrade.jagr.launcher.io.GraderJar
 
 class RuntimeGraderImpl @Inject constructor(
     private val logger: Logger,
-    private val testers: Set<RuntimeTester>,
+    private val tester: RuntimeTester,
     private val fallbackRuntimeTester: FallbackRuntimeTester,
 ) : RuntimeGrader {
     override fun grade(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String> {
+        throw UnsupportedOperationException("Not implemented any more, use grade(grader, submission) instead")
+        /*
         val gradedRubrics: MutableMap<GradedRubric, String> = mutableMapOf()
         for (grader in graders) {
-            for (tester in testers) {
-                grader as GraderJarImpl // for now, I want to keep the API as small as possible
-                tester.createTestCycle(grader, submission)?.collectResults()?.also { gradedRubrics += it }
-            }
+            grader as GraderJarImpl // for now, I want to keep the API as small as possible
+            tester.createTestCycle(grader, submission)?.collectResults()?.also { gradedRubrics += it }
         }
         return gradedRubrics
+        */
+    }
+
+    override fun grade(grader: GraderJar, submission: Submission): GradedRubric {
+        grader as GraderJarImpl // for now, I want to keep the API as small as possible
+
+        return tester.createTestCycle(grader, submission)?.collectResults()?.first
+            ?: throw IllegalStateException("Failed to grade submission $submission with grader $grader")
     }
 
     override fun gradeFallback(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String> {

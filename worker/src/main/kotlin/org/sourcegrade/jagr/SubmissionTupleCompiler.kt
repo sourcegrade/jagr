@@ -20,7 +20,7 @@ class SubmissionTupleCompiler @Inject constructor(
     private val runtimeJarLoader: RuntimeJarLoader,
     private val commonClassTransformer: CommonClassTransformer,
 ) {
-    fun compile(tuple: SubmissionTuple): CompiledSubmissionTuple {
+    fun compile(tuple: GradingSubmissionTuple): CompiledSubmissionTuple {
         val library = runtimeJarLoader.loadCompiled(tuple.library)
         val grader = compileGrader(tuple, library)
         val submission = compileSubmission(tuple, library, grader)
@@ -28,7 +28,7 @@ class SubmissionTupleCompiler @Inject constructor(
         return CompiledSubmissionTuple(tuple, grader, submission, library)
     }
 
-    private fun compileGrader(tuple: SubmissionTuple, library: RuntimeContainer): GraderJarImpl {
+    private fun compileGrader(tuple: GradingSubmissionTuple, library: RuntimeContainer): GraderJarImpl {
         val commonTransformerApplier = applierOf(commonClassTransformer)
 
         return tuple.grader.compileTo(
@@ -45,7 +45,7 @@ class SubmissionTupleCompiler @Inject constructor(
     }
 
     private fun compileSubmission(
-        tuple: SubmissionTuple,
+        tuple: GradingSubmissionTuple,
         library: RuntimeContainer,
         grader: GraderJarImpl,
     ): Submission {

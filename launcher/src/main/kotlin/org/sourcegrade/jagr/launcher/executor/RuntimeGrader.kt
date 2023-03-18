@@ -30,7 +30,7 @@ import java.time.ZoneOffset
 
 interface RuntimeGrader {
     fun grade(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
-
+    fun grade(grader: GraderJar, submission: Submission): GradedRubric
     fun gradeFallback(graders: List<GraderJar>, submission: Submission): Map<GradedRubric, String>
 }
 
