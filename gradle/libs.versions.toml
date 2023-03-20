@@ -35,5 +35,5 @@ gradle-publish = "com.gradle.plugin-publish:1.1.0"
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.0" }
+shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
 style = "org.sourcegrade.style:3.0.0"
