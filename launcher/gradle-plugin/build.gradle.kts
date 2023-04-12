@@ -1,4 +1,3 @@
-@Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     `java-gradle-plugin`
     alias(libs.plugins.gradle.publish)
