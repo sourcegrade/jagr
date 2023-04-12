@@ -1,20 +1,20 @@
 plugins {
-    kotlin("jvm")
     kotlin("plugin.serialization")
     id("jagr-publish")
     id("jagr-sign")
+    id("kotlin-jvm.base-conventions")
 }
 
 dependencies {
-    api(project(":jagr-launcher"))
-    implementation(libs.csv)
-    implementation(libs.asm.util)
-    implementation(libs.serialization)
-    implementation(libs.jansi)
-    implementation(libs.juniversalchardet)
-    implementation(kotlin("reflect"))
-    implementation(files("../gradle/wrapper/gradle-wrapper.jar"))
-    runtimeOnly(libs.apiguardian)
+    jvmMainApi(project(":jagr-launcher"))
+    jvmMainImplementation(libs.csv)
+    jvmMainImplementation(libs.asm.util)
+    jvmMainImplementation(libs.serialization)
+    jvmMainImplementation(libs.jansi)
+    jvmMainImplementation(libs.juniversalchardet)
+    jvmMainImplementation(kotlin("reflect"))
+    jvmMainImplementation(files("../gradle/wrapper/gradle-wrapper.jar"))
+    jvmMainRuntimeOnly(libs.apiguardian)
 }
 tasks {
     test {

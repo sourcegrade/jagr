@@ -1,19 +1,19 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     application
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.kapt) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.shadow)
     alias(libs.plugins.style)
+    id("kotlin-jvm.base-conventions")
 }
 
 dependencies {
-    runtimeOnly(project("jagr-core"))
-    implementation(project("jagr-launcher"))
-    implementation(libs.clikt)
+    jvmMainRuntimeOnly(project("jagr-core"))
+    jvmMainImplementation(project("jagr-launcher"))
+    jvmMainImplementation(libs.clikt)
 }
 
 application {
@@ -55,6 +55,7 @@ val projectVersion = file("version").readLines().first()
 project.extra["apiVersion"] = projectVersion.replace("\\.[1-9]\\d*-SNAPSHOT|\\.0|\\.\\d*\$".toRegex(), "")
 
 allprojects {
+    apply(plugin = "org.jetbrains.kotlin.multiplatform")
     apply(plugin = "org.sourcegrade.style")
 
     group = "org.sourcegrade"
@@ -63,15 +64,4 @@ allprojects {
     project.findProperty("buildNumber")
         ?.takeIf { version.toString().contains("SNAPSHOT") }
         ?.also { version = version.toString().replace("SNAPSHOT", "RC$it") }
-
-    tasks {
-        withType<KotlinCompile> {
-            kotlinOptions.jvmTarget = "11"
-        }
-        withType<JavaCompile> {
-            options.encoding = "UTF-8"
-            sourceCompatibility = "11"
-            targetCompatibility = "11"
-        }
-    }
 }

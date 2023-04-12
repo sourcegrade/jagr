@@ -1,7 +1,7 @@
 plugins {
-    `java-library`
     id("jagr-publish")
     id("jagr-sign")
+    id("kotlin-jvm.base-conventions")
 }
 
 tasks {
@@ -15,9 +15,9 @@ val apiVersion: String by rootProject
 version = apiVersion
 
 dependencies {
-    api(libs.asm.core)
-    api(libs.guice)
-    api(libs.logging.api)
-    api(libs.bundles.junit)
-    implementation(libs.annotations)
+    jvmMainApi(libs.asm.core)
+    jvmMainApi(libs.guice)
+    jvmMainApi(libs.logging.api)
+    jvmMainApi(libs.bundles.junit)
+    jvmMainImplementation(libs.annotations)
 }
