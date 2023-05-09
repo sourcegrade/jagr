@@ -37,24 +37,35 @@ fun main(vararg args: String) {
 }
 
 class MainCommand : CliktCommand() {
-
     /**
      * Command line option to indicate that this process will listen to (via std in) to a grading request
      */
+
+    /*
     private val child by option("--child", "-c").flag()
     private val noExport by option("--no-export", "-n").flag()
     private val exportOnly by option("--export-only", "-e").flag()
     private val progress by option("--progress").choice("rainbow", "xmas")
+    */
 
     override fun run() {
+        val startTime = System.currentTimeMillis()
+        Environment.initializeMainProcess()
+
+
+
+        Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
+
+
+        /*
         if (child) {
             Environment.initializeChildProcess()
             ChildProcGrading().grade()
         } else {
-            Environment.initializeMainProcess()
             val startTime = System.currentTimeMillis()
             StandardGrading(progress).grade(noExport, exportOnly)
             Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
         }
+        */
     }
 }
