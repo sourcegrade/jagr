@@ -26,6 +26,7 @@ import com.github.ajalt.clikt.parameters.types.choice
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
+import org.sourcegrade.jagr.launcher.executor.ProcessWorker
 
 fun main(vararg args: String) {
     try {
@@ -47,6 +48,7 @@ class MainCommand : CliktCommand() {
     private val progress by option("--progress").choice("rainbow", "xmas")
     override fun run() {
         if (child) {
+            println(ProcessWorker.MARK_CHILD_BOOT)
             Environment.initializeChildProcess()
             ChildProcGrading().grade()
         } else {
