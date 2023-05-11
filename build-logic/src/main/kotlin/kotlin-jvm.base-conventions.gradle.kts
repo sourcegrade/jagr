@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 extensions.getByName<KotlinMultiplatformExtension>("kotlin").apply {
+    jvmToolchain(17)
     jvm {
         withJava()
         compilations.all {
@@ -10,14 +11,4 @@ extensions.getByName<KotlinMultiplatformExtension>("kotlin").apply {
             }
         }
     }
-}
-
-extensions.getByType<JavaPluginExtension>().apply {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
-dependencies {
-    "commonMainImplementation"(kotlin("reflect"))
 }

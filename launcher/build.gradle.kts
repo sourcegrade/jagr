@@ -10,6 +10,7 @@ plugins {
 
 dependencies {
     apiProject(project, "jagr-grader-api")
+    commonMainImplementation(kotlin("reflect"))
     jvmMainApi(libs.coroutines)
     jvmMainImplementation(libs.configurate.hocon)
     jvmMainImplementation(libs.configurate.kotlin)
