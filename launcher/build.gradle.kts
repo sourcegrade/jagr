@@ -1,24 +1,22 @@
 import org.sourcegrade.jagr.script.apiProject
 
 plugins {
-    kotlin("jvm")
     kotlin("kapt")
     kotlin("plugin.serialization")
-    id("com.github.johnrengelman.shadow")
     id("jagr-publish")
     id("jagr-sign")
+    id("kotlin-jvm.base-conventions")
 }
 
 dependencies {
     apiProject(project, "jagr-grader-api")
-    api(libs.coroutines)
-    implementation(libs.configurate.hocon)
-    implementation(libs.configurate.kotlin)
-    implementation(libs.annotations)
-    implementation(libs.serialization)
-    implementation(libs.logging.core)
+    jvmMainApi(libs.coroutines)
+    jvmMainImplementation(libs.configurate.hocon)
+    jvmMainImplementation(libs.configurate.kotlin)
+    jvmMainImplementation(libs.annotations)
+    jvmMainImplementation(libs.serialization)
+    jvmMainImplementation(libs.logging.core)
     kapt(libs.logging.core)
-    implementation(kotlin("reflect"))
 }
 
 tasks {

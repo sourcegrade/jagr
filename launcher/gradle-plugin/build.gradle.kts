@@ -1,10 +1,9 @@
 plugins {
     `java-gradle-plugin`
-    alias(libs.plugins.gradle.publish)
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
+    kotlin("plugin.serialization")
     id("jagr-publish")
     // signing done by gradle-publish plugin
+    id("kotlin-jvm.base-conventions")
 }
 
 tasks {
@@ -14,12 +13,12 @@ tasks {
 }
 
 dependencies {
-    implementation(gradleKotlinDsl())
-    implementation(libs.serialization)
-    implementation(libs.logging.core)
-    implementation("de.undercouch:gradle-download-task:${libs.plugins.download.get().version}")
-    runtimeOnly(project(":jagr-core"))
-    implementation(project(":jagr-launcher"))
+    jvmMainCompileOnly(gradleKotlinDsl())
+    jvmMainImplementation(libs.serialization)
+    jvmMainImplementation(libs.logging.core)
+    jvmMainImplementation("de.undercouch:gradle-download-task:${libs.plugins.download.get().version}")
+    jvmMainRuntimeOnly(project(":jagr-core"))
+    jvmMainImplementation(project(":jagr-launcher"))
 }
 
 gradlePlugin {
