@@ -2,7 +2,7 @@
 asm = "9.5"
 configurate = "4.1.2"
 junit = "5.9.3"
-kotlin = "1.8.20"
+kotlin = "1.8.22"
 log4j = "2.20.0"
 
 [libraries]
