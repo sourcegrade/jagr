@@ -9,7 +9,7 @@ dependencies {
     jvmMainApi(project(":jagr-launcher"))
     jvmMainImplementation(libs.csv)
     jvmMainImplementation(libs.asm.util)
-    jvmMainImplementation(libs.serialization)
+    jvmMainImplementation(libs.kotlinx.serialization)
     jvmMainImplementation(libs.jansi)
     jvmMainImplementation(libs.juniversalchardet)
     jvmMainImplementation(kotlin("reflect"))

@@ -14,7 +14,7 @@ tasks {
 
 dependencies {
     jvmMainCompileOnly(gradleKotlinDsl())
-    jvmMainImplementation(libs.serialization)
+    jvmMainImplementation(libs.kotlinx.serialization)
     jvmMainImplementation(libs.logging.core)
     jvmMainImplementation("de.undercouch:gradle-download-task:${libs.plugins.download.get().version}")
     jvmMainRuntimeOnly(project(":jagr-core"))
