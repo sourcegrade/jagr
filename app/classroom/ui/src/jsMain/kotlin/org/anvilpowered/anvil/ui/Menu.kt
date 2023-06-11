@@ -1,32 +1,17 @@
 package org.anvilpowered.anvil.ui
 
-import csstype.AlignItems
-import csstype.BoxSizing
-import csstype.Display
-import csstype.JustifyContent
-import csstype.pct
-import csstype.px
-import mui.material.AppBar
-import mui.material.Avatar
-import mui.material.Drawer
-import mui.material.DrawerAnchor
-import mui.material.DrawerVariant
-import mui.material.ListItemIcon
-import mui.material.ListItemText
-import mui.material.MenuItem
-import mui.material.MenuList
-import mui.material.Toolbar
-import mui.material.Typography
+import csstype.*
+import mui.material.*
 import mui.material.styles.TypographyVariant
 import mui.system.sx
 import org.anvilpowered.anvil.ui.component.SectionTypography
-import react.FC
-import react.Props
-import react.ReactNode
+import react.*
+import react.dom.events.MouseEventHandler
 import react.dom.html.ReactHTML.img
 import react.router.useNavigate
+import web.html.HTMLElement
 import mui.icons.material.Dashboard as DashboardIcon
-import mui.icons.material.Folder as FolderIcon
+import mui.icons.material.Person as PersonIcon
 import mui.icons.material.Storage as StorageIcon
 
 val drawerWidth = 240;
@@ -34,6 +19,18 @@ val drawerWidth = 240;
 val Menu = FC<Props> {
 
     val nav = useNavigate()
+
+    var anchorElement by useState<HTMLElement>()
+
+    val handleClick: MouseEventHandler<HTMLElement> = { event ->
+        event.preventDefault()
+        anchorElement = event.currentTarget
+    }
+
+    val handleClose: MouseEventHandler<HTMLElement> = { event ->
+        event.preventDefault()
+        anchorElement = null
+    }
 
     AppBar {
         sx {
@@ -49,11 +46,24 @@ val Menu = FC<Props> {
                 alignItems = AlignItems.center
                 justifyContent = JustifyContent.end
             }
-            Avatar {
-                FolderIcon()
+            val avatar: ReactElement<*> = Avatar.create {
+                PersonIcon()
+                onClick = handleClick
                 sx {
                     width = 32.px
                     height = 32.px
+                }
+            }
+            +avatar
+            Menu {
+                anchorEl = { avatar.asDynamic() } // wtf?
+                open = anchorElement != null
+                onClose = handleClose
+                onClick = handleClose
+                MenuItem {
+                    onClick = { nav("/account") }
+                    ListItemIcon { StorageIcon() }
+                    ListItemText { primary = ReactNode("Account") }
                 }
             }
         }

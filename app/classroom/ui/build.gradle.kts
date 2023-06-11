@@ -8,7 +8,7 @@ fun kotlinw(target: String): String =
 dependencies {
     commonMainImplementation(project(":jagr-api-web"))
     commonMainImplementation(libs.redux)
-    jsMainImplementation(enforcedPlatform(kotlinw("wrappers-bom:1.0.0-pre.480")))
+    jsMainImplementation(enforcedPlatform(kotlinw("wrappers-bom:1.0.0-pre.491")))
 
     jsMainImplementation(kotlinw("react"))
     jsMainImplementation(kotlinw("react-dom"))
