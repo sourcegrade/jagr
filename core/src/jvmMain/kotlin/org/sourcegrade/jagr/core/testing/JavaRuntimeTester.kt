@@ -97,7 +97,7 @@ class JavaRuntimeTester @Inject constructor(
                         TimeoutHandler.resetTimeout()
                     }
                 }
-                TimeoutHandler.setClassNames(selectors.map { it.className })
+                TimeoutHandler.initialize(selectors.mapTo(mutableSetOf()) { it.className }, testCycle)
                 launcher.execute(testPlan, summaryListener, statusListener, timeoutListener)
                 // disable so that the rubric provider doesn't throw an error
                 TimeoutHandler.disableTimeout()
