@@ -57,31 +57,32 @@ class JavaRuntimeTester @Inject constructor(
                 grader.containerWithoutSolution.runtimeResources,
         )
         val testCycle = JavaTestCycle(grader.info.rubricProviderName, submission, classLoader)
-        grader.testClassNames
-            .map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) }
-            .runJUnit(testCycle)
-            .also(testCycle::setJUnitResult)
+        val result = runJUnit(
+            grader.testClassNames.map { DiscoverySelectors.selectClass(classLoader.loadClass(it)) },
+            testCycle,
+        )
+        testCycle.jUnitResult = result
         return testCycle
     }
 
-    private fun List<ClassSelector>.runJUnit(testCycle: TestCycle): JUnitResultImpl? {
+    private fun runJUnit(selectors: List<ClassSelector>, testCycle: TestCycle): JUnitResultImpl? {
         testCycleParameterResolver.value = testCycle
         val info = (testCycle.submission as JavaSubmission).submissionInfo
-        logger.info("Running JUnit @ $info :: [${joinToString { it.className }}]")
+        logger.info("Running JUnit @ $info :: [${selectors.joinToString { it.className }}]")
         val launcher = LauncherFactory.create()
         val testPlan = try {
-            launcher.discover(LauncherDiscoveryRequestBuilder.request().selectors(this).build())
+            launcher.discover(LauncherDiscoveryRequestBuilder.request().selectors(selectors).build())
         } catch (e: JUnitException) {
             /*
              * If a LinkageError occurred in a JUnit test class, try again with the other test classes.
              * This may occur if a student did not implement a class or method a test class depends on.
              */
             if (e.cause is JUnitException && e.cause?.cause is LinkageError) {
-                return partition { e.cause!!.message?.contains(it.className) == false }.let { (included, excluded) ->
+                return selectors.partition { e.cause!!.message?.contains(it.className) == false }.let { (included, excluded) ->
                     val excludedClasses = excluded.joinToString { it.className }
                     val msg = e.cause!!.cause!!.message
                     logger.error("Linkage error @ $info :: $msg, retrying without test classes [$excludedClasses]")
-                    included.runJUnit(testCycle)
+                    runJUnit(included, testCycle)
                 }
             }
             logger.error("Failed to discover JUnit tests for $info", e)
@@ -96,7 +97,7 @@ class JavaRuntimeTester @Inject constructor(
                         TimeoutHandler.resetTimeout()
                     }
                 }
-                TimeoutHandler.setClassNames(map { it.className })
+                TimeoutHandler.setClassNames(selectors.map { it.className })
                 launcher.execute(testPlan, summaryListener, statusListener, timeoutListener)
                 // disable so that the rubric provider doesn't throw an error
                 TimeoutHandler.disableTimeout()
