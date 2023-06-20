@@ -7,8 +7,10 @@ import mui.system.sx
 import org.anvilpowered.anvil.ui.component.SectionTypography
 import react.*
 import react.dom.events.MouseEventHandler
+import react.dom.findDOMNode
 import react.dom.html.ReactHTML.img
 import react.router.useNavigate
+import web.dom.document
 import web.html.HTMLElement
 import mui.icons.material.Dashboard as DashboardIcon
 import mui.icons.material.Person as PersonIcon
@@ -31,6 +33,8 @@ val Menu = FC<Props> {
         event.preventDefault()
         anchorElement = null
     }
+
+    val fakeElement = document.createElement("div")
 
     AppBar {
         sx {
@@ -56,7 +60,7 @@ val Menu = FC<Props> {
             }
             +avatar
             Menu {
-                anchorEl = { avatar.asDynamic() } // wtf?
+                anchorEl = { anchorElement ?: fakeElement }
                 open = anchorElement != null
                 onClose = handleClose
                 onClick = handleClose

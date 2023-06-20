@@ -1,5 +1,7 @@
 package org.anvilpowered.anvil.ui
 
+import csstype.number
+import csstype.px
 import js.core.jso
 import mui.material.Box
 import mui.material.CssBaseline
@@ -13,8 +15,6 @@ import react.Props
 import react.create
 import react.dom.client.createRoot
 import react.router.dom.HashRouter
-import web.cssom.number
-import web.cssom.px
 import web.dom.document
 import web.html.HTML.div
 
