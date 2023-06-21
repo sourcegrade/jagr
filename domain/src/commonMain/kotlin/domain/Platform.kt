@@ -17,20 +17,6 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.domain.course
+package domain
 
-import org.sourcegrade.kontour.Creates
-import org.sourcegrade.kontour.DomainEntity
-import org.sourcegrade.kontour.UUID
-import org.sourcegrade.kontour.scope.CrudScope
-
-data class Course(override val id: UUID) : DomainEntity {
-
-    data class CreateDto(
-        val name: String,
-    ) : Creates<Course>
-
-    interface DbScope : CrudScope<Course, CreateDto>
-
-    companion object Repository : DomainEntity.Repository<Course>
-}
+class Platform

@@ -5,5 +5,4 @@ plugins {
 
 dependencies {
     commonMainApi(project(":jagr-api"))
-    commonMainApi(project(":jagr-domain-platform"))
 }

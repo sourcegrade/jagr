@@ -17,18 +17,25 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api.course
+package domain.user
 
-import domain.course.CourseUser
-import org.sourcegrade.kontour.Dto
+import org.sourcegrade.kontour.Creates
+import org.sourcegrade.kontour.DomainEntity
 import org.sourcegrade.kontour.UUID
+import org.sourcegrade.kontour.scope.CrudScope
 
-interface CourseUserDto : Dto<CourseUser> {
-    override val entity: CourseUser
-        get() = CourseUser(id)
+data class Group(override val id: UUID) : DomainEntity {
 
-    data class NameOnly(
-        override val id: UUID,
-        val username: String,
-    ) : CourseUserDto
+    data class CreateDto(
+        val name: String,
+    ) : Creates<Group>
+
+    interface DbScope : CrudScope<Group, CreateDto> {
+
+        suspend fun Group.getName(): String
+
+        suspend fun DomainEntity.Repository<Group>.findByName(name: String): Group?
+    }
+
+    companion object Repository : DomainEntity.Repository<Group>
 }

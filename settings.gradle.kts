@@ -30,11 +30,8 @@ sequenceOf(
     "app-classroom-backend",
     "app-classroom-ui",
     "core",
+    "core-db",
     "domain",
-    "domain-grader",
-    "domain-platform",
-    "infrastructure",
-    "infrastructure-db",
     "launcher",
 ).forEach {
     val project = ":jagr-$it"

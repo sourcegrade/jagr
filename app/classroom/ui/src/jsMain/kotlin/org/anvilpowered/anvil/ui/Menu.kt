@@ -1,6 +1,10 @@
 package org.anvilpowered.anvil.ui
 
-import csstype.*
+import csstype.AlignItems
+import csstype.Display
+import csstype.JustifyContent
+import csstype.pct
+import csstype.px
 import mui.material.AppBar
 import mui.material.Toolbar
 import mui.system.sx

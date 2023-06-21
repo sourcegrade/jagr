@@ -17,28 +17,15 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.domain
+package org.sourcegrade.jagr.usecase.course
 
-import org.sourcegrade.kontour.Creates
-import org.sourcegrade.kontour.DomainEntity
-import org.sourcegrade.kontour.UUID
-import org.sourcegrade.kontour.scope.CrudScope
+import domain.course.Course
+import domain.user.User
 
-data class User(override val id: UUID) : DomainEntity {
+object CreateCourseUseCase {
 
-    data class CreateDto(
-        val username: String,
-        val email: String,
-    ) : Creates<User>
+    interface Scope : Course.DbScope
 
-    interface DbScope : CrudScope<User, CreateDto> {
-
-        suspend fun User.getUsername(): String
-
-        suspend fun User.getEmail(): String
-
-        suspend fun DomainEntity.Repository<User>.findByUsername(username: String): User?
+    suspend fun Scope.execute(createDto: Course.CreateDto, user: User) {
     }
-
-    companion object Repository : DomainEntity.Repository<User>
 }

@@ -19,8 +19,8 @@
 
 package org.sourcegrade.jagr.api
 
-import org.sourcegrade.jagr.domain.User
-import org.sourcegrade.jagr.domain.course.Course
+import domain.course.Course
+import domain.user.User
 
 interface UserApi : User.DbScope {
 

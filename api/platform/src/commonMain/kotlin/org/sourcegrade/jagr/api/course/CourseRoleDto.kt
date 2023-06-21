@@ -19,7 +19,7 @@
 
 package org.sourcegrade.jagr.api.course
 
-import org.sourcegrade.jagr.domain.course.CourseRole
+import domain.course.CourseRole
 import org.sourcegrade.kontour.Dto
 import org.sourcegrade.kontour.UUID
 

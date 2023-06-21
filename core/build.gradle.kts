@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    commonMainApi(project(":jagr-api"))
     jvmMainApi(project(":jagr-launcher"))
     jvmMainImplementation(libs.csv)
     jvmMainImplementation(libs.asm.util)

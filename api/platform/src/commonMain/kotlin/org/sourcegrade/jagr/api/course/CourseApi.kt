@@ -17,6 +17,8 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.domain
+package org.sourcegrade.jagr.api.course
 
-class Platform
+import domain.course.Course
+
+interface CourseApi : Course.DbScope

@@ -17,4 +17,28 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api
+package domain.user
+
+import org.sourcegrade.kontour.Creates
+import org.sourcegrade.kontour.DomainEntity
+import org.sourcegrade.kontour.UUID
+import org.sourcegrade.kontour.scope.CrudScope
+
+data class User(override val id: UUID) : DomainEntity {
+
+    data class CreateDto(
+        val username: String,
+        val email: String,
+    ) : Creates<User>
+
+    interface DbScope : CrudScope<User, CreateDto> {
+
+        suspend fun User.getUsername(): String
+
+        suspend fun User.getEmail(): String
+
+        suspend fun DomainEntity.Repository<User>.findByUsername(username: String): User?
+    }
+
+    companion object Repository : DomainEntity.Repository<User>
+}
