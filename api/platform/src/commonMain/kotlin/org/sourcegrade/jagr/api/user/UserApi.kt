@@ -17,14 +17,14 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api.course
+package org.sourcegrade.jagr.api.user
 
 import domain.course.Course
-import org.sourcegrade.jagr.api.JagrApi
-import org.sourcegrade.jagr.api.scope.PaginationScope
+import domain.user.User
 
-interface CourseApi : JagrApi,
-    Course.DbScope,
-    PaginationScope<Course, CourseDto.PaginationElement> {
+interface UserApi : User.DbScope {
 
+    suspend fun User.joinCourse(course: Course)
+
+    suspend fun User.leaveCourse(course: Course)
 }

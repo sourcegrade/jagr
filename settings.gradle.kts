@@ -26,6 +26,8 @@ sequenceOf(
     "api-grader",
     "api-platform",
     "api-web",
+    "api-web-client",
+    "api-web-server",
     "app-classroom",
     "app-classroom-backend",
     "app-classroom-ui",

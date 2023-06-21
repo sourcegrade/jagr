@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2023 Alexander Städing
- *   Copyright (C) 2021-2023 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -17,14 +17,7 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api.course
+package org.sourcegrade.jagr.api.assignment
 
-import domain.course.Course
-import org.sourcegrade.jagr.api.JagrApi
-import org.sourcegrade.jagr.api.scope.PaginationScope
-
-interface CourseApi : JagrApi,
-    Course.DbScope,
-    PaginationScope<Course, CourseDto.PaginationElement> {
-
+interface AssignmentApi {
 }

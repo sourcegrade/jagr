@@ -6,6 +6,7 @@ fun kotlinw(target: String): String =
     "org.jetbrains.kotlin-wrappers:kotlin-$target"
 
 dependencies {
+    commonMainImplementation(libs.bundles.ktor.client)
     commonMainImplementation(project(":jagr-api-web"))
     commonMainImplementation(libs.redux)
     jsMainImplementation(enforcedPlatform(kotlinw("wrappers-bom:1.0.0-pre.491")))

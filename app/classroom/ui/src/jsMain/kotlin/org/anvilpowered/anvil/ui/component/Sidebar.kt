@@ -75,14 +75,9 @@ val Sidebar = FC<Props> {
         }
         MenuList {
             MenuItem {
-                onClick = { nav("/dashboard") }
+                onClick = { nav("/courses") }
                 ListItemIcon { Dashboard() }
-                ListItemText { primary = ReactNode("Dashboard") }
-            }
-            MenuItem {
-                onClick = { nav("/servers") }
-                ListItemIcon { Storage() }
-                ListItemText { primary = ReactNode("Servers") }
+                ListItemText { primary = ReactNode("Courses") }
             }
         }
     }

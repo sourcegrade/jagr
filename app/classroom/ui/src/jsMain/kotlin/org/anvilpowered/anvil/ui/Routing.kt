@@ -1,9 +1,10 @@
 package org.anvilpowered.anvil.ui
 
 import mui.material.Typography
-import org.anvilpowered.anvil.ui.page.dashboard.DashboardHome
-import org.anvilpowered.anvil.ui.page.servers.ServersCreate
-import org.anvilpowered.anvil.ui.page.servers.ServersHome
+import org.anvilpowered.anvil.ui.page.courses.CourseId
+import org.anvilpowered.anvil.ui.page.courses.CoursesCreate
+import org.anvilpowered.anvil.ui.page.courses.CoursesDetail
+import org.anvilpowered.anvil.ui.page.courses.CoursesHome
 import react.FC
 import react.Props
 import react.create
@@ -12,23 +13,25 @@ import react.router.Route
 import react.router.Routes
 
 val Routing = FC<Props> {
+
+
     Routes {
         Route {
-            path = "/dashboard"
-            element = DashboardHome.create()
+            path = "/courses"
+            element = CoursesHome.create()
         }
         Route {
-            path = "/servers"
-            element = ServersHome.create()
+            path = "/courses/create"
+            element = CoursesCreate.create()
         }
         Route {
-            path = "/servers/create"
-            element = ServersCreate.create()
+            path = "/courses/:$CourseId"
+            element = CoursesDetail.create()
         }
         Route {
             path = "/"
             element = Navigate.create {
-                to = "/dashboard"
+                to = "/courses"
             }
         }
         Route {
