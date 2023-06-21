@@ -19,5 +19,4 @@
 
 package org.sourcegrade.jagr.domain
 
-class Platform {
-}
+class Platform

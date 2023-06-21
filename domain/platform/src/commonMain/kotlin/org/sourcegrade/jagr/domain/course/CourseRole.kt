@@ -31,9 +31,7 @@ class CourseRole(override val id: UUID) : DomainEntity {
         val courseId: UUID,
     ) : Creates<CourseRole>
 
-    interface DbScope : CrudScope<CourseRole, CreateDto> {
-
-    }
+    interface DbScope : CrudScope<CourseRole, CreateDto>
 
     companion object Repository : DomainEntity.Repository<CourseRole>
 }

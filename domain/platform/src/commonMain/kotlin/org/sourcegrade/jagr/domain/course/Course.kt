@@ -30,9 +30,7 @@ data class Course(override val id: UUID) : DomainEntity {
         val name: String,
     ) : Creates<Course>
 
-    interface DbScope : CrudScope<Course, CreateDto> {
-
-    }
+    interface DbScope : CrudScope<Course, CreateDto>
 
     companion object Repository : DomainEntity.Repository<Course>
 }

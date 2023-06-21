@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2023 Alexander Städing
- *   Copyright (C) 2021-2023 Contributors
+ *   Copyright (C) 2021-2022 Alexander Staeding
+ *   Copyright (C) 2021-2022 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -17,4 +17,28 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api
+package org.anvilpowered.anvil.ui.component.avatar
+
+import csstype.px
+import mui.icons.material.Person
+import mui.material.Avatar
+import mui.system.sx
+import react.FC
+import react.Props
+import react.dom.events.MouseEventHandler
+import web.html.HTMLElement
+
+external interface AvatarButtonProps : Props {
+    var onClick: MouseEventHandler<HTMLElement>
+}
+
+val AvatarButton = FC<AvatarButtonProps> { props ->
+    Avatar {
+        Person()
+        onClick = props.onClick
+        sx {
+            width = 32.px
+            height = 32.px
+        }
+    }
+}

@@ -18,4 +18,3 @@
  */
 
 package org.sourcegrade.jagr.db
-
