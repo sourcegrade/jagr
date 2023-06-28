@@ -22,7 +22,7 @@ package org.sourcegrade.jagr.core.export.rubric
 import org.sourcegrade.jagr.api.rubric.PointRange
 
 private fun Int.scaled(factor: Double): String {
-    return String.format("%.2f", this.toDouble() * factor)
+    return String.format("%.1f", this.toDouble() * factor)
 }
 
 internal fun PointRange.scaledRange(): String {

@@ -47,7 +47,7 @@ class GermanCSVExporter @Inject constructor(
                     }
                     csv.printRecord(
                         "Gesamt",
-                        rubric.maxPoints.toString(),
+                        rubric.scaledRange(),
                         grade.scaledRange(),
                         grade.comments.firstOrNull(),
                     )
