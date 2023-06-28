@@ -25,7 +25,6 @@ import org.apache.commons.csv.CSVPrinter
 import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
-import org.sourcegrade.jagr.api.rubric.PointRange
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.buildResource
@@ -49,7 +48,7 @@ class GermanCSVExporter @Inject constructor(
                     csv.printRecord(
                         "Gesamt",
                         rubric.maxPoints.toString(),
-                        PointRange.toString(grade),
+                        grade.scaledRange(),
                         grade.comments.firstOrNull(),
                     )
                     grade.comments.asSequence().drop(1).forEach { comment ->
@@ -66,8 +65,8 @@ class GermanCSVExporter @Inject constructor(
         val comments = grade.comments.joinToString("; ")
         printRecord(
             criterion.shortDescription,
-            PointRange.toString(criterion),
-            PointRange.toString(grade),
+            criterion.scaledRange(),
+            grade.scaledRange(),
             comments,
             criterion.hiddenNotes,
         )

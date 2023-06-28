@@ -2,7 +2,6 @@ package org.sourcegrade.jagr.core.export.rubric
 
 import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
-import org.sourcegrade.jagr.api.rubric.PointRange
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.Resource
 import org.sourcegrade.jagr.launcher.io.buildResource
@@ -48,8 +47,8 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
         tableEntries(rubric)
         rowStart()
         titleEntry("Gesamt")
-        titleEntry(rubric.rubric.range())
-        titleEntry(rubric.grade.range())
+        titleEntry(rubric.rubric.scaledRange())
+        titleEntry(rubric.grade.scaledRange())
         titleEntry(rubric.grade.comments.joinToString("<br>") { "<p>$it</p>" })
         rowEnd()
         tableBodyEnd()
@@ -95,23 +94,21 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
         rowStart()
         if (r.hasChildCriteria()) {
             titleEntry(r.description().replace(codeTagRegex, codeTagTransform))
-            titleEntry(r.criterion.range())
-            titleEntry(r.grade.range())
+            titleEntry(r.criterion.scaledRange())
+            titleEntry(r.grade.scaledRange())
             titleEntry(r.comments().replace(codeTagRegex, codeTagTransform))
             rowEnd()
             r.childCriteria.forEach { this.tableEntry(it) }
         } else {
             entry("""${badge((++criterionCounter).toString())} ${r.description().replace(codeTagRegex, codeTagTransform)}""")
-            entry(r.criterion.range())
-            entry(r.grade.range(), classes = r.rowClasses())
+            entry(r.criterion.scaledRange())
+            entry(r.grade.scaledRange(), classes = r.rowClasses())
             entry(r.comments().replace(codeTagRegex, codeTagTransform))
             rowEnd()
         }
     }
 
     private fun badge(text: String): String = """<span class="badge">$text</span>"""
-
-    private fun PointRange.range(): String = PointRange.toString(this)
 
     private fun GradedCriterion.description(): String = criterion.shortDescription.escaped()
 

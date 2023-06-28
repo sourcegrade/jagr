@@ -42,8 +42,8 @@ class MoodleUnpack @Inject constructor(
             // TODO: Fix this hack
             val assignmentId = assignmentIdRegex.matchEntire(candidate.name)
                 ?.run { groups["assignmentId"]?.value }
-                ?.padStart(length = 2, padChar = '0')
-                ?.let { "h$it" }
+                ?.padStart(length = 1, padChar = '0')
+                ?.let { "p$it" }
                 ?: "none"
             for (entry in zipFile.entries()) {
                 val matcher = studentRegex.matchEntire(entry.name) ?: continue
