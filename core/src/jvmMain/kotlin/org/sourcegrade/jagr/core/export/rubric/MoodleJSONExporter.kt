@@ -37,7 +37,7 @@ class MoodleJSONExporter @Inject constructor(
     override fun export(gradedRubric: GradedRubric): Resource {
         val json = MoodleJSON(
             (gradedRubric.testCycle.submission as JavaSubmission).submissionInfo,
-            gradedRubric.grade.minPoints / 2,
+            gradedRubric.grade.minPoints / 2.0,
             exporterHTML.export(gradedRubric).getInputStream().bufferedReader().readText(),
         )
         val jsonString = Json.encodeToString(json)
@@ -50,7 +50,7 @@ class MoodleJSONExporter @Inject constructor(
     @Serializable
     data class MoodleJSON(
         val submissionInfo: SubmissionInfo,
-        val totalPoints: Int,
+        val totalPoints: Double,
         val feedbackComment: String,
     )
 }
