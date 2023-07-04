@@ -11,11 +11,11 @@ annotations = "org.jetbrains:annotations:24.0.1"
 apiguardian = "org.apiguardian:apiguardian-api:1.1.2"
 asm-core = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
-clikt = "com.github.ajalt.clikt:clikt:3.5.2"
+clikt = "com.github.ajalt.clikt:clikt:3.5.4"
 configurate-core = { module = "org.spongepowered:configurate-extra-kotlin", version.ref = "configurate" }
 configurate-hocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate" }
 configurate-kotlin = { module = "org.spongepowered:configurate-extra-kotlin", version.ref = "configurate" }
-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0"
+coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2"
 csv = "org.apache.commons:commons-csv:1.10.0"
 exposed-bom = "org.jetbrains.exposed:exposed-bom:0.41.1"
 exposed-core = { module = "org.jetbrains.exposed:exposed-core" }
@@ -43,6 +43,7 @@ ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = 
 ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
 logging-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 logging-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
 redux = "org.reduxkotlin:redux-kotlin-threadsafe:0.6.1"
 
 [bundles]
