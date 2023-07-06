@@ -56,7 +56,7 @@ fun ByteArrayDataOutput.writeNotNull() {
 /**
  * Reads in a string that is longer than 65535 characters (the maximum supported by readUTF).
  *
- * Instead of writing only two bytes for the length, this method writes four bytes for the length.
+ * Instead of writing only two bytes for the length, this method uses four bytes for the length.
  */
 fun ByteArrayDataInput.readText(): String = readByteArray().decodeToString()
 fun ByteArrayDataOutput.writeText(text: String) = writeByteArray(text.toByteArray())
