@@ -20,7 +20,10 @@
 package org.sourcegrade.jagr.core.compiler.java
 
 import org.sourcegrade.jagr.api.testing.SourceFile
-import org.sourcegrade.jagr.launcher.io.*
+import org.sourcegrade.jagr.launcher.io.SerializationScope
+import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.readText
+import org.sourcegrade.jagr.launcher.io.writeText
 import java.net.URI
 import javax.tools.JavaFileObject.Kind
 import javax.tools.SimpleJavaFileObject
