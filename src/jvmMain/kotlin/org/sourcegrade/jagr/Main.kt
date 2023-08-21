@@ -45,9 +45,9 @@ class MainCommand : CliktCommand() {
     private val child by option("--child", "-c").flag()
         .help("Waits to receive grading job details via IPC")
     private val noExport by option("--no-export", "-n").flag()
-        .help("Do not export submission to submissions-export")
+        .help("Do not export submissions")
     private val exportOnly by option("--export-only", "-e").flag()
-        .help("Do not grade, only export submission to submissions-export")
+        .help("Do not grade, only export submissions")
     private val progress by option("--progress").choice("rainbow", "xmas")
         .help("Progress bar style")
 
