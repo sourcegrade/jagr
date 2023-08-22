@@ -14,7 +14,7 @@ clikt = "com.github.ajalt.clikt:clikt:4.1.0"
 configurate-core = { module = "org.spongepowered:configurate-extra-kotlin", version.ref = "configurate" }
 configurate-hocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate" }
 configurate-kotlin = { module = "org.spongepowered:configurate-extra-kotlin", version.ref = "configurate" }
-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2"
+coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
 csv = "org.apache.commons:commons-csv:1.10.0"
 guice = "com.google.inject:guice:5.1.0"
 jansi = "org.fusesource.jansi:jansi:2.4.0"
@@ -24,7 +24,7 @@ junit-launcher = "org.junit.platform:junit-platform-launcher:1.9.3"
 juniversalchardet = "com.github.albfernandez:juniversalchardet:2.4.0"
 logging-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 logging-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
-serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
+serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0"
 
 [bundles]
 junit = ["junit-core", "junit-engine", "junit-launcher"]
