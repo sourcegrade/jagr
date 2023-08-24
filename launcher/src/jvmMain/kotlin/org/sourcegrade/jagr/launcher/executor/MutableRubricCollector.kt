@@ -22,7 +22,6 @@ package org.sourcegrade.jagr.launcher.executor
 import org.sourcegrade.jagr.launcher.env.Jagr
 
 sealed interface MutableRubricCollector : RubricCollector {
-    suspend fun setListener(listener: (GradingResult) -> Unit)
     suspend fun allocate(queue: GradingQueue)
     suspend fun start(request: GradingRequest): GradingJob
     suspend fun <T> startBlock(block: suspend (StartBlock) -> T): T

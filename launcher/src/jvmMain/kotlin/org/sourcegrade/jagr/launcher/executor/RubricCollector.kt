@@ -23,6 +23,7 @@ sealed interface RubricCollector {
     suspend fun <T> withGradingScheduled(block: suspend (List<GradingJob>) -> T): T
     suspend fun <T> withGradingRunning(block: suspend (List<GradingJob>) -> T): T
     suspend fun <T> withGradingFinished(block: suspend (List<GradingResult>) -> T): T
+    suspend fun setListener(listener: (GradingResult) -> Unit)
     suspend fun getTotal(): Int
     suspend fun getRemaining(): Int
     suspend fun toSnapshot(): Snapshot
