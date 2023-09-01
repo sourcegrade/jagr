@@ -3,10 +3,10 @@ plugins {
 }
 
 extensions.configure<PublishingExtension> {
-    publications.withType<MavenPublication> {
-        val publication = this
+    publications {
+        val maven = getByName<MavenPublication>("maven")
         extensions.configure<SigningExtension> {
-            sign(publication)
+            sign(maven)
         }
     }
 }
