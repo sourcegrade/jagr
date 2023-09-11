@@ -18,7 +18,6 @@ dependencies {
     implementation(libs.serialization)
     implementation(libs.logging.core)
     kapt(libs.logging.core)
-    implementation(kotlin("reflect"))
 }
 
 tasks {
