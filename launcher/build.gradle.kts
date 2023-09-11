@@ -4,7 +4,6 @@ plugins {
     kotlin("jvm")
     kotlin("kapt")
     kotlin("plugin.serialization")
-    id("com.github.johnrengelman.shadow")
     id("jagr-publish")
     id("jagr-sign")
 }
@@ -23,7 +22,6 @@ dependencies {
 }
 
 tasks {
-    @Suppress("UnstableApiUsage")
     withType<ProcessResources> {
         from(rootProject.file("version")) {
             into("org/sourcegrade/jagr/")
