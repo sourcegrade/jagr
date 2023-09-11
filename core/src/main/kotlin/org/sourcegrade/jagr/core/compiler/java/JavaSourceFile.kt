@@ -22,6 +22,8 @@ package org.sourcegrade.jagr.core.compiler.java
 import org.sourcegrade.jagr.api.testing.SourceFile
 import org.sourcegrade.jagr.launcher.io.SerializationScope
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
+import org.sourcegrade.jagr.launcher.io.readText
+import org.sourcegrade.jagr.launcher.io.writeText
 import java.net.URI
 import javax.tools.JavaFileObject.Kind
 import javax.tools.SimpleJavaFileObject
@@ -38,12 +40,12 @@ data class JavaSourceFile(
 
     companion object Factory : SerializerFactory<JavaSourceFile> {
         override fun read(scope: SerializationScope.Input): JavaSourceFile =
-            JavaSourceFile(scope.input.readUTF(), scope.input.readUTF(), scope.input.readUTF())
+            JavaSourceFile(scope.input.readUTF(), scope.input.readUTF(), scope.input.readText())
 
         override fun write(obj: JavaSourceFile, scope: SerializationScope.Output) {
             scope.output.writeUTF(obj.className)
             scope.output.writeUTF(obj.fileName)
-            scope.output.writeUTF(obj.content)
+            scope.output.writeText(obj.content)
         }
     }
 }
