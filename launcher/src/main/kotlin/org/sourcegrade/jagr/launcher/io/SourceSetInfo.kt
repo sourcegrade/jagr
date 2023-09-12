@@ -27,11 +27,14 @@ data class SourceSetInfo(
     val files: Map<String, Set<String>>,
 ) {
     companion object Factory : SerializerFactory<SourceSetInfo> {
-        override fun read(scope: SerializationScope.Input) = SourceSetInfo(scope.input.readUTF(), scope.readMap())
+        override fun read(scope: SerializationScope.Input) = SourceSetInfo(
+            scope.input.readUTF(),
+            scope.readMap(valueSerializer = SetSerializerFactory(SerializerFactory.get(scope.jagr))),
+        )
 
         override fun write(obj: SourceSetInfo, scope: SerializationScope.Output) {
             scope.output.writeUTF(obj.name)
-            scope.writeMap(obj.files)
+            scope.writeMap(obj.files, valueSerializer = SetSerializerFactory(SerializerFactory.get(scope.jagr)))
         }
     }
 }

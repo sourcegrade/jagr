@@ -20,17 +20,19 @@
 package org.sourcegrade.jagr.gradle.extension
 
 import org.gradle.api.Project
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.kotlin.dsl.listProperty
+import org.gradle.kotlin.dsl.property
 
 abstract class SubmissionConfiguration(
     name: String,
     project: Project,
-) : AbstractConfiguration(name, project) {
-    override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>()
-        .convention(listOf("main", "test"))
+) : AbstractConfiguration(name, project, setOf("main", "test")) {
     abstract val studentId: Property<String>
     abstract val firstName: Property<String>
     abstract val lastName: Property<String>
+    val checkCompilation: Property<Boolean> = project.objects.property<Boolean>().convention(true)
+
+    fun skipCompilationCheck() {
+        checkCompilation.set(false)
+    }
 }

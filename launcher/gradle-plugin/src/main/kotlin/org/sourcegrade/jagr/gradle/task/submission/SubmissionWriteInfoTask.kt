@@ -15,7 +15,7 @@ import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
-import org.sourcegrade.jagr.gradle.getFiles
+import org.sourcegrade.jagr.gradle.mergeSourceSets
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.WriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Jagr
@@ -31,7 +31,7 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
 
     @get:Input
     val files: MapProperty<String, Map<String, Set<String>>> = project.objects.mapProperty<String, Map<String, Set<String>>>()
-        .value(configurationName.map { c -> primaryContainer[c].sourceSets.associate { it.name to it.getFiles() } })
+        .value(configurationName.map { c -> primaryContainer[c].sourceSets.mergeSourceSets() })
 
     @get:Input
     val dependencies: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>()
@@ -43,7 +43,11 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
 
     init {
         group = "jagr resources"
-        dependsOn("compileJava")
+        dependsOn(
+            configurationName
+                .flatMap { c -> primaryContainer[c].checkCompilation }
+                .map { if (it) "compileJava" else emptyList<String>() },
+        )
         setOnlyIf {
             verifySubmit()
             true
@@ -60,9 +64,10 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
         if (errors.isNotEmpty()) {
             throw GradleException(
                 """
-There were some errors preparing your submission. The following required properties were not set:
+There were some errors preparing your submission, please check your Gradle buildscript (e.g. build.gradle.kts).
+The following required properties were not set:
 $errors
-"""
+""",
             )
         }
     }

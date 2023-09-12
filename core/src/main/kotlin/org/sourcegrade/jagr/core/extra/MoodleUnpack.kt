@@ -75,7 +75,7 @@ class MoodleUnpack @Inject constructor(
         return SubmissionInfoVerification(
             file,
             assignmentId = assignmentId,
-            studentId = studentId
+            studentId = studentId,
         )
     }
 }

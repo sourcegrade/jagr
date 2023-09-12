@@ -1,10 +1,15 @@
-import org.sourcegrade.jagr.script.JagrPublishPlugin
-
 plugins {
     `java-library`
+    id("jagr-publish")
+    id("jagr-sign")
 }
 
-apply<JagrPublishPlugin>()
+tasks {
+    withType<PublishToMavenRepository> {
+        // check if rootProject version ends with .0 or .0-SNAPSHOT
+        onlyIf { rootProject.version.toString().matches(".*\\.0(-SNAPSHOT)?\$".toRegex()) }
+    }
+}
 
 val apiVersion: String by rootProject
 version = apiVersion

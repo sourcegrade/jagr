@@ -47,7 +47,7 @@ data class GradedCriterionImpl(
             scope[TestCycle::class],
             scope.read(),
             scope.read(),
-            scope.readList()
+            scope.readList(),
         )
 
         override fun write(obj: GradedCriterionImpl, scope: SerializationScope.Output) {

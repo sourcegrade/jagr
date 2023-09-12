@@ -52,9 +52,16 @@ data class Executor(
 The maximum amount of concurrency to use for grading.
 For a given concurrency n, Jagr will ensure that a maximum of n threads or processes are used concurrently that actively run
 submission code.
-"""
+""",
     )
     val concurrency: Int = 4,
+    @field:Comment(
+        """
+The JVM arguments to use for grading. These arguments are passed to the JVM that runs the grading code.
+This only applies to the "process" mode, as the "thread" and "single" modes do not spawn a new JVM.
+        """,
+    )
+    val jvmArgs: List<String> = listOf(),
     @field:Comment(
         """
 The executor mode to use. The following options are available:
@@ -75,7 +82,7 @@ The executor mode to use. The following options are available:
   such as "thread" or "single".
 
   The maximum number of concurrent child process used for grading is defined by the option "concurrency".
-"""
+""",
     )
     val mode: String = "process",
     @field:Comment(
@@ -84,7 +91,7 @@ The grading thread's maximum permitted elapsed userTime in milliseconds since th
 AssertionFailedError is thrown. If a thread's userTime satisfies
 (userTime - lastTimeout) > individualTimeout,
 the current userTime is stored for comparison later, and an AssertionFailedError is thrown to be caught by JUnit.
-"""
+""",
     )
     val timeoutIndividual: Long = 10_000L,
     @field:Comment(
@@ -94,7 +101,7 @@ AssertionFailedError is thrown. If a thread's userTime satisfies
 ((userTime - lastTimeout) > individualTimeout) && (userTime > totalTimeout),
 an AssertionFailedError is thrown to be caught by JUnit. Note that lastTimeout is not reset in this case, and all further
 invocations of checkTimeout() will result in an AssertionFailedError
-"""
+""",
     )
     val timeoutTotal: Long = 150_000L,
 )
@@ -106,7 +113,7 @@ data class Extras(
     @ConfigSerializable
     data class MoodleUnpack(
         override val enabled: Boolean = true,
-        val assignmentIdRegex: String = ".*Abgabe.*(?<assignmentId>[0-9]{2}).*[.]zip",
+        val assignmentIdRegex: String = ".*Abgabe[^0-9]*(?<assignmentId>[0-9]{1,2}).*[.]zip",
         val studentRegex: String = ".* - (?<studentId>([a-z]{2}[0-9]{2}[a-z]{4})|([a-z]+_[a-z]+))/submissions/.*[.]jar",
     ) : Extra
 

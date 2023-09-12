@@ -138,12 +138,14 @@ class CompiledBatchFactoryImpl @Inject constructor(
         val submissionInfo = originalSources.submissionInfo
         val replacementsForAssignment = if (replacements.isNotEmpty() && submissionInfo != null) {
             replacements[submissionInfo.assignmentId]
-        } else null
+        } else {
+            null
+        }
         val replacedSources = if (replacementsForAssignment == null) {
             originalSources
         } else {
             originalSources.copy(
-                sourceFiles = originalSources.sourceFiles + replacementsForAssignment
+                sourceFiles = originalSources.sourceFiles + replacementsForAssignment,
             )
         }
         val original = runtimeJarLoader.compileSources(replacedSources, libraries)

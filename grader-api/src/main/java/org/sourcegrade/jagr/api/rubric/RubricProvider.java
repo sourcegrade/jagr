@@ -25,10 +25,6 @@ import org.sourcegrade.jagr.api.testing.Submission;
 
 /**
  * Used to provide a {@link Rubric} for a submission.
- *
- * <p>
- * Implementation must be annotated with {@link RubricForSubmission} in order to be discovered.
- * </p>
  */
 public interface RubricProvider {
 

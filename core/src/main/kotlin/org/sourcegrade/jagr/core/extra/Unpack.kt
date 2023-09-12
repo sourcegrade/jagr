@@ -72,7 +72,7 @@ abstract class Unpack : Extra {
                             if (replaceStudentId) append(" studentId(${submissionInfo.studentId} -> $studentId)")
                             if (replaceFirstName) append(" firstName(${submissionInfo.firstName} -> $firstName)")
                             if (replaceLastName) append(" lastName(${submissionInfo.lastName} -> $lastName)")
-                        }.toString()
+                        }.toString(),
                     )
                     SubmissionInfo(
                         if (replaceAssignmentId) checkNotNull(assignmentId) else submissionInfo.assignmentId,
@@ -84,7 +84,9 @@ abstract class Unpack : Extra {
                         if (replaceFirstName) checkNotNull(firstName) else submissionInfo.firstName,
                         if (replaceLastName) checkNotNull(lastName) else submissionInfo.lastName,
                     )
-                } else return
+                } else {
+                    return
+                }
             } ?: SubmissionInfo(
                 assignmentId = assignmentId ?: "none",
                 jagrVersion = Jagr.version,

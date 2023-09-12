@@ -55,7 +55,7 @@ class SubmissionVerificationTransformer : ClassTransformer {
             { owner.startsWith("java/lang/reflect") },
             { owner.startsWith("org/sourcegrade") },
             { owner.startsWith("java/lang/Process") },
-            { owner == "java/lang/ClassLoader" },
+            { owner == "java/lang/ClassLoader" && !name.startsWith("getResource") },
             { owner == "java/lang/System" && name == "exit" },
             { owner == "java/lang/Runtime" },
         )

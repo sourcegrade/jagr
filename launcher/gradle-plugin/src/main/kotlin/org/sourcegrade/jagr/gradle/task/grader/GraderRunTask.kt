@@ -2,9 +2,11 @@ package org.sourcegrade.jagr.gradle.task.grader
 
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
@@ -13,7 +15,11 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
+import org.sourcegrade.jagr.gradle.extension.JagrDownloadExtension
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
+import org.sourcegrade.jagr.gradle.extension.ProjectSourceSetTuple
+import org.sourcegrade.jagr.gradle.extension.relative
+import org.sourcegrade.jagr.gradle.task.JagrDownloadTask
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.submission.SubmissionWriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Config
@@ -23,8 +29,10 @@ import org.sourcegrade.jagr.launcher.env.SystemResourceJagrFactory
 import org.sourcegrade.jagr.launcher.env.gradingQueueFactory
 import org.sourcegrade.jagr.launcher.env.logger
 import org.sourcegrade.jagr.launcher.executor.Executor
-import org.sourcegrade.jagr.launcher.executor.SyncExecutor
+import org.sourcegrade.jagr.launcher.executor.MultiWorkerExecutor
+import org.sourcegrade.jagr.launcher.executor.ProcessWorkerPool
 import org.sourcegrade.jagr.launcher.executor.emptyCollector
+import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.GradingBatch
 import org.sourcegrade.jagr.launcher.io.ResourceContainer
 import org.sourcegrade.jagr.launcher.io.addResource
@@ -34,7 +42,10 @@ import org.sourcegrade.jagr.launcher.io.buildResourceContainerInfo
 import org.sourcegrade.jagr.launcher.io.createResourceContainer
 import org.sourcegrade.jagr.launcher.io.logGradedRubric
 import org.sourcegrade.jagr.launcher.io.logHistogram
+import org.sourcegrade.jagr.launcher.io.writeIn
 import java.io.File
+import java.net.URI
+import java.nio.file.Path
 
 @Suppress("LeakingThis")
 abstract class GraderRunTask : DefaultTask(), GraderTask {
@@ -47,10 +58,14 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     val submissionInfoFile: Property<File> = project.objects.property<File>()
         .value(submissionConfigurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })
 
+    @get:Input
+    val jagrJar: Property<Path> = project.objects.property()
+
     init {
         group = "verification"
         dependsOn(submissionConfigurationName.map(SubmissionWriteInfoTask.Factory::determineTaskName))
         dependsOn(configurationName.map(GraderWriteInfoTask.Factory::determineTaskName))
+        dependsOn("jagrDownload")
     }
 
     private fun GraderConfiguration.getConfigRecursive(): Config {
@@ -73,104 +88,148 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     private suspend fun grade() {
         val jagrExtension = project.extensions.getByType<JagrExtension>()
         val configuration = jagrExtension.graders[configurationName.get()]
-        val jagr = SystemResourceJagrFactory.create(GradleLaunchConfiguration(configuration.getConfigRecursive()))
+        val jagr = SystemResourceJagrFactory.create(GradleLaunchConfiguration(configuration.getConfigRecursive(), jagrJar.get()))
         jagr.logger.info("Starting Jagr v${Jagr.version}")
-        val batch: GradingBatch = buildGradingBatch {
-            addGrader(
-                buildResourceContainer {
-                    info = buildResourceContainerInfo {
-                        name = "grader"
-                    }
-                    project.extensions
-                        .getByType<SourceSetContainer>()
-                        .filter { configuration.matchRecursive(it) }
-                        .forEach { sourceSet -> sourceSet.allSource.sourceDirectories.writeToContainer(this) }
-                    addResource {
-                        name = "grader-info.json"
-                        graderInfoFile.get().inputStream().use { input ->
-                            outputStream.use { output ->
-                                input.transferTo(output)
-                            }
-                        }
-                    }
-                }
-            )
-            addSubmission(
-                buildResourceContainer {
-                    info = buildResourceContainerInfo {
-                        name = "submission"
-                    }
-                    for (sourceSet in jagrExtension.submissions[submissionConfigurationName.get()].sourceSets) {
-                        writeSourceSet(sourceSet)
-                    }
-                    addResource {
-                        name = "submission-info.json"
-                        submissionInfoFile.get().inputStream().use { input ->
-                            outputStream.use { output ->
-                                input.transferTo(output)
-                            }
-                        }
-                    }
-                }
-            )
-            project.configurations.asSequence()
-                .filter { it.isCanBeResolved && it.name.contains("compile", ignoreCase = true) }
-                .flatMap { it.resolvedConfiguration.resolvedArtifacts }
-                .filter {
-                    !(
-                        it.id.componentIdentifier.displayName.startsWith("org.sourcegrade") &&
-                            it.id.componentIdentifier.displayName.contains("jagr")
-                        )
-                }
-                .map { it.file }
-                .forEach {
-                    addLibrary(createResourceContainer(it))
-                }
-        }
+        val exporterHTML = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
+        val exporterMoodle = jagr.injector.getInstance(GradedRubricExporter.Moodle::class.java)
+        val batch: GradingBatch = createGradingBatch(jagrExtension, configuration)
         val queue = jagr.gradingQueueFactory.create(batch)
         jagr.logger.info("Executor mode 'gradle' :: expected submission: ${batch.expectedSubmissions}")
-        val executor: Executor = SyncExecutor(jagr)
+        val executor: Executor = MultiWorkerExecutor.Factory {
+            workerPoolFactory = ProcessWorkerPool.Factory { concurrency = 1 }
+        }.create(jagr)
         val collector = emptyCollector(jagr)
+        // TODO: Properly configure task output
+        val rubricOutputDir = project.buildDir.resolve("resources/jagr/${configurationName.get()}/rubrics/")
+        val rubrics = mutableMapOf<String, Boolean>()
         collector.setListener { result ->
-            result.rubrics.keys.forEach { it.logGradedRubric(jagr) }
+            result.rubrics.keys.forEach {
+                it.logGradedRubric(jagr)
+                val resource = exporterHTML.export(it)
+                resource.writeIn(rubricOutputDir)
+                // whether the given rubric failed
+                rubrics[resource.name] = it.grade.maxPoints < it.rubric.maxPoints
+                val moodleResource = exporterMoodle.export(it)
+                moodleResource.writeIn(rubricOutputDir)
+            }
         }
         collector.allocate(queue)
         executor.schedule(queue)
         executor.start(collector)
         Environment.cleanupMainProcess()
-        val rubricCount = collector.withGradingFinished { gradingFinished ->
+        collector.withGradingFinished { gradingFinished ->
             gradingFinished.logHistogram(jagr)
-            gradingFinished.sumOf { it.rubrics.size }
         }
-        if (rubricCount == 0) {
+        fun String.toRubricLink() =
+            URI("file", "", rubricOutputDir.toURI().path + this, null, null).toString()
+        if (rubrics.isEmpty()) {
             jagr.logger.warn("No rubrics!")
         } else {
-            jagr.logger.info("Exported $rubricCount rubrics")
+            jagr.logger.info("Exported ${rubrics.size} rubrics:")
+            rubrics.forEach { (name, failed) ->
+                val rubricLink = name.toRubricLink()
+                jagr.logger.info(" > $rubricLink ${if (failed) " (failed)" else ""}")
+            }
+            if (rubrics.any { (_, failed) -> failed }) {
+                throw GradleException(
+                    """
+                    Grading completed with failing tests! See the rubric${if (rubrics.size == 1) "" else "s"} at:
+                    ${rubrics.filter { (_, failed) -> failed }.keys.joinToString("\n") { " > ${it.toRubricLink()}" }}
+                    """.trimIndent(),
+                )
+            }
         }
+    }
+
+    private fun createGradingBatch(jagrExtension: JagrExtension, configuration: GraderConfiguration) = buildGradingBatch {
+        addGrader(
+            buildResourceContainer {
+                info = buildResourceContainerInfo {
+                    name = "grader"
+                }
+                val allSourceSets = configuration.getSourceSetNamesRecursive() + configuration.getSolutionSourceSetNamesRecursive()
+                allSourceSets.map { (projectPath, sourceSetName) ->
+                    projectPath to checkNotNull(project.relative(projectPath).extensions.getByType<SourceSetContainer>()[sourceSetName])
+                }.sortedByDescending { (projectPath, sourceSet) ->
+                    getRecursiveDepthOfSourceSet(configuration, ProjectSourceSetTuple(projectPath, sourceSet.name), 0)
+                }.forEach { (_, sourceSet) -> writeSourceSet(sourceSet) }
+                addResource {
+                    name = "grader-info.json"
+                    graderInfoFile.get().inputStream().use { input ->
+                        outputStream.use { output ->
+                            input.transferTo(output)
+                        }
+                    }
+                }
+            },
+        )
+        addSubmission(
+            buildResourceContainer {
+                info = buildResourceContainerInfo {
+                    name = "submission"
+                }
+                for (sourceSet in jagrExtension.submissions[submissionConfigurationName.get()].sourceSets) {
+                    writeSourceSet(sourceSet)
+                }
+                addResource {
+                    name = "submission-info.json"
+                    submissionInfoFile.get().inputStream().use { input ->
+                        outputStream.use { output ->
+                            input.transferTo(output)
+                        }
+                    }
+                }
+            },
+        )
+        val allSourceSets: Set<ProjectSourceSetTuple> = configuration.getSourceSetNamesRecursive() +
+            jagrExtension.submissions[solutionConfigurationName.get()].sourceSetNames.get()
+        allSourceSets.map { (projectPath, sourceSetName) ->
+            project.relative(projectPath).let { it to checkNotNull(it.extensions.getByType<SourceSetContainer>()[sourceSetName]) }
+        }.flatMap { (project, sourceSet) ->
+            sequenceOf(
+                project.configurations[sourceSet.runtimeClasspathConfigurationName],
+                project.configurations[sourceSet.compileClasspathConfigurationName],
+            ).requireNoNulls()
+        }
+            .flatMap { it.resolvedConfiguration.resolvedArtifacts }
+            .filter {
+                !(
+                    it.id.componentIdentifier.displayName.startsWith("org.sourcegrade") &&
+                        it.id.componentIdentifier.displayName.contains("jagr")
+                    )
+            }.filter { artifact ->
+                // TODO: This is not the best way to exclude modules from the project itself from the libs jar
+                project.name != artifact.moduleVersion.id.group
+            }
+            .map { it.file }
+            .forEach { addLibrary(createResourceContainer(it)) }
     }
 
     /**
-     * Returns true if [sourceSet] is in this configuration or any parents
+     * Returns the recursive depth of the [sourceSetName] in the parent configurations of the given [graderConfiguration] starting with [depth]
      */
-    private fun GraderConfiguration.matchRecursive(sourceSet: SourceSet): Boolean {
-        val jagr = project.extensions.getByType<JagrExtension>()
-        val solutionSourceSetNames = jagr.submissions[solutionConfigurationName.get()].sourceSetNames.get()
-        return sourceSet.name in sourceSetNames.get() || sourceSet.name in solutionSourceSetNames ||
-            (parentConfiguration.isPresent && parentConfiguration.get().matchRecursive(sourceSet))
+    private fun getRecursiveDepthOfSourceSet(
+        graderConfiguration: GraderConfiguration,
+        projectSourceSetTuple: ProjectSourceSetTuple,
+        depth: Int,
+    ): Int {
+        if (projectSourceSetTuple in graderConfiguration.getSourceSetNamesRecursive()) {
+            return depth
+        }
+        if (graderConfiguration.parentConfiguration.isPresent) {
+            return getRecursiveDepthOfSourceSet(graderConfiguration.parentConfiguration.get(), projectSourceSetTuple, depth + 1)
+        }
+        return -1
     }
 
-    private fun ResourceContainer.Builder.writeSourceSet(sourceSet: SourceSet) {
-        sourceSet
-            .allSource
-            .sourceDirectories
-            .writeToContainer(this)
-    }
+    private fun ResourceContainer.Builder.writeSourceSet(sourceSet: SourceSet) =
+        sourceSet.allSource.sourceDirectories.writeToContainer(this)
 
     private fun FileCollection.writeToContainer(builder: ResourceContainer.Builder) {
         forEach { sourceDirectory ->
             sourceDirectory.walk().filter { it.isFile }.forEach { file ->
                 builder.addResource {
-                    name = file.relativeTo(sourceDirectory).path
+                    name = file.relativeTo(sourceDirectory).invariantSeparatorsPath
                     file.inputStream().use { input ->
                         outputStream.use { output ->
                             input.transferTo(output)
@@ -185,6 +244,11 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         override fun determineTaskName(name: String) = "${name}Run"
         override fun configureTask(task: GraderRunTask, project: Project, configuration: GraderConfiguration) {
             task.description = "Runs the ${task.sourceSetNames.get()} grader"
+            task.jagrJar.set(
+                project.extensions.getByType<JagrExtension>()
+                    .extensions.getByType<JagrDownloadExtension>()
+                    .destName.map { JagrDownloadTask.JAGR_CACHE.resolve(it) },
+            )
         }
     }
 }

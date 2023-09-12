@@ -94,7 +94,7 @@ class CriterionImpl(
         val graderResult = GradeResult.clamped(
             grader?.grade(testCycle, this)
                 ?: GradeResult.of(this, "No grader provided"),
-            this
+            this,
         )
         if (childCriteria.isEmpty()) {
             return GradedCriterionImpl(testCycle, graderResult, this)

@@ -25,7 +25,7 @@ internal fun SourceSet.forEachFile(action: (directorySet: String, fileName: Stri
     for (directorySet in allSource.sourceDirectories) {
         for (file in directorySet.walkTopDown()) {
             if (file.isFile) {
-                action(directorySet.name, file.relativeTo(directorySet).path)
+                action(directorySet.name, file.relativeTo(directorySet).invariantSeparatorsPath)
             }
         }
     }
@@ -35,4 +35,18 @@ internal fun SourceSet.getFiles(): Map<String, Set<String>> {
     val result = mutableMapOf<String, MutableSet<String>>()
     forEachFile { directorySet, fileName -> result.computeIfAbsent(directorySet) { mutableSetOf() }.add(fileName) }
     return result
+}
+
+fun List<SourceSet>.mergeSourceSets(): Map<String, Map<String, Set<String>>> {
+    return asSequence()
+        .map { it.name to it.getFiles() }
+        .fold(mutableMapOf()) { acc, (sourceSetName, sourceSetDir) ->
+            acc.merge(sourceSetName, sourceSetDir) { a, b ->
+                (a.asSequence() + b.asSequence()).fold(mutableMapOf()) { map, (name, files) ->
+                    map.merge(name, files) { x, y -> x + y }
+                    map
+                }
+            }
+            acc
+        }
 }
