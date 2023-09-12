@@ -28,19 +28,19 @@ import org.gradle.kotlin.dsl.project
  * Add a x.y versioned project api dependency to a x.y.z versioned project.
  */
 fun DependencyHandler.apiProject(project: Project, path: String) =
-    addConfiguration("jvmMainApi", project, path)
+    addConfiguration("api", project, path)
 
 /**
  * Add a x.y versioned project implementation dependency to a x.y.z versioned project.
  */
 fun DependencyHandler.implementationProject(project: Project, path: String) =
-    addConfiguration("jvmMainImplementation", project, path)
+    addConfiguration("implementation", project, path)
 
 /**
  * Add a x.y versioned runtimeOnly dependency to a x.y.z versioned project.
  */
 fun DependencyHandler.runtimeOnlyProject(project: Project, path: String) =
-    addConfiguration("jvmMainRuntimeOnly", project, path)
+    addConfiguration("runtimeOnly", project, path)
 
 /**
  * Add a x.y versioned project dependency to a x.y.z versioned project.

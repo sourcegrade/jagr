@@ -1,7 +1,13 @@
 import java.net.URI
 
 plugins {
+    java
     `maven-publish`
+}
+
+extensions.configure<JavaPluginExtension> {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 extensions.configure<PublishingExtension> {
@@ -16,7 +22,8 @@ extensions.configure<PublishingExtension> {
             url = URI(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
         }
     }
-    publications.withType<MavenPublication> {
+    publications.register<MavenPublication>("maven") {
+        from(components["java"])
         pom {
             name.set("jagr")
             description.set("An automated tool for grading programming assignments")
