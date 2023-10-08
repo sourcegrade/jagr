@@ -1,5 +1,5 @@
 [versions]
-asm = "9.5"
+asm = "9.6"
 configurate = "4.1.2"
 junit = "5.10.0"
 kotlin = "1.9.10"
