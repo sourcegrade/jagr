@@ -63,10 +63,11 @@ internal class TestStatusListenerImpl(
                     ?.let { result -> identifier to result }
             }
             .toMap()
-        if (failedChildren.isEmpty()) {
-            return parentResult
+        return if (failedChildren.isEmpty()) {
+            parentResult
+        } else {
+            TestExecutionResult.failed(ContainerFailedError(failedChildren))
         }
-        return TestExecutionResult.failed(ContainerFailedError(failedChildren))
     }
 
     internal fun logLinkageErrors(info: SubmissionInfo) {
