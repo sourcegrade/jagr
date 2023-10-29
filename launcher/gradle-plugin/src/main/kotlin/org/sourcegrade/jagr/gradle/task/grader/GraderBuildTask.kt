@@ -8,9 +8,9 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
+import org.sourcegrade.jagr.gradle.extension.createGraderInfoFileProperty
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import java.io.File
 
@@ -18,8 +18,7 @@ import java.io.File
 abstract class GraderBuildTask : Jar(), GraderTask {
 
     @get:InputFile
-    val graderInfoFile: Property<File> = project.objects.property<File>()
-        .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/grader-info.json") })
+    val graderInfoFile: Property<File> = createGraderInfoFileProperty()
 
     init {
         group = "build"
