@@ -71,23 +71,23 @@ abstract class AbstractConfiguration(
         }
     }
 
-    private fun getConfiguration(configurationName: String, normalizedName: String?): Pair<String, Set<String>>? {
+    private fun getConfiguration(configurationName: String, nameOverride: String?): Pair<String, Set<String>>? {
         return project.configurations.findByName(configurationName)?.let { configuration ->
             val dependencies = configuration.dependencies.mapTo(mutableSetOf()) { "${it.group}:${it.name}:${it.version}" }
                 .takeIf { it.isNotEmpty() } ?: return null
-            (normalizedName ?: configurationName) to dependencies
+            (nameOverride ?: configurationName) to dependencies
         }
     }
 
     @JvmOverloads
-    internal fun getAllDependencies(normalizedName: String? = null): Map<String, Set<String>> {
+    internal fun getAllDependencies(nameOverride: String? = null): Map<String, Set<String>> {
         return sourceSets.flatMap { sourceSet ->
             setOfNotNull(
-                getConfiguration(sourceSet.apiConfigurationName, normalizedName?.let { "${it}Api" }),
-                getConfiguration(sourceSet.compileOnlyConfigurationName, normalizedName?.let { "${it}CompileOnly" }),
-                getConfiguration(sourceSet.compileOnlyApiConfigurationName, normalizedName?.let { "${it}CompileOnlyApi" }),
-                getConfiguration(sourceSet.implementationConfigurationName, normalizedName?.let { "${it}Implementation" }),
-                getConfiguration(sourceSet.runtimeOnlyConfigurationName, normalizedName?.let { "${it}RuntimeOnly" }),
+                getConfiguration(sourceSet.apiConfigurationName, nameOverride?.let { "${it}Api" }),
+                getConfiguration(sourceSet.compileOnlyConfigurationName, nameOverride?.let { "${it}CompileOnly" }),
+                getConfiguration(sourceSet.compileOnlyApiConfigurationName, nameOverride?.let { "${it}CompileOnlyApi" }),
+                getConfiguration(sourceSet.implementationConfigurationName, nameOverride?.let { "${it}Implementation" }),
+                getConfiguration(sourceSet.runtimeOnlyConfigurationName, nameOverride?.let { "${it}RuntimeOnly" }),
             )
         }.toMap()
     }
