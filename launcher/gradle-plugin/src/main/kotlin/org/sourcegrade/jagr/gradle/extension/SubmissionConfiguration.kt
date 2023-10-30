@@ -32,6 +32,17 @@ abstract class SubmissionConfiguration(
     abstract val lastName: Property<String>
     val checkCompilation: Property<Boolean> = project.objects.property<Boolean>().convention(true)
 
+    init {
+        project.afterEvaluate {
+            configureProject()
+        }
+    }
+
+    /**
+     * Only available in `project.afterEvaluate { }`
+     */
+    fun getCompileJavaTaskNames(): List<String> = sourceSets.map { it.compileJavaTaskName }
+
     fun skipCompilationCheck() {
         checkCompilation.set(false)
     }
