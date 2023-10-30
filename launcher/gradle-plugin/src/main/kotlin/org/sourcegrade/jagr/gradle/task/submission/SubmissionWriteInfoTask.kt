@@ -42,13 +42,7 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
 
     init {
         group = "jagr resources"
-        dependsOn(
-            configurationName.map { primaryContainer[it] }
-                .let { provider -> provider.zip(provider.flatMap { it.checkCompilation }, ::Pair) }
-                .map { (configuration, checkCompilation) ->
-                    if (checkCompilation) configuration.getCompileJavaTaskNames() else emptyList()
-                },
-        )
+        configureSubmissionCompilationDependency(configurationName.map { primaryContainer[it] })
         setOnlyIf {
             verifySubmit()
             true

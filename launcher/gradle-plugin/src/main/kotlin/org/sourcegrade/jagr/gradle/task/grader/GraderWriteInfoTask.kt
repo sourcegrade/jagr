@@ -53,11 +53,10 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
 
     init {
         group = "jagr resources"
-        dependsOn(
-            solutionConfigurationName
-                .flatMap { c -> submissionContainer[c].checkCompilation }
-                .map { if (it) "compileJava" else emptyList<String>() },
-        )
+        // add compilation dependency on solution
+        configureSubmissionCompilationDependency(solutionConfigurationName.map { submissionContainer[it] })
+        // add compilation dependency on grader source sets
+        dependsOn(configurationName.map { primaryContainer[it] }.map { it.getCompileJavaTaskNames() })
     }
 
     private fun GraderConfiguration.getFilesRecursive(): Map<String, Set<String>> {

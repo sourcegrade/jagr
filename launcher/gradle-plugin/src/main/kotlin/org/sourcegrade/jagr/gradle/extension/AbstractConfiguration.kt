@@ -82,6 +82,8 @@ abstract class AbstractConfiguration(
         }
     }
 
+    fun getCompileJavaTaskNames(): List<String> = sourceSets.map { it.compileJavaTaskName }
+
     @JvmOverloads
     internal fun getAllDependencies(nameOverride: String? = null): Map<String, Set<String>> {
         return sourceSets.flatMap { sourceSet ->

@@ -38,11 +38,6 @@ abstract class SubmissionConfiguration(
         }
     }
 
-    /**
-     * Only available in `project.afterEvaluate { }`
-     */
-    fun getCompileJavaTaskNames(): List<String> = sourceSets.map { it.compileJavaTaskName }
-
     fun skipCompilationCheck() {
         checkCompilation.set(false)
     }
