@@ -56,7 +56,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     val graderInfoFile: Property<File> = createGraderInfoFileProperty()
 
     @get:InputFile
-    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty()
+    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty(submissionConfigurationName)
 
     @get:Input
     val jagrJar: Property<Path> = project.objects.property()

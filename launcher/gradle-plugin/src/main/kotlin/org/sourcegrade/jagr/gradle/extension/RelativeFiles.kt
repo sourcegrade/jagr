@@ -12,18 +12,23 @@ fun Project.relative(path: String): Project {
     return project.project(path)
 }
 
-fun TargetSourceSetsTask.resolveInBuildDirectory(pathResolver: (configurationName: String) -> String): Provider<File> {
-    return configurationName.flatMap { configurationName ->
+fun TargetSourceSetsTask.resolveInBuildDirectory(
+    configurationNameProvider: Provider<String>,
+    pathResolver: (configurationName: String) -> String,
+): Provider<File> {
+    return configurationNameProvider.flatMap { configurationName ->
         project.layout.buildDirectory.map { it.file(pathResolver(configurationName)).asFile }
     }
 }
 
-fun TargetSourceSetsTask.createSubmissionInfoFileProperty(): Property<File> {
+fun TargetSourceSetsTask.createSubmissionInfoFileProperty(
+    configurationNameProvider: Provider<String>,
+): Property<File> {
     return project.objects.property<File>()
-        .value(resolveInBuildDirectory { "resources/jagr/$it/submission-info.json" })
+        .value(resolveInBuildDirectory(configurationNameProvider) { "resources/jagr/$it/submission-info.json" })
 }
 
 fun TargetSourceSetsTask.createGraderInfoFileProperty(): Property<File> {
     return project.objects.property<File>()
-        .value(resolveInBuildDirectory { "resources/jagr/$it/grader-info.json" })
+        .value(resolveInBuildDirectory(configurationName) { "resources/jagr/$it/grader-info.json" })
 }

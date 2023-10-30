@@ -14,7 +14,7 @@ import java.io.File
 abstract class SubmissionBuildTask : Jar(), SubmissionTask {
 
     @get:InputFile
-    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty()
+    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty(configurationName)
 
     init {
         group = "build"
