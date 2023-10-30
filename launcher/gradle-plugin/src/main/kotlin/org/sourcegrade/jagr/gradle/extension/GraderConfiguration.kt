@@ -55,6 +55,7 @@ abstract class GraderConfiguration(
 
     init {
         project.afterEvaluate {
+            configureProject()
             if (parentConfiguration.isPresent) {
                 addAsDependency(parentConfiguration.get())
             }

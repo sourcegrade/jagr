@@ -24,7 +24,9 @@ import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.provideDelegate
 import org.gradle.kotlin.dsl.setProperty
 import java.util.Locale
 
@@ -36,27 +38,29 @@ abstract class AbstractConfiguration(
 
     private val dependencyConfiguration = DependencyConfiguration()
 
-    private val _sourceSets: MutableList<SourceSet> = mutableListOf()
-    val sourceSets: List<SourceSet>
-        get() = _sourceSets
-
     val sourceSetNames: SetProperty<ProjectSourceSetTuple> = project.objects.setProperty<ProjectSourceSetTuple>()
         .convention(ProjectSourceSetTuple.fromSourceSetNames("", sourceSetNamesConvention))
-
-    init {
-        project.afterEvaluate { proj ->
-            sourceSetNames.get().forEach { (projectPath, name) ->
-                val sourceSet = proj.relative(projectPath).sourceSetContainer.maybeCreate(name)
-                _sourceSets.add(sourceSet)
-            }
-            initialize(proj)
-        }
-    }
 
     private val Project.sourceSetContainer: SourceSetContainer
         get() = extensions.getByType()
 
-    private fun initialize(project: Project) {
+    val sourceSets: List<SourceSet> by lazy {
+        sourceSetNames.get().map { (projectPath, name) ->
+            project.relative(projectPath).sourceSetContainer.maybeCreate(name)
+        }
+    }
+
+    /**
+     * Configures the target project using information from this configuration.
+     *
+     * Must be called from a subclass in `project.afterEvaluate { }`.
+     */
+    protected fun configureProject() {
+        sourceSets
+        configureDependencies()
+    }
+
+    private fun configureDependencies() {
         project.dependencies {
             for ((suffix, dependencyNotations) in dependencyConfiguration.dependencies) {
                 val configurationName = if (name == "main") {
@@ -76,6 +80,12 @@ abstract class AbstractConfiguration(
             val dependencies = configuration.dependencies.mapTo(mutableSetOf()) { "${it.group}:${it.name}:${it.version}" }
                 .takeIf { it.isNotEmpty() } ?: return null
             (nameOverride ?: configurationName) to dependencies
+        }
+    }
+
+    internal fun getCompileJavaTaskNames(): List<String> {
+        return sourceSetNames.get().map { (projectPath, name) ->
+            projectPath + ":" + project.relative(projectPath).sourceSetContainer[name].compileJavaTaskName
         }
     }
 
