@@ -2,8 +2,8 @@
 asm = "9.6"
 configurate = "4.1.2"
 junit = "5.10.0"
-kotlin = "1.9.10"
-log4j = "2.20.0"
+kotlin = "1.9.20"
+log4j = "2.21.1"
 
 [libraries]
 annotations = "org.jetbrains:annotations:24.0.1"
@@ -17,7 +17,7 @@ configurate-kotlin = { module = "org.spongepowered:configurate-extra-kotlin", ve
 coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
 csv = "org.apache.commons:commons-csv:1.10.0"
 guice = "com.google.inject:guice:5.1.0"
-jansi = "org.fusesource.jansi:jansi:2.4.0"
+jansi = "org.fusesource.jansi:jansi:2.4.1"
 junit-core = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-launcher = "org.junit.platform:junit-platform-launcher:1.10.0"

@@ -18,6 +18,8 @@ import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrDownloadExtension
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.extension.ProjectSourceSetTuple
+import org.sourcegrade.jagr.gradle.extension.createGraderInfoFileProperty
+import org.sourcegrade.jagr.gradle.extension.createSubmissionInfoFileProperty
 import org.sourcegrade.jagr.gradle.extension.relative
 import org.sourcegrade.jagr.gradle.task.JagrDownloadTask
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
@@ -51,12 +53,10 @@ import java.nio.file.Path
 abstract class GraderRunTask : DefaultTask(), GraderTask {
 
     @get:InputFile
-    val graderInfoFile: Property<File> = project.objects.property<File>()
-        .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/grader-info.json") })
+    val graderInfoFile: Property<File> = createGraderInfoFileProperty()
 
     @get:InputFile
-    val submissionInfoFile: Property<File> = project.objects.property<File>()
-        .value(submissionConfigurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })
+    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty(submissionConfigurationName)
 
     @get:Input
     val jagrJar: Property<Path> = project.objects.property()
@@ -100,7 +100,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         }.create(jagr)
         val collector = emptyCollector(jagr)
         // TODO: Properly configure task output
-        val rubricOutputDir = project.buildDir.resolve("resources/jagr/${configurationName.get()}/rubrics/")
+        val rubricOutputDir = project.buildFile.resolve("resources/jagr/${configurationName.get()}/rubrics/")
         val rubrics = mutableMapOf<String, Boolean>()
         collector.setListener { result ->
             result.rubrics.keys.forEach {

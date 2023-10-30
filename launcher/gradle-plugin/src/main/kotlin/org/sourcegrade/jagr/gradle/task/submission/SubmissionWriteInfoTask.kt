@@ -12,9 +12,9 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.mapProperty
-import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
+import org.sourcegrade.jagr.gradle.extension.createSubmissionInfoFileProperty
 import org.sourcegrade.jagr.gradle.mergeSourceSets
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.WriteInfoTask
@@ -38,16 +38,11 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
         .value(configurationName.map { c -> primaryContainer[c].getAllDependencies() })
 
     @get:OutputFile
-    val submissionInfoFile: Property<File> = project.objects.property<File>()
-        .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })
+    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty(configurationName)
 
     init {
         group = "jagr resources"
-        dependsOn(
-            configurationName
-                .flatMap { c -> primaryContainer[c].checkCompilation }
-                .map { if (it) "compileJava" else emptyList<String>() },
-        )
+        configureSubmissionCompilationDependency(configurationName.map { primaryContainer[it] })
         setOnlyIf {
             verifySubmit()
             true

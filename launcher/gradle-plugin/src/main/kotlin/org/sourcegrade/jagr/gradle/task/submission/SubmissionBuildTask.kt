@@ -4,9 +4,8 @@ import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFile
 import org.gradle.jvm.tasks.Jar
-import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
+import org.sourcegrade.jagr.gradle.extension.createSubmissionInfoFileProperty
 import org.sourcegrade.jagr.gradle.extension.getSourceSet
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import java.io.File
@@ -15,8 +14,7 @@ import java.io.File
 abstract class SubmissionBuildTask : Jar(), SubmissionTask {
 
     @get:InputFile
-    val submissionInfoFile: Property<File> = project.objects.property<File>()
-        .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })
+    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty(configurationName)
 
     init {
         group = "build"

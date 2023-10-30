@@ -13,9 +13,9 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.mapProperty
-import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
+import org.sourcegrade.jagr.gradle.extension.createGraderInfoFileProperty
 import org.sourcegrade.jagr.gradle.forEachFile
 import org.sourcegrade.jagr.gradle.mergeSourceSets
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
@@ -49,16 +49,14 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
         .value(configurationName.map { c -> primaryContainer[c].getAllDependenciesRecursive() })
 
     @get:OutputFile
-    val graderInfoFile: Property<File> = project.objects.property<File>()
-        .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/grader-info.json") })
+    val graderInfoFile: Property<File> = createGraderInfoFileProperty()
 
     init {
         group = "jagr resources"
-        dependsOn(
-            solutionConfigurationName
-                .flatMap { c -> submissionContainer[c].checkCompilation }
-                .map { if (it) "compileJava" else emptyList<String>() },
-        )
+        // add compilation dependency on solution
+        configureSubmissionCompilationDependency(solutionConfigurationName.map { submissionContainer[it] })
+        // add compilation dependency on grader source sets
+        dependsOn(configurationName.map { primaryContainer[it] }.map { it.getCompileJavaTaskNames() })
     }
 
     private fun GraderConfiguration.getFilesRecursive(): Map<String, Set<String>> {
