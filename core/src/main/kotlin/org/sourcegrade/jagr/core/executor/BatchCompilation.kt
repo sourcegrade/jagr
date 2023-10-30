@@ -76,10 +76,9 @@ class CompiledBatchFactoryImpl @Inject constructor(
         // maps assignment ids to files that should be replaced with solution files
         val replacements = submissionFileOverrides.mapValues { (assignmentId, solutionOverrides) ->
             val gradersForAssignment = graders.filter { it.info.assignmentId == assignmentId }
-            val t: Map<String, JavaSourceFile> = solutionOverrides.mapNotNull { solutionOverride ->
+            solutionOverrides.mapNotNull { solutionOverride ->
                 gradersForAssignment.firstNotNullOfOrNull { it.container.source.sourceFiles[solutionOverride] }
             }.associateBy { it.fileName }
-            t
         }
 
         val submissions: List<Submission> = batch.submissions.compile(
