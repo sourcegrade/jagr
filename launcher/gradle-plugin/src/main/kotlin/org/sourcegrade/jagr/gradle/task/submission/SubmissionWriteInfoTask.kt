@@ -38,7 +38,7 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
         .value(configurationName.map { c -> primaryContainer[c].getAllDependencies() })
 
     @get:OutputFile
-    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty()
+    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty(configurationName)
 
     init {
         group = "jagr resources"
