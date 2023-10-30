@@ -24,6 +24,7 @@ import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.provideDelegate
 import org.gradle.kotlin.dsl.setProperty
@@ -82,7 +83,11 @@ abstract class AbstractConfiguration(
         }
     }
 
-    fun getCompileJavaTaskNames(): List<String> = sourceSets.map { it.compileJavaTaskName }
+    internal fun getCompileJavaTaskNames(): List<String> {
+        return sourceSetNames.get().map { (projectPath, name) ->
+            projectPath + ":" + project.relative(projectPath).sourceSetContainer[name].compileJavaTaskName
+        }
+    }
 
     @JvmOverloads
     internal fun getAllDependencies(nameOverride: String? = null): Map<String, Set<String>> {
