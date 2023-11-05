@@ -4,10 +4,14 @@ import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
@@ -58,6 +62,10 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     @get:InputFile
     val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty(submissionConfigurationName)
 
+    @get:OutputDirectory
+    val rubricOutputDir: DirectoryProperty = project.objects.directoryProperty()
+        .value(project.layout.buildDirectory.dir("resources/jagr/${configurationName.get()}/rubrics/"))
+
     @get:Input
     val jagrJar: Property<Path> = project.objects.property()
 
@@ -100,17 +108,16 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         }.create(jagr)
         val collector = emptyCollector(jagr)
         // TODO: Properly configure task output
-        val rubricOutputDir = project.buildFile.resolve("resources/jagr/${configurationName.get()}/rubrics/")
         val rubrics = mutableMapOf<String, Boolean>()
         collector.setListener { result ->
             result.rubrics.keys.forEach {
                 it.logGradedRubric(jagr)
                 val resource = exporterHTML.export(it)
-                resource.writeIn(rubricOutputDir)
+                resource.writeIn(rubricOutputDir.get().asFile)
                 // whether the given rubric failed
                 rubrics[resource.name] = it.grade.maxPoints < it.rubric.maxPoints
                 val moodleResource = exporterMoodle.export(it)
-                moodleResource.writeIn(rubricOutputDir)
+                moodleResource.writeIn(rubricOutputDir.get().asFile)
             }
         }
         collector.allocate(queue)
@@ -121,7 +128,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
             gradingFinished.logHistogram(jagr)
         }
         fun String.toRubricLink() =
-            URI("file", "", rubricOutputDir.toURI().path + this, null, null).toString()
+            URI("file", "", rubricOutputDir.get().asFile.toURI().path + this, null, null).toString()
         if (rubrics.isEmpty()) {
             jagr.logger.warn("No rubrics!")
         } else {
