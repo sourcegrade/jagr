@@ -1,34 +1,49 @@
 package org.sourcegrade.jagr.gradle.extension
 
 import org.gradle.api.Project
-import org.gradle.api.provider.Property
+import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Provider
-import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.task.TargetSourceSetsTask
-import java.io.File
 
-fun Project.relative(path: String): Project {
+internal fun Project.relative(path: String): Project {
     if (path.isEmpty()) return this
     return project.project(path)
 }
 
-fun TargetSourceSetsTask.resolveInBuildDirectory(
+internal fun TargetSourceSetsTask.resolveBuildFile(
     configurationNameProvider: Provider<String>,
     pathResolver: (configurationName: String) -> String,
-): Provider<File> {
+): Provider<RegularFile> {
     return configurationNameProvider.flatMap { configurationName ->
-        project.layout.buildDirectory.map { it.file(pathResolver(configurationName)).asFile }
+        project.layout.buildDirectory.map { it.file(pathResolver(configurationName)) }
     }
 }
 
-fun TargetSourceSetsTask.createSubmissionInfoFileProperty(
+internal fun TargetSourceSetsTask.resolveBuildDirectory(
     configurationNameProvider: Provider<String>,
-): Property<File> {
-    return project.objects.property<File>()
-        .value(resolveInBuildDirectory(configurationNameProvider) { "resources/jagr/$it/submission-info.json" })
+    pathResolver: (configurationName: String) -> String,
+): Provider<Directory> {
+    return configurationNameProvider.flatMap { configurationName ->
+        project.layout.buildDirectory.map { it.dir(pathResolver(configurationName)) }
+    }
 }
 
-fun TargetSourceSetsTask.createGraderInfoFileProperty(): Property<File> {
-    return project.objects.property<File>()
-        .value(resolveInBuildDirectory(configurationName) { "resources/jagr/$it/grader-info.json" })
+internal fun TargetSourceSetsTask.createSubmissionInfoFileProperty(
+    configurationNameProvider: Provider<String>,
+): RegularFileProperty {
+    return project.objects.fileProperty()
+        .value(resolveBuildFile(configurationNameProvider) { "resources/jagr/$it/submission-info.json" })
+}
+
+internal fun TargetSourceSetsTask.createGraderInfoFileProperty(): RegularFileProperty {
+    return project.objects.fileProperty()
+        .value(resolveBuildFile(configurationName) { "resources/jagr/$it/grader-info.json" })
+}
+
+internal fun TargetSourceSetsTask.createRubricOutputDirectoryProperty(): DirectoryProperty {
+    return project.objects.directoryProperty()
+        .value(resolveBuildDirectory(configurationName) { "resources/jagr/$it/rubric" })
 }
