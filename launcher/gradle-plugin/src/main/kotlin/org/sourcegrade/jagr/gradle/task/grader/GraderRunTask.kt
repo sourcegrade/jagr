@@ -14,6 +14,7 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.work.DisableCachingByDefault
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrDownloadExtension
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
@@ -49,6 +50,7 @@ import org.sourcegrade.jagr.launcher.io.writeIn
 import java.net.URI
 
 @Suppress("LeakingThis")
+@DisableCachingByDefault(because = "Should re-run on file changes in dependent source sets, which is not fully implemented yet")
 abstract class GraderRunTask : DefaultTask(), GraderTask {
 
     @get:InputFile
