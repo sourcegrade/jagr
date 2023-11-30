@@ -4,6 +4,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -24,7 +25,6 @@ import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.io.GraderInfo
 import org.sourcegrade.jagr.launcher.io.RepositoryConfiguration
 import org.sourcegrade.jagr.launcher.io.SourceSetInfo
-import java.io.File
 
 @Suppress("LeakingThis")
 abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
@@ -49,7 +49,7 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
         .value(configurationName.map { c -> primaryContainer[c].getAllDependenciesRecursive() })
 
     @get:OutputFile
-    val graderInfoFile: Property<File> = createGraderInfoFileProperty()
+    val graderInfoFile: RegularFileProperty = createGraderInfoFileProperty()
 
     init {
         group = "jagr resources"
@@ -110,7 +110,7 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
             graderName.get(),
             rubricProviderName.orNull ?: run { configuration.getRubricProviderNameRecursive() },
         )
-        graderInfoFile.get().apply {
+        graderInfoFile.get().asFile.apply {
             parentFile.mkdirs()
             writeText(Json.encodeToString(graderInfo))
         }

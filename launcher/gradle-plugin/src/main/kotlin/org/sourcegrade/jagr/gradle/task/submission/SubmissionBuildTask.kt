@@ -1,20 +1,19 @@
 package org.sourcegrade.jagr.gradle.task.submission
 
 import org.gradle.api.Project
-import org.gradle.api.provider.Property
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputFile
 import org.gradle.jvm.tasks.Jar
 import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
 import org.sourcegrade.jagr.gradle.extension.createSubmissionInfoFileProperty
 import org.sourcegrade.jagr.gradle.extension.getSourceSet
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
-import java.io.File
 
 @Suppress("LeakingThis")
 abstract class SubmissionBuildTask : Jar(), SubmissionTask {
 
     @get:InputFile
-    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty(configurationName)
+    val submissionInfoFile: RegularFileProperty = createSubmissionInfoFileProperty(configurationName)
 
     init {
         group = "build"

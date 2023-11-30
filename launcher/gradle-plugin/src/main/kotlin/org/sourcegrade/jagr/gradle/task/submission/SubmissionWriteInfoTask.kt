@@ -4,8 +4,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.MapProperty
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
@@ -22,7 +22,6 @@ import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.io.RepositoryConfiguration
 import org.sourcegrade.jagr.launcher.io.SourceSetInfo
 import org.sourcegrade.jagr.launcher.io.SubmissionInfo
-import java.io.File
 
 @Suppress("LeakingThis")
 abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
@@ -38,7 +37,7 @@ abstract class SubmissionWriteInfoTask : WriteInfoTask(), SubmissionTask {
         .value(configurationName.map { c -> primaryContainer[c].getAllDependencies() })
 
     @get:OutputFile
-    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty(configurationName)
+    val submissionInfoFile: RegularFileProperty = createSubmissionInfoFileProperty(configurationName)
 
     init {
         group = "jagr resources"
@@ -79,7 +78,7 @@ $errors
             firstName.get(),
             lastName.get(),
         )
-        submissionInfoFile.get().apply {
+        submissionInfoFile.get().asFile.apply {
             parentFile.mkdirs()
             writeText(Json.encodeToString(submissionInfo))
         }

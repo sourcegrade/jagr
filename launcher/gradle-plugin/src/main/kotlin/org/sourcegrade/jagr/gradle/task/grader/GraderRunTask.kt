@@ -4,21 +4,22 @@ import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
-import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrDownloadExtension
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.extension.ProjectSourceSetTuple
 import org.sourcegrade.jagr.gradle.extension.createGraderInfoFileProperty
+import org.sourcegrade.jagr.gradle.extension.createRubricOutputDirectoryProperty
 import org.sourcegrade.jagr.gradle.extension.createSubmissionInfoFileProperty
 import org.sourcegrade.jagr.gradle.extension.relative
 import org.sourcegrade.jagr.gradle.task.JagrDownloadTask
@@ -45,21 +46,22 @@ import org.sourcegrade.jagr.launcher.io.createResourceContainer
 import org.sourcegrade.jagr.launcher.io.logGradedRubric
 import org.sourcegrade.jagr.launcher.io.logHistogram
 import org.sourcegrade.jagr.launcher.io.writeIn
-import java.io.File
 import java.net.URI
-import java.nio.file.Path
 
 @Suppress("LeakingThis")
 abstract class GraderRunTask : DefaultTask(), GraderTask {
 
     @get:InputFile
-    val graderInfoFile: Property<File> = createGraderInfoFileProperty()
+    val graderInfoFile: RegularFileProperty = createGraderInfoFileProperty()
 
     @get:InputFile
-    val submissionInfoFile: Property<File> = createSubmissionInfoFileProperty(submissionConfigurationName)
+    val submissionInfoFile: RegularFileProperty = createSubmissionInfoFileProperty(submissionConfigurationName)
 
-    @get:Input
-    val jagrJar: Property<Path> = project.objects.property()
+    @get:OutputDirectory
+    val rubricOutputDir: DirectoryProperty = createRubricOutputDirectoryProperty()
+
+    @get:InputFile
+    val jagrJar: RegularFileProperty = project.objects.fileProperty()
 
     init {
         group = "verification"
@@ -88,7 +90,12 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
     private suspend fun grade() {
         val jagrExtension = project.extensions.getByType<JagrExtension>()
         val configuration = jagrExtension.graders[configurationName.get()]
-        val jagr = SystemResourceJagrFactory.create(GradleLaunchConfiguration(configuration.getConfigRecursive(), jagrJar.get()))
+        val jagr = SystemResourceJagrFactory.create(
+            GradleLaunchConfiguration(
+                configuration.getConfigRecursive(),
+                jagrJar.get().asFile.toPath(),
+            ),
+        )
         jagr.logger.info("Starting Jagr v${Jagr.version}")
         val exporterHTML = jagr.injector.getInstance(GradedRubricExporter.HTML::class.java)
         val exporterMoodle = jagr.injector.getInstance(GradedRubricExporter.Moodle::class.java)
@@ -100,17 +107,16 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         }.create(jagr)
         val collector = emptyCollector(jagr)
         // TODO: Properly configure task output
-        val rubricOutputDir = project.buildFile.resolve("resources/jagr/${configurationName.get()}/rubrics/")
         val rubrics = mutableMapOf<String, Boolean>()
         collector.setListener { result ->
             result.rubrics.keys.forEach {
                 it.logGradedRubric(jagr)
                 val resource = exporterHTML.export(it)
-                resource.writeIn(rubricOutputDir)
+                resource.writeIn(rubricOutputDir.get().asFile)
                 // whether the given rubric failed
                 rubrics[resource.name] = it.grade.maxPoints < it.rubric.maxPoints
                 val moodleResource = exporterMoodle.export(it)
-                moodleResource.writeIn(rubricOutputDir)
+                moodleResource.writeIn(rubricOutputDir.get().asFile)
             }
         }
         collector.allocate(queue)
@@ -121,7 +127,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
             gradingFinished.logHistogram(jagr)
         }
         fun String.toRubricLink() =
-            URI("file", "", rubricOutputDir.toURI().path + this, null, null).toString()
+            URI("file", "", rubricOutputDir.get().asFile.toURI().path + this, null, null).toString()
         if (rubrics.isEmpty()) {
             jagr.logger.warn("No rubrics!")
         } else {
@@ -155,7 +161,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                 }.forEach { (_, sourceSet) -> writeSourceSet(sourceSet) }
                 addResource {
                     name = "grader-info.json"
-                    graderInfoFile.get().inputStream().use { input ->
+                    graderInfoFile.get().asFile.inputStream().use { input ->
                         outputStream.use { output ->
                             input.transferTo(output)
                         }
@@ -173,7 +179,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
                 }
                 addResource {
                     name = "submission-info.json"
-                    submissionInfoFile.get().inputStream().use { input ->
+                    submissionInfoFile.get().asFile.inputStream().use { input ->
                         outputStream.use { output ->
                             input.transferTo(output)
                         }
@@ -245,9 +251,11 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         override fun configureTask(task: GraderRunTask, project: Project, configuration: GraderConfiguration) {
             task.description = "Runs the ${task.sourceSetNames.get()} grader"
             task.jagrJar.set(
-                project.extensions.getByType<JagrExtension>()
-                    .extensions.getByType<JagrDownloadExtension>()
-                    .destName.map { JagrDownloadTask.JAGR_CACHE.resolve(it) },
+                project.layout.file(
+                    project.extensions.getByType<JagrExtension>()
+                        .extensions.getByType<JagrDownloadExtension>()
+                        .destName.map { JagrDownloadTask.JAGR_CACHE.resolve(it).toFile() },
+                ),
             )
         }
     }
