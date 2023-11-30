@@ -52,10 +52,13 @@ class SubmissionVerificationTransformer : ClassTransformer {
 
     companion object {
         val baseRules = listOf<MethodInsnElement.() -> Boolean>(
+            { descriptor.contains("java/lang/reflect") },
             { owner.startsWith("java/lang/reflect") },
             { owner.startsWith("org/sourcegrade") },
             { owner.startsWith("java/lang/Process") },
+            { owner.startsWith("java/lang/invoke") },
             { owner == "java/lang/ClassLoader" && !name.startsWith("getResource") },
+            { owner == "java/lang/Class" && name == "forName" },
             { owner == "java/lang/System" && name == "exit" },
             { owner == "java/lang/Runtime" },
         )
