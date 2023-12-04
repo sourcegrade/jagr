@@ -70,6 +70,7 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         dependsOn(submissionConfigurationName.map(SubmissionWriteInfoTask.Factory::determineTaskName))
         dependsOn(configurationName.map(GraderWriteInfoTask.Factory::determineTaskName))
         dependsOn("jagrDownload")
+        outputs.upToDateWhen { false } // See @DisableCachingByDefault on class
     }
 
     private fun GraderConfiguration.getConfigRecursive(): Config {
