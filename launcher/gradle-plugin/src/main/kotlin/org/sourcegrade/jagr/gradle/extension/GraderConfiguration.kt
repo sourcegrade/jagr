@@ -125,4 +125,15 @@ abstract class GraderConfiguration(
             it.copy(transformers = it.transformers.copy(timeout = it.transformers.timeout.copy(enabled = false)))
         }
     }
+
+    fun enableDebug() {
+        config.map {
+            it.copy(
+                executor = it.executor.copy(
+                    jvmArgs = it.executor.jvmArgs +
+                        "-agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5005,suspend=y,onuncaught=y",
+                ),
+            )
+        }
+    }
 }
