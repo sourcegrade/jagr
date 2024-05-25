@@ -65,13 +65,14 @@ class ProcessWorker(
         coroutineScope.launch {
             try {
                 sendRequest(job.request)
+                job.gradeCatching(jagr, ::receiveResult)
             } catch (e: Exception) {
                 jagr.logger.error("Failed to send request to child process", e)
-                return@launch
+                job.result.completeExceptionally(e)
+            } finally {
+                status = WorkerStatus.FINISHED
+                removeActive(this@ProcessWorker)
             }
-            job.gradeCatching(jagr, ::receiveResult)
-            status = WorkerStatus.FINISHED
-            removeActive(this@ProcessWorker)
         }
         coroutineScope.launch {
             process.errorStream.reader().forEachLine {
