@@ -73,15 +73,8 @@ abstract class GraderRunTask : DefaultTask(), GraderTask {
         outputs.upToDateWhen { false } // See @DisableCachingByDefault on class
     }
 
-    private fun GraderConfiguration.getConfigRecursive(): Config {
-        return if (config.isPresent) {
-            config.get()
-        } else if (parentConfiguration.isPresent) {
-            parentConfiguration.get().getConfigRecursive()
-        } else {
-            Config()
-        }
-    }
+    private fun GraderConfiguration.getConfigRecursive(): Config =
+        config ?: if (parentConfiguration.isPresent) parentConfiguration.get().getConfigRecursive() else Config()
 
     @TaskAction
     fun runTask() {
