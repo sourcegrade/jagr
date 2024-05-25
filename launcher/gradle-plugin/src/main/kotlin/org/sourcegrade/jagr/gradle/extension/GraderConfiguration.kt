@@ -30,7 +30,6 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.Jagr
-import org.sourcegrade.jagr.launcher.env.Transformers
 
 abstract class GraderConfiguration(
     name: String,
@@ -81,12 +80,6 @@ abstract class GraderConfiguration(
         }
     }
 
-    private fun <K, V> MutableMap<K, Set<V>>.mergeAll(other: Map<K, Set<V>>) {
-        other.forEach { (key, value) ->
-            merge(key, value) { a, b -> a + b }
-        }
-    }
-
     internal fun getSourceSetNamesRecursive(): Set<ProjectSourceSetTuple> {
         val result = mutableSetOf<ProjectSourceSetTuple>()
         result.addAll(sourceSetNames.get())
@@ -128,6 +121,8 @@ abstract class GraderConfiguration(
     }
 
     fun disableTimeouts() {
-        config.set(Config(transformers = Transformers(timeout = Transformers.TimeoutTransformer(enabled = false))))
+        config.map {
+            it.copy(transformers = it.transformers.copy(timeout = it.transformers.timeout.copy(enabled = false)))
+        }
     }
 }
