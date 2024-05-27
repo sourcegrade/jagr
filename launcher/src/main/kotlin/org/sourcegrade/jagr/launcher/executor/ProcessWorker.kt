@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2022 Alexander Staeding
- *   Copyright (C) 2021-2022 Contributors
+ *   Copyright (C) 2021-2024 Alexander Städing
+ *   Copyright (C) 2021-2024 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -67,7 +67,7 @@ class ProcessWorker(
                 sendRequest(job.request)
                 job.gradeCatching(jagr, ::receiveResult)
             } catch (e: Exception) {
-                jagr.logger.error("Failed to send request to child process", e)
+                jagr.logger.error("Failed to send request to child process")
                 job.result.completeExceptionally(e)
             } finally {
                 status = WorkerStatus.FINISHED
