@@ -21,7 +21,7 @@ jansi = "org.fusesource.jansi:jansi:2.4.1"
 junit-core = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-launcher = "org.junit.platform:junit-platform-launcher:1.10.2"
-juniversalchardet = "com.github.albfernandez:juniversalchardet:2.4.0"
+juniversalchardet = "com.github.albfernandez:juniversalchardet:2.5.0"
 logging-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 logging-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 serialization = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
