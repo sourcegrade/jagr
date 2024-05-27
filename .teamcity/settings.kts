@@ -34,10 +34,7 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 'Debug' option is available in the context menu for the task.
 */
 
-version = "2023.11"
-
 project {
-
     val test = Test()
     val style = Style()
     val publish = Publish(test, style)
@@ -68,7 +65,14 @@ fun BuildType.configureVcs() {
 fun BuildType.configureTriggers() {
     triggers {
         vcs {
-            branchFilter = "+:*"
+            triggerRules = """
+                +:.
+                -:comment=^\\[ci skip\\].*
+            """.trimIndent()
+            branchFilter = """
+                +:*
+                -:gh-pages
+                """.trimIndent()
         }
     }
 }
