@@ -49,7 +49,7 @@ project {
             displayName = "sourcegrade/jagr"
             repositoryURL = "https://github.com/sourcegrade/jagr"
             authType = accessToken {
-                accessToken = "credentialsJSON:7828090f-5bd5-448c-99df-b7fae9540192"
+                accessToken = "credentialsJSON:b7b250d4-b347-4611-bad6-a9dd7e3f44ff"
             }
             param("tokenId", "")
         }
@@ -84,7 +84,7 @@ fun BuildFeatures.configureBaseFeatures() {
         publisher = github {
             githubUrl = "https://api.github.com"
             authType = personalToken {
-                token = "credentialsJSON:7828090f-5bd5-448c-99df-b7fae9540192"
+                token = "credentialsJSON:b7b250d4-b347-4611-bad6-a9dd7e3f44ff"
             }
         }
     }
@@ -96,7 +96,7 @@ fun BuildFeatures.configurePullRequests() {
         vcsRootExtId = "${DslContext.settingsRoot.id}"
         provider = github {
             authType = token {
-                token = "credentialsJSON:7828090f-5bd5-448c-99df-b7fae9540192"
+                token = "credentialsJSON:b7b250d4-b347-4611-bad6-a9dd7e3f44ff"
             }
             filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER_OR_COLLABORATOR
         }
