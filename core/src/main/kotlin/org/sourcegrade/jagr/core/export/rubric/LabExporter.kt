@@ -47,7 +47,7 @@ class LabExporter : GradedRubricExporter.Lab {
             }
 
             // Get all relevant tests for a grader
-            fun getRelevantTests(grader:Grader): List<String> {
+            fun getRelevantTests(grader: Grader): List<String> {
                 return when (grader) {
                     is TestAwareGraderImpl -> {
                         val testRefs: MutableSet<JUnitTestRef> = mutableSetOf()
@@ -73,7 +73,7 @@ class LabExporter : GradedRubricExporter.Lab {
                 val children = criterion.childCriteria.map { getCriteria(it) }
 //                gradedRubric.grade.comments
                 val relevantTests = children.flatMap { it.relevantTests ?: emptyList() }.toMutableSet()
-                if(criterion.criterion.grader != null) {
+                if (criterion.criterion.grader != null) {
                     relevantTests.addAll(getRelevantTests(criterion.criterion.grader!!))
                 }
                 return Criterion(
