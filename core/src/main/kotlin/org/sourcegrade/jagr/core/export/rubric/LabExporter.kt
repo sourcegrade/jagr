@@ -3,7 +3,13 @@ package org.sourcegrade.jagr.core.export.rubric
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.sourcegrade.jagr.api.rubric.GradedCriterion
 import org.sourcegrade.jagr.api.rubric.GradedRubric
+import org.sourcegrade.jagr.api.rubric.Grader
+import org.sourcegrade.jagr.api.rubric.JUnitTestRef
+import org.sourcegrade.jagr.core.rubric.JUnitTestRefFactoryImpl
+import org.sourcegrade.jagr.core.rubric.grader.DescendingPriorityGrader
+import org.sourcegrade.jagr.core.rubric.grader.TestAwareGraderImpl
 import org.sourcegrade.jagr.core.testing.JavaSubmission
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.Resource
@@ -40,31 +46,52 @@ class LabExporter : GradedRubricExporter.Lab {
                 }
             }
 
-//            // recursive function to get all test results with children
-//            fun getTestResults(testIdentifier: TestIdentifier): TestResult {
-//                val testExecutionResult = statusListener.testResults[testIdentifier]
-//                return testExecutionResult?.let {
-//                    TestResult(
-//                        id = testIdentifier.uniqueId,
-//                        name = testIdentifier.displayName,
-//                        type = testIdentifier.type.toString(),
-//                        status = testExecutionResult.status.toString(),
-//                        message = testExecutionResult.throwable.orElse(null)?.message,
-//                        stackTrace = testExecutionResult.throwable.orElse(null)?.stackTraceToString(),
-//                        children = testPlan.getDescendants(testIdentifier).map { getTestResults(it) },
-//                    )
-//                } ?: throw IllegalArgumentException("No testExecutionResult found for $testIdentifier")
-//            }
-//
-////            val testResults =
-////                jUnitResult.testPlan.roots.flatMap { t -> testPlan.getDescendants(t).map { getTestResults(it) } }
-//
-//            val testResults = jUnitResult.testPlan.roots.map { getTestResults(it) }
+            // Get all relevant tests for a grader
+            fun getRelevantTests(grader:Grader): List<String> {
+                return when (grader) {
+                    is TestAwareGraderImpl -> {
+                        val testRefs: MutableSet<JUnitTestRef> = mutableSetOf()
+                        testRefs.addAll(grader.requirePass.keys)
+                        testRefs.addAll(grader.requireFail.keys)
+
+                        testRefs.mapNotNull { ref ->
+                            when (ref) {
+                                is JUnitTestRefFactoryImpl.Default -> testPlan.roots.flatMap { testPlan.getDescendants(it) }.firstOrNull {
+                                    it.source.isPresent && it.source.orElse(null) == ref.testSource
+                                }?.uniqueId
+                                else -> null
+                            }
+                        }
+                    }
+                    is DescendingPriorityGrader -> grader.graders.flatMap { getRelevantTests(it) }
+                    else -> emptyList()
+                }
+            }
+
+            // recursive function to get all criteria with children
+            fun getCriteria(criterion: GradedCriterion): Criterion {
+                val children = criterion.childCriteria.map { getCriteria(it) }
+//                gradedRubric.grade.comments
+                val relevantTests = children.flatMap { it.relevantTests ?: emptyList() }.toMutableSet()
+                if(criterion.criterion.grader != null) {
+                    relevantTests.addAll(getRelevantTests(criterion.criterion.grader!!))
+                }
+                return Criterion(
+                    name = criterion.criterion.shortDescription,
+                    archivedPointsMin = criterion.grade.minPoints,
+                    archivedPointsMax = criterion.grade.maxPoints,
+                    message = criterion.grade.comments.joinToString("<br>") { "<p>$it</p>" },
+                    relevantTests = relevantTests.toList(),
+                    children = children,
+                )
+            }
+
             // Serialize the results to JSON
             val testResultsJson = LabRubric(
                 submissionInfo = (gradedRubric.testCycle.submission as JavaSubmission).submissionInfo,
                 totalPointsMin = gradedRubric.grade.minPoints,
                 totalPointsMax = gradedRubric.grade.maxPoints,
+                criteria = gradedRubric.childCriteria.map { getCriteria(it) },
                 tests = testResults,
             )
             val jsonString = Json.encodeToString(testResultsJson)
@@ -97,7 +124,7 @@ class LabExporter : GradedRubricExporter.Lab {
         val archivedPointsMin: Int,
         val archivedPointsMax: Int,
         val message: String? = null,
-        val relevantTests: List<String> = emptyList(),
+        val relevantTests: List<String>? = emptyList(),
         val children: List<Criterion> = emptyList(),
     )
 
