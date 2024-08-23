@@ -6,20 +6,20 @@ import os
 import shutil
 from colorama import Fore, Style
 
-# get operator_base_url and operator_key from environment variables
+# get operator_base_url and runner_key from environment variables
 operator_base_url = os.getenv('OPERATOR_BASE_URL')
-operator_key = os.getenv('OPERATOR_KEY')
+runner_key = os.getenv('RUNNER_KEY')
 runner_id = os.getenv('RUNNER_ID')
 
-# check if operator_base_url and operator_key are set
-if operator_base_url is None or operator_key is None or runner_id is None:
-    print('Please set OPERATOR_BASE_URL and OPERATOR_KEY and RUNNER_ID environment variables')
+# check if operator_base_url and runner_key are set
+if operator_base_url is None or runner_key is None or runner_id is None:
+    print('Please set OPERATOR_BASE_URL and RUNNER_KEY and RUNNER_ID environment variables')
     exit(1)
 if operator_base_url[-1] == '/':
     operator_base_url = operator_base_url[:-1]
 
 def set_job_status(job_id, status):
-    response = requests.post(f'{operator_base_url}/jobs/update?id={job_id}&key={operator_key}', json={"status": status})
+    response = requests.post(f'{operator_base_url}/jobs/update?id={job_id}&key={runner_key}', json={"status": status})
     # check if response is valid
     if response.status_code != 200:
         print(f'Error updating job status: {response.text}')
@@ -28,7 +28,7 @@ def set_job_status(job_id, status):
     return response.json()
 
 def send_results(job_id, grade, rubric):
-    response = requests.post(f'{operator_base_url}/jobs/update?id={job_id}&key={operator_key}', json={"status": "completed", "grade": grade, "rubric": rubric})
+    response = requests.post(f'{operator_base_url}/jobs/update?id={job_id}&key={runner_key}', json={"status": "completed", "grade": grade, "rubric": rubric})
     # check if response is valid
     if response.status_code != 200:
         print(f'Error sending results: {response.text}')
@@ -36,8 +36,11 @@ def send_results(job_id, grade, rubric):
     print(f'Sent results for job {job_id}')
     return response.json()
 
-def set_runner_status(status):
-    response = requests.post(f'{operator_base_url}/runners/update?id={runner_id}&status={status}&key={operator_key}')
+def set_runner_status(status,job_id=None):
+    query_str = f'{operator_base_url}/runners/update?id={runner_id}&status={status}&key={runner_key}'
+    if(job_id is not None):
+        query_str += f'&current_job_id={job_id}'
+    response = requests.post(query_str)
     # check if response is valid
     if response.status_code != 200:
         print(f'Error updating runner status: {response.text}')
@@ -48,7 +51,7 @@ def set_runner_status(status):
 # get all jobs from operator
 def get_jobs():
     print('Fetching available jobs...')
-    response = requests.get(f'{operator_base_url}/jobs?pending_only=true&key={operator_key}')
+    response = requests.get(f'{operator_base_url}/jobs?pending_only=true&key={runner_key}')
     # check if response is valid
     if response.status_code != 200:
         print(f'Error getting jobs: {response.text}')
@@ -66,7 +69,7 @@ def claim_job(job):
     job_id = job['id']
     job_name = job['name']
     print(f'Claiming job {job_id} ({job_name})')
-    response = requests.post(f'{operator_base_url}/jobs/claim?id={job_id}&key={operator_key}')
+    response = requests.post(f'{operator_base_url}/jobs/claim?id={job_id}&key={runner_key}')
     # check if response is valid
     if response.status_code != 200:
         print(f'Error claiming job: {response.text}')
@@ -117,7 +120,7 @@ def run_job(job):
     # set the job status to running
     job_id = job['id']
     set_job_status(job_id, 'running')
-    set_runner_status('running')
+    set_runner_status('running',job_id)
     print(f'Updated job {job_id} status to running')
     # run the tests
     os.system('jagr --no-export')
