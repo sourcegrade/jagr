@@ -56,21 +56,27 @@ class LabExporter : GradedRubricExporter.Lab {
 
                         testRefs.mapNotNull { ref ->
                             when (ref) {
-                                is JUnitTestRefFactoryImpl.Default -> testPlan.roots.flatMap { testPlan.getDescendants(it) }.firstOrNull {
+                                is JUnitTestRefFactoryImpl.Default -> testPlan.roots.flatMap {
+                                    testPlan.getDescendants(
+                                        it,
+                                    )
+                                }.firstOrNull {
                                     it.source.isPresent && it.source.orElse(null) == ref.testSource
                                 }?.uniqueId
+
                                 else -> null
                             }
                         }
                     }
+
                     is DescendingPriorityGrader -> grader.graders.flatMap { getRelevantTests(it) }
                     else -> emptyList()
                 }
             }
 
             // recursive function to get all criteria with children
-            fun getCriteria(criterion: GradedCriterion): Criterion {
-                val children = criterion.childCriteria.map { getCriteria(it) }
+            fun getCriteria(criterion: GradedCriterion, childIndex: Int, path: String): Criterion {
+                val children = criterion.childCriteria.mapIndexed { i, c -> getCriteria(c, i, "$path.${i + 1}") }
 //                gradedRubric.grade.comments
                 val relevantTests = children.flatMap { it.relevantTests ?: emptyList() }.toMutableSet()
                 if (criterion.criterion.grader != null) {
@@ -80,9 +86,13 @@ class LabExporter : GradedRubricExporter.Lab {
                     name = criterion.criterion.shortDescription,
                     archivedPointsMin = criterion.grade.minPoints,
                     archivedPointsMax = criterion.grade.maxPoints,
+                    possiblePointsMin = criterion.criterion.minPoints,
+                    possiblePointsMax = criterion.criterion.maxPoints,
                     message = criterion.grade.comments.joinToString("<br>") { "<p>$it</p>" },
                     relevantTests = relevantTests.toList(),
                     children = children,
+//                    childIndex = childIndex,
+//                    path = path,
                 )
             }
 
@@ -91,7 +101,9 @@ class LabExporter : GradedRubricExporter.Lab {
                 submissionInfo = (gradedRubric.testCycle.submission as JavaSubmission).submissionInfo,
                 totalPointsMin = gradedRubric.grade.minPoints,
                 totalPointsMax = gradedRubric.grade.maxPoints,
-                criteria = gradedRubric.childCriteria.map { getCriteria(it) },
+                possiblePointsMin = gradedRubric.childCriteria.sumOf { it.criterion.minPoints },
+                possiblePointsMax = gradedRubric.childCriteria.sumOf { it.criterion.maxPoints },
+                criteria = gradedRubric.childCriteria.mapIndexed { i, c -> getCriteria(c, i, "${i + 1}") },
                 tests = testResults,
             )
             val jsonString = Json.encodeToString(testResultsJson)
@@ -123,7 +135,11 @@ class LabExporter : GradedRubricExporter.Lab {
         val name: String,
         val archivedPointsMin: Int,
         val archivedPointsMax: Int,
+        val possiblePointsMin: Int,
+        val possiblePointsMax: Int,
         val message: String? = null,
+//        val childIndex: Int = 0,
+//        val path: String,
         val relevantTests: List<String>? = emptyList(),
         val children: List<Criterion> = emptyList(),
     )
@@ -133,6 +149,8 @@ class LabExporter : GradedRubricExporter.Lab {
         val submissionInfo: SubmissionInfo,
         val totalPointsMin: Int,
         val totalPointsMax: Int,
+        val possiblePointsMin: Int = 0,
+        val possiblePointsMax: Int = 0,
         val criteria: List<Criterion> = emptyList(),
         val tests: List<TestResult> = emptyList(),
     )

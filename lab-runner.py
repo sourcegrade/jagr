@@ -109,7 +109,7 @@ def prepare_job(job):
                 os.remove(file)
     # validate that job has tests_file_url and submission_file_url
     if 'testFileUrl' not in job or 'submissionFileUrl' not in job:
-        print('Job does not have tests_file_url or submissionFileUrl')
+        print('Job does not have testFileUrl or submissionFileUrl')
         return
     # download tests file and save it as tests_file.zip
     tests_file_url = job['testFileUrl']
