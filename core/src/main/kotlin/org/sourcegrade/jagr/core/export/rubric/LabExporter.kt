@@ -82,13 +82,16 @@ class LabExporter : GradedRubricExporter.Lab {
                 if (criterion.criterion.grader != null) {
                     relevantTests.addAll(getRelevantTests(criterion.criterion.grader!!))
                 }
+
+                val codeTagRegex = "\\[\\[\\[(?<code>.*?)]]]".toRegex()
+                val codeTagTransform: (MatchResult) -> CharSequence = { "<code>${it.groups["code"]?.value}</code>" }
                 return Criterion(
                     name = criterion.criterion.shortDescription,
                     archivedPointsMin = criterion.grade.minPoints,
                     archivedPointsMax = criterion.grade.maxPoints,
                     possiblePointsMin = criterion.criterion.minPoints,
                     possiblePointsMax = criterion.criterion.maxPoints,
-                    message = criterion.grade.comments.joinToString("<br>") { "<p>$it</p>" },
+                    message = criterion.grade.comments.joinToString("<br>") { "<p>${it.escaped().replace(codeTagRegex, codeTagTransform)}</p>" },
                     relevantTests = relevantTests.toList(),
                     children = children,
 //                    childIndex = childIndex,
@@ -154,4 +157,13 @@ class LabExporter : GradedRubricExporter.Lab {
         val criteria: List<Criterion> = emptyList(),
         val tests: List<TestResult> = emptyList(),
     )
+
+    private fun String.escaped(): String {
+        return this
+            .replace(Regex("(?<!\\\\)<"), "&lt;")
+            .replace(Regex("(?<!\\\\)>"), "&gt;")
+            .replace("\\<", "<")
+            .replace("\\>", ">")
+            .replace("\n", "<br>")
+    }
 }
