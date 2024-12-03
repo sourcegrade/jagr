@@ -6,7 +6,7 @@ kotlin = "2.1.0"
 log4j = "2.23.1"
 
 [libraries]
-annotations = "org.jetbrains:annotations:24.1.0"
+annotations = "org.jetbrains:annotations:26.0.1"
 apiguardian = "org.apiguardian:apiguardian-api:1.1.2"
 asm-core = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
