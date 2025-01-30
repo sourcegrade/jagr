@@ -31,7 +31,7 @@ junit = ["junit-core", "junit-engine", "junit-launcher"]
 
 [plugins]
 download = "de.undercouch.download:5.6.0"
-gradle-publish = "com.gradle.plugin-publish:1.3.0"
+gradle-publish = "com.gradle.plugin-publish:1.3.1"
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
