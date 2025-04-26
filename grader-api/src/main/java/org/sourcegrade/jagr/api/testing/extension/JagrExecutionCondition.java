@@ -25,8 +25,8 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * Checks whether Jagr is currently being used and skips the target test if it is not.
- * <p>
- * Inverse of {@link NonJagrExecutionCondition}.
+ *
+ * <p>Inverse of {@link NonJagrExecutionCondition}.
  */
 public final class JagrExecutionCondition implements ExecutionCondition {
     @Override
