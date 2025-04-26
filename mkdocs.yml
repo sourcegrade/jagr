@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+
+site_name: Jagr Docs
+repo_name: sourcegrade/jagr
+repo_url: https://github.com/sourcegrade/jagr
+# Custom edit_uri because repo_url points to the main project, not the docs
+edit_uri: https://github.com/sourcegrade/jagr-docs/edit/master/docs/
+theme:
+  name: material
+  favicon: assets/favicon.svg
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: deep orange
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - content.code.annotate
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      auto_title: true
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Welcome to Jagr: index.md
+  - Development:
+      - Getting Started:
+          - Gradle Setup: development/getting-started/gradle-setup.md
+      - Grader API:
+          - Criterion: development/grader-api/criterion.md
+          - Rubric: development/grader-api/rubric.md
+  - Architecture:
+      - Grader: architecture/grader.md
+      - Submission: architecture/submission.md

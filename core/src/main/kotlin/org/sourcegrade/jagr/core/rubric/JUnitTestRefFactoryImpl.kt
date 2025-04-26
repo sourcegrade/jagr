@@ -35,27 +35,6 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     private val logger: Logger,
 ) : JUnitTestRef.Factory {
 
-    companion object {
-        fun Array<out JUnitTestRef>.execute(
-            testResults: Map<TestIdentifier, TestExecutionResult>,
-            exceptionSupplier: (String) -> Throwable,
-            predicate: (List<TestExecutionResult>) -> Boolean,
-        ): TestExecutionResult {
-            val notSuccessful = asSequence()
-                .map { it[testResults] }
-                .filter { it.status != TestExecutionResult.Status.SUCCESSFUL }
-                .toList()
-            return if (predicate(notSuccessful)) {
-                notSuccessful.asSequence()
-                    .map { it.throwable.orElse(null) }
-                    .filter { it != null }
-                    .joinToString { "${it::class.simpleName} :: ${it.message} " }
-                    .let(exceptionSupplier)
-                    .let(TestExecutionResult::failed)
-            } else TestExecutionResult.successful()
-        }
-    }
-
     override fun ofClass(clazz: Class<*>): JUnitTestRef = Default(ClassSource.from(clazz))
 
     override fun ofClass(clazzSupplier: Callable<Class<*>>): JUnitTestRef {
@@ -119,17 +98,13 @@ class JUnitTestRefFactoryImpl @Inject constructor(
     }
 
     class And(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
-        class AndFailedError(message: String) : AssertionFailedError(message)
-
         override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
-            testRefs.execute(testResults, ::AndFailedError, Collection<*>::isNotEmpty)
+            testRefs.execute(testResults, Collection<*>::isNotEmpty)
     }
 
     class Or(private vararg val testRefs: JUnitTestRef) : JUnitTestRef {
-        class OrFailedError(message: String) : AssertionFailedError(message)
-
         override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult =
-            testRefs.execute(testResults, ::OrFailedError) { it.size == testRefs.size }
+            testRefs.execute(testResults) { it.size == testRefs.size }
     }
 
     class Not(private val testRef: JUnitTestRef) : JUnitTestRef {
@@ -138,6 +113,25 @@ class JUnitTestRefFactoryImpl @Inject constructor(
         override operator fun get(testResults: Map<TestIdentifier, TestExecutionResult>): TestExecutionResult {
             return if (testRef[testResults].status == TestExecutionResult.Status.SUCCESSFUL) {
                 TestExecutionResult.failed(NotFailedError())
+            } else {
+                TestExecutionResult.successful()
+            }
+        }
+    }
+
+    companion object {
+        fun Array<out JUnitTestRef>.execute(
+            testResults: Map<TestIdentifier, TestExecutionResult>,
+            predicate: (List<TestExecutionResult>) -> Boolean,
+        ): TestExecutionResult {
+            val notSuccessful = asSequence()
+                .map { it[testResults] }
+                .filter { it.status != TestExecutionResult.Status.SUCCESSFUL }
+                .toList()
+            return if (predicate(notSuccessful)) {
+                notSuccessful
+                    .first { it.throwable.isPresent }
+                    .let { TestExecutionResult.failed(it.throwable.get()) }
             } else {
                 TestExecutionResult.successful()
             }

@@ -17,30 +17,21 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.api.rubric;
+package org.sourcegrade.jagr.gradle.extension
 
-import org.jetbrains.annotations.ApiStatus;
+import com.google.inject.Inject
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.kotlin.dsl.property
+import org.sourcegrade.jagr.launcher.env.Jagr
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-/**
- * This annotation is used to mark a class as a {@link RubricProvider} for a submission.
- *
- * @deprecated This annotation is no longer used by Jagr as the class name is provided via the generated grader-info.json
- */
-@Deprecated(forRemoval = true)
-@ApiStatus.NonExtendable
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface RubricForSubmission {
-
-    /**
-     * The assignment id of the submission.
-     *
-     * @return The assignment id of the submission
-     */
-    String value();
+abstract class JagrDownloadExtension @Inject constructor(
+    objectFactory: ObjectFactory,
+) {
+    val jagrVersion: Property<String> = objectFactory.property<String>()
+        .convention(Jagr.version)
+    val sourceUrl: Property<String> = objectFactory.property<String>()
+        .convention(jagrVersion.map { "https://github.com/sourcegrade/jagr/releases/download/v$it/Jagr-$it.jar" })
+    val destName: Property<String> = objectFactory.property<String>()
+        .convention(jagrVersion.map { "Jagr-$it.jar" })
 }

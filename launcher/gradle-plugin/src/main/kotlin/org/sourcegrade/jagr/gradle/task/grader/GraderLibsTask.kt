@@ -4,11 +4,11 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.file.FileTree
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
+import org.sourcegrade.jagr.gradle.extension.JagrExtension
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.launcher.env.Jagr
 
@@ -20,16 +20,16 @@ abstract class GraderLibsTask : Jar(), GraderTask {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         archiveFileName.set(graderName.map { "$it-${project.version}-libs.jar" })
         from(
-            sourceSetNames.zip(solutionConfigurationName) { names, solution ->
-                createRuntimeDependencyProvider(names, solution).toList()
-            }
+            configurationName.map {
+                project.extensions.getByType<JagrExtension>().graders[it]
+                    .getRuntimeDependenciesRecursive().toList()
+            },
         )
     }
 
-    private fun createRuntimeDependencyProvider(sourceSets: List<String>, solutionName: String): Sequence<FileTree> = sequence {
-        val sourceSetContainer = project.extensions.getByType<SourceSetContainer>()
+    private fun GraderConfiguration.getRuntimeDependenciesRecursive(): Sequence<FileTree> = sequence {
         val jagrArtifacts: Set<ResolvedArtifact> = sourceSets.asSequence()
-            .map { project.configurations[sourceSetContainer[it].runtimeClasspathConfigurationName] }
+            .map { project.configurations[it.runtimeClasspathConfigurationName] }
             .flatMap { it.resolvedConfiguration.firstLevelModuleDependencies }
             .first {
                 it.moduleGroup == "org.sourcegrade" &&
@@ -37,8 +37,11 @@ abstract class GraderLibsTask : Jar(), GraderTask {
                     it.moduleVersion == Jagr.version
             }.allModuleArtifacts
 
-        (sourceSets.asSequence() + solutionName).flatMap {
-            project.configurations[sourceSetContainer[it].runtimeClasspathConfigurationName].resolvedConfiguration.resolvedArtifacts
+        (sourceSets.asSequence() + solutionConfiguration.get().sourceSets).flatMap {
+            project.configurations[it.runtimeClasspathConfigurationName].resolvedConfiguration.resolvedArtifacts
+        }.filter { artifact ->
+            // TODO: This is not the best way to exclude modules from the project itself from the libs jar
+            project.name != artifact.moduleVersion.id.group
         }.forEach { artifact ->
             val matchingJagrArtifact: ResolvedArtifact? = jagrArtifacts.firstOrNull { jagrArtifact ->
                 artifact.moduleVersion.id.group == jagrArtifact.moduleVersion.id.group &&
@@ -51,10 +54,13 @@ abstract class GraderLibsTask : Jar(), GraderTask {
                     logger.error(
                         "WARNING: Version mismatch for ${artifact.moduleVersion.id.group}:${artifact.moduleVersion.id.name} " +
                             "(local ${artifact.moduleVersion.id.version} != Jagr's ${matchingJagrArtifact.moduleVersion.id.version}). " +
-                            "This dependency will not be included in the libs jar but will instead be used from Jagr at runtime."
+                            "This dependency will not be included in the libs jar but will instead be used from Jagr at runtime.",
                     )
                 }
             }
+        }
+        if (parentConfiguration.isPresent) {
+            yieldAll(parentConfiguration.get().getRuntimeDependenciesRecursive())
         }
     }
 

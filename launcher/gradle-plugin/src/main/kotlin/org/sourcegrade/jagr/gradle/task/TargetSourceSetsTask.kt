@@ -20,9 +20,10 @@
 package org.sourcegrade.jagr.gradle.task
 
 import org.gradle.api.Task
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.Input
+import org.sourcegrade.jagr.gradle.extension.ProjectSourceSetTuple
 
 interface TargetSourceSetsTask : Task {
 
@@ -30,5 +31,5 @@ interface TargetSourceSetsTask : Task {
     val configurationName: Property<String>
 
     @get:Input
-    val sourceSetNames: ListProperty<String>
+    val sourceSetNames: SetProperty<ProjectSourceSetTuple>
 }

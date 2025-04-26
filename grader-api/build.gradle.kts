@@ -1,10 +1,8 @@
-import org.sourcegrade.jagr.script.JagrPublishPlugin
-
 plugins {
     `java-library`
+    id("jagr-publish")
+    id("jagr-sign")
 }
-
-apply<JagrPublishPlugin>()
 
 tasks {
     withType<PublishToMavenRepository> {

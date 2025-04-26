@@ -23,27 +23,22 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.internal.provider.DefaultProvider
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.exclude
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.Jagr
-import org.sourcegrade.jagr.launcher.env.Transformers
+import org.sourcegrade.jagr.launcher.env.copyTimeout
+import org.sourcegrade.jagr.launcher.env.copyTransformers
 
 abstract class GraderConfiguration(
     name: String,
     project: Project,
-) : AbstractConfiguration(name, project) {
-    override val sourceSetNames: ListProperty<String> = project.objects.listProperty<String>()
-        .convention(listOf(name))
-
+) : AbstractConfiguration(name, project, setOf(name)) {
     abstract val graderName: Property<String>
     abstract val rubricProviderName: Property<String>
-    abstract val config: Property<Config>
     val parentConfiguration: Property<GraderConfiguration> = project.objects.property()
 
     private val submissionConfigurationConvention = parentConfiguration.flatMap { it.submissionConfiguration }
@@ -58,8 +53,12 @@ abstract class GraderConfiguration(
     private val compileClasspath: ConfigurableFileCollection = project.objects.fileCollection()
     private val runtimeClasspath: ConfigurableFileCollection = project.objects.fileCollection()
 
+    var config: Config? = null
+        private set
+
     init {
         project.afterEvaluate {
+            configureProject()
             if (parentConfiguration.isPresent) {
                 addAsDependency(parentConfiguration.get())
             }
@@ -67,7 +66,7 @@ abstract class GraderConfiguration(
                 addAsDependency(solutionConfiguration.get())
             } else {
                 throw GradleException(
-                    "Grader $name has no solution configuration and the default 'main' submission is not defined"
+                    "Grader $name has no solution configuration and the default 'main' submission is not defined",
                 )
             }
             for (sourceSet in sourceSets) {
@@ -85,11 +84,20 @@ abstract class GraderConfiguration(
         }
     }
 
-    internal fun getSourceSetNamesRecursive(): Set<String> {
-        val result = mutableSetOf<String>()
+    internal fun getSourceSetNamesRecursive(): Set<ProjectSourceSetTuple> {
+        val result = mutableSetOf<ProjectSourceSetTuple>()
         result.addAll(sourceSetNames.get())
         if (parentConfiguration.isPresent) {
             result.addAll(parentConfiguration.get().getSourceSetNamesRecursive())
+        }
+        return result
+    }
+
+    internal fun getSolutionSourceSetNamesRecursive(): Set<ProjectSourceSetTuple> {
+        val result = mutableSetOf<ProjectSourceSetTuple>()
+        result.addAll(solutionConfiguration.get().sourceSetNames.get())
+        if (parentConfiguration.isPresent) {
+            result.addAll(parentConfiguration.get().getSolutionSourceSetNamesRecursive())
         }
         return result
     }
@@ -116,7 +124,11 @@ abstract class GraderConfiguration(
         parentConfiguration.set(configuration)
     }
 
-    fun disableTimeouts() {
-        config.set(Config(transformers = Transformers(timeout = Transformers.TimeoutTransformer(enabled = false))))
+    fun mutateConfig(block: Config.() -> Config?) {
+        config = block(config ?: Config())
+    }
+
+    fun disableTimeouts() = mutateConfig {
+        copyTransformers { copyTimeout { copy(enabled = false) } }
     }
 }

@@ -16,12 +16,14 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
     private var criterionCounter = 0
 
     override fun export(gradedRubric: GradedRubric): Resource {
+        cellCounter = 0
+        criterionCounter = 0
         val builder = StringBuilder()
-        builder.pageStart("Grading Result")
+        builder.pageStart()
         builder.table(gradedRubric)
         builder.pageEnd()
         return buildResource {
-            name = "result.html"
+            name = "${gradedRubric.testCycle.submission.info}.html"
             outputStream.bufferedWriter().use { it.write(builder.toString()) }
         }
     }
@@ -48,18 +50,17 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
         titleEntry("Gesamt")
         titleEntry(rubric.rubric.range())
         titleEntry(rubric.grade.range())
-        titleEntry()
+        titleEntry(rubric.grade.comments.joinToString("<br>") { "<p>$it</p>" })
         rowEnd()
         tableBodyEnd()
         tableEnd()
     }
 
-    private fun StringBuilder.pageStart(title: String) {
+    private fun StringBuilder.pageStart() {
         append("<html>")
         append("<head>")
         append("""<meta charset="utf-8">""")
         append("""<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">""")
-        append("<title>${title.escaped()}</title>")
         append("</head>")
         append("<body>")
         append("""<div class="container">""")
@@ -88,19 +89,22 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
     private fun StringBuilder.tableBodyEnd() = append("</tbody>")
 
     private fun StringBuilder.tableEntry(r: GradedCriterion) {
+        val codeTagRegex = "\\[\\[\\[(?<code>.*?)]]]".toRegex()
+        val codeTagTransform: (MatchResult) -> CharSequence = { "<code>${it.groups["code"]?.value}</code>" }
+
         rowStart()
         if (r.hasChildCriteria()) {
-            titleEntry(r.description())
+            titleEntry(r.description().replace(codeTagRegex, codeTagTransform))
             titleEntry(r.criterion.range())
             titleEntry(r.grade.range())
-            titleEntry(r.comments())
+            titleEntry(r.comments().replace(codeTagRegex, codeTagTransform))
             rowEnd()
             r.childCriteria.forEach { this.tableEntry(it) }
         } else {
-            entry("""${badge((++criterionCounter).toString())} ${r.description()}""")
+            entry("""${badge((++criterionCounter).toString())} ${r.description().replace(codeTagRegex, codeTagTransform)}""")
             entry(r.criterion.range())
             entry(r.grade.range(), classes = r.rowClasses())
-            entry(r.comments())
+            entry(r.comments().replace(codeTagRegex, codeTagTransform))
             rowEnd()
         }
     }
@@ -132,14 +136,10 @@ class BasicHTMLExporter : GradedRubricExporter.HTML {
     }
 
     private fun GradedCriterion.rowClasses(): List<String> {
-        return if (grade.minPoints == criterion.maxPoints) {
-            listOf("table-success")
-        } else if (grade.minPoints != criterion.minPoints) {
-            listOf("table-warning")
-        } else if (grade.minPoints == criterion.minPoints) {
-            listOf("table-danger")
-        } else {
-            listOf()
+        return when {
+            grade.minPoints == criterion.maxPoints -> listOf("table-success")
+            grade.maxPoints == criterion.minPoints -> listOf("table-danger")
+            else -> listOf("table-warning")
         }
     }
 

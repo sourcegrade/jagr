@@ -33,8 +33,8 @@ internal class TestStatusListenerImpl(
     private val logger: Logger,
 ) : TestExecutionListener, TestStatusListener {
 
-    private val testResults: MutableMap<TestIdentifier, TestExecutionResult> = mutableMapOf()
-    private val linkageErrors: MutableSet<Pair<String?, String>> = LinkedHashSet()
+    private val testResults = mutableMapOf<TestIdentifier, TestExecutionResult>()
+    private val linkageErrors = mutableSetOf<Pair<String?, String>>()
     private lateinit var testPlan: TestPlan
 
     override fun testPlanExecutionStarted(testPlan: TestPlan) {
@@ -44,7 +44,7 @@ internal class TestStatusListenerImpl(
 
     override fun executionFinished(testIdentifier: TestIdentifier, testExecutionResult: TestExecutionResult) {
         testResults[testIdentifier] = aggregate(testIdentifier, testExecutionResult)
-        testExecutionResult.throwable.orElse(null)?.also { throwable ->
+        generateSequence(testExecutionResult.throwable.orElse(null)) { it.cause }.forEach { throwable ->
             if (throwable is LinkageError) {
                 linkageErrors.add(throwable::class.simpleName to throwable.message + " @ " + throwable.stackTrace.firstOrNull())
             }
@@ -55,15 +55,19 @@ internal class TestStatusListenerImpl(
         if (parentResult.status == TestExecutionResult.Status.FAILED) {
             return parentResult
         }
-        val failedChildren: Map<TestIdentifier, TestExecutionResult> = testPlan.getDescendants(testIdentifier).asSequence()
-            .map { it to testResults[it] }
-            .filter { (_, result) -> result != null && result.status != TestExecutionResult.Status.SUCCESSFUL }
-            .map { (identifier, result) -> identifier to result!! }
+        val failedChildren = testPlan.getDescendants(testIdentifier)
+            .asSequence()
+            .mapNotNull { identifier ->
+                testResults[identifier]
+                    ?.takeIf { it.status != TestExecutionResult.Status.SUCCESSFUL }
+                    ?.let { result -> identifier to result }
+            }
             .toMap()
-        if (failedChildren.isEmpty()) {
-            return parentResult
+        return if (failedChildren.isEmpty()) {
+            parentResult
+        } else {
+            TestExecutionResult.failed(ContainerFailedError(failedChildren))
         }
-        return TestExecutionResult.failed(ContainerFailedError(failedChildren))
     }
 
     internal fun logLinkageErrors(info: SubmissionInfo) {
@@ -81,6 +85,6 @@ internal class TestStatusListenerImpl(
             1 -> ""
             2 -> "\n\nthere is 1 more failing test"
             else -> "\n\nthere are ${failedChildren.size - 1} more failing tests"
-        }
+        },
     )
 }

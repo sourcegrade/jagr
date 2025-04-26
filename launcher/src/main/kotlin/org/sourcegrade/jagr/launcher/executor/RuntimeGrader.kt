@@ -78,7 +78,7 @@ A fatal error occurred in the fallback grader for submission ${request.submissio
 This is not an error in the submission, rather in the RuntimeGrader implementation @ $causeSTE.
 Please report this to the maintainers of $causeClass.
 """,
-            e
+            e,
         )
         result.completeExceptionally(exception)
     }

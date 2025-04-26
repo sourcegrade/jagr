@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-@Suppress("DSL_SCOPE_VIOLATION") // https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     application
     alias(libs.plugins.kotlin.jvm)
@@ -53,7 +53,7 @@ tasks {
 }
 
 val projectVersion = file("version").readLines().first()
-project.extra["apiVersion"] = projectVersion.replace(".[0-9]+(?=($|-SNAPSHOT))".toRegex(), "")
+project.extra["apiVersion"] = projectVersion.replace("\\.[1-9]\\d*-SNAPSHOT|\\.0|\\.\\d*\$".toRegex(), "")
 
 allprojects {
     apply(plugin = "org.sourcegrade.style")
@@ -67,12 +67,12 @@ allprojects {
 
     tasks {
         withType<KotlinCompile> {
-            kotlinOptions.jvmTarget = "11"
+            compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
         }
         withType<JavaCompile> {
             options.encoding = "UTF-8"
-            sourceCompatibility = "11"
-            targetCompatibility = "11"
+            sourceCompatibility = "17"
+            targetCompatibility = "17"
         }
     }
 }

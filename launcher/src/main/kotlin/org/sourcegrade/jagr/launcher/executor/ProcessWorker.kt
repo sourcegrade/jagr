@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2022 Alexander Staeding
- *   Copyright (C) 2021-2022 Contributors
+ *   Copyright (C) 2021-2024 Alexander Städing
+ *   Copyright (C) 2021-2024 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -32,13 +32,13 @@ import org.apache.logging.log4j.core.LogEvent
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
+import org.sourcegrade.jagr.launcher.env.runtimeInvoker
 import org.sourcegrade.jagr.launcher.io.ProgressAwareOutputStream
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.get
 import org.sourcegrade.jagr.launcher.io.getScoped
 import org.sourcegrade.jagr.launcher.io.openScope
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.ObjectInputStream
 import kotlin.reflect.KFunction2
 
@@ -51,11 +51,7 @@ class ProcessWorker(
     override var status: WorkerStatus = WorkerStatus.PREPARING
     override var userTime: Long = 0
 
-    private val jagrLocation: String = File(javaClass.protectionDomain.codeSource.location.toURI()).path
-
-    private val process: Process = ProcessBuilder()
-        .command("java", "-Dlog4j.configurationFile=log4j2-child.xml", "-jar", jagrLocation, "--child")
-        .start()
+    private val process: Process = jagr.runtimeInvoker.createRuntime()
 
     private val coroutineScope = CoroutineScope(processIODispatcher)
 
@@ -88,13 +84,14 @@ class ProcessWorker(
         coroutineScope.launch {
             try {
                 sendRequest(job.request)
+                job.gradeCatching(jagr, ::receiveResult)
             } catch (e: Exception) {
-                jagr.logger.error("Failed to send request to child process", e)
-                return@launch
+                jagr.logger.error("Failed to send request to child process")
+                job.result.completeExceptionally(e)
+            } finally {
+                status = WorkerStatus.FINISHED
+                removeActive(this@ProcessWorker)
             }
-            job.gradeCatching(jagr, ::receiveResult)
-            status = WorkerStatus.FINISHED
-            removeActive(this@ProcessWorker)
         }
         coroutineScope.launch {
             process.errorStream.reader().forEachLine {

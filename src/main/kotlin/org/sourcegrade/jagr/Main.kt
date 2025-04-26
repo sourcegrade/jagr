@@ -21,6 +21,7 @@ package org.sourcegrade.jagr
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import org.sourcegrade.jagr.launcher.env.Environment
@@ -43,9 +44,14 @@ class MainCommand : CliktCommand() {
      * Command line option to indicate that this process will listen to (via std in) to a grading request
      */
     private val child by option("--child", "-c").flag()
+        .help("Waits to receive grading job details via IPC")
     private val noExport by option("--no-export", "-n").flag()
+        .help("Do not export submissions")
     private val exportOnly by option("--export-only", "-e").flag()
+        .help("Do not grade, only export submissions")
     private val progress by option("--progress").choice("rainbow", "xmas")
+        .help("Progress bar style")
+
     override fun run() {
         if (child) {
             println(ProcessWorker.MARK_CHILD_BOOT)
@@ -55,7 +61,7 @@ class MainCommand : CliktCommand() {
             Environment.initializeMainProcess()
             val startTime = System.currentTimeMillis()
             StandardGrading(progress).grade(noExport, exportOnly)
-            Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}")
+            Jagr.logger.info("Time taken: ${System.currentTimeMillis() - startTime}ms")
         }
     }
 }

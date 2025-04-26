@@ -40,7 +40,7 @@ fun List<GradingResult>.logHistogram(jagr: Jagr) {
     }
     jagr.logger.info(
         "Result: Min: $minPoints, Max: $maxPoints, Average: " +
-            "${minPoints.toDouble() / allRubrics.size.toDouble()}, Rubrics: ${allRubrics.size}"
+            "${minPoints.toDouble() / allRubrics.size.toDouble()}, Rubrics: ${allRubrics.size}",
     )
     for ((points, count) in histogram.toSortedMap()) {
         StringBuilder().apply {

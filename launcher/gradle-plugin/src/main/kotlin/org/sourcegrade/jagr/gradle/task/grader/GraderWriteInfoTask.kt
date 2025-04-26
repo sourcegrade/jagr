@@ -4,6 +4,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -13,18 +14,17 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.mapProperty
-import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
+import org.sourcegrade.jagr.gradle.extension.createGraderInfoFileProperty
 import org.sourcegrade.jagr.gradle.forEachFile
-import org.sourcegrade.jagr.gradle.getFiles
+import org.sourcegrade.jagr.gradle.mergeSourceSets
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
 import org.sourcegrade.jagr.gradle.task.WriteInfoTask
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.io.GraderInfo
 import org.sourcegrade.jagr.launcher.io.RepositoryConfiguration
 import org.sourcegrade.jagr.launcher.io.SourceSetInfo
-import java.io.File
 
 @Suppress("LeakingThis")
 abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
@@ -37,28 +37,26 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
     abstract val rubricProviderName: Property<String>
 
     @get:Input
-    val graderFiles: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>().value(
-        configurationName.map { c -> primaryContainer[c].getFilesRecursive() }
-    )
+    val graderFiles: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>()
+        .value(configurationName.map { c -> primaryContainer[c].getFilesRecursive() })
 
     @get:Input
-    val solutionFiles: MapProperty<String, Map<String, Set<String>>> =
-        project.objects.mapProperty<String, Map<String, Set<String>>>().value(
-            solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.associate { it.name to it.getFiles() } }
-        )
+    val solutionFiles: MapProperty<String, Map<String, Set<String>>> = project.objects.mapProperty<String, Map<String, Set<String>>>()
+        .value(solutionConfigurationName.map { c -> submissionContainer[c].sourceSets.mergeSourceSets() })
 
     @get:Input
-    val dependencies: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>().value(
-        configurationName.map { c -> primaryContainer[c].getAllDependenciesRecursive() }
-    )
+    val dependencies: MapProperty<String, Set<String>> = project.objects.mapProperty<String, Set<String>>()
+        .value(configurationName.map { c -> primaryContainer[c].getAllDependenciesRecursive() })
 
     @get:OutputFile
-    val graderInfoFile: Property<File> = project.objects.property<File>()
-        .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/grader-info.json") })
+    val graderInfoFile: RegularFileProperty = createGraderInfoFileProperty()
 
     init {
         group = "jagr resources"
-        dependsOn("compileJava")
+        // add compilation dependency on solution
+        configureSubmissionCompilationDependency(solutionConfigurationName.map { submissionContainer[it] })
+        // add compilation dependency on grader source sets
+        dependsOn(configurationName.map { primaryContainer[it] }.map { it.getCompileJavaTaskNames() })
     }
 
     private fun GraderConfiguration.getFilesRecursive(): Map<String, Set<String>> {
@@ -94,7 +92,7 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
             parentConfiguration.get().getRubricProviderNameRecursive()
         } else {
             throw GradleException(
-                "No rubricProviderName defined for grader configuration ${configurationName.get()} or its parents"
+                "No rubricProviderName defined for grader configuration ${configurationName.get()} or its parents",
             )
         }
     }
@@ -112,7 +110,7 @@ abstract class GraderWriteInfoTask : WriteInfoTask(), GraderTask {
             graderName.get(),
             rubricProviderName.orNull ?: run { configuration.getRubricProviderNameRecursive() },
         )
-        graderInfoFile.get().apply {
+        graderInfoFile.get().asFile.apply {
             parentFile.mkdirs()
             writeText(Json.encodeToString(graderInfo))
         }

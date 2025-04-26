@@ -24,18 +24,30 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.internal.GradleInternal
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.kotlin.dsl.listProperty
+import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
 
-abstract class WriteInfoTask : DefaultTask() {
+abstract class WriteInfoTask : DefaultTask(), TargetSourceSetsTask {
 
     @get:Input
     @Suppress("UnstableApiUsage")
     val repositories: ListProperty<Pair<String, String>> = project.objects.listProperty<Pair<String, String>>().value(
         (project.gradle as GradleInternal).settings.dependencyResolutionManagement.repositories.mapToPairs() +
-            project.repositories.mapToPairs()
+            project.repositories.mapToPairs(),
     )
 
     private fun RepositoryHandler.mapToPairs(): List<Pair<String, String>> =
         filterIsInstance<MavenArtifactRepository>().map { it.name to it.url.toString() }
+
+    protected fun configureSubmissionCompilationDependency(submissionContainerProvider: Provider<SubmissionConfiguration>) {
+        dependsOn(
+            submissionContainerProvider
+                .let { provider -> provider.zip(provider.flatMap { it.checkCompilation }, ::Pair) }
+                .map { (configuration, checkCompilation) ->
+                    if (checkCompilation) configuration.getCompileJavaTaskNames() else emptyList()
+                },
+        )
+    }
 }

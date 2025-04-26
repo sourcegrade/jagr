@@ -1,38 +1,35 @@
 package org.sourcegrade.jagr.gradle.task.submission
 
 import org.gradle.api.Project
-import org.gradle.api.provider.Property
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.jvm.tasks.Jar
-import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.SubmissionConfiguration
+import org.sourcegrade.jagr.gradle.extension.createSubmissionInfoFileProperty
+import org.sourcegrade.jagr.gradle.extension.getSourceSet
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
-import java.io.File
 
 @Suppress("LeakingThis")
 abstract class SubmissionBuildTask : Jar(), SubmissionTask {
 
     @get:InputFile
-    val submissionInfoFile: Property<File> = project.objects.property<File>()
-        .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/submission-info.json") })
+    val submissionInfoFile: RegularFileProperty = createSubmissionInfoFileProperty(configurationName)
 
     init {
         group = "build"
         dependsOn(configurationName.map(SubmissionWriteInfoTask.Factory::determineTaskName))
         from(submissionInfoFile)
-        val sourceSets = project.extensions.getByType<SourceSetContainer>()
-        from(sourceSetNames.map { names -> names.map { name -> sourceSets[name].allSource } })
+        from(sourceSetNames.map { all -> all.map { it.getSourceSet(project).allSource } })
         archiveFileName.set(
-            assignmentId.zip(lastName) { assignmentId, lastName ->
-                "$assignmentId-$lastName"
+            assignmentId.zip(studentId) { assignmentId, studentId ->
+                "$assignmentId-$studentId"
             }.zip(firstName) { left, firstName ->
-                "$left-$firstName-submission"
+                "$left-$firstName"
+            }.zip(lastName) { left, lastName ->
+                "$left-$lastName-submission"
             }.zip(archiveExtension) { left, extension ->
                 "$left.$extension"
-            }
+            },
         )
     }
 

@@ -23,12 +23,19 @@ import org.apache.logging.log4j.Logger
 import org.apache.logging.log4j.core.config.Configurator
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.LaunchConfiguration
+import org.sourcegrade.jagr.launcher.executor.RuntimeInvoker
+import org.sourcegrade.jagr.launcher.executor.RuntimeJarInvoker
+import java.nio.file.Path
 
-internal class GradleLaunchConfiguration(override val config: Config) : LaunchConfiguration {
+internal class GradleLaunchConfiguration(
+    override val config: Config,
+    jagrJar: Path,
+) : LaunchConfiguration {
     override val logger: Logger by lazy {
         Configurator.initialize(
             "console-only",
-            "log4j2-console-only.xml"
+            "log4j2-console-only.xml",
         ).getLogger("jagr")
     }
+    override val runtimeInvoker: RuntimeInvoker = RuntimeJarInvoker(jagrJar, config.executor.jvmArgs)
 }

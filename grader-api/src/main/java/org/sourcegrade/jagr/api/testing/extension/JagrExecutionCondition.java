@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2022 Alexander Staeding
- *   Copyright (C) 2021-2022 Contributors
+ *   Copyright (C) 2021-2024 Alexander Städing
+ *   Copyright (C) 2021-2024 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -25,14 +25,16 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * Checks whether Jagr is currently being used and skips the target test if it is not.
+ * <p>
+ * Inverse of {@link NonJagrExecutionCondition}.
  */
 public final class JagrExecutionCondition implements ExecutionCondition {
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         if (TestCycleResolver.Provider.parameterResolver == null) {
-            return ConditionEvaluationResult.disabled("Jagr is not present");
+            return ConditionEvaluationResult.disabled("Jagr is not present, disabled");
         } else {
-            return ConditionEvaluationResult.enabled("Jagr is present");
+            return ConditionEvaluationResult.enabled("Jagr is present, enabled");
         }
     }
 }

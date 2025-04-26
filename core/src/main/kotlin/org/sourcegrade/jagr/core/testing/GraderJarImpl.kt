@@ -62,7 +62,7 @@ class GraderJarImpl(
             // whitelist file from grader
             classes = container.runtimeResources.classes.filter { it.value.source?.fileName in graderFiles },
             resources = container.runtimeResources.resources.filterKeys { it in graderFiles },
-        )
+        ),
     )
 
     init {
@@ -88,7 +88,7 @@ class GraderJarImpl(
         logger.info(
             "Grader ${info.name} discovered " +
                 "rubric provider ${info.rubricProviderName} and " +
-                "${testClasses.size} test class${if (testClasses.size == 1) "" else "es"}"
+                "${testClasses.size} test class${if (testClasses.size == 1) "" else "es"}",
         )
         this.testClassNames = testClasses
     }
@@ -108,19 +108,10 @@ class GraderJarImpl(
         rubricProvider.configure(configuration)
     }
 
-    @Suppress("DEPRECATION")
     private fun MutableList<String>.addIfTest(clazz: Class<*>) {
         val annotation = clazz.getAnnotation(TestForSubmission::class.java) ?: return
         add(clazz.name)
-        if (annotation.value.isNotBlank() && annotation.value != clazz.name) {
-            logger.warn(
-                "Grader ${info.name} test class ${clazz.name} " +
-                    "has a non-blank value ${annotation.value} in @TestForSubmission and it does not match " +
-                    "the grader's assignmentId ${info.assignmentId}"
-            )
-            logger.warn("Providing a value to @TestForSubmission is deprecated and will be removed in a future version")
-        }
-        logger.debug("Grader ${info.name} discovered test provider ${clazz.name} for assignment ${annotation.value}")
+        logger.debug("Grader ${info.name} discovered test provider ${clazz.name} for assignment ${info.assignmentId}")
     }
 
     override fun toString(): String = info.name

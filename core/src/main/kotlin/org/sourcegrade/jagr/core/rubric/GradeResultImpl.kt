@@ -44,7 +44,7 @@ data class GradeResultImpl(
         override fun read(scope: SerializationScope.Input): GradeResultImpl = GradeResultImpl(
             scope.input.readInt(),
             scope.input.readInt(),
-            scope.readList()
+            scope.readList(),
         )
 
         override fun write(obj: GradeResultImpl, scope: SerializationScope.Output) {
