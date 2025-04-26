@@ -69,8 +69,8 @@ class ProcessWorker(
         val line = process.inputReader(Charsets.UTF_8).readLine()
         if (line != MARK_CHILD_BOOT) {
             throw IllegalStateException(
-                "Child process did not start correctly:\n"
-                    + process.errorStream.reader().readText()
+                "Child process did not start correctly:\n" +
+                    process.errorStream.reader().readText(),
             )
         }
     }
