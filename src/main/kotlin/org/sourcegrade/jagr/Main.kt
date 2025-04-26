@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2022 Alexander Staeding
- *   Copyright (C) 2021-2022 Contributors
+ *   Copyright (C) 2021-2025 Alexander Städing
+ *   Copyright (C) 2021-2025 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -27,6 +27,7 @@ import com.github.ajalt.clikt.parameters.types.choice
 import org.sourcegrade.jagr.launcher.env.Environment
 import org.sourcegrade.jagr.launcher.env.Jagr
 import org.sourcegrade.jagr.launcher.env.logger
+import org.sourcegrade.jagr.launcher.executor.ProcessWorker
 
 fun main(vararg args: String) {
     try {
@@ -53,6 +54,7 @@ class MainCommand : CliktCommand() {
 
     override fun run() {
         if (child) {
+            println(ProcessWorker.MARK_CHILD_BOOT)
             Environment.initializeChildProcess()
             ChildProcGrading().grade()
         } else {
