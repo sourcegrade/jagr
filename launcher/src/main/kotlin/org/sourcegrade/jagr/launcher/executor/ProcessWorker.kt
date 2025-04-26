@@ -73,8 +73,6 @@ class ProcessWorker(
                     + process.errorStream.reader().readText()
             )
         }
-        // TODO: ensure process.isAlive too?
-        // check(process.isAlive) { "Process has already terminated with exit-code ${process.exitValue()}" }
     }
 
     override fun assignJob(job: GradingJob) {
