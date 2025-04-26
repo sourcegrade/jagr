@@ -1,6 +1,6 @@
 [versions]
 asm = "9.8"
-configurate = "4.1.2"
+configurate = "4.2.0"
 junit = "5.12.2"
 kotlin = "2.1.20"
 log4j = "2.24.3"
