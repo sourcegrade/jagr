@@ -24,17 +24,17 @@ import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
- * Checks whether Jagr is currently being used and skips the target test if it is not.
+ * Checks whether Jagr is currently *not* being used and skips the target test if it is.
  *
- * <p>Inverse of {@link NonJagrExecutionCondition}.
+ * <p>Inverse of {@link JagrExecutionCondition}.
  */
-public final class JagrExecutionCondition implements ExecutionCondition {
+public final class NonJagrExecutionCondition implements ExecutionCondition {
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         if (TestCycleResolver.Provider.parameterResolver == null) {
-            return ConditionEvaluationResult.disabled("Jagr is not present, disabled");
+            return ConditionEvaluationResult.enabled("Jagr is not present, enabled");
         } else {
-            return ConditionEvaluationResult.enabled("Jagr is present, enabled");
+            return ConditionEvaluationResult.disabled("Jagr is present, disabled");
         }
     }
 }
