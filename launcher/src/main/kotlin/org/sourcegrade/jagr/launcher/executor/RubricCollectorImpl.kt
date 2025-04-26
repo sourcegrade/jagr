@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2022 Alexander Staeding
- *   Copyright (C) 2021-2022 Contributors
+ *   Copyright (C) 2021-2023 Alexander Städing
+ *   Copyright (C) 2021-2023 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -99,7 +99,7 @@ internal class RubricCollectorImpl(private val jagr: Jagr) : MutableRubricCollec
                 }
                 listener(result)
             } catch (e: Exception) {
-                jagr.logger.error("An error occurred receiving result for grading job", e)
+                jagr.logger.error("An error occurred in grading job", e)
             }
         }
         return job

@@ -30,7 +30,8 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.launcher.env.Config
 import org.sourcegrade.jagr.launcher.env.Jagr
-import org.sourcegrade.jagr.launcher.env.Transformers
+import org.sourcegrade.jagr.launcher.env.copyTimeout
+import org.sourcegrade.jagr.launcher.env.copyTransformers
 
 abstract class GraderConfiguration(
     name: String,
@@ -38,7 +39,6 @@ abstract class GraderConfiguration(
 ) : AbstractConfiguration(name, project, setOf(name)) {
     abstract val graderName: Property<String>
     abstract val rubricProviderName: Property<String>
-    abstract val config: Property<Config>
     val parentConfiguration: Property<GraderConfiguration> = project.objects.property()
 
     private val submissionConfigurationConvention = parentConfiguration.flatMap { it.submissionConfiguration }
@@ -53,8 +53,12 @@ abstract class GraderConfiguration(
     private val compileClasspath: ConfigurableFileCollection = project.objects.fileCollection()
     private val runtimeClasspath: ConfigurableFileCollection = project.objects.fileCollection()
 
+    var config: Config? = null
+        private set
+
     init {
         project.afterEvaluate {
+            configureProject()
             if (parentConfiguration.isPresent) {
                 addAsDependency(parentConfiguration.get())
             }
@@ -77,12 +81,6 @@ abstract class GraderConfiguration(
                     }
                 }
             }
-        }
-    }
-
-    private fun <K, V> MutableMap<K, Set<V>>.mergeAll(other: Map<K, Set<V>>) {
-        other.forEach { (key, value) ->
-            merge(key, value) { a, b -> a + b }
         }
     }
 
@@ -126,7 +124,11 @@ abstract class GraderConfiguration(
         parentConfiguration.set(configuration)
     }
 
-    fun disableTimeouts() {
-        config.set(Config(transformers = Transformers(timeout = Transformers.TimeoutTransformer(enabled = false))))
+    fun mutateConfig(block: Config.() -> Config?) {
+        config = block(config ?: Config())
+    }
+
+    fun disableTimeouts() = mutateConfig {
+        copyTransformers { copyTimeout { copy(enabled = false) } }
     }
 }

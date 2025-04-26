@@ -131,7 +131,7 @@ data class Transformers(
     }
 
     @ConfigSerializable
-    class TimeoutTransformer(
+    data class TimeoutTransformer(
         override val enabled: Boolean = true,
     ) : Transformer
 }

@@ -32,6 +32,12 @@ abstract class SubmissionConfiguration(
     abstract val lastName: Property<String>
     val checkCompilation: Property<Boolean> = project.objects.property<Boolean>().convention(true)
 
+    init {
+        project.afterEvaluate {
+            configureProject()
+        }
+    }
+
     fun skipCompilationCheck() {
         checkCompilation.set(false)
     }

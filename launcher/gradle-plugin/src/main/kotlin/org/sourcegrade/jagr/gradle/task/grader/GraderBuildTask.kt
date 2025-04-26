@@ -2,24 +2,22 @@ package org.sourcegrade.jagr.gradle.task.grader
 
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.file.SourceDirectorySet
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFile
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.property
 import org.sourcegrade.jagr.gradle.extension.GraderConfiguration
 import org.sourcegrade.jagr.gradle.extension.JagrExtension
+import org.sourcegrade.jagr.gradle.extension.createGraderInfoFileProperty
 import org.sourcegrade.jagr.gradle.task.JagrTaskFactory
-import java.io.File
 
 @Suppress("LeakingThis")
 abstract class GraderBuildTask : Jar(), GraderTask {
 
     @get:InputFile
-    val graderInfoFile: Property<File> = project.objects.property<File>()
-        .value(configurationName.map { project.buildDir.resolve("resources/jagr/$it/grader-info.json") })
+    val graderInfoFile: RegularFileProperty = createGraderInfoFileProperty()
 
     init {
         group = "build"
