@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2022 Alexander Staeding
- *   Copyright (C) 2021-2022 Contributors
+ *   Copyright (C) 2021-2025 Alexander Städing
+ *   Copyright (C) 2021-2025 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -17,14 +17,12 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.extra
+package org.sourcegrade.jagr.launcher.extra
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.launcher.env.Config
@@ -35,7 +33,9 @@ import java.nio.file.FileSystems
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.bufferedWriter
 
-abstract class Unpack : Extra {
+abstract class Unpack {
+
+    abstract fun run()
 
     protected abstract val config: Config
     protected abstract val logger: Logger

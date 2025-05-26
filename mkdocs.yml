@@ -50,6 +50,8 @@ nav:
       - Command Line:
           - Basics: usage/command-line/basics.md
           - Options: usage/command-line/options.md
+      - Extras:
+          - Moodle Unpack: usage/extras/moodle-unpack.md
   - Development:
       - Getting Started:
           - Gradle Setup: development/getting-started/gradle-setup.md
