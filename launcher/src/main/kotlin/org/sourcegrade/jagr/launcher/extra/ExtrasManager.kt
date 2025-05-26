@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2022 Alexander Staeding
- *   Copyright (C) 2021-2022 Contributors
+ *   Copyright (C) 2021-2025 Alexander Städing
+ *   Copyright (C) 2021-2025 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -17,9 +17,10 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.extra
+package org.sourcegrade.jagr.launcher.extra
 
-interface Extra {
-    val name: String
-    fun run()
-}
+import com.google.inject.Inject
+
+class ExtrasManager @Inject constructor(
+    val moodleUnpack: MoodleUnpack.Factory
+)

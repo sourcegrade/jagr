@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2022 Alexander Staeding
- *   Copyright (C) 2021-2022 Contributors
+ *   Copyright (C) 2021-2025 Alexander Städing
+ *   Copyright (C) 2021-2025 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -17,40 +17,43 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.extra
+package org.sourcegrade.jagr.launcher.extra
 
 import com.google.inject.Inject
 import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.launcher.env.Config
+import org.sourcegrade.jagr.launcher.env.MoodleUnpackConfig
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-class MoodleUnpack @Inject constructor(
+class MoodleUnpack private constructor(
     override val config: Config,
     override val logger: Logger,
+    private val moodleUnpackConfig: MoodleUnpackConfig,
 ) : Unpack() {
-    private val assignmentIdRegex = config.extras.moodleUnpack.assignmentIdRegex.toRegex()
-    override val name: String = "moodle-unpack"
     override fun run() {
         val submissions = File(config.dir.submissions)
-        val studentRegex = Regex(config.extras.moodleUnpack.studentRegex)
+        val moodleZipRegex = Regex(moodleUnpackConfig.moodleZipRegex)
+        val assignmentIdRegex = Regex(moodleUnpackConfig.assignmentIdRegex)
+        val studentRegex = Regex(moodleUnpackConfig.studentRegex)
+        val idRegex = Regex("%id%")
+        val assignmentIdTransformer = { id: String -> moodleUnpackConfig.assignmentIdTransformer.replace(idRegex, id) }
         val unpackedFiles: MutableList<SubmissionInfoVerification> = mutableListOf()
-        for (candidate in submissions.listFiles { _, t -> t.endsWith(".zip") }!!) {
-            logger.info("extra($name) :: Discovered candidate zip $candidate")
+        for (candidate in submissions.listFiles { _, name -> name.matches(moodleZipRegex) }!!) {
+            logger.info("moodle-unpack :: Discovered candidate zip $candidate")
             val zipFile = ZipFile(candidate)
-            // TODO: Fix this hack
             val assignmentId = assignmentIdRegex.matchEntire(candidate.name)
                 ?.run { groups["assignmentId"]?.value }
                 ?.padStart(length = 2, padChar = '0')
-                ?.let { "h$it" }
+                ?.let(assignmentIdTransformer)
                 ?: "none"
             for (entry in zipFile.entries()) {
                 val matcher = studentRegex.matchEntire(entry.name) ?: continue
                 try {
                     unpackedFiles += zipFile.unpackEntry(entry, submissions, assignmentId, matcher)
                 } catch (e: Throwable) {
-                    logger.info("extra($name) :: Unable to unpack entry ${entry.name} in candidate $candidate", e)
+                    logger.info("moodle-unpack :: Unable to unpack entry ${entry.name} in candidate $candidate", e)
                 }
             }
         }
@@ -77,5 +80,12 @@ class MoodleUnpack @Inject constructor(
             assignmentId = assignmentId,
             studentId = studentId,
         )
+    }
+
+    class Factory @Inject constructor(
+        val config: Config,
+        val logger: Logger,
+    ) {
+        fun create(moodleUnpackConfig: MoodleUnpackConfig): MoodleUnpack = MoodleUnpack(config, logger, moodleUnpackConfig)
     }
 }

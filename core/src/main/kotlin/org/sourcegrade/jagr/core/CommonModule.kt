@@ -37,7 +37,6 @@ import org.sourcegrade.jagr.core.export.rubric.GermanCSVExporter
 import org.sourcegrade.jagr.core.export.rubric.MoodleJSONExporter
 import org.sourcegrade.jagr.core.export.submission.EclipseSubmissionExporter
 import org.sourcegrade.jagr.core.export.submission.GradleSubmissionExporter
-import org.sourcegrade.jagr.core.extra.ExtrasManagerImpl
 import org.sourcegrade.jagr.core.io.SerializationFactoryLocatorImpl
 import org.sourcegrade.jagr.core.rubric.CriterionFactoryImpl
 import org.sourcegrade.jagr.core.rubric.CriterionHolderPointCalculatorFactoryImpl
@@ -56,7 +55,6 @@ import org.sourcegrade.jagr.launcher.env.ModuleFactory
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
 import org.sourcegrade.jagr.launcher.executor.RuntimeInvoker
-import org.sourcegrade.jagr.launcher.io.ExtrasManager
 import org.sourcegrade.jagr.launcher.io.GradedRubricExporter
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import org.sourcegrade.jagr.launcher.io.SubmissionExporter
@@ -74,7 +72,6 @@ class CommonModule(private val configuration: LaunchConfiguration) : AbstractMod
         bind(ClassTransformer.Factory::class.java).to(ClassTransformerFactoryImpl::class.java)
         bind(Criterion.Factory::class.java).to(CriterionFactoryImpl::class.java)
         bind(CriterionHolderPointCalculator.Factory::class.java).to(CriterionHolderPointCalculatorFactoryImpl::class.java)
-        bind(ExtrasManager::class.java).to(ExtrasManagerImpl::class.java)
         bind(GradedRubricExporter.CSV::class.java).to(GermanCSVExporter::class.java)
         bind(GradedRubricExporter.HTML::class.java).to(BasicHTMLExporter::class.java)
         bind(GradedRubricExporter.Moodle::class.java).to(MoodleJSONExporter::class.java)
