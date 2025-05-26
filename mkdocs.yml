@@ -44,6 +44,12 @@ markdown_extensions:
 
 nav:
   - Welcome to Jagr: index.md
+  - Usage:
+      - Getting Started:
+          - Installation: usage/getting-started/installation.md
+      - Command Line:
+          - Basics: usage/command-line/basics.md
+          - Options: usage/command-line/options.md
   - Development:
       - Getting Started:
           - Gradle Setup: development/getting-started/gradle-setup.md
