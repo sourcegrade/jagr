@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger
 import org.sourcegrade.jagr.launcher.executor.GradingQueue
 import org.sourcegrade.jagr.launcher.executor.RuntimeGrader
 import org.sourcegrade.jagr.launcher.executor.RuntimeInvoker
-import org.sourcegrade.jagr.launcher.io.ExtrasManager
+import org.sourcegrade.jagr.launcher.extra.ExtrasManager
 import org.sourcegrade.jagr.launcher.io.SerializerFactory
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass

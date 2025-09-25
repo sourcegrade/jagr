@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2022 Alexander Staeding
- *   Copyright (C) 2021-2022 Contributors
+ *   Copyright (C) 2021-2025 Alexander Städing
+ *   Copyright (C) 2021-2025 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -27,7 +27,6 @@ data class Config(
     @field:Comment("The locations of the following directories may be configured here")
     val dir: Dir = Dir(),
     val executor: Executor = Executor(),
-    val extras: Extras = Extras(),
     val transformers: Transformers = Transformers(),
 )
 
@@ -105,22 +104,6 @@ invocations of checkTimeout() will result in an AssertionFailedError
     )
     val timeoutTotal: Long = 150_000L,
 )
-
-@ConfigSerializable
-data class Extras(
-    val moodleUnpack: MoodleUnpack = MoodleUnpack(),
-) {
-    @ConfigSerializable
-    data class MoodleUnpack(
-        override val enabled: Boolean = true,
-        val assignmentIdRegex: String = ".*Abgabe[^0-9]*(?<assignmentId>[0-9]{1,2}).*[.]zip",
-        val studentRegex: String = ".* - (?<studentId>([a-z]{2}[0-9]{2}[a-z]{4})|([a-z]+_[a-z]+))/submissions/.*[.]jar",
-    ) : Extra
-
-    interface Extra {
-        val enabled: Boolean
-    }
-}
 
 @ConfigSerializable
 data class Transformers(

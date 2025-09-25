@@ -1,7 +1,7 @@
 /*
  *   Jagr - SourceGrade.org
- *   Copyright (C) 2021-2022 Alexander Staeding
- *   Copyright (C) 2021-2022 Contributors
+ *   Copyright (C) 2021-2024 Alexander Städing
+ *   Copyright (C) 2021-2024 Contributors
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as published by
@@ -17,9 +17,11 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.sourcegrade.jagr.core.extra
+package org.sourcegrade.jagr.launcher.env
 
-interface Extra {
-    val name: String
-    fun run()
-}
+data class MoodleUnpackConfig(
+    val moodleZipRegex: String = ".*[.]zip",
+    val assignmentIdRegex: String = ".*Abgabe[^0-9]*(?<assignmentId>[0-9]{1,2}).*[.]zip",
+    val assignmentIdTransformer: String = "h%id",
+    val studentIdRegex: String = ".* - (?<studentId>([a-z]{2}[0-9]{2}[a-z]{4})|([a-z]+_[a-z]+))/submissions/.*[.]jar",
+)
